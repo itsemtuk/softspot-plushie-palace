@@ -21,10 +21,8 @@ const SignIn = () => {
                 colorText: "#333333",
               }
             }}
-            routing="path"
-            path="/sign-in"
+            redirectUrl="/feed"
             signUpUrl="/sign-up"
-            redirectUrl="/"
           />
         </div>
       </div>
