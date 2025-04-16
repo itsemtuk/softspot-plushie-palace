@@ -1,10 +1,9 @@
-
 import { Navbar } from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlushieCard } from "@/components/PlushieCard";
 import { feedPosts, marketplacePlushies } from "@/data/plushies";
-import { PlusCircle, Settings, Edit2, Heart } from "lucide-react";
+import { PlusCircle, Settings, Edit2, Heart, ShoppingBag } from "lucide-react";
 
 const Profile = () => {
   // Filter posts to show only user's posts (for demo, showing first 3)
