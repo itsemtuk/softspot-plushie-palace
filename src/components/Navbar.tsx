@@ -1,15 +1,22 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Menu, X, Home, ShoppingBag, Users, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useClerk, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { signOut } = useClerk();
+  const navigate = useNavigate();
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleSignOut = () => {
+    signOut(() => navigate("/"));
   };
 
   const navLinks = [
@@ -44,9 +51,27 @@ export function Navbar() {
                 {link.name}
               </Link>
             ))}
-            <Button className="ml-4 bg-softspot-400 hover:bg-softspot-500 text-white">
-              Sign In
-            </Button>
+            
+            <SignedIn>
+              <div className="ml-4 flex items-center">
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: "w-9 h-9"
+                    }
+                  }}
+                  afterSignOutUrl="/"
+                />
+              </div>
+            </SignedIn>
+            
+            <SignedOut>
+              <Link to="/sign-in">
+                <Button className="ml-4 bg-softspot-400 hover:bg-softspot-500 text-white">
+                  Sign In
+                </Button>
+              </Link>
+            </SignedOut>
           </div>
           
           {/* Mobile menu button */}
@@ -80,12 +105,38 @@ export function Navbar() {
               {link.name}
             </Link>
           ))}
-          <Button 
-            className="w-full mt-4 bg-softspot-400 hover:bg-softspot-500 text-white"
-            onClick={() => setIsMenuOpen(false)}
-          >
-            Sign In
-          </Button>
+          
+          <SignedIn>
+            <div className="flex items-center justify-between px-3 py-2">
+              <UserButton 
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: "w-9 h-9"
+                  }
+                }}
+              />
+              <Button 
+                variant="outline" 
+                className="border-softspot-200 text-softspot-500"
+                onClick={handleSignOut}
+              >
+                Sign Out
+              </Button>
+            </div>
+          </SignedIn>
+          
+          <SignedOut>
+            <Link 
+              to="/sign-in"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              <Button 
+                className="w-full mt-4 bg-softspot-400 hover:bg-softspot-500 text-white"
+              >
+                Sign In
+              </Button>
+            </Link>
+          </SignedOut>
         </div>
       </div>
     </nav>
