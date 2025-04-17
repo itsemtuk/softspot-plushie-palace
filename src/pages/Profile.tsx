@@ -5,9 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlushieCard } from "@/components/PlushieCard";
 import { feedPosts, marketplacePlushies } from "@/data/plushies";
-import { PlusCircle, Settings, Edit2, Heart, ShoppingBag } from "lucide-react";
+import { PlusCircle, Settings, Edit2, Heart, ShoppingBag, Tag, Store } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 const Profile = () => {
   // Filter posts to show only user's posts (for demo, showing first 3)
@@ -16,6 +18,7 @@ const Profile = () => {
   const userLikedItems = [...feedPosts.slice(3, 4), ...marketplacePlushies.slice(2, 3)];
   
   const { user } = useUser();
+  const navigate = useNavigate();
 
   // Display user's plushie interests (from metadata or default)
   const plushieInterests = user?.unsafeMetadata?.plushieInterests as string[] || ["Teddy Bears", "Unicorns", "Vintage"];
@@ -43,21 +46,30 @@ const Profile = () => {
               <p className="mt-2 text-gray-700 max-w-2xl">
                 {user?.unsafeMetadata?.bio as string || "Passionate plushie collector for over 10 years. I love cute and cuddly friends of all kinds!"}
               </p>
+              
               <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
                 {plushieInterests.map((interest, index) => (
-                  <div key={index} className="bg-softspot-50 text-softspot-600 px-3 py-1 rounded-full text-sm font-medium">
+                  <Badge key={index} variant="outline" className="bg-softspot-50 hover:bg-softspot-100 text-softspot-600 border-softspot-200">
                     {interest}
-                  </div>
+                  </Badge>
                 ))}
               </div>
             </div>
             
             <div className="flex gap-3">
-              <Button variant="outline" className="text-softspot-500 border-softspot-200" onClick={() => window.location.href = '/settings'}>
+              <Button 
+                variant="outline" 
+                className="text-softspot-500 border-softspot-200"
+                onClick={() => navigate('/settings')}
+              >
                 <Edit2 className="mr-2 h-4 w-4" />
                 Edit Profile
               </Button>
-              <Button variant="outline" className="text-gray-500 border-gray-200" onClick={() => window.location.href = '/settings?tab=account'}>
+              <Button 
+                variant="outline" 
+                className="text-gray-500 border-gray-200"
+                onClick={() => navigate('/settings?tab=account')}
+              >
                 <Settings className="h-4 w-4" />
               </Button>
             </div>
@@ -115,14 +127,16 @@ const Profile = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <Heart className="mx-auto h-12 w-12 text-softspot-300" />
-                <h3 className="mt-2 text-lg font-medium">No posts yet</h3>
-                <p className="mt-1 text-gray-500">Share your plushies with the community.</p>
-                <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
-                  Create Your First Post
-                </Button>
-              </div>
+              <Card className="text-center py-12 bg-white">
+                <div className="flex flex-col items-center">
+                  <Heart className="h-12 w-12 text-softspot-300" />
+                  <h3 className="mt-2 text-lg font-medium">No posts yet</h3>
+                  <p className="mt-1 text-gray-500">Share your plushies with the community.</p>
+                  <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
+                    Create Your First Post
+                  </Button>
+                </div>
+              </Card>
             )}
           </TabsContent>
           
@@ -153,14 +167,16 @@ const Profile = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <ShoppingBag className="mx-auto h-12 w-12 text-softspot-300" />
-                <h3 className="mt-2 text-lg font-medium">No listings yet</h3>
-                <p className="mt-1 text-gray-500">Start selling your plushies on the marketplace.</p>
-                <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
-                  Create Your First Listing
-                </Button>
-              </div>
+              <Card className="text-center py-12 bg-white">
+                <div className="flex flex-col items-center">
+                  <Store className="h-12 w-12 text-softspot-300" />
+                  <h3 className="mt-2 text-lg font-medium">No listings yet</h3>
+                  <p className="mt-1 text-gray-500">Start selling your plushies on the marketplace.</p>
+                  <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
+                    Create Your First Listing
+                  </Button>
+                </div>
+              </Card>
             )}
           </TabsContent>
           
@@ -183,14 +199,16 @@ const Profile = () => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                <Heart className="mx-auto h-12 w-12 text-softspot-300" />
-                <h3 className="mt-2 text-lg font-medium">No liked items</h3>
-                <p className="mt-1 text-gray-500">Find and like items in the community feed or marketplace.</p>
-                <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
-                  Explore Feed
-                </Button>
-              </div>
+              <Card className="text-center py-12 bg-white">
+                <div className="flex flex-col items-center">
+                  <Tag className="h-12 w-12 text-softspot-300" />
+                  <h3 className="mt-2 text-lg font-medium">No liked items</h3>
+                  <p className="mt-1 text-gray-500">Find and like items in the community feed or marketplace.</p>
+                  <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
+                    Explore Feed
+                  </Button>
+                </div>
+              </Card>
             )}
           </TabsContent>
         </Tabs>

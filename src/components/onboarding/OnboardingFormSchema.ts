@@ -6,6 +6,7 @@ export const FormSchema = z.object({
     message: "Please select at least one type of plushie you like.",
   }),
   plushieBrands: z.array(z.string()),
+  bio: z.string().optional(),
 });
 
 export type FormSchemaType = z.infer<typeof FormSchema>;
