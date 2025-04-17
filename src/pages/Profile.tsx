@@ -1,15 +1,24 @@
+
+import { useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlushieCard } from "@/components/PlushieCard";
 import { feedPosts, marketplacePlushies } from "@/data/plushies";
 import { PlusCircle, Settings, Edit2, Heart, ShoppingBag } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
+import { Link } from "react-router-dom";
 
 const Profile = () => {
   // Filter posts to show only user's posts (for demo, showing first 3)
   const userPosts = feedPosts.slice(0, 3); 
   const userListings = marketplacePlushies.slice(0, 2);
   const userLikedItems = [...feedPosts.slice(3, 4), ...marketplacePlushies.slice(2, 3)];
+  
+  const { user } = useUser();
+
+  // Display user's plushie interests (from metadata or default)
+  const plushieInterests = user?.publicMetadata?.plushieInterests as string[] || ["Teddy Bears", "Unicorns", "Vintage"];
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -21,7 +30,7 @@ const Profile = () => {
             <div className="relative">
               <div className="w-28 h-28 bg-softspot-200 rounded-full overflow-hidden border-4 border-white">
                 <img 
-                  src="https://i.pravatar.cc/300" 
+                  src={user?.imageUrl || "https://i.pravatar.cc/300"} 
                   alt="Profile" 
                   className="w-full h-full object-cover"
                 />
@@ -29,30 +38,26 @@ const Profile = () => {
             </div>
             
             <div className="text-center md:text-left flex-grow">
-              <h1 className="text-2xl font-bold text-gray-900">Plushie Lover</h1>
-              <p className="text-gray-500">@plushielover</p>
+              <h1 className="text-2xl font-bold text-gray-900">{user?.firstName || "Plushie Lover"}</h1>
+              <p className="text-gray-500">@{user?.username || "plushielover"}</p>
               <p className="mt-2 text-gray-700 max-w-2xl">
-                Passionate plushie collector for over 10 years. I love cute and cuddly friends of all kinds!
+                {user?.publicMetadata?.bio as string || "Passionate plushie collector for over 10 years. I love cute and cuddly friends of all kinds!"}
               </p>
               <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
-                <div className="bg-softspot-50 text-softspot-600 px-3 py-1 rounded-full text-sm font-medium">
-                  Teddy Bears
-                </div>
-                <div className="bg-softspot-50 text-softspot-600 px-3 py-1 rounded-full text-sm font-medium">
-                  Unicorns
-                </div>
-                <div className="bg-softspot-50 text-softspot-600 px-3 py-1 rounded-full text-sm font-medium">
-                  Vintage
-                </div>
+                {plushieInterests.map((interest, index) => (
+                  <div key={index} className="bg-softspot-50 text-softspot-600 px-3 py-1 rounded-full text-sm font-medium">
+                    {interest}
+                  </div>
+                ))}
               </div>
             </div>
             
             <div className="flex gap-3">
-              <Button variant="outline" className="text-softspot-500 border-softspot-200">
+              <Button variant="outline" className="text-softspot-500 border-softspot-200" as={Link} to="/settings">
                 <Edit2 className="mr-2 h-4 w-4" />
                 Edit Profile
               </Button>
-              <Button variant="outline" className="text-gray-500 border-gray-200">
+              <Button variant="outline" className="text-gray-500 border-gray-200" as={Link} to="/settings?tab=account">
                 <Settings className="h-4 w-4" />
               </Button>
             </div>

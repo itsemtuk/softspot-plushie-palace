@@ -12,6 +12,8 @@ import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import Onboarding from "./pages/Onboarding";
+import Settings from "./pages/Settings";
 
 const queryClient = new QueryClient();
 
@@ -43,6 +45,32 @@ const App = () => (
                 <>
                   <SignedIn>
                     <Profile />
+                  </SignedIn>
+                  <SignedOut>
+                    <Navigate to="/sign-in" replace />
+                  </SignedOut>
+                </>
+              } 
+            />
+            <Route 
+              path="/settings" 
+              element={
+                <>
+                  <SignedIn>
+                    <Settings />
+                  </SignedIn>
+                  <SignedOut>
+                    <Navigate to="/sign-in" replace />
+                  </SignedOut>
+                </>
+              } 
+            />
+            <Route 
+              path="/onboarding" 
+              element={
+                <>
+                  <SignedIn>
+                    <Onboarding />
                   </SignedIn>
                   <SignedOut>
                     <Navigate to="/sign-in" replace />

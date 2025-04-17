@@ -21,7 +21,7 @@ const SignUp = () => {
                 colorText: "#333333",
               }
             }}
-            redirectUrl="/feed"
+            redirectUrl="/onboarding"
             signInUrl="/sign-in"
           />
         </div>
