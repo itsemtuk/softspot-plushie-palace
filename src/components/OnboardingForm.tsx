@@ -9,6 +9,8 @@ import { Form } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
 import PlushieTypeSelector from "./onboarding/PlushieTypeSelector";
 import PlushieBrandSelector from "./onboarding/PlushieBrandSelector";
+import BioInput from "./onboarding/BioInput";
+import ProfilePictureUpload from "./onboarding/ProfilePictureUpload";
 import { plushieTypes, plushieBrands } from "./onboarding/onboardingData";
 import { FormSchema, FormSchemaType } from "./onboarding/OnboardingFormSchema";
 
@@ -22,6 +24,8 @@ const OnboardingForm = () => {
     defaultValues: {
       plushieTypes: [],
       plushieBrands: [],
+      bio: "",
+      profilePicture: "",
     },
   });
 
@@ -40,17 +44,19 @@ const OnboardingForm = () => {
       // Combine both arrays for plushie interests
       const plushieInterests = [...selectedTypes, ...selectedBrands];
       
-      // Fixed: Using unsafeMetadata instead of publicMetadata for now
+      // Update user metadata with all collected information
       await user?.update({
         unsafeMetadata: {
           plushieInterests,
+          bio: data.bio || "",
+          profilePicture: data.profilePicture || "",
           onboardingCompleted: true
         },
       });
 
       toast({
         title: "Preferences saved!",
-        description: "Your plushie preferences have been saved successfully.",
+        description: "Your profile has been set up successfully.",
       });
       
       // Redirect to feed after completing onboarding
@@ -73,13 +79,18 @@ const OnboardingForm = () => {
         Welcome to SoftSpot!
       </h1>
       <p className="text-gray-600 text-center mb-8">
-        Tell us about your plushie preferences to personalize your experience.
+        Tell us about yourself to personalize your experience.
       </p>
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <ProfilePictureUpload form={form} />
+          
           <PlushieTypeSelector plushieTypes={plushieTypes} form={form} />
+          
           <PlushieBrandSelector plushieBrands={plushieBrands} form={form} />
+          
+          <BioInput form={form} />
 
           <div className="flex justify-center pt-4">
             <Button 

@@ -6,7 +6,10 @@ export const FormSchema = z.object({
     message: "Please select at least one type of plushie you like.",
   }),
   plushieBrands: z.array(z.string()),
-  bio: z.string().optional(),
+  bio: z.string().max(160, {
+    message: "Bio must be 160 characters or less",
+  }).optional(),
+  profilePicture: z.string().optional(),
 });
 
 export type FormSchemaType = z.infer<typeof FormSchema>;
