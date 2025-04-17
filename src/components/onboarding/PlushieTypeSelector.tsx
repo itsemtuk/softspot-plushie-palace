@@ -9,21 +9,12 @@ import {
 } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
-import { z } from "zod";
+import { FormSchemaType } from "./OnboardingFormSchema";
 
 type PlushieType = {
   id: string;
   label: string;
 };
-
-const formSchema = z.object({
-  plushieTypes: z.array(z.string()).min(1, {
-    message: "Please select at least one type of plushie you like.",
-  }),
-  plushieBrands: z.array(z.string()),
-});
-
-type FormSchemaType = z.infer<typeof formSchema>;
 
 interface PlushieTypeSelectorProps {
   plushieTypes: PlushieType[];
@@ -35,7 +26,7 @@ const PlushieTypeSelector = ({ plushieTypes, form }: PlushieTypeSelectorProps) =
     <FormField
       control={form.control}
       name="plushieTypes"
-      render={() => (
+      render={({ field }) => (
         <FormItem>
           <div className="mb-4">
             <FormLabel className="text-lg">What types of plushies do you like?</FormLabel>
@@ -50,22 +41,28 @@ const PlushieTypeSelector = ({ plushieTypes, form }: PlushieTypeSelectorProps) =
                 control={form.control}
                 name="plushieTypes"
                 render={({ field }) => {
+                  const isSelected = field.value?.includes(item.id);
                   return (
                     <FormItem
                       key={item.id}
-                      className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
+                      className={`flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 cursor-pointer transition-colors ${
+                        isSelected ? "border-softspot-300 bg-softspot-50" : ""
+                      }`}
+                      onClick={() => {
+                        const newValue = isSelected
+                          ? field.value.filter((value) => value !== item.id)
+                          : [...field.value, item.id];
+                        field.onChange(newValue);
+                      }}
                     >
                       <FormControl>
                         <Checkbox
-                          checked={field.value?.includes(item.id)}
+                          checked={isSelected}
                           onCheckedChange={(checked) => {
-                            return checked
-                              ? field.onChange([...field.value, item.id])
-                              : field.onChange(
-                                  field.value?.filter(
-                                    (value) => value !== item.id
-                                  )
-                                )
+                            const newValue = checked
+                              ? [...field.value, item.id]
+                              : field.value.filter((value) => value !== item.id);
+                            field.onChange(newValue);
                           }}
                         />
                       </FormControl>
@@ -73,7 +70,7 @@ const PlushieTypeSelector = ({ plushieTypes, form }: PlushieTypeSelectorProps) =
                         {item.label}
                       </FormLabel>
                     </FormItem>
-                  )
+                  );
                 }}
               />
             ))}

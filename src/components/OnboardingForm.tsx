@@ -13,25 +13,67 @@ import BioInput from "./onboarding/BioInput";
 import ProfilePictureUpload from "./onboarding/ProfilePictureUpload";
 import { plushieTypes, plushieBrands } from "./onboarding/onboardingData";
 import { FormSchema, FormSchemaType } from "./onboarding/OnboardingFormSchema";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const OnboardingForm = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("preferences");
+
+  // Get existing values if the user has updated their profile before
+  const existingPreferences = user?.unsafeMetadata?.plushieInterests as string[] || [];
+  const existingBio = user?.unsafeMetadata?.bio as string || "";
+  const existingProfilePicture = user?.unsafeMetadata?.profilePicture as string || "";
+
+  // Parse existing preferences back to IDs for the form
+  const getExistingTypeIDs = () => {
+    return plushieTypes
+      .filter(type => existingPreferences.includes(type.label))
+      .map(type => type.id);
+  };
+
+  const getExistingBrandIDs = () => {
+    return plushieBrands
+      .filter(brand => existingPreferences.includes(brand.label))
+      .map(brand => brand.id);
+  };
 
   const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      plushieTypes: [],
-      plushieBrands: [],
-      bio: "",
-      profilePicture: "",
+      plushieTypes: getExistingTypeIDs(),
+      plushieBrands: getExistingBrandIDs(),
+      bio: existingBio,
+      profilePicture: existingProfilePicture,
     },
   });
+
+  // Progress through tabs
+  const handleNext = () => {
+    if (activeTab === "preferences") {
+      const typesValue = form.getValues("plushieTypes");
+      if (typesValue.length === 0) {
+        form.setError("plushieTypes", {
+          type: "manual",
+          message: "Please select at least one type of plushie you like.",
+        });
+        return;
+      }
+      setActiveTab("profile");
+    }
+  };
+
+  const handleBack = () => {
+    if (activeTab === "profile") {
+      setActiveTab("preferences");
+    }
+  };
 
   async function onSubmit(data: FormSchemaType) {
     setLoading(true);
     try {
+      console.log("Form data submitted:", data);
       // Convert IDs to labels for better readability in the profile
       const selectedTypes = plushieTypes
         .filter(type => data.plushieTypes.includes(type.id))
@@ -84,23 +126,49 @@ const OnboardingForm = () => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <ProfilePictureUpload form={form} />
-          
-          <PlushieTypeSelector plushieTypes={plushieTypes} form={form} />
-          
-          <PlushieBrandSelector plushieBrands={plushieBrands} form={form} />
-          
-          <BioInput form={form} />
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="preferences">Plushie Preferences</TabsTrigger>
+              <TabsTrigger value="profile">Profile Details</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="preferences" className="space-y-6">
+              <PlushieTypeSelector plushieTypes={plushieTypes} form={form} />
+              <PlushieBrandSelector plushieBrands={plushieBrands} form={form} />
+              
+              <div className="flex justify-end pt-4">
+                <Button 
+                  type="button" 
+                  className="bg-softspot-500 hover:bg-softspot-600"
+                  onClick={handleNext}
+                >
+                  Continue
+                </Button>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="profile" className="space-y-6">
+              <ProfilePictureUpload form={form} />
+              <BioInput form={form} />
 
-          <div className="flex justify-center pt-4">
-            <Button 
-              type="submit" 
-              className="bg-softspot-500 hover:bg-softspot-600 min-w-[150px]"
-              disabled={loading}
-            >
-              {loading ? "Saving..." : "Continue to SoftSpot"}
-            </Button>
-          </div>
+              <div className="flex justify-between pt-4">
+                <Button 
+                  type="button" 
+                  variant="outline"
+                  onClick={handleBack}
+                >
+                  Back
+                </Button>
+                <Button 
+                  type="submit" 
+                  className="bg-softspot-500 hover:bg-softspot-600"
+                  disabled={loading}
+                >
+                  {loading ? "Saving..." : "Complete Setup"}
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
         </form>
       </Form>
     </div>
