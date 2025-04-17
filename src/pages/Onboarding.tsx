@@ -14,7 +14,7 @@ const Onboarding = () => {
   useEffect(() => {
     // Check if user is loaded and if they've already completed onboarding
     if (isLoaded && user) {
-      const onboardingCompleted = user.publicMetadata.onboardingCompleted;
+      const onboardingCompleted = user.unsafeMetadata.onboardingCompleted;
       
       if (onboardingCompleted) {
         navigate('/feed');

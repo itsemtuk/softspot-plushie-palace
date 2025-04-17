@@ -18,7 +18,7 @@ const Profile = () => {
   const { user } = useUser();
 
   // Display user's plushie interests (from metadata or default)
-  const plushieInterests = user?.publicMetadata?.plushieInterests as string[] || ["Teddy Bears", "Unicorns", "Vintage"];
+  const plushieInterests = user?.unsafeMetadata?.plushieInterests as string[] || ["Teddy Bears", "Unicorns", "Vintage"];
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -41,7 +41,7 @@ const Profile = () => {
               <h1 className="text-2xl font-bold text-gray-900">{user?.firstName || "Plushie Lover"}</h1>
               <p className="text-gray-500">@{user?.username || "plushielover"}</p>
               <p className="mt-2 text-gray-700 max-w-2xl">
-                {user?.publicMetadata?.bio as string || "Passionate plushie collector for over 10 years. I love cute and cuddly friends of all kinds!"}
+                {user?.unsafeMetadata?.bio as string || "Passionate plushie collector for over 10 years. I love cute and cuddly friends of all kinds!"}
               </p>
               <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
                 {plushieInterests.map((interest, index) => (
@@ -53,11 +53,11 @@ const Profile = () => {
             </div>
             
             <div className="flex gap-3">
-              <Button variant="outline" className="text-softspot-500 border-softspot-200" as={Link} to="/settings">
+              <Button variant="outline" className="text-softspot-500 border-softspot-200" onClick={() => window.location.href = '/settings'}>
                 <Edit2 className="mr-2 h-4 w-4" />
                 Edit Profile
               </Button>
-              <Button variant="outline" className="text-gray-500 border-gray-200" as={Link} to="/settings?tab=account">
+              <Button variant="outline" className="text-gray-500 border-gray-200" onClick={() => window.location.href = '/settings?tab=account'}>
                 <Settings className="h-4 w-4" />
               </Button>
             </div>

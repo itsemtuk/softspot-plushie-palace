@@ -43,7 +43,7 @@ const Settings = () => {
   // Default values for the form
   const defaultValues: Partial<ProfileFormValues> = {
     username: user?.username || "",
-    bio: user?.publicMetadata?.bio as string || "",
+    bio: user?.unsafeMetadata?.bio as string || "",
   };
 
   const form = useForm<ProfileFormValues>({
@@ -55,11 +55,11 @@ const Settings = () => {
     setIsLoading(true);
 
     try {
-      // Update the user's username
+      // Update the user's username and bio
       await user?.update({
         username: data.username,
-        publicMetadata: {
-          ...user.publicMetadata,
+        unsafeMetadata: {
+          ...user?.unsafeMetadata,
           bio: data.bio,
         },
       });

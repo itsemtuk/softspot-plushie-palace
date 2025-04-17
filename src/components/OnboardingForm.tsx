@@ -79,9 +79,9 @@ const OnboardingForm = () => {
       // Combine both arrays for plushie interests
       const plushieInterests = [...selectedTypes, ...selectedBrands];
       
+      // Fixed: Using unsafeMetadata instead of publicMetadata for now
       await user?.update({
-        publicMetadata: {
-          ...user.publicMetadata,
+        unsafeMetadata: {
           plushieInterests,
           onboardingCompleted: true
         },
