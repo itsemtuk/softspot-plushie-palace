@@ -4,59 +4,20 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Form } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
-
-const plushieTypes = [
-  { id: "teddy-bears", label: "Teddy Bears" },
-  { id: "cats", label: "Cats" },
-  { id: "dogs", label: "Dogs" },
-  { id: "unicorns", label: "Unicorns" },
-  { id: "dinosaurs", label: "Dinosaurs" },
-  { id: "pokemon", label: "Pokémon" },
-  { id: "farm-animals", label: "Farm Animals" },
-  { id: "wild-animals", label: "Wild Animals" },
-  { id: "sea-creatures", label: "Sea Creatures" },
-  { id: "fantasy", label: "Fantasy Creatures" },
-];
-
-const plushieBrands = [
-  { id: "build-a-bear", label: "Build-A-Bear" },
-  { id: "jellycat", label: "Jellycat" },
-  { id: "pokemon-official", label: "Pokémon Official" },
-  { id: "squishmallow", label: "Squishmallow" },
-  { id: "ty", label: "Ty" },
-  { id: "sanrio", label: "Sanrio" },
-  { id: "steiff", label: "Steiff" },
-  { id: "gund", label: "Gund" },
-  { id: "aurora", label: "Aurora World" },
-  { id: "disney", label: "Disney" },
-];
-
-const FormSchema = z.object({
-  plushieTypes: z.array(z.string()).min(1, {
-    message: "Please select at least one type of plushie you like.",
-  }),
-  plushieBrands: z.array(z.string()),
-});
+import PlushieTypeSelector from "./onboarding/PlushieTypeSelector";
+import PlushieBrandSelector from "./onboarding/PlushieBrandSelector";
+import { plushieTypes, plushieBrands } from "./onboarding/onboardingData";
+import { FormSchema, FormSchemaType } from "./onboarding/OnboardingFormSchema";
 
 const OnboardingForm = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof FormSchema>>({
+  const form = useForm<FormSchemaType>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
       plushieTypes: [],
@@ -64,7 +25,7 @@ const OnboardingForm = () => {
     },
   });
 
-  async function onSubmit(data: z.infer<typeof FormSchema>) {
+  async function onSubmit(data: FormSchemaType) {
     setLoading(true);
     try {
       // Convert IDs to labels for better readability in the profile
@@ -117,107 +78,8 @@ const OnboardingForm = () => {
 
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="plushieTypes"
-            render={() => (
-              <FormItem>
-                <div className="mb-4">
-                  <FormLabel className="text-lg">What types of plushies do you like?</FormLabel>
-                  <FormDescription>
-                    Select all that apply
-                  </FormDescription>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {plushieTypes.map((item) => (
-                    <FormField
-                      key={item.id}
-                      control={form.control}
-                      name="plushieTypes"
-                      render={({ field }) => {
-                        return (
-                          <FormItem
-                            key={item.id}
-                            className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
-                          >
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(item.id)}
-                                onCheckedChange={(checked) => {
-                                  return checked
-                                    ? field.onChange([...field.value, item.id])
-                                    : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item.id
-                                        )
-                                      )
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal cursor-pointer">
-                              {item.label}
-                            </FormLabel>
-                          </FormItem>
-                        )
-                      }}
-                    />
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="plushieBrands"
-            render={() => (
-              <FormItem>
-                <div className="mb-4">
-                  <FormLabel className="text-lg">Any favorite plushie brands?</FormLabel>
-                  <FormDescription>
-                    Select all that apply (optional)
-                  </FormDescription>
-                </div>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {plushieBrands.map((item) => (
-                    <FormField
-                      key={item.id}
-                      control={form.control}
-                      name="plushieBrands"
-                      render={({ field }) => {
-                        return (
-                          <FormItem
-                            key={item.id}
-                            className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
-                          >
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(item.id)}
-                                onCheckedChange={(checked) => {
-                                  return checked
-                                    ? field.onChange([...field.value, item.id])
-                                    : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== item.id
-                                        )
-                                      )
-                                }}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal cursor-pointer">
-                              {item.label}
-                            </FormLabel>
-                          </FormItem>
-                        )
-                      }}
-                    />
-                  ))}
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <PlushieTypeSelector plushieTypes={plushieTypes} form={form} />
+          <PlushieBrandSelector plushieBrands={plushieBrands} form={form} />
 
           <div className="flex justify-center pt-4">
             <Button 
