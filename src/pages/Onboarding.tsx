@@ -30,7 +30,10 @@ const Onboarding = () => {
       if (onboardingCompleted && !isEditing) {
         navigate('/feed');
       } else {
-        setIsReady(true);
+        // Delay setting ready to ensure all components are loaded first
+        setTimeout(() => {
+          setIsReady(true);
+        }, 300);
       }
     } else if (isLoaded && !userId) {
       // If not logged in, redirect to sign in

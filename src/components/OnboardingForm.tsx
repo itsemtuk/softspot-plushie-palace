@@ -14,12 +14,15 @@ import ProfilePictureUpload from "./onboarding/ProfilePictureUpload";
 import { plushieTypes, plushieBrands } from "./onboarding/onboardingData";
 import { FormSchema, FormSchemaType } from "./onboarding/OnboardingFormSchema";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const OnboardingForm = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("preferences");
+  const [showWarning, setShowWarning] = useState(false);
 
   // Get existing values if the user has updated their profile before
   const existingPreferences = user?.unsafeMetadata?.plushieInterests as string[] || [];
@@ -54,14 +57,17 @@ const OnboardingForm = () => {
     if (activeTab === "preferences") {
       const typesValue = form.getValues("plushieTypes");
       if (typesValue.length === 0) {
-        form.setError("plushieTypes", {
-          type: "manual",
-          message: "Please select at least one type of plushie you like.",
-        });
+        setShowWarning(true);
         return;
       }
+      setShowWarning(false);
       setActiveTab("profile");
     }
+  };
+
+  const handleContinueAnyway = () => {
+    setShowWarning(false);
+    setActiveTab("profile");
   };
 
   const handleBack = () => {
@@ -133,6 +139,30 @@ const OnboardingForm = () => {
             </TabsList>
             
             <TabsContent value="preferences" className="space-y-6">
+              {showWarning && (
+                <Alert variant="warning" className="bg-yellow-50 border-yellow-200 mb-4">
+                  <AlertCircle className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-yellow-700">
+                    You haven't selected any plushie types. It's recommended to select at least one to personalize your experience.
+                    <div className="mt-2 flex gap-2">
+                      <Button 
+                        variant="outline" 
+                        onClick={handleContinueAnyway}
+                        className="text-sm"
+                      >
+                        Continue anyway
+                      </Button>
+                      <Button 
+                        variant="default"
+                        onClick={() => setShowWarning(false)}
+                        className="text-sm bg-yellow-600 hover:bg-yellow-700"
+                      >
+                        Choose preferences
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              )}
               <PlushieTypeSelector plushieTypes={plushieTypes} form={form} />
               <PlushieBrandSelector plushieBrands={plushieBrands} form={form} />
               

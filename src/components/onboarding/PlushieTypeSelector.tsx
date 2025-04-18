@@ -40,7 +40,7 @@ const PlushieTypeSelector = ({ plushieTypes, form }: PlushieTypeSelectorProps) =
                 key={item.id}
                 control={form.control}
                 name="plushieTypes"
-                render={({ field }) => {
+                render={({ field: subField }) => {
                   const isSelected = field.value?.includes(item.id);
                   return (
                     <FormItem
@@ -48,12 +48,6 @@ const PlushieTypeSelector = ({ plushieTypes, form }: PlushieTypeSelectorProps) =
                       className={`flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 cursor-pointer transition-colors ${
                         isSelected ? "border-softspot-300 bg-softspot-50" : ""
                       }`}
-                      onClick={() => {
-                        const newValue = isSelected
-                          ? field.value.filter((value) => value !== item.id)
-                          : [...field.value, item.id];
-                        field.onChange(newValue);
-                      }}
                     >
                       <FormControl>
                         <Checkbox
@@ -66,7 +60,15 @@ const PlushieTypeSelector = ({ plushieTypes, form }: PlushieTypeSelectorProps) =
                           }}
                         />
                       </FormControl>
-                      <FormLabel className="font-normal cursor-pointer">
+                      <FormLabel 
+                        className="font-normal cursor-pointer w-full"
+                        onClick={() => {
+                          const newValue = isSelected
+                            ? field.value.filter((value) => value !== item.id)
+                            : [...field.value, item.id];
+                          field.onChange(newValue);
+                        }}
+                      >
                         {item.label}
                       </FormLabel>
                     </FormItem>

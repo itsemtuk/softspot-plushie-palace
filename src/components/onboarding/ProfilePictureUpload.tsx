@@ -11,7 +11,7 @@ import { UseFormReturn } from "react-hook-form";
 import { FormSchemaType } from "./OnboardingFormSchema";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Camera, X } from "lucide-react";
+import { Camera, X, Edit2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 
 interface ProfilePictureUploadProps {
@@ -19,7 +19,9 @@ interface ProfilePictureUploadProps {
 }
 
 const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    form.getValues("profilePicture") || null
+  );
   
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -51,15 +53,33 @@ const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
           </p>
           
           <div className="flex flex-col items-center space-y-4">
-            <Avatar className="w-24 h-24 border-2 border-softspot-200">
-              {previewUrl ? (
-                <AvatarImage src={previewUrl} alt="Profile picture" />
-              ) : (
-                <AvatarFallback className="bg-softspot-100 text-softspot-500 text-3xl">
-                  🧸
-                </AvatarFallback>
+            <div className="relative">
+              <Avatar className="w-24 h-24 border-2 border-softspot-200">
+                {previewUrl ? (
+                  <AvatarImage 
+                    src={previewUrl} 
+                    alt="Profile picture" 
+                    className="object-cover" 
+                  />
+                ) : (
+                  <AvatarFallback className="bg-softspot-100 text-softspot-500 text-3xl">
+                    🧸
+                  </AvatarFallback>
+                )}
+              </Avatar>
+              
+              {previewUrl && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="outline"
+                  className="absolute bottom-0 right-0 rounded-full bg-white w-8 h-8 p-0"
+                  onClick={() => document.getElementById("picture-upload")?.click()}
+                >
+                  <Edit2 className="h-4 w-4" />
+                </Button>
               )}
-            </Avatar>
+            </div>
             
             <div className="flex gap-2">
               <FormControl>

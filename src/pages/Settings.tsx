@@ -24,13 +24,22 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { toast } from "@/components/ui/use-toast";
-import { ArrowLeft, Save } from "lucide-react";
+import { ArrowLeft, Save, UserCog } from "lucide-react";
+import { plushieTypes, plushieBrands } from "@/components/onboarding/onboardingData";
+import { Badge } from "@/components/ui/badge";
+import { UserButton } from "@clerk/clerk-react";
+import ProfilePictureUpload from "@/components/onboarding/ProfilePictureUpload";
+import PlushieTypeSelector from "@/components/onboarding/PlushieTypeSelector";
+import PlushieBrandSelector from "@/components/onboarding/PlushieBrandSelector";
 
 const profileFormSchema = z.object({
   username: z.string().min(3, {
     message: "Username must be at least 3 characters.",
   }),
   bio: z.string().max(160).optional(),
+  plushieTypes: z.array(z.string()).optional().default([]),
+  plushieBrands: z.array(z.string()).optional().default([]),
+  profilePicture: z.string().optional(),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -39,11 +48,31 @@ const Settings = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState("profile");
+  
+  // Get existing plushie interests from user metadata
+  const existingInterests = user?.unsafeMetadata?.plushieInterests as string[] || [];
+  
+  // Parse existing preferences back to IDs for the form
+  const getExistingTypeIDs = () => {
+    return plushieTypes
+      .filter(type => existingInterests.includes(type.label))
+      .map(type => type.id);
+  };
+
+  const getExistingBrandIDs = () => {
+    return plushieBrands
+      .filter(brand => existingInterests.includes(brand.label))
+      .map(brand => brand.id);
+  };
 
   // Default values for the form
   const defaultValues: Partial<ProfileFormValues> = {
     username: user?.username || "",
     bio: user?.unsafeMetadata?.bio as string || "",
+    profilePicture: user?.unsafeMetadata?.profilePicture as string || "",
+    plushieTypes: getExistingTypeIDs(),
+    plushieBrands: getExistingBrandIDs(),
   };
 
   const form = useForm<ProfileFormValues>({
@@ -55,12 +84,26 @@ const Settings = () => {
     setIsLoading(true);
 
     try {
-      // Update the user's username and bio
+      // Convert IDs to labels for plushie interests
+      const selectedTypes = plushieTypes
+        .filter(type => data.plushieTypes.includes(type.id))
+        .map(type => type.label);
+      
+      const selectedBrands = plushieBrands
+        .filter(brand => data.plushieBrands.includes(brand.id))
+        .map(brand => brand.label);
+      
+      // Combine both arrays for plushie interests
+      const plushieInterests = [...selectedTypes, ...selectedBrands];
+      
+      // Update the user's data
       await user?.update({
         username: data.username,
         unsafeMetadata: {
           ...user?.unsafeMetadata,
           bio: data.bio,
+          profilePicture: data.profilePicture,
+          plushieInterests,
         },
       });
 
@@ -97,10 +140,10 @@ const Settings = () => {
           <h1 className="text-2xl font-bold">Settings</h1>
         </div>
 
-        <Tabs defaultValue="profile" className="w-full">
+        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-8">
             <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="account">Account</TabsTrigger>
+            <TabsTrigger value="preferences">Preferences</TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile">
@@ -109,59 +152,96 @@ const Settings = () => {
               
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="username"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Username</FormLabel>
-                        <FormControl>
-                          <Input placeholder="username" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="bio"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Bio</FormLabel>
-                        <FormControl>
-                          <Textarea 
-                            placeholder="Tell us about yourself and your plushie interests"
-                            className="resize-none h-24"
-                            {...field} 
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
+                    <div className="w-full md:w-1/3">
+                      <ProfilePictureUpload form={form} />
+                    </div>
+                    <div className="w-full md:w-2/3 space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="username"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Username</FormLabel>
+                            <FormControl>
+                              <Input placeholder="username" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="bio"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Bio</FormLabel>
+                            <FormControl>
+                              <Textarea 
+                                placeholder="Tell us about yourself and your plushie interests"
+                                className="resize-none h-24"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
 
-                  <Button type="submit" disabled={isLoading} className="bg-softspot-500">
-                    {isLoading ? "Saving..." : "Save changes"}
-                    {!isLoading && <Save className="ml-2 h-4 w-4" />}
-                  </Button>
+                  <div className="pt-4 flex justify-end">
+                    <Button type="submit" disabled={isLoading} className="bg-softspot-500">
+                      {isLoading ? "Saving..." : "Save changes"}
+                      {!isLoading && <Save className="ml-2 h-4 w-4" />}
+                    </Button>
+                  </div>
                 </form>
               </Form>
             </div>
+
+            <div className="bg-white rounded-lg shadow p-6 mt-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Account Settings</h2>
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: "w-10 h-10"
+                    }
+                  }}
+                />
+              </div>
+              <p className="text-sm text-gray-500 mt-2 mb-4">
+                Manage your account settings using the profile menu
+              </p>
+              
+              <div className="flex items-center gap-2 text-gray-500">
+                <UserCog className="h-5 w-5" />
+                <span>Click your profile picture to access account settings</span>
+              </div>
+            </div>
           </TabsContent>
           
-          <TabsContent value="account">
+          <TabsContent value="preferences">
             <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-xl font-semibold mb-4">Account Settings</h2>
-              <p className="text-sm text-gray-500 mb-6">
-                Manage your account settings and preferences.
-              </p>
+              <h2 className="text-xl font-semibold mb-6">Plushie Preferences</h2>
+              
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                  <div className="space-y-8">
+                    <PlushieTypeSelector plushieTypes={plushieTypes} form={form} />
+                    <PlushieBrandSelector plushieBrands={plushieBrands} form={form} />
+                  </div>
 
-              <div className="border-t pt-4">
-                <Button variant="outline" onClick={() => window.open('https://accounts.clerk.dev/user/account', '_blank')}>
-                  Manage account
-                </Button>
-              </div>
+                  <div className="pt-4 flex justify-end">
+                    <Button type="submit" disabled={isLoading} className="bg-softspot-500">
+                      {isLoading ? "Saving..." : "Save preferences"}
+                      {!isLoading && <Save className="ml-2 h-4 w-4" />}
+                    </Button>
+                  </div>
+                </form>
+              </Form>
             </div>
           </TabsContent>
         </Tabs>
