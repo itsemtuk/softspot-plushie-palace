@@ -1,4 +1,3 @@
-
 export const featuredPlushies = [
   {
     id: "p1",
@@ -52,7 +51,12 @@ export const marketplacePlushies = [
     price: 45.00,
     forSale: true,
     condition: "New",
-    description: "Handcrafted with love. This bunny is made of soft cotton fabric and filled with hypoallergenic stuffing."
+    description: "Handcrafted with love. This bunny is made of soft cotton fabric and filled with hypoallergenic stuffing.",
+    color: "white",
+    material: "cotton",
+    filling: "polyester-fill",
+    species: "rabbit",
+    brand: "other"
   },
   {
     id: "m2",
@@ -64,7 +68,12 @@ export const marketplacePlushies = [
     price: 120.00,
     forSale: true,
     condition: "Good - Vintage",
-    description: "Original 1980s teddy bear in good condition. Some minor wear consistent with age."
+    description: "Original 1980s teddy bear in good condition. Some minor wear consistent with age.",
+    color: "brown",
+    material: "plush",
+    filling: "cotton",
+    species: "bear",
+    brand: "gund"
   },
   {
     id: "m3",
@@ -76,7 +85,12 @@ export const marketplacePlushies = [
     price: 34.99,
     forSale: true,
     condition: "New",
-    description: "Set of 3 mini unicorn plushies in pastel colors. Perfect for collectors or children."
+    description: "Set of 3 mini unicorn plushies in pastel colors. Perfect for collectors or children.",
+    color: "pink",
+    material: "minky",
+    filling: "polyester-fill",
+    species: "unicorn",
+    brand: "squishmallows"
   },
   {
     id: "m4",
@@ -88,7 +102,12 @@ export const marketplacePlushies = [
     price: 89.99,
     forSale: true,
     condition: "New",
-    description: "Life-sized teddy bear, approximately 4ft tall. Super soft and huggable!"
+    description: "Life-sized teddy bear, approximately 4ft tall. Super soft and huggable!",
+    color: "brown",
+    material: "plush",
+    filling: "polyester-fill",
+    species: "bear",
+    brand: "build-a-bear"
   },
   {
     id: "m5",
@@ -100,7 +119,12 @@ export const marketplacePlushies = [
     price: 28.50,
     forSale: true,
     condition: "New",
-    description: "Authentic Japanese kawaii penguin plush with tag. Limited edition."
+    description: "Authentic Japanese kawaii penguin plush with tag. Limited edition.",
+    color: "black",
+    material: "velvet",
+    filling: "beans",
+    species: "other",
+    brand: "other"
   },
   {
     id: "m6",
@@ -112,8 +136,13 @@ export const marketplacePlushies = [
     price: 199.99,
     forSale: true,
     condition: "Antique",
-    description: "Genuine antique bear from early 1900s. Great collector's item with documented provenance."
-  },
+    description: "Genuine antique bear from early 1900s. Great collector's item with documented provenance.",
+    color: "brown",
+    material: "fur",
+    filling: "cotton",
+    species: "bear",
+    brand: "other"
+  }
 ];
 
 export const feedPosts = [
