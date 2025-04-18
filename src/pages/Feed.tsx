@@ -1,19 +1,61 @@
 
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
-import { PlushieCard } from "@/components/PlushieCard";
-import { feedPosts } from "@/data/plushies";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, ImagePlus, Search } from "lucide-react";
+import { PlusCircle, ImagePlus, Search, Tag } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { PostDialog } from "@/components/PostDialog";
+import { feedPosts } from "@/data/plushies";
+
+// Extended post type with additional fields
+interface ExtendedPost {
+  id: string;
+  image: string;
+  title: string;
+  username: string;
+  likes: number;
+  comments: number;
+  description?: string;
+  tags?: string[];
+}
+
+// Add descriptions and tags to the sample data
+const extendedFeedPosts: ExtendedPost[] = feedPosts.map(post => ({
+  ...post,
+  description: post.id === "post-1" 
+    ? "Just got this adorable teddy bear! It's so soft and cuddly." 
+    : post.id === "post-2"
+    ? "Check out my new plushie collection addition!"
+    : undefined,
+  tags: post.id === "post-1" 
+    ? ["teddybear", "cute", "plushie"] 
+    : post.id === "post-2"
+    ? ["bunny", "plushiecollection", "kawaii"]
+    : post.id === "post-3"
+    ? ["pokemon", "pikachu", "gaming"]
+    : []
+}));
 
 const Feed = () => {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedPost, setSelectedPost] = useState<ExtendedPost | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   
-  const filteredPosts = feedPosts.filter(post => 
+  const filteredPosts = extendedFeedPosts.filter(post => 
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.username.toLowerCase().includes(searchQuery.toLowerCase())
+    post.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
+  
+  const openPostDialog = (post: ExtendedPost) => {
+    setSelectedPost(post);
+    setDialogOpen(true);
+  };
+
+  const closePostDialog = () => {
+    setDialogOpen(false);
+  };
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -26,7 +68,7 @@ const Feed = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
-                placeholder="Search posts..."
+                placeholder="Search posts or #tags..."
                 className="pl-9 bg-white"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -39,35 +81,60 @@ const Feed = () => {
           </div>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPosts.length > 0 ? (
-            filteredPosts.map((post) => (
-              <PlushieCard 
+        {/* Instagram-style grid */}
+        {filteredPosts.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 md:gap-3">
+            {filteredPosts.map((post) => (
+              <div 
                 key={post.id}
-                id={post.id}
-                image={post.image}
-                title={post.title}
-                username={post.username}
-                likes={post.likes}
-                comments={post.comments}
-                variant="feed"
-              />
-            ))
-          ) : (
-            <div className="col-span-3 py-12 text-center">
-              <div className="bg-white rounded-lg p-8 shadow-sm">
-                <div className="flex justify-center">
-                  <ImagePlus className="h-12 w-12 text-softspot-300" />
+                className="relative cursor-pointer hover:opacity-95 transition-opacity"
+                onClick={() => openPostDialog(post)}
+              >
+                <AspectRatio ratio={1} className="bg-gray-100">
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="object-cover w-full h-full"
+                  />
+                </AspectRatio>
+                
+                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
+                  <div className="text-white font-medium p-2 text-center">
+                    <h3 className="text-lg line-clamp-2">{post.title}</h3>
+                    <div className="flex items-center justify-center gap-4 mt-2">
+                      {post.tags && post.tags.length > 0 && (
+                        <div className="flex items-center">
+                          <Tag className="h-4 w-4 mr-1" />
+                          <span>{post.tags.length}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <h3 className="mt-4 text-lg font-medium text-gray-900">No posts found</h3>
-                <p className="mt-2 text-gray-500">Try a different search or create a new post.</p>
-                <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
-                  Create Post
-                </Button>
               </div>
+            ))}
+          </div>
+        ) : (
+          <div className="py-12 text-center">
+            <div className="bg-white rounded-lg p-8 shadow-sm">
+              <div className="flex justify-center">
+                <ImagePlus className="h-12 w-12 text-softspot-300" />
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-gray-900">No posts found</h3>
+              <p className="mt-2 text-gray-500">Try a different search or create a new post.</p>
+              <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
+                Create Post
+              </Button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
+
+        {/* Post Dialog */}
+        <PostDialog 
+          isOpen={dialogOpen} 
+          onClose={closePostDialog} 
+          post={selectedPost} 
+        />
       </div>
     </div>
   );
