@@ -101,8 +101,8 @@ const Settings = () => {
         username: data.username,
         unsafeMetadata: {
           ...user?.unsafeMetadata,
-          bio: data.bio,
-          profilePicture: data.profilePicture,
+          bio: data.bio || "",
+          profilePicture: data.profilePicture || "",
           plushieInterests,
         },
       });
@@ -111,8 +111,12 @@ const Settings = () => {
         title: "Profile updated",
         description: "Your profile information has been updated.",
       });
+
+      // Force reload user data to reflect changes immediately
+      await user?.reload();
+
     } catch (error) {
-      console.error(error);
+      console.error("Error updating profile:", error);
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",

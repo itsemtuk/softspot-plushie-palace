@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,16 @@ const Profile = () => {
   
   const { user } = useUser();
   const navigate = useNavigate();
+  const [profileImage, setProfileImage] = useState<string | null>(null);
+
+  // Get profile data once user is loaded
+  useEffect(() => {
+    if (user) {
+      // Get the profile picture from metadata
+      const userProfilePicture = user.unsafeMetadata?.profilePicture as string;
+      setProfileImage(userProfilePicture || user.imageUrl);
+    }
+  }, [user]);
 
   // Display user's plushie interests (from metadata or default)
   const plushieInterests = user?.unsafeMetadata?.plushieInterests as string[] || ["Teddy Bears", "Unicorns", "Vintage"];
@@ -33,9 +43,12 @@ const Profile = () => {
             <div className="relative">
               <div className="w-28 h-28 bg-softspot-200 rounded-full overflow-hidden border-4 border-white">
                 <img 
-                  src={user?.imageUrl || "https://i.pravatar.cc/300"} 
+                  src={profileImage || "https://i.pravatar.cc/300"} 
                   alt="Profile" 
                   className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://i.pravatar.cc/300";
+                  }}
                 />
               </div>
             </div>

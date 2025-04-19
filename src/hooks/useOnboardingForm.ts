@@ -91,6 +91,9 @@ export const useOnboardingForm = () => {
         },
       });
 
+      // Force reload user data to reflect changes immediately
+      await user?.reload();
+
       toast({
         title: "Preferences saved!",
         description: "Your profile has been set up successfully.",
@@ -99,7 +102,7 @@ export const useOnboardingForm = () => {
       // Redirect to feed after completing onboarding
       navigate('/feed');
     } catch (error) {
-      console.error(error);
+      console.error("Error saving profile:", error);
       toast({
         title: "Error",
         description: "Failed to save your preferences. Please try again.",

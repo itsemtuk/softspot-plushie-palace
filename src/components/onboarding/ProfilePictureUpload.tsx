@@ -60,10 +60,10 @@ const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
         try {
           const result = reader.result as string;
           setPreviewUrl(result);
-          form.setValue("profilePicture", result, { shouldValidate: true });
+          form.setValue("profilePicture", result, { shouldValidate: true, shouldDirty: true });
           toast({
             title: "Image uploaded",
-            description: "Your profile picture has been updated.",
+            description: "Your profile picture has been selected. Don't forget to save your changes.",
           });
         } catch (error) {
           console.error("Error processing image:", error);
@@ -89,10 +89,10 @@ const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
 
   const handleRemoveImage = () => {
     setPreviewUrl(null);
-    form.setValue("profilePicture", "", { shouldValidate: true });
+    form.setValue("profilePicture", "", { shouldValidate: true, shouldDirty: true });
     toast({
       title: "Image removed",
-      description: "Your profile picture has been removed.",
+      description: "Your profile picture has been removed. Don't forget to save your changes.",
     });
   };
 
