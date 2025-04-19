@@ -13,14 +13,15 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "./components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+// Use a fixed publishable key for development
+const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 const queryClient = new QueryClient();
 
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
-        <ClerkProvider publishableKey={clerkPubKey}>
+        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Index />} />

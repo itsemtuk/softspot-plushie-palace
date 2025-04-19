@@ -1,6 +1,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from "react"
-import { Theme } from "next-themes"
+
+type Theme = 'light' | 'dark' | 'system'
 
 type ThemeProviderProps = {
   children: React.ReactNode
