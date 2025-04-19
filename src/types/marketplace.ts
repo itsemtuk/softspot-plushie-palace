@@ -3,6 +3,7 @@ export type PlushieMaterial = 'cotton' | 'polyester' | 'minky' | 'plush' | 'fur'
 export type PlushieFilling = 'polyester-fill' | 'cotton' | 'beans' | 'foam';
 export type PlushieSpecies = 'bear' | 'cat' | 'dog' | 'rabbit' | 'dragon' | 'unicorn' | 'other';
 export type PlushieBrand = 'build-a-bear' | 'squishmallows' | 'jellycat' | 'gund' | 'ty' | 'other';
+export type PlushieSize = 'small' | 'medium' | 'large';
 
 export interface MarketplaceFilters {
   color?: string[];
@@ -10,6 +11,7 @@ export interface MarketplaceFilters {
   filling?: PlushieFilling[];
   species?: PlushieSpecies[];
   brand?: PlushieBrand[];
+  size?: PlushieSize[];
   minPrice?: number;
   maxPrice?: number;
 }
@@ -30,4 +32,10 @@ export interface MarketplacePlushie {
   filling: PlushieFilling;
   species: PlushieSpecies;
   brand: PlushieBrand;
+  size?: PlushieSize;
+  deliveryCost?: number;
+  deliveryMethod?: string;
+  country?: string;
+  currency?: string;
+  tags?: string[];
 }

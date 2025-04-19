@@ -11,6 +11,17 @@ import { Textarea } from "@/components/ui/textarea";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Heart, MessageCircle, Tag, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Separator } from "@/components/ui/separator";
+import { toast } from "@/components/ui/use-toast";
+
+interface Comment {
+  id: string;
+  username: string;
+  text: string;
+  timestamp: string;
+  likes: number;
+  isLiked: boolean;
+}
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -31,6 +42,7 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [newComment, setNewComment] = useState("");
   const [likeCount, setLikeCount] = useState(post?.likes || 0);
+  const [commentList, setCommentList] = useState<Comment[]>([]);
   const navigate = useNavigate();
   
   if (!post) return null;
@@ -44,10 +56,39 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
     setIsLiked(!isLiked);
   };
 
+  const handleCommentLikeToggle = (commentId: string) => {
+    setCommentList(prevComments => prevComments.map(comment => {
+      if (comment.id === commentId) {
+        return {
+          ...comment,
+          likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
+          isLiked: !comment.isLiked
+        };
+      }
+      return comment;
+    }));
+  };
+
   const handleCommentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Would handle saving the comment to backend here
+    if (!newComment.trim()) return;
+    
+    // Add the new comment
+    const newCommentObj: Comment = {
+      id: `c${Date.now()}`,
+      username: "currentUser", // In a real app, this would come from auth
+      text: newComment,
+      timestamp: "Just now",
+      likes: 0,
+      isLiked: false
+    };
+    
+    setCommentList(prev => [...prev, newCommentObj]);
     setNewComment("");
+    toast({
+      title: "Comment posted",
+      description: "Your comment has been added to the post.",
+    });
   };
 
   const handleFindSimilar = () => {
@@ -105,7 +146,7 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
               
               <Button variant="ghost" size="sm" className="flex items-center gap-2">
                 <MessageCircle className="h-5 w-5" />
-                <span>{post.comments}</span>
+                <span>{commentList.length}</span>
               </Button>
               
               <Button 
@@ -119,6 +160,34 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
               </Button>
             </div>
             
+            <Separator className="my-2" />
+            
+            {commentList.length > 0 && (
+              <div className="mt-4 mb-4 space-y-3">
+                <h3 className="font-medium text-sm">Comments</h3>
+                {commentList.map(comment => (
+                  <div key={comment.id} className="bg-gray-50 p-3 rounded-md">
+                    <div className="flex justify-between">
+                      <span className="font-medium text-sm">@{comment.username}</span>
+                      <span className="text-xs text-gray-500">{comment.timestamp}</span>
+                    </div>
+                    <p className="mt-1 text-sm text-gray-700">{comment.text}</p>
+                    <div className="flex items-center mt-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className={`flex items-center gap-1 p-0 h-auto text-xs ${comment.isLiked ? "text-rose-500" : "text-gray-500"}`}
+                        onClick={() => handleCommentLikeToggle(comment.id)}
+                      >
+                        <Heart className={`h-3 w-3 ${comment.isLiked ? "fill-rose-500" : ""}`} />
+                        <span>{comment.likes}</span>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            
             <div className="border-t pt-4 mt-auto">
               <form onSubmit={handleCommentSubmit} className="flex flex-col gap-2">
                 <Textarea 
@@ -127,7 +196,11 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
                   onChange={(e) => setNewComment(e.target.value)}
                   className="resize-none"
                 />
-                <Button type="submit" className="bg-softspot-400 hover:bg-softspot-500 self-end">
+                <Button 
+                  type="submit" 
+                  className="bg-softspot-400 hover:bg-softspot-500 self-end"
+                  disabled={!newComment.trim()}
+                >
                   Post
                 </Button>
               </form>

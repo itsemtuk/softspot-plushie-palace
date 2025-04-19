@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { PlushieCard } from "@/components/PlushieCard";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Search, PlusCircle, ShoppingBag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
-import { MarketplaceFilters } from "@/types/marketplace";
+import { MarketplaceFilters, MarketplacePlushie } from "@/types/marketplace";
 import {
   Select,
   SelectContent,
@@ -14,11 +15,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
+import PlushieDetailDialog from "@/components/marketplace/PlushieDetailDialog";
 
 const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState("newest");
   const [filters, setFilters] = useState<MarketplaceFilters>({});
+  const [selectedPlushie, setSelectedPlushie] = useState<MarketplacePlushie | null>(null);
+  const [dialogOpen, setDialogOpen] = useState(false);
   
   const filteredPlushies = marketplacePlushies
     .filter(plushie => {
@@ -43,6 +48,15 @@ const Marketplace = () => {
       if (sortBy === "popular") return b.likes - a.likes;
       return b.id.localeCompare(a.id);
     });
+
+  const openPlushieDialog = (plushie: MarketplacePlushie) => {
+    setSelectedPlushie(plushie);
+    setDialogOpen(true);
+  };
+
+  const closePlushieDialog = () => {
+    setDialogOpen(false);
+  };
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -53,12 +67,14 @@ const Marketplace = () => {
           <div className="inline-flex items-center justify-center p-3 bg-white/20 rounded-full mb-4">
             <ShoppingBag className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-3xl font-bold">Plushie Marketplace</h1>
+          <h1 className="text-3xl font-bold">SoftSpot Marketplace</h1>
           <p className="mt-2 text-softspot-100 max-w-2xl mx-auto">
             Find rare collectibles, handmade creations, and more from our community of plushie lovers.
           </p>
         </div>
       </div>
+      
+      <MarketplaceNav />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
@@ -111,23 +127,32 @@ const Marketplace = () => {
             
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredPlushies.map((plushie) => (
-                <PlushieCard 
-                  key={plushie.id}
-                  id={plushie.id}
-                  image={plushie.image}
-                  title={plushie.title}
-                  username={plushie.username}
-                  likes={plushie.likes}
-                  comments={plushie.comments}
-                  price={plushie.price}
-                  forSale={plushie.forSale}
-                  variant="marketplace"
-                />
+                <div key={plushie.id} onClick={() => openPlushieDialog(plushie)} className="cursor-pointer">
+                  <PlushieCard 
+                    id={plushie.id}
+                    image={plushie.image}
+                    title={plushie.title}
+                    username={plushie.username}
+                    likes={plushie.likes}
+                    comments={plushie.comments}
+                    price={plushie.price}
+                    forSale={plushie.forSale}
+                    variant="marketplace"
+                  />
+                </div>
               ))}
             </div>
           </div>
         </div>
       </div>
+      
+      {selectedPlushie && (
+        <PlushieDetailDialog
+          isOpen={dialogOpen}
+          onClose={closePlushieDialog}
+          plushie={selectedPlushie}
+        />
+      )}
     </div>
   );
 };

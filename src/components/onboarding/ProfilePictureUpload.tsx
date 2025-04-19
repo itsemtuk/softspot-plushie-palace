@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FormControl,
   FormField,
@@ -13,6 +13,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Camera, X, Edit2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/use-toast";
 
 interface ProfilePictureUploadProps {
   form: UseFormReturn<FormSchemaType>;
@@ -22,23 +23,77 @@ const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
   const [previewUrl, setPreviewUrl] = useState<string | null>(
     form.getValues("profilePicture") || null
   );
+
+  // Update preview if the form value changes externally
+  useEffect(() => {
+    const currentValue = form.getValues("profilePicture");
+    if (currentValue && currentValue !== previewUrl) {
+      setPreviewUrl(currentValue);
+    }
+  }, [form, previewUrl]);
   
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Image must be less than 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onloadend = () => {
-        const result = reader.result as string;
-        setPreviewUrl(result);
-        form.setValue("profilePicture", result);
+        try {
+          const result = reader.result as string;
+          setPreviewUrl(result);
+          form.setValue("profilePicture", result, { shouldValidate: true });
+          toast({
+            title: "Image uploaded",
+            description: "Your profile picture has been updated.",
+          });
+        } catch (error) {
+          console.error("Error processing image:", error);
+          toast({
+            title: "Upload failed",
+            description: "There was a problem processing your image",
+            variant: "destructive",
+          });
+        }
       };
+      
+      reader.onerror = () => {
+        toast({
+          title: "Upload failed",
+          description: "There was a problem reading your image file",
+          variant: "destructive",
+        });
+      };
+      
       reader.readAsDataURL(file);
     }
   };
 
   const handleRemoveImage = () => {
     setPreviewUrl(null);
-    form.setValue("profilePicture", "");
+    form.setValue("profilePicture", "", { shouldValidate: true });
+    toast({
+      title: "Image removed",
+      description: "Your profile picture has been removed.",
+    });
   };
 
   return (
