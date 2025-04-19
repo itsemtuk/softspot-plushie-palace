@@ -9,6 +9,8 @@ import Profile from "./pages/Profile";
 import Feed from "./pages/Feed";
 import Marketplace from "./pages/Marketplace";
 import BrandPage from "./pages/BrandPage";
+import MessagingPage from "./pages/MessagingPage";
+import WishlistPage from "./pages/WishlistPage";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";

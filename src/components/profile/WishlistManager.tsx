@@ -1,9 +1,8 @@
 
-import { useState, useEffect } from 'react';
+import { useState } from "react";
 import { 
-  Card,
+  Card, 
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle
@@ -14,526 +13,512 @@ import {
   TabsList, 
   TabsTrigger 
 } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   Heart, 
   Plus, 
-  MoreHorizontal, 
-  Pencil, 
+  X, 
+  Edit, 
   Trash2, 
   Lock, 
-  Globe,
-  Star,
-  Tag
+  ShoppingBag, 
+  MessageCircle 
 } from "lucide-react";
-import { MarketplacePlushie, Wishlist } from "@/types/marketplace";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { toast } from "@/components/ui/use-toast";
+import { MarketplacePlushie, Wishlist, PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, PlushieBrand } from "@/types/marketplace";
 import { useUser } from "@clerk/clerk-react";
-
-// Importing the PlushieCard component for displaying items
-import { PlushieCard } from "@/components/PlushieCard";
-import { marketplacePlushies } from "@/data/plushies";
-
-// Mock data for wishlists
-const mockWishlists: Wishlist[] = [
-  {
-    id: "wishlist-1",
-    userId: "user-1",
-    name: "Dream Plushies",
-    description: "Rare plushies I'm hoping to collect someday",
-    plushies: marketplacePlushies.slice(0, 3),
-    isPrivate: false
-  },
-  {
-    id: "wishlist-2",
-    userId: "user-1",
-    name: "Birthday Wishlist",
-    description: "Plushies I'd love to get for my birthday",
-    plushies: marketplacePlushies.slice(3, 5),
-    isPrivate: true
-  }
-];
-
-// Mock data for liked feed posts (separate from marketplace items)
-const likedFeedPosts = marketplacePlushies.slice(5, 8).map(item => ({
-  ...item,
-  forSale: false
-}));
 
 const WishlistManager = () => {
   const { user } = useUser();
-  const [wishlists, setWishlists] = useState<Wishlist[]>(mockWishlists);
-  const [selectedWishlist, setSelectedWishlist] = useState<string | null>("wishlist-1");
   const [activeTab, setActiveTab] = useState("wishlists");
-  
-  // Dialog states
-  const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  
-  // Form states
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [dialogMode, setDialogMode] = useState<"create" | "edit">("create");
   const [wishlistName, setWishlistName] = useState("");
   const [wishlistDescription, setWishlistDescription] = useState("");
-  const [isPrivate, setIsPrivate] = useState(false);
-  const [editingWishlistId, setEditingWishlistId] = useState<string | null>(null);
-  
-  const handleCreateWishlist = () => {
-    if (!wishlistName) return;
-    
-    const newWishlist: Wishlist = {
-      id: `wishlist-${Date.now()}`,
+  const [isWishlistPrivate, setIsWishlistPrivate] = useState(false);
+  const [activeWishlist, setActiveWishlist] = useState<Wishlist | null>(null);
+  const [wishlists, setWishlists] = useState<Wishlist[]>([
+    {
+      id: "wishlist-1",
       userId: "user-1",
-      name: wishlistName,
-      description: wishlistDescription,
-      plushies: [],
-      isPrivate
-    };
-    
-    setWishlists(prev => [...prev, newWishlist]);
-    setSelectedWishlist(newWishlist.id);
-    setCreateDialogOpen(false);
-    resetForm();
-    
-    toast({
-      title: "Wishlist created",
-      description: `"${wishlistName}" has been created.`
-    });
-  };
-  
-  const handleEditWishlist = () => {
-    if (!wishlistName || !editingWishlistId) return;
-    
-    setWishlists(prev => prev.map(wishlist => 
-      wishlist.id === editingWishlistId
-        ? {
-            ...wishlist,
-            name: wishlistName,
-            description: wishlistDescription,
-            isPrivate
-          }
-        : wishlist
-    ));
-    
-    setEditDialogOpen(false);
-    resetForm();
-    
-    toast({
-      title: "Wishlist updated",
-      description: `"${wishlistName}" has been updated.`
-    });
-  };
-  
-  const handleDeleteWishlist = () => {
-    if (!editingWishlistId) return;
-    
-    const wishlistToDelete = wishlists.find(w => w.id === editingWishlistId);
-    
-    setWishlists(prev => prev.filter(wishlist => wishlist.id !== editingWishlistId));
-    
-    if (selectedWishlist === editingWishlistId) {
-      setSelectedWishlist(wishlists.length > 1 ? wishlists[0].id : null);
+      name: "Dream Plushies",
+      description: "My dream collection of plushies",
+      plushies: [
+        {
+          id: "item-1",
+          image: "https://i.pravatar.cc/300?img=1",
+          title: "Mint Jellycat Bunny",
+          username: "plushielover",
+          likes: 24,
+          comments: 5,
+          price: 45.99,
+          forSale: true,
+          condition: "Like New" as PlushieCondition,
+          description: "Adorable mint green bunny, super soft",
+          color: "Mint",
+          material: "Plush" as PlushieMaterial,
+          filling: "Cotton" as PlushieFilling,
+          species: "Rabbit" as PlushieSpecies,
+          brand: "Jellycat" as PlushieBrand,
+        },
+        {
+          id: "item-2",
+          image: "https://i.pravatar.cc/300?img=2",
+          title: "Limited Edition Teddy",
+          username: "teddycollector",
+          likes: 42,
+          comments: 8,
+          price: 89.99,
+          forSale: true,
+          condition: "New" as PlushieCondition,
+          description: "Limited edition anniversary teddy bear",
+          color: "Brown",
+          material: "Cotton" as PlushieMaterial,
+          filling: "Polyester" as PlushieFilling,
+          species: "Bear" as PlushieSpecies,
+          brand: "Build-A-Bear" as PlushieBrand,
+        }
+      ],
+      isPrivate: false
+    },
+    {
+      id: "wishlist-2",
+      userId: "user-1",
+      name: "Vintage Finds",
+      description: "My favorite vintage plushies",
+      plushies: [
+        {
+          id: "item-3",
+          image: "https://i.pravatar.cc/300?img=3",
+          title: "Vintage Care Bear",
+          username: "vintagetoylover",
+          likes: 67,
+          comments: 12,
+          price: 120,
+          forSale: true,
+          condition: "Good" as PlushieCondition,
+          description: "Original 80's Care Bear in good condition",
+          color: "Pink",
+          material: "Plush" as PlushieMaterial,
+          filling: "Cotton" as PlushieFilling,
+          species: "Bear" as PlushieSpecies,
+          brand: "Care Bears" as PlushieBrand,
+        }
+      ],
+      isPrivate: true
     }
-    
-    setDeleteDialogOpen(false);
-    
-    toast({
-      title: "Wishlist deleted",
-      description: `"${wishlistToDelete?.name}" has been deleted.`
-    });
+  ]);
+
+  // Mock data for liked plushies and posts
+  const [likedPlushies, setLikedPlushies] = useState<MarketplacePlushie[]>([
+    {
+      id: "liked-1",
+      image: "https://i.pravatar.cc/300?img=4",
+      title: "Squishmallow Cat",
+      username: "squishfan",
+      likes: 89,
+      comments: 24,
+      price: 34.99,
+      forSale: true,
+      condition: "New" as PlushieCondition,
+      description: "Super soft gray cat squishmallow",
+      color: "Gray",
+      material: "Plush" as PlushieMaterial,
+      filling: "Memory Foam" as PlushieFilling,
+      species: "Cat" as PlushieSpecies,
+      brand: "Squishmallows" as PlushieBrand,
+    }
+  ]);
+
+  const [likedPosts, setLikedPosts] = useState([
+    {
+      id: "post-1",
+      username: "plushiecollector",
+      avatar: "https://i.pravatar.cc/150?img=5",
+      content: "Just added this amazing teddy to my collection!",
+      image: "https://i.pravatar.cc/500?img=5",
+      likes: 42,
+      comments: 7,
+      timestamp: "2h ago"
+    }
+  ]);
+
+  const handleOpenDialog = (mode: "create" | "edit", wishlist?: Wishlist) => {
+    setDialogMode(mode);
+    if (mode === "edit" && wishlist) {
+      setWishlistName(wishlist.name);
+      setWishlistDescription(wishlist.description || "");
+      setIsWishlistPrivate(wishlist.isPrivate);
+      setActiveWishlist(wishlist);
+    } else {
+      setWishlistName("");
+      setWishlistDescription("");
+      setIsWishlistPrivate(false);
+    }
+    setIsDialogOpen(true);
   };
-  
-  const openEditDialog = (wishlist: Wishlist) => {
-    setWishlistName(wishlist.name);
-    setWishlistDescription(wishlist.description || "");
-    setIsPrivate(wishlist.isPrivate);
-    setEditingWishlistId(wishlist.id);
-    setEditDialogOpen(true);
+
+  const handleSaveWishlist = () => {
+    if (dialogMode === "create") {
+      const newWishlist: Wishlist = {
+        id: `wishlist-${Date.now()}`,
+        userId: "user-1", // Should be current user's ID
+        name: wishlistName,
+        description: wishlistDescription,
+        plushies: [],
+        isPrivate: isWishlistPrivate
+      };
+      setWishlists([...wishlists, newWishlist]);
+    } else if (dialogMode === "edit" && activeWishlist) {
+      setWishlists(wishlists.map(w => 
+        w.id === activeWishlist.id 
+          ? { 
+              ...w, 
+              name: wishlistName, 
+              description: wishlistDescription, 
+              isPrivate: isWishlistPrivate 
+            } 
+          : w
+      ));
+    }
+    setIsDialogOpen(false);
   };
-  
-  const openDeleteDialog = (wishlistId: string) => {
-    setEditingWishlistId(wishlistId);
-    setDeleteDialogOpen(true);
+
+  const handleDeleteWishlist = (wishlistId: string) => {
+    setWishlists(wishlists.filter(w => w.id !== wishlistId));
   };
-  
-  const resetForm = () => {
-    setWishlistName("");
-    setWishlistDescription("");
-    setIsPrivate(false);
-    setEditingWishlistId(null);
+
+  const handleRemovePlushie = (wishlistId: string, plushieId: string) => {
+    setWishlists(wishlists.map(w => 
+      w.id === wishlistId 
+        ? { ...w, plushies: w.plushies.filter(p => p.id !== plushieId) } 
+        : w
+    ));
   };
-  
-  const currentWishlist = wishlists.find(w => w.id === selectedWishlist);
-  
+
+  const handleRemoveLikedPlushie = (plushieId: string) => {
+    setLikedPlushies(likedPlushies.filter(p => p.id !== plushieId));
+  };
+
   return (
-    <Card className="h-full">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Heart className="h-5 w-5 text-red-500" />
-            <CardTitle>My Collections</CardTitle>
-          </div>
-          <Button 
-            size="sm" 
-            onClick={() => setCreateDialogOpen(true)}
-            className="bg-softspot-400 hover:bg-softspot-500"
-          >
-            <Plus className="mr-1 h-4 w-4" /> New Collection
-          </Button>
-        </div>
-        <CardDescription>
-          Manage your wishlists and liked items
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="p-0">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="h-full">
-          <div className="border-b px-4">
-            <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="wishlists">Wishlists</TabsTrigger>
-              <TabsTrigger value="marketplace">Liked Marketplace</TabsTrigger>
-              <TabsTrigger value="posts">Liked Posts</TabsTrigger>
-            </TabsList>
+    <div className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-3 w-full max-w-md">
+          <TabsTrigger value="wishlists">Wishlists</TabsTrigger>
+          <TabsTrigger value="liked-items">Liked Items</TabsTrigger>
+          <TabsTrigger value="liked-posts">Liked Posts</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="wishlists" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold">Your Wishlists</h2>
+            <Button onClick={() => handleOpenDialog("create")} className="bg-softspot-400 hover:bg-softspot-500">
+              <Plus className="mr-1 h-4 w-4" />
+              New Wishlist
+            </Button>
           </div>
           
-          <TabsContent value="wishlists" className="m-0 p-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 h-full">
-              <div className="col-span-1 border-r pr-4">
-                <div className="font-medium mb-2 text-sm text-gray-500">MY COLLECTIONS</div>
-                <div className="space-y-1">
-                  {wishlists.map(wishlist => (
-                    <div
-                      key={wishlist.id}
-                      className={`flex items-center justify-between p-2 rounded-md cursor-pointer ${
-                        selectedWishlist === wishlist.id ? 'bg-softspot-50' : 'hover:bg-gray-50'
-                      }`}
-                      onClick={() => setSelectedWishlist(wishlist.id)}
-                    >
-                      <div className="flex items-center">
-                        <Heart className="h-4 w-4 mr-2 text-red-500" />
-                        <span>{wishlist.name}</span>
-                        {wishlist.isPrivate && <Lock className="h-3 w-3 ml-2 text-gray-400" />}
-                      </div>
-                      <Badge variant="outline" className="text-xs">
-                        {wishlist.plushies.length}
-                      </Badge>
-                    </div>
-                  ))}
-                </div>
-              </div>
-              
-              <div className="col-span-1 md:col-span-3">
-                {currentWishlist ? (
-                  <>
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <h3 className="text-lg font-semibold flex items-center">
-                          {currentWishlist.name}
-                          {currentWishlist.isPrivate ? (
-                            <Lock className="h-4 w-4 ml-2 text-gray-400" />
-                          ) : (
-                            <Globe className="h-4 w-4 ml-2 text-gray-400" />
-                          )}
-                        </h3>
-                        {currentWishlist.description && (
-                          <p className="text-sm text-gray-500">{currentWishlist.description}</p>
+          {wishlists.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {wishlists.map(wishlist => (
+                <Card key={wishlist.id} className="overflow-hidden">
+                  <CardHeader className="pb-3">
+                    <div className="flex justify-between items-start">
+                      <CardTitle className="flex items-center">
+                        {wishlist.name}
+                        {wishlist.isPrivate && (
+                          <Lock className="ml-2 h-4 w-4 text-gray-400" />
                         )}
+                      </CardTitle>
+                      <div className="flex space-x-1">
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8"
+                          onClick={() => handleOpenDialog("edit", wishlist)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 text-destructive"
+                          onClick={() => handleDeleteWishlist(wishlist.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Manage Wishlist</DropdownMenuLabel>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem onClick={() => openEditDialog(currentWishlist)}>
-                            <Pencil className="h-4 w-4 mr-2" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem 
-                            onClick={() => openDeleteDialog(currentWishlist.id)}
-                            className="text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4 mr-2" /> Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
                     </div>
-                    
-                    {currentWishlist.plushies.length > 0 ? (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {currentWishlist.plushies.map((plushie) => (
-                          <PlushieCard
-                            key={plushie.id}
-                            id={plushie.id}
-                            image={plushie.image}
-                            title={plushie.title}
-                            username={plushie.username}
-                            likes={plushie.likes}
-                            comments={plushie.comments}
-                            price={plushie.price}
-                            forSale={plushie.forSale}
-                            variant="marketplace"
-                          />
-                        ))}
-                      </div>
+                    {wishlist.description && (
+                      <p className="text-sm text-gray-500">{wishlist.description}</p>
+                    )}
+                  </CardHeader>
+                  
+                  <CardContent className="pb-2">
+                    {wishlist.plushies.length > 0 ? (
+                      <ScrollArea className="h-60">
+                        <div className="space-y-2">
+                          {wishlist.plushies.map(plushie => (
+                            <div 
+                              key={plushie.id} 
+                              className="flex items-center gap-3 bg-gray-50 p-2 rounded-lg"
+                            >
+                              <img 
+                                src={plushie.image} 
+                                alt={plushie.title}
+                                className="h-16 w-16 object-cover rounded-md" 
+                              />
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium truncate">{plushie.title}</p>
+                                <div className="flex items-center gap-2 text-sm text-gray-500">
+                                  <span>${plushie.price}</span>
+                                  {plushie.forSale ? (
+                                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                                      For Sale
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="bg-gray-50">
+                                      Not For Sale
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8"
+                                onClick={() => handleRemovePlushie(wishlist.id, plushie.id)}
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
                     ) : (
-                      <div className="text-center py-12">
-                        <Star className="mx-auto h-12 w-12 text-softspot-200" />
-                        <h3 className="mt-2 text-lg font-medium text-gray-900">No items yet</h3>
-                        <p className="mt-1 text-sm text-gray-500">
-                          Items you add to this wishlist will appear here
-                        </p>
+                      <div className="py-8 text-center">
+                        <Heart className="mx-auto h-12 w-12 text-gray-200" />
+                        <p className="mt-2 text-gray-500">No plushies added yet</p>
                       </div>
                     )}
-                  </>
-                ) : (
-                  <div className="text-center py-12">
-                    <Heart className="mx-auto h-12 w-12 text-softspot-200" />
-                    <h3 className="mt-2 text-lg font-medium text-gray-900">No wishlist selected</h3>
-                    <p className="mt-1 text-sm text-gray-500">
-                      Select a wishlist or create a new one
+                  </CardContent>
+                  
+                  <CardFooter>
+                    <p className="text-sm text-gray-500">
+                      {wishlist.plushies.length} {wishlist.plushies.length === 1 ? 'item' : 'items'}
                     </p>
-                    <Button
-                      className="mt-4 bg-softspot-400 hover:bg-softspot-500"
-                      onClick={() => setCreateDialogOpen(true)}
+                  </CardFooter>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="py-12 text-center border rounded-lg bg-gray-50">
+              <Heart className="mx-auto h-12 w-12 text-gray-200" />
+              <h3 className="mt-2 text-lg font-medium">No wishlists yet</h3>
+              <p className="mt-1 text-gray-500">Create your first wishlist to start collecting plushies</p>
+              <Button 
+                className="mt-4 bg-softspot-400 hover:bg-softspot-500"
+                onClick={() => handleOpenDialog("create")}
+              >
+                <Plus className="mr-1 h-4 w-4" />
+                Create Wishlist
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+        
+        <TabsContent value="liked-items" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold">Liked Items</h2>
+            <Button variant="outline" className="text-softspot-500 border-softspot-300">
+              <ShoppingBag className="mr-1 h-4 w-4" />
+              View Marketplace
+            </Button>
+          </div>
+          
+          {likedPlushies.length > 0 ? (
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {likedPlushies.map(plushie => (
+                <Card key={plushie.id} className="overflow-hidden">
+                  <div className="aspect-square relative">
+                    <img 
+                      src={plushie.image} 
+                      alt={plushie.title}
+                      className="object-cover w-full h-full" 
+                    />
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="absolute top-2 right-2 h-8 w-8 bg-white/80 hover:bg-white text-destructive"
+                      onClick={() => handleRemoveLikedPlushie(plushie.id)}
                     >
-                      Create Wishlist
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
-                )}
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="marketplace" className="m-0 p-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold flex items-center">
-                Liked Marketplace Items
-                <Lock className="h-4 w-4 ml-2 text-gray-400" />
-              </h3>
-              <p className="text-sm text-gray-500">
-                Items you've liked in the marketplace (private to you)
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {marketplacePlushies.slice(0, 6).map((plushie) => (
-                <PlushieCard
-                  key={plushie.id}
-                  id={plushie.id}
-                  image={plushie.image}
-                  title={plushie.title}
-                  username={plushie.username}
-                  likes={plushie.likes}
-                  comments={plushie.comments}
-                  price={plushie.price}
-                  forSale={plushie.forSale}
-                  variant="marketplace"
-                />
+                  <CardContent className="p-3">
+                    <h3 className="font-medium truncate">{plushie.title}</h3>
+                    <div className="flex justify-between items-center mt-1">
+                      <span className="font-semibold">${plushie.price}</span>
+                      {plushie.forSale ? (
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                          For Sale
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="bg-gray-50">
+                          Not For Sale
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
-          </TabsContent>
-          
-          <TabsContent value="posts" className="m-0 p-4">
-            <div className="mb-4">
-              <h3 className="text-lg font-semibold flex items-center">
-                Liked Feed Posts
-                <Lock className="h-4 w-4 ml-2 text-gray-400" />
-              </h3>
-              <p className="text-sm text-gray-500">
-                Posts you've liked in the community feed (private to you)
-              </p>
+          ) : (
+            <div className="py-12 text-center border rounded-lg bg-gray-50">
+              <Heart className="mx-auto h-12 w-12 text-gray-200" />
+              <h3 className="mt-2 text-lg font-medium">No liked items yet</h3>
+              <p className="mt-1 text-gray-500">Browse the marketplace and like items to save them here</p>
+              <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500">
+                Go to Marketplace
+              </Button>
             </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {likedFeedPosts.map((post) => (
-                <PlushieCard
-                  key={post.id}
-                  id={post.id}
-                  image={post.image}
-                  title={post.title}
-                  username={post.username}
-                  likes={post.likes}
-                  comments={post.comments}
-                  variant="feed"
-                />
+          )}
+        </TabsContent>
+        
+        <TabsContent value="liked-posts" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-semibold">Liked Posts</h2>
+            <Button variant="outline" className="text-softspot-500 border-softspot-300">
+              <MessageCircle className="mr-1 h-4 w-4" />
+              View Feed
+            </Button>
+          </div>
+          
+          {likedPosts.length > 0 ? (
+            <div className="space-y-4">
+              {likedPosts.map(post => (
+                <Card key={post.id} className="overflow-hidden">
+                  <CardHeader className="pb-2">
+                    <div className="flex items-center space-x-4">
+                      <img 
+                        src={post.avatar} 
+                        alt={post.username}
+                        className="h-10 w-10 rounded-full object-cover" 
+                      />
+                      <div>
+                        <h3 className="font-semibold">@{post.username}</h3>
+                        <p className="text-sm text-gray-500">{post.timestamp}</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  
+                  <CardContent className="pb-3">
+                    <p>{post.content}</p>
+                    {post.image && (
+                      <img 
+                        src={post.image} 
+                        alt="Post content"
+                        className="mt-3 rounded-lg w-full object-cover" 
+                      />
+                    )}
+                  </CardContent>
+                  
+                  <CardFooter className="pt-0">
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex items-center">
+                        <Heart className="h-4 w-4 mr-1 text-red-500 fill-red-500" />
+                        {post.likes}
+                      </div>
+                      <div className="flex items-center">
+                        <MessageCircle className="h-4 w-4 mr-1" />
+                        {post.comments} comments
+                      </div>
+                    </div>
+                  </CardFooter>
+                </Card>
               ))}
             </div>
-          </TabsContent>
-        </Tabs>
-      </CardContent>
+          ) : (
+            <div className="py-12 text-center border rounded-lg bg-gray-50">
+              <Heart className="mx-auto h-12 w-12 text-gray-200" />
+              <h3 className="mt-2 text-lg font-medium">No liked posts yet</h3>
+              <p className="mt-1 text-gray-500">Browse the feed and like posts to save them here</p>
+              <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500">
+                Go to Feed
+              </Button>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
       
-      {/* Create Wishlist Dialog */}
-      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Create New Wishlist</DialogTitle>
-            <DialogDescription>
-              Create a collection for items you want to save
-            </DialogDescription>
+            <DialogTitle>
+              {dialogMode === "create" ? "Create New Wishlist" : "Edit Wishlist"}
+            </DialogTitle>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input
-                id="name"
-                placeholder="My Dream Plushies"
+              <Label htmlFor="name">Wishlist Name</Label>
+              <Input 
+                id="name" 
                 value={wishlistName}
                 onChange={(e) => setWishlistName(e.target.value)}
+                placeholder="My Dream Plushies"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
-              <Textarea
+              <Label htmlFor="description">Description (Optional)</Label>
+              <Textarea 
                 id="description"
-                placeholder="Add a description for your wishlist"
                 value={wishlistDescription}
                 onChange={(e) => setWishlistDescription(e.target.value)}
+                placeholder="A collection of plushies I hope to add to my collection"
+                className="resize-none"
+                rows={3}
               />
             </div>
             
             <div className="flex items-center space-x-2">
-              <Switch
-                id="private"
-                checked={isPrivate}
-                onCheckedChange={setIsPrivate}
+              <Switch 
+                id="private" 
+                checked={isWishlistPrivate}
+                onCheckedChange={setIsWishlistPrivate}
               />
-              <Label htmlFor="private" className="flex items-center">
-                <Lock className="h-4 w-4 mr-2" />
-                Private collection
+              <Label htmlFor="private" className="flex items-center cursor-pointer">
+                <Lock className="mr-2 h-4 w-4" />
+                Make this wishlist private
               </Label>
             </div>
           </div>
           
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setCreateDialogOpen(false);
-              resetForm();
-            }}>
+            <Button 
+              variant="outline" 
+              onClick={() => setIsDialogOpen(false)}
+            >
               Cancel
             </Button>
             <Button 
-              onClick={handleCreateWishlist}
+              onClick={handleSaveWishlist}
               disabled={!wishlistName.trim()}
               className="bg-softspot-400 hover:bg-softspot-500"
             >
-              Create
+              {dialogMode === "create" ? "Create Wishlist" : "Save Changes"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      {/* Edit Wishlist Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit Wishlist</DialogTitle>
-            <DialogDescription>
-              Update your wishlist details
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Name</Label>
-              <Input
-                id="edit-name"
-                placeholder="My Dream Plushies"
-                value={wishlistName}
-                onChange={(e) => setWishlistName(e.target.value)}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description (optional)</Label>
-              <Textarea
-                id="edit-description"
-                placeholder="Add a description for your wishlist"
-                value={wishlistDescription}
-                onChange={(e) => setWishlistDescription(e.target.value)}
-              />
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <Switch
-                id="edit-private"
-                checked={isPrivate}
-                onCheckedChange={setIsPrivate}
-              />
-              <Label htmlFor="edit-private" className="flex items-center">
-                <Lock className="h-4 w-4 mr-2" />
-                Private collection
-              </Label>
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {
-              setEditDialogOpen(false);
-              resetForm();
-            }}>
-              Cancel
-            </Button>
-            <Button 
-              onClick={handleEditWishlist}
-              disabled={!wishlistName.trim()}
-              className="bg-softspot-400 hover:bg-softspot-500"
-            >
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Delete Wishlist Dialog */}
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Wishlist</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this wishlist? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              variant="destructive" 
-              onClick={handleDeleteWishlist}
-            >
-              Delete
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </Card>
+    </div>
   );
 };
 

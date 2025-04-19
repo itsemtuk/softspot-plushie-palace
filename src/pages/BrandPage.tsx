@@ -1,245 +1,424 @@
-
-import { useState } from "react";
-import { useParams } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
-import { PlushieCard } from "@/components/PlushieCard";
-import { marketplacePlushies } from "@/data/plushies";
-import { Button } from "@/components/ui/button";
-import { Search, PlusCircle, ShoppingBag } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { 
+  Card, 
+  CardContent, 
+  CardDescription, 
+  CardHeader, 
+  CardTitle 
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { FilterPanel } from "@/components/marketplace/FilterPanel";
-import { MarketplaceFilters, MarketplacePlushie } from "@/types/marketplace";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import PlushieDetailDialog from "@/components/marketplace/PlushieDetailDialog";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { 
+  Sheet, 
+  SheetContent, 
+  SheetDescription, 
+  SheetHeader, 
+  SheetTitle, 
+  SheetTrigger 
+} from "@/components/ui/sheet";
+import { 
+  Accordion, 
+  AccordionContent, 
+  AccordionItem, 
+  AccordionTrigger 
+} from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
+import { 
+  MarketplacePlushie, 
+  PlushieCondition, 
+  PlushieMaterial, 
+  PlushieFilling, 
+  PlushieSpecies,
+  PlushieBrand,
+  MarketplaceFilters
+} from "@/types/marketplace";
+import { Navbar } from "@/components/Navbar";
 
-const brandLogos: Record<string, string> = {
-  "build-a-bear": "https://images.unsplash.com/photo-1558679908-541bcf1249ff?auto=format&fit=crop&q=80&w=1974",
-  "squishmallows": "https://images.unsplash.com/photo-1584155828260-3f126cfcfb45?auto=format&fit=crop&q=80&w=1974",
-  "jellycat": "https://images.unsplash.com/photo-1559454403-b8fb88521729?auto=format&fit=crop&q=80&w=1973",
-  "gund": "https://images.unsplash.com/photo-1563396983906-b3795482a59a?auto=format&fit=crop&q=80&w=1972",
-  "ty": "https://images.unsplash.com/photo-1535982368253-05d640fe0755?auto=format&fit=crop&q=80&w=1974",
-};
-
-const brandDisplayNames: Record<string, string> = {
-  "build-a-bear": "Build-A-Bear Workshop",
-  "squishmallows": "Squishmallows",
-  "jellycat": "Jellycat",
-  "gund": "GUND",
-  "ty": "Ty Inc.",
-  "other": "Other Brands"
-};
+// Mock data for plushies - replace with actual data fetching later
+const mockPlushies: MarketplacePlushie[] = [
+  {
+    id: "1",
+    image: "https://i.pravatar.cc/300?img=1",
+    title: "Mint Jellycat Bunny",
+    username: "plushielover",
+    likes: 24,
+    comments: 5,
+    price: 45.99,
+    forSale: true,
+    condition: "Like New",
+    description: "Adorable mint green bunny, super soft",
+    color: "Mint",
+    size: "Small",
+    material: "Plush",
+    filling: "Cotton",
+    species: "Rabbit",
+    brand: "Jellycat",
+    deliveryMethod: "Shipping",
+    deliveryCost: 5.99,
+    tags: ["bunny", "jellycat", "mint"]
+  },
+  {
+    id: "2",
+    image: "https://i.pravatar.cc/300?img=2",
+    title: "Limited Edition Teddy",
+    username: "teddycollector",
+    likes: 42,
+    comments: 8,
+    price: 89.99,
+    forSale: true,
+    condition: "New",
+    description: "Limited edition anniversary teddy bear",
+    color: "Brown",
+    size: "Medium",
+    material: "Cotton",
+    filling: "Polyester",
+    species: "Bear",
+    brand: "Build-A-Bear",
+    deliveryMethod: "Collection",
+    tags: ["teddy", "bear", "limited edition"]
+  },
+  {
+    id: "3",
+    image: "https://i.pravatar.cc/300?img=3",
+    title: "Vintage Care Bear",
+    username: "vintagetoylover",
+    likes: 67,
+    comments: 12,
+    price: 120,
+    forSale: true,
+    condition: "Good",
+    description: "Original 80's Care Bear in good condition",
+    color: "Pink",
+    size: "Medium",
+    material: "Plush",
+    filling: "Cotton",
+    species: "Bear",
+    brand: "Care Bears",
+    deliveryMethod: "Both",
+    deliveryCost: 7.50,
+    tags: ["care bear", "vintage", "80s"]
+  },
+  {
+    id: "4",
+    image: "https://i.pravatar.cc/300?img=4",
+    title: "Squishmallow Cat",
+    username: "squishfan",
+    likes: 89,
+    comments: 24,
+    price: 34.99,
+    forSale: true,
+    condition: "New",
+    description: "Super soft gray cat squishmallow",
+    color: "Gray",
+    size: "Small",
+    material: "Plush",
+    filling: "Memory Foam",
+    species: "Cat",
+    brand: "Squishmallows",
+    deliveryMethod: "Shipping",
+    deliveryCost: 4.99,
+    tags: ["squishmallow", "cat", "soft"]
+  },
+  {
+    id: "5",
+    image: "https://i.pravatar.cc/300?img=5",
+    title: "Disney Winnie the Pooh",
+    username: "disneylover",
+    likes: 55,
+    comments: 10,
+    price: 55.00,
+    forSale: true,
+    condition: "Like New",
+    description: "Classic Winnie the Pooh plush from Disney",
+    color: "Yellow",
+    size: "Medium",
+    material: "Polyester",
+    filling: "Polyester",
+    species: "Bear",
+    brand: "Disney",
+    deliveryMethod: "Collection",
+    tags: ["winnie the pooh", "disney", "classic"]
+  },
+  {
+    id: "6",
+    image: "https://i.pravatar.cc/300?img=6",
+    title: "Mythical Dragon Plush",
+    username: "fantasyfan",
+    likes: 72,
+    comments: 15,
+    price: 68.50,
+    forSale: true,
+    condition: "New",
+    description: "Beautiful dragon plush with intricate details",
+    color: "Blue",
+    size: "Large",
+    material: "Fur",
+    filling: "Polyester",
+    species: "Mythical",
+    brand: "Other",
+    deliveryMethod: "Both",
+    deliveryCost: 9.00,
+    tags: ["dragon", "mythical", "fantasy"]
+  }
+];
 
 const BrandPage = () => {
   const { brandId } = useParams<{ brandId: string }>();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState<MarketplaceFilters>({});
-  const [activeTab, setActiveTab] = useState("plushies");
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedPlushie, setSelectedPlushie] = useState<MarketplacePlushie | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  
-  // If brandId is invalid, use "other"
-  const safeBrandId = brandId && brandDisplayNames[brandId] ? brandId : "other";
-  
-  // Filter plushies by the current brand
-  const brandPlushies = marketplacePlushies.filter(plushie => plushie.brand === safeBrandId);
-  
-  const filteredPlushies = brandPlushies
-    .filter(plushie => {
-      // Apply search filter
-      const matchesSearch = 
-        plushie.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        plushie.username.toLowerCase().includes(searchQuery.toLowerCase());
-      
-      // Apply other category filters
-      const matchesColor = !filters.color?.length || filters.color.includes(plushie.color);
-      const matchesMaterial = !filters.material?.length || filters.material.includes(plushie.material);
-      const matchesFilling = !filters.filling?.length || filters.filling.includes(plushie.filling);
-      const matchesSpecies = !filters.species?.length || filters.species.includes(plushie.species);
-      
-      return matchesSearch && matchesColor && matchesMaterial && 
-             matchesFilling && matchesSpecies;
+  const [filters, setFilters] = useState<MarketplaceFilters>({});
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Filter plushies based on the brandId
+  const brandPlushies = mockPlushies.filter(plushie => plushie.brand.toLowerCase() === brandId?.toLowerCase());
+
+  // Filter plushies based on search query
+  const searchedPlushies = brandPlushies.filter(plushie =>
+    plushie.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    plushie.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredPlushies = searchedPlushies
+  .filter((plushie) => {
+    // Material filter
+    if (filters.material && filters.material.length > 0) {
+      if (!filters.material.includes(plushie.material as PlushieMaterial)) {
+        return false;
+      }
+    }
+    
+    // Filling filter
+    if (filters.filling && filters.filling.length > 0) {
+      if (!filters.filling.includes(plushie.filling as PlushieFilling)) {
+        return false;
+      }
+    }
+    
+    // Species filter
+    if (filters.species && filters.species.length > 0) {
+      if (!filters.species.includes(plushie.species as PlushieSpecies)) {
+        return false;
+      }
+    }
+    
+    return true;
+  });
+
+  const handleFilterChange = (filterType: keyof MarketplaceFilters, value: string) => {
+    setFilters(prevFilters => {
+      const filterValues = prevFilters[filterType] || [];
+      if (filterValues.includes(value)) {
+        return {
+          ...prevFilters,
+          [filterType]: filterValues.filter(v => v !== value),
+        };
+      } else {
+        return {
+          ...prevFilters,
+          [filterType]: [...filterValues, value],
+        };
+      }
     });
-
-  const openPlushieDialog = (plushie: MarketplacePlushie) => {
-    setSelectedPlushie(plushie);
-    setDialogOpen(true);
   };
 
-  const closePlushieDialog = () => {
-    setDialogOpen(false);
+  const handlePlushieClick = (plushie: MarketplacePlushie) => {
+    setSelectedPlushie({
+      ...plushie,
+      condition: plushie.condition as PlushieCondition,
+      material: plushie.material as PlushieMaterial,
+      filling: plushie.filling as PlushieFilling,
+      species: plushie.species as PlushieSpecies,
+      brand: plushie.brand as PlushieBrand
+    });
+    setIsDetailsOpen(true);
   };
+
+  const availableMaterials = [...new Set(brandPlushies.map(plushie => plushie.material))];
+  const availableFillings = [...new Set(brandPlushies.map(plushie => plushie.filling))];
+  const availableSpecies = [...new Set(brandPlushies.map(plushie => plushie.species))];
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      
-      {/* Brand Banner */}
-      <div 
-        className="bg-cover bg-center h-64 relative flex items-center justify-center" 
-        style={{ backgroundImage: `url(${brandLogos[safeBrandId] || brandLogos['other']})` }}
-      >
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/10" />
-        <div className="relative z-10 text-center text-white">
-          <div className="w-20 h-20 bg-white rounded-full mx-auto mb-4 flex items-center justify-center">
-            <ShoppingBag className="h-8 w-8 text-softspot-500" />
-          </div>
-          <h1 className="text-3xl font-bold">{brandDisplayNames[safeBrandId]}</h1>
-          <p className="mt-2 max-w-2xl mx-auto">
-            Explore our curated collection of {brandDisplayNames[safeBrandId]} plushies
-          </p>
+      <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold capitalize">{brandId} Plushies</h1>
+          <p className="text-gray-600">Explore our collection of {brandId} plushies</p>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4">
+          {/* Search Bar */}
+          <Input
+            type="text"
+            placeholder="Search plushies..."
+            className="mb-4 md:mb-0"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+
+          {/* Filter Sheet */}
+          <Sheet>
+            <SheetTrigger asChild>
+              <Button variant="outline" className="w-full md:w-auto">
+                Filter
+              </Button>
+            </SheetTrigger>
+            <SheetContent className="sm:max-w-sm">
+              <SheetHeader>
+                <SheetTitle>Filter Plushies</SheetTitle>
+                <SheetDescription>
+                  Filter by material, filling, and species.
+                </SheetDescription>
+              </SheetHeader>
+              <ScrollArea className="h-[calc(100vh-200px)]">
+                <div className="py-4">
+                  <Accordion type="multiple" collapsible>
+                    <AccordionItem value="materials">
+                      <AccordionTrigger>Material</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="grid gap-2">
+                          {availableMaterials.map(material => (
+                            <div key={material} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`material-${material}`}
+                                value={material}
+                                checked={filters.material?.includes(material)}
+                                onCheckedChange={() => handleFilterChange('material', material)}
+                              />
+                              <Label htmlFor={`material-${material}`}>{material}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    
+                    <AccordionItem value="fillings">
+                      <AccordionTrigger>Filling</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="grid gap-2">
+                          {availableFillings.map(filling => (
+                            <div key={filling} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`filling-${filling}`}
+                                value={filling}
+                                checked={filters.filling?.includes(filling)}
+                                onCheckedChange={() => handleFilterChange('filling', filling)}
+                              />
+                              <Label htmlFor={`filling-${filling}`}>{filling}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                    
+                    <AccordionItem value="species">
+                      <AccordionTrigger>Species</AccordionTrigger>
+                      <AccordionContent>
+                        <div className="grid gap-2">
+                          {availableSpecies.map(species => (
+                            <div key={species} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`species-${species}`}
+                                value={species}
+                                checked={filters.species?.includes(species)}
+                                onCheckedChange={() => handleFilterChange('species', species)}
+                              />
+                              <Label htmlFor={`species-${species}`}>{species}</Label>
+                            </div>
+                          ))}
+                        </div>
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </div>
+              </ScrollArea>
+            </SheetContent>
+          </Sheet>
+        </div>
+
+        {/* Plushie Grid */}
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3 mt-6">
+          {filteredPlushies.length > 0 ? (
+            filteredPlushies.map(plushie => (
+              <Card key={plushie.id} className="cursor-pointer" onClick={() => handlePlushieClick(plushie)}>
+                <div className="aspect-w-4 aspect-h-3 relative overflow-hidden rounded-md">
+                  <img
+                    src={plushie.image}
+                    alt={plushie.title}
+                    className="object-cover w-full h-full transition-transform duration-300 hover:scale-105"
+                  />
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-lg font-semibold truncate">{plushie.title}</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-sm text-gray-500 truncate">{plushie.description}</CardDescription>
+                  <div className="flex items-center justify-between mt-2">
+                    <span className="text-softspot-500 font-medium">${plushie.price}</span>
+                    {plushie.forSale ? (
+                      <Badge variant="secondary">For Sale</Badge>
+                    ) : (
+                      <Badge variant="outline">Not For Sale</Badge>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-gray-500">No plushies found for {brandId}.</p>
+            </div>
+          )}
         </div>
       </div>
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-8">
-            <TabsTrigger value="plushies">Plushies</TabsTrigger>
-            <TabsTrigger value="accessories">Accessories</TabsTrigger>
-            <TabsTrigger value="clothing">Clothing</TabsTrigger>
-            <TabsTrigger value="about">About {brandDisplayNames[safeBrandId]}</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="plushies">
-            <div className="flex flex-col lg:flex-row gap-8">
-              {/* Filters Sidebar */}
-              <div className="lg:w-64 flex-shrink-0">
-                <FilterPanel 
-                  filters={filters}
-                  onFilterChange={setFilters}
+
+      {/* Plushie Details Sheet */}
+      <Sheet open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
+        <SheetContent className="sm:max-w-md">
+          <SheetHeader>
+            <SheetTitle>{selectedPlushie?.title}</SheetTitle>
+            <SheetDescription>
+              Learn more about this plushie.
+            </SheetDescription>
+          </SheetHeader>
+          {selectedPlushie && (
+            <div className="py-4">
+              <div className="aspect-w-4 aspect-h-3 relative overflow-hidden rounded-md mb-4">
+                <img
+                  src={selectedPlushie.image}
+                  alt={selectedPlushie.title}
+                  className="object-cover w-full h-full"
                 />
               </div>
-              
-              {/* Main Content */}
-              <div className="flex-grow">
-                <div className="bg-white shadow-sm rounded-lg p-4 mb-8">
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="relative flex-grow">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      <Input
-                        type="text"
-                        placeholder={`Search ${brandDisplayNames[safeBrandId]} plushies...`}
-                        className="pl-9"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
-                    </div>
-                    
-                    <Button className="bg-softspot-400 hover:bg-softspot-500 text-white whitespace-nowrap">
-                      <PlusCircle className="mr-2 h-4 w-4" />
-                      List Item
-                    </Button>
-                  </div>
-                </div>
-                
-                {filteredPlushies.length > 0 ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {filteredPlushies.map((plushie) => (
-                      <div key={plushie.id} onClick={() => openPlushieDialog(plushie)}>
-                        <PlushieCard 
-                          id={plushie.id}
-                          image={plushie.image}
-                          title={plushie.title}
-                          username={plushie.username}
-                          likes={plushie.likes}
-                          comments={plushie.comments}
-                          price={plushie.price}
-                          forSale={plushie.forSale}
-                          variant="marketplace"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                    <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900">No plushies found</h3>
-                    <p className="mt-2 text-gray-500">
-                      We couldn't find any {brandDisplayNames[safeBrandId]} plushies matching your filters.
-                    </p>
-                    <Button className="mt-6 bg-softspot-400" onClick={() => setFilters({})}>
-                      Clear Filters
-                    </Button>
-                  </div>
+              <div className="space-y-2">
+                <p className="text-gray-700"><strong>Description:</strong> {selectedPlushie.description}</p>
+                <p className="text-gray-700"><strong>Condition:</strong> {selectedPlushie.condition}</p>
+                <p className="text-gray-700"><strong>Material:</strong> {selectedPlushie.material}</p>
+                <p className="text-gray-700"><strong>Filling:</strong> {selectedPlushie.filling}</p>
+                <p className="text-gray-700"><strong>Species:</strong> {selectedPlushie.species}</p>
+                <p className="text-gray-700"><strong>Brand:</strong> {selectedPlushie.brand}</p>
+                <p className="text-gray-700"><strong>Price:</strong> ${selectedPlushie.price}</p>
+                <p className="text-gray-700"><strong>Seller:</strong> @{selectedPlushie.username}</p>
+                {selectedPlushie.deliveryMethod && (
+                  <p className="text-gray-700">
+                    <strong>Delivery:</strong> {selectedPlushie.deliveryMethod}
+                    {selectedPlushie.deliveryCost && ` - $${selectedPlushie.deliveryCost}`}
+                  </p>
+                )}
+                {selectedPlushie.tags && selectedPlushie.tags.length > 0 && (
+                  <p className="text-gray-700">
+                    <strong>Tags:</strong> {selectedPlushie.tags.join(', ')}
+                  </p>
                 )}
               </div>
             </div>
-          </TabsContent>
-          
-          <TabsContent value="accessories">
-            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-              <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">Accessories Coming Soon</h3>
-              <p className="mt-2 text-gray-500">
-                We're working on bringing {brandDisplayNames[safeBrandId]} accessories to the marketplace.
-              </p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="clothing">
-            <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-              <ShoppingBag className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900">Clothing Coming Soon</h3>
-              <p className="mt-2 text-gray-500">
-                We're working on bringing {brandDisplayNames[safeBrandId]} clothing to the marketplace.
-              </p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="about">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h2 className="text-2xl font-bold mb-4">About {brandDisplayNames[safeBrandId]}</h2>
-              <p className="mb-4">
-                {safeBrandId === "build-a-bear" ? (
-                  "Build-A-Bear Workshop is a global brand that allows guests to make their own customizable plush toys. Since its founding in 1997, the company has sold more than 200 million furry friends and operates over 400 stores worldwide."
-                ) : safeBrandId === "squishmallows" ? (
-                  "Squishmallows are ultra-soft plush toys that were first introduced in 2017. With their distinctive marshmallow-like texture and cute designs, they've become a global sensation and collector's favorite."
-                ) : safeBrandId === "jellycat" ? (
-                  "Jellycat is a London-based company known for its luxurious, soft plush toys and gifts. Since 1999, they've been creating innovative designs with distinctive personalities and irresistible softness."
-                ) : safeBrandId === "gund" ? (
-                  "GUND is one of the oldest and most prestigious soft toy companies in the world, founded in 1898. Known for high-quality materials and craftsmanship, GUND has created many iconic plush characters over its long history."
-                ) : safeBrandId === "ty" ? (
-                  "Ty Inc. is the manufacturer of popular plush toys including Beanie Babies, Beanie Boos, and more. Founded in 1986 by Ty Warner, the company created a collecting phenomenon in the 1990s with their limited-release strategy."
-                ) : (
-                  "Explore our curated collection of unique and specialty plush toys from a variety of independent creators and smaller manufacturers."
-                )}
-              </p>
-              <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h3 className="font-medium mb-2">Brand History</h3>
-                  <p className="text-sm text-gray-600">
-                    Founded in {safeBrandId === "build-a-bear" ? "1997" : 
-                      safeBrandId === "squishmallows" ? "2017" : 
-                      safeBrandId === "jellycat" ? "1999" : 
-                      safeBrandId === "gund" ? "1898" : 
-                      safeBrandId === "ty" ? "1986" : "various years"
-                    }, the brand has grown to become a beloved name in the plush toy industry.
-                  </p>
-                </div>
-                <div className="bg-gray-50 p-4 rounded-md">
-                  <h3 className="font-medium mb-2">Collectibility</h3>
-                  <p className="text-sm text-gray-600">
-                    {brandDisplayNames[safeBrandId]} plushies are {
-                      safeBrandId === "build-a-bear" ? "personalized treasures" : 
-                      safeBrandId === "squishmallows" ? "highly collectible with limited editions and exclusive releases" : 
-                      safeBrandId === "jellycat" ? "known for their distinctive designs and limited production runs" : 
-                      safeBrandId === "gund" ? "timeless classics often passed down through generations" : 
-                      safeBrandId === "ty" ? "famous for their collectibility and secondary market value" : "unique pieces from independent creators"
-                    }.
-                  </p>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-      
-      {selectedPlushie && (
-        <PlushieDetailDialog
-          isOpen={dialogOpen}
-          onClose={closePlushieDialog}
-          plushie={selectedPlushie}
-        />
-      )}
+          )}
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
