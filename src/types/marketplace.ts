@@ -6,6 +6,15 @@ export type PlushieFilling = 'Cotton' | 'Polyester' | 'Beads' | 'Memory Foam' | 
 export type PlushieSpecies = 'Bear' | 'Cat' | 'Dog' | 'Rabbit' | 'Mythical' | 'Other';
 export type PlushieBrand = 'Build-A-Bear' | 'Squishmallows' | 'Jellycat' | 'Care Bears' | 'Disney' | 'Other';
 
+// Define the filter types
+export interface MarketplaceFilters {
+  color?: string[];
+  material?: PlushieMaterial[];
+  filling?: PlushieFilling[];
+  species?: PlushieSpecies[];
+  brand?: PlushieBrand[];
+}
+
 export interface MarketplacePlushie {
   id: string;
   image: string;
@@ -26,4 +35,51 @@ export interface MarketplacePlushie {
   deliveryMethod?: 'Shipping' | 'Collection' | 'Both';
   deliveryCost?: number;
   tags?: string[];
+}
+
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD';
+export type PrivacySetting = 'Public' | 'Followers' | 'Private';
+
+export interface UserPrivacySettings {
+  profileVisibility: PrivacySetting;
+  postsVisibility: PrivacySetting;
+  listingsVisibility: PrivacySetting;
+  allowMessages: 'Everyone' | 'Followers' | 'Nobody';
+  showActivity: boolean;
+}
+
+export interface DirectMessage {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  content: string;
+  timestamp: Date;
+  read: boolean;
+  attachments?: string[];
+}
+
+export interface MessageThread {
+  id: string;
+  participants: string[];
+  lastMessage: DirectMessage;
+  unreadCount: number;
+}
+
+export interface TradeRequest {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  senderPlushie: MarketplacePlushie;
+  requestMessage: string;
+  status: 'Pending' | 'Accepted' | 'Declined';
+  timestamp: Date;
+}
+
+export interface Wishlist {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  plushies: MarketplacePlushie[];
+  isPrivate: boolean;
 }

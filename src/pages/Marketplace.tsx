@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
 import PlushieDetailDialog from "@/components/marketplace/PlushieDetailDialog";
+import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
 
 const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -71,6 +72,10 @@ const Marketplace = () => {
           <p className="mt-2 text-softspot-100 max-w-2xl mx-auto">
             Find rare collectibles, handmade creations, and more from our community of plushie lovers.
           </p>
+          
+          <div className="mt-6 flex justify-center">
+            <CurrencyConverter price={0} className="bg-white/20 py-2 px-4 rounded-full text-white" />
+          </div>
         </div>
       </div>
       
@@ -139,6 +144,9 @@ const Marketplace = () => {
                     forSale={plushie.forSale}
                     variant="marketplace"
                   />
+                  <div className="mt-2">
+                    <CurrencyConverter price={plushie.price} />
+                  </div>
                 </div>
               ))}
             </div>

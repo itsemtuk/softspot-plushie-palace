@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -31,6 +31,7 @@ import { UserButton } from "@clerk/clerk-react";
 import ProfilePictureUpload from "@/components/onboarding/ProfilePictureUpload";
 import PlushieTypeSelector from "@/components/onboarding/PlushieTypeSelector";
 import PlushieBrandSelector from "@/components/onboarding/PlushieBrandSelector";
+import PrivacySettings from "@/components/settings/PrivacySettings";
 
 const profileFormSchema = z.object({
   username: z.string().min(3, {
@@ -47,8 +48,11 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 const Settings = () => {
   const { user } = useUser();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get("tab");
   const [isLoading, setIsLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState("profile");
+  const [activeTab, setActiveTab] = useState(tabFromUrl === "privacy" ? "privacy" : 
+                                           tabFromUrl === "preferences" ? "preferences" : "profile");
   
   // Get existing plushie interests from user metadata
   const existingInterests = user?.unsafeMetadata?.plushieInterests as string[] || [];
@@ -145,9 +149,10 @@ const Settings = () => {
         </div>
 
         <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mb-8">
             <TabsTrigger value="profile">Profile</TabsTrigger>
             <TabsTrigger value="preferences">Preferences</TabsTrigger>
+            <TabsTrigger value="privacy">Privacy</TabsTrigger>
           </TabsList>
           
           <TabsContent value="profile">
@@ -247,6 +252,10 @@ const Settings = () => {
                 </form>
               </Form>
             </div>
+          </TabsContent>
+
+          <TabsContent value="privacy">
+            <PrivacySettings />
           </TabsContent>
         </Tabs>
       </div>

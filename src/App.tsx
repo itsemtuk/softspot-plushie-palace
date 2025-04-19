@@ -10,7 +10,7 @@ import Feed from "./pages/Feed";
 import Marketplace from "./pages/Marketplace";
 import BrandPage from "./pages/BrandPage";
 import { Toaster } from "@/components/ui/toaster";
-import { ThemeProvider } from "./components/ui/theme-provider";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 // Use a fixed publishable key for development
@@ -33,6 +33,8 @@ function App() {
               <Route path="/feed" element={<Feed />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/brand/:brandId" element={<BrandPage />} />
+              <Route path="/messages" element={<MessagingPage />} />
+              <Route path="/wishlist" element={<WishlistPage />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
