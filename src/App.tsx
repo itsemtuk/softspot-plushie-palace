@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ClerkProvider, SignIn, SignUp } from "@clerk/clerk-react";
 import Index from "./pages/Index";
@@ -14,6 +13,7 @@ import WishlistPage from "./pages/WishlistPage";
 import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Discover from "./pages/Discover";
 
 // Use a fixed publishable key for development
 const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
@@ -33,6 +33,7 @@ function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/profile" element={<Profile />} />
               <Route path="/feed" element={<Feed />} />
+              <Route path="/discover" element={<Discover />} />
               <Route path="/marketplace" element={<Marketplace />} />
               <Route path="/brand/:brandId" element={<BrandPage />} />
               <Route path="/messages" element={<MessagingPage />} />
