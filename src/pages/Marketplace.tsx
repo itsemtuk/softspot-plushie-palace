@@ -7,7 +7,7 @@ import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialo
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MarketplacePlushie, MarketplaceFilters } from "@/types/marketplace";
-import { CurrencyConverter } from "@/components/marketplace/CurrencyConverter";
+import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
 
 // Mock data - in a real app, this would come from an API
 const mockPlushies: MarketplacePlushie[] = [
