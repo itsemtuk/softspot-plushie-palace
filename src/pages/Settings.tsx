@@ -88,42 +88,48 @@ const Settings = () => {
     setIsLoading(true);
 
     try {
+      // Convert profile picture to proper format if needed
+      let profilePicture = data.profilePicture;
+      if (profilePicture && profilePicture.startsWith('data:image')) {
+        // In a real app, we'd upload this to a storage service
+        // For now, we'll just use the data URL
+      }
+
       // Convert IDs to labels for plushie interests
       const selectedTypes = plushieTypes
-        .filter(type => data.plushieTypes.includes(type.id))
+        .filter(type => data.plushieTypes?.includes(type.id))
         .map(type => type.label);
       
       const selectedBrands = plushieBrands
-        .filter(brand => data.plushieBrands.includes(brand.id))
+        .filter(brand => data.plushieBrands?.includes(brand.id))
         .map(brand => brand.label);
       
-      // Combine both arrays for plushie interests
       const plushieInterests = [...selectedTypes, ...selectedBrands];
       
       // Update the user's data
       await user?.update({
         username: data.username,
         unsafeMetadata: {
-          ...user?.unsafeMetadata,
+          ...user.unsafeMetadata,
           bio: data.bio || "",
-          profilePicture: data.profilePicture || "",
+          profilePicture: profilePicture || "",
           plushieInterests,
         },
       });
 
       toast({
         title: "Profile updated",
-        description: "Your profile information has been updated.",
+        description: "Your profile information has been updated successfully.",
       });
 
-      // Force reload user data to reflect changes immediately
+      // Reload user data
       await user?.reload();
 
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
         title: "Error",
-        description: "Failed to update profile. Please try again.",
+        description: "There was a problem updating your profile. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -1,4 +1,3 @@
-
 export interface Plushie {
   id: string;
   name: string;
@@ -23,7 +22,9 @@ export interface Post {
   likes: number;
   comments: number;
   timestamp: string;
-  tags?: string[]; // Add tags property as optional
+  description?: string;
+  location?: string;
+  tags?: string[];
 }
 
 export interface UserProfile {
@@ -83,6 +84,7 @@ export interface Wishlist {
   items: MarketplacePlushie[];
   createdAt: string;
   updatedAt: string;
+  isPrivate?: boolean;
 }
 
 export interface DirectMessage {
@@ -118,6 +120,27 @@ export interface UserPrivacySettings {
 
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'CAD' | 'AUD' | 'JPY' | 'CNY' | 'INR';
 
-export interface CurrencyRates {
-  [key: string]: number;
+export type CurrencyRates = Record<Currency, number>;
+
+export type CurrencySymbols = Record<Currency, string>;
+
+export interface ImageUploadResult {
+  url: string;
+  success: boolean;
+  error?: string;
+}
+
+export interface ImageEditorOptions {
+  aspectRatio?: number;
+  minWidth?: number;
+  maxWidth?: number;
+  quality?: number;
+}
+
+export interface PostCreationData {
+  image: string;
+  title: string;
+  description?: string;
+  location?: string;
+  tags?: string[];
 }
