@@ -1,5 +1,11 @@
-
 import { useState } from 'react';
+import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
+import { FilterPanel } from "@/components/marketplace/FilterPanel";
+import { PlushieCard } from "@/components/PlushieCard";
+import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
+import { Search } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { MarketplacePlushie, MarketplaceFilters } from "@/types/marketplace";
 import {
   Card,
   CardContent,
@@ -8,7 +14,6 @@ import {
   CardTitle,
   CardFooter
 } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,16 +38,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  MarketplacePlushie,
   PlushieCondition,
   PlushieMaterial,
   PlushieFilling,
   PlushieSpecies,
   PlushieBrand,
-  MarketplaceFilters
 } from "@/types/marketplace";
-import { Navbar } from "@/components/Navbar";
-import { Search } from "lucide-react";
 
 // Mock data - in a real app, this would come from an API
 const mockPlushies: MarketplacePlushie[] = [
@@ -316,244 +317,67 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold">Marketplace</h1>
-          <p className="text-gray-600">Buy, sell, and trade plushies with other enthusiasts</p>
+      <div className="relative h-[300px] bg-gradient-to-r from-softspot-100 to-softspot-200">
+        <div className="absolute inset-0 bg-opacity-50 bg-white">
+          <div className="container mx-auto px-4 h-full flex flex-col justify-center">
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Marketplace</h1>
+            <p className="text-lg text-gray-700 max-w-2xl">
+              Discover unique plushies from collectors worldwide. Buy, sell, and trade your favorite companions.
+            </p>
+          </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-4 gap-4">
-          {/* Filters */}
-          <div className="col-span-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Filters</CardTitle>
-                <CardDescription>Customize your search</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label htmlFor="search">Search</Label>
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      type="text"
-                      id="search"
-                      placeholder="Search plushies..."
-                      className="pl-9"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
-                  </div>
-                </div>
+      <MarketplaceNav />
 
-                <Separator />
-
-                <div>
-                  <Label>Price Range</Label>
-                  <div className="flex items-center justify-between text-sm text-gray-500">
-                    <span>${priceRange[0]}</span>
-                    <span>${priceRange[1]}</span>
-                  </div>
-                  <Slider
-                    defaultValue={priceRange}
-                    max={150}
-                    step={5}
-                    onValueChange={(value) => setPriceRange(value)}
-                  />
-                </div>
-
-                <Separator />
-
-                <div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="available">Available Only</Label>
-                    <Switch
-                      id="available"
-                      checked={availableOnly}
-                      onCheckedChange={(checked) => setAvailableOnly(checked)}
-                    />
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <Label>Material</Label>
-                  <Select onValueChange={(value) => handleFilterChange('material', [value])}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select material" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Cotton">Cotton</SelectItem>
-                      <SelectItem value="Polyester">Polyester</SelectItem>
-                      <SelectItem value="Plush">Plush</SelectItem>
-                      <SelectItem value="Fur">Fur</SelectItem>
-                      <SelectItem value="Velvet">Velvet</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <Label>Filling</Label>
-                  <Select onValueChange={(value) => handleFilterChange('filling', [value])}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select filling" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Cotton">Cotton</SelectItem>
-                      <SelectItem value="Polyester">Polyester</SelectItem>
-                      <SelectItem value="Beads">Beads</SelectItem>
-                      <SelectItem value="Memory Foam">Memory Foam</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <Label>Species</Label>
-                  <Select onValueChange={(value) => handleFilterChange('species', [value])}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select species" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Bear">Bear</SelectItem>
-                      <SelectItem value="Cat">Cat</SelectItem>
-                      <SelectItem value="Dog">Dog</SelectItem>
-                      <SelectItem value="Rabbit">Rabbit</SelectItem>
-                      <SelectItem value="Mythical">Mythical</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                 <Separator />
-
-                <div>
-                  <Label>Brand</Label>
-                  <Select onValueChange={(value) => handleFilterChange('brand', [value])}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select brand" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Build-A-Bear">Build-A-Bear</SelectItem>
-                      <SelectItem value="Squishmallows">Squishmallows</SelectItem>
-                      <SelectItem value="Jellycat">Jellycat</SelectItem>
-                      <SelectItem value="Care Bears">Care Bears</SelectItem>
-                      <SelectItem value="Disney">Disney</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col gap-6">
+          {/* Search and Filters Bar */}
+          <div className="flex items-center gap-4 bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search plushies..."
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
           </div>
 
-          {/* Plushie Listings */}
-          <div className="col-span-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredPlushies.map((plushie) => (
-                <Card key={plushie.id} className="cursor-pointer" onClick={() => handlePlushieClick(plushie)}>
-                  <CardHeader>
-                    <CardTitle>{plushie.title}</CardTitle>
-                    <CardDescription>
-                      <div className="flex items-center">
-                        <Avatar className="mr-2 h-5 w-5">
-                          <AvatarImage src={`https://i.pravatar.cc/150?u=${plushie.username}`} alt={plushie.username} />
-                          <AvatarFallback>{plushie.username.charAt(0)}</AvatarFallback>
-                        </Avatar>
-                        <span>{plushie.username}</span>
-                      </div>
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="aspect-square relative">
-                    <img
-                      src={plushie.image}
-                      alt={plushie.title}
-                      className="object-cover w-full h-full rounded-md"
+          <div className="grid grid-cols-4 gap-6">
+            {/* Filters */}
+            <div className="col-span-1">
+              <FilterPanel filters={filters} onFilterChange={handleFilterChange} />
+            </div>
+
+            {/* Plushie Grid */}
+            <div className="col-span-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredPlushies.map((plushie) => (
+                  <div 
+                    key={plushie.id} 
+                    className="cursor-pointer transform transition-transform hover:scale-[1.02]"
+                    onClick={() => handlePlushieClick(plushie)}
+                  >
+                    <PlushieCard 
+                      {...plushie} 
+                      variant="marketplace"
                     />
-                    {plushie.forSale && (
-                      <Badge className="absolute top-2 left-2 bg-green-500 text-white">
-                        For Sale
-                      </Badge>
-                    )}
-                  </CardContent>
-                  <CardFooter className="flex items-center justify-between">
-                    <span>${plushie.price}</span>
-                    <div className="flex items-center space-x-2 text-gray-500">
-                      <span>{plushie.likes} Likes</span>
-                      <span>{plushie.comments} Comments</span>
-                    </div>
-                  </CardFooter>
-                </Card>
-              ))}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Plushie Details Dialog */}
-      <Dialog open={isDetailsOpen} onOpenChange={setIsDetailsOpen}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>{selectedPlushie?.title}</DialogTitle>
-            <DialogDescription>
-              More details about this plushie
-            </DialogDescription>
-          </DialogHeader>
-          {selectedPlushie && (
-            <div className="grid gap-4 py-4">
-              <div className="border rounded-md overflow-hidden">
-                <img
-                  src={selectedPlushie.image}
-                  alt={selectedPlushie.title}
-                  className="object-cover w-full h-64"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Condition</Label>
-                  <p className="text-sm text-gray-500">{selectedPlushie.condition}</p>
-                </div>
-                <div>
-                  <Label>Price</Label>
-                  <p className="text-sm text-gray-500">${selectedPlushie.price}</p>
-                </div>
-                <div>
-                  <Label>Material</Label>
-                  <p className="text-sm text-gray-500">{selectedPlushie.material}</p>
-                </div>
-                <div>
-                  <Label>Filling</Label>
-                  <p className="text-sm text-gray-500">{selectedPlushie.filling}</p>
-                </div>
-                <div>
-                  <Label>Species</Label>
-                  <p className="text-sm text-gray-500">{selectedPlushie.species}</p>
-                </div>
-                 <div>
-                  <Label>Brand</Label>
-                  <p className="text-sm text-gray-500">{selectedPlushie.brand}</p>
-                </div>
-              </div>
-              <div>
-                <Label>Description</Label>
-                <p className="text-sm text-gray-500">{selectedPlushie.description}</p>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button type="button" onClick={() => setIsDetailsOpen(false)}>
-              Close
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <PlushieDetailDialog 
+        isOpen={isDetailsOpen} 
+        onClose={() => setIsDetailsOpen(false)} 
+        plushie={selectedPlushie!}
+      />
     </div>
   );
 };

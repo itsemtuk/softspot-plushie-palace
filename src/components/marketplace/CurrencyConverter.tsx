@@ -8,7 +8,7 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Currency } from '@/types/marketplace';
-import { DollarSign } from 'lucide-react';
+import { DollarSign, Euro, IndianRupee, JapaneseYen, PoundSterling } from 'lucide-react';
 
 // Mock exchange rates - in a real app, these would come from an API
 const exchangeRates: Record<Currency, number> = {
@@ -17,7 +17,9 @@ const exchangeRates: Record<Currency, number> = {
   GBP: 0.80,    // 1 USD = 0.80 GBP
   JPY: 150.59,  // 1 USD = 150.59 JPY
   CAD: 1.37,    // 1 USD = 1.37 CAD
-  AUD: 1.51     // 1 USD = 1.51 AUD
+  AUD: 1.51,    // 1 USD = 1.51 AUD
+  CNY: 7.23,    // 1 USD = 7.23 CNY
+  INR: 83.12    // 1 USD = 83.12 INR
 };
 
 const currencySymbols: Record<Currency, string> = {
@@ -26,7 +28,26 @@ const currencySymbols: Record<Currency, string> = {
   GBP: '£',
   JPY: '¥',
   CAD: 'C$',
-  AUD: 'A$'
+  AUD: 'A$',
+  CNY: '¥',
+  INR: '₹'
+};
+
+const getCurrencyIcon = (currency: Currency) => {
+  switch (currency) {
+    case 'USD':
+      return <DollarSign className="h-4 w-4" />;
+    case 'EUR':
+      return <Euro className="h-4 w-4" />;
+    case 'GBP':
+      return <PoundSterling className="h-4 w-4" />;
+    case 'JPY':
+      return <JapaneseYen className="h-4 w-4" />;
+    case 'INR':
+      return <IndianRupee className="h-4 w-4" />;
+    default:
+      return <DollarSign className="h-4 w-4" />;
+  }
 };
 
 interface CurrencyConverterProps {
@@ -39,14 +60,13 @@ const CurrencyConverter = ({ price, className }: CurrencyConverterProps) => {
   const [convertedPrice, setConvertedPrice] = useState<number>(price);
   
   useEffect(() => {
-    // Convert the price based on the selected currency
     const rate = exchangeRates[selectedCurrency];
     setConvertedPrice(Number((price * rate).toFixed(2)));
   }, [selectedCurrency, price]);
   
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <DollarSign className="h-4 w-4 text-gray-500" />
+      {getCurrencyIcon(selectedCurrency)}
       <Select 
         value={selectedCurrency} 
         onValueChange={(value) => setSelectedCurrency(value as Currency)}
