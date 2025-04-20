@@ -7,6 +7,9 @@ import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { PostDialog } from "@/components/PostDialog";
 import { feedPosts } from "@/data/plushies";
+import PostCreationFlow from "@/components/post/PostCreationFlow";
+import { PostCreationData } from "@/types/marketplace";
+import { toast } from "@/components/ui/use-toast";
 
 // Extended post type with additional fields
 interface ExtendedPost {
@@ -41,6 +44,7 @@ const Feed = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPost, setSelectedPost] = useState<ExtendedPost | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   
   const filteredPosts = extendedFeedPosts.filter(post => 
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -55,6 +59,14 @@ const Feed = () => {
 
   const closePostDialog = () => {
     setDialogOpen(false);
+  };
+
+  const handleCreatePost = (postData: PostCreationData) => {
+    console.log("New post created:", postData);
+    toast({
+      title: "Post created successfully!",
+      description: "Your post is now visible in your profile and feed."
+    });
   };
   
   return (
@@ -74,7 +86,10 @@ const Feed = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <Button className="bg-softspot-400 hover:bg-softspot-500 text-white whitespace-nowrap">
+            <Button 
+              className="bg-softspot-400 hover:bg-softspot-500 text-white whitespace-nowrap"
+              onClick={() => setIsPostCreationOpen(true)}
+            >
               <PlusCircle className="mr-2 h-4 w-4" />
               New Post
             </Button>
@@ -122,7 +137,10 @@ const Feed = () => {
               </div>
               <h3 className="mt-4 text-lg font-medium text-gray-900">No posts found</h3>
               <p className="mt-2 text-gray-500">Try a different search or create a new post.</p>
-              <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
+              <Button 
+                className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white"
+                onClick={() => setIsPostCreationOpen(true)}
+              >
                 Create Post
               </Button>
             </div>
@@ -134,6 +152,13 @@ const Feed = () => {
           isOpen={dialogOpen} 
           onClose={closePostDialog} 
           post={selectedPost} 
+        />
+
+        {/* Post Creation Flow */}
+        <PostCreationFlow
+          isOpen={isPostCreationOpen}
+          onClose={() => setIsPostCreationOpen(false)}
+          onPostCreated={handleCreatePost}
         />
       </div>
     </div>

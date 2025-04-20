@@ -1,11 +1,29 @@
 
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Home, Search, PlusSquare, ShoppingBag, User, Bell, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SignedIn } from "@clerk/clerk-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import PostCreationFlow from "@/components/post/PostCreationFlow";
+import { PostCreationData } from "@/types/marketplace";
+import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export function MobileNav() {
+  const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleCreatePost = (postData: PostCreationData) => {
+    console.log("New post created:", postData);
+    toast({
+      title: "Post created successfully!",
+      description: "Your post is now visible in your profile and feed."
+    });
+    setIsSheetOpen(false);
+  };
+
   return (
     <>
       {/* Top Navigation */}
@@ -46,7 +64,7 @@ export function MobileNav() {
               <Search className="h-5 w-5" />
             </Button>
           </Link>
-          <Sheet>
+          <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button size="icon" className="rounded-full bg-softspot-500 hover:bg-softspot-600">
                 <PlusSquare className="h-5 w-5 text-white" />
@@ -58,15 +76,33 @@ export function MobileNav() {
                 <SheetDescription>Choose what you'd like to do</SheetDescription>
               </SheetHeader>
               <div className="grid grid-cols-3 gap-4 mt-4">
-                <Button variant="outline" className="flex flex-col items-center gap-2 h-auto py-4">
+                <Button 
+                  variant="outline" 
+                  className="flex flex-col items-center gap-2 h-auto py-4"
+                  onClick={() => {
+                    setIsSheetOpen(false);
+                    setIsPostCreationOpen(true);
+                  }}
+                >
                   <PlusSquare className="h-6 w-6" />
                   <span>Post</span>
                 </Button>
-                <Button variant="outline" className="flex flex-col items-center gap-2 h-auto py-4">
+                <Button 
+                  variant="outline" 
+                  className="flex flex-col items-center gap-2 h-auto py-4"
+                  disabled
+                >
                   <ShoppingBag className="h-6 w-6" />
                   <span>Sell</span>
                 </Button>
-                <Button variant="outline" className="flex flex-col items-center gap-2 h-auto py-4">
+                <Button 
+                  variant="outline" 
+                  className="flex flex-col items-center gap-2 h-auto py-4"
+                  onClick={() => {
+                    setIsSheetOpen(false);
+                    navigate('/messages');
+                  }}
+                >
                   <MessageSquare className="h-6 w-6" />
                   <span>Trade</span>
                 </Button>
@@ -89,6 +125,13 @@ export function MobileNav() {
       {/* Spacers for fixed navbars */}
       <div className="h-16" /> {/* Top spacer */}
       <div className="h-16" /> {/* Bottom spacer */}
+      
+      {/* Post Creation Flow */}
+      <PostCreationFlow
+        isOpen={isPostCreationOpen}
+        onClose={() => setIsPostCreationOpen(false)}
+        onPostCreated={handleCreatePost}
+      />
     </>
   );
 }

@@ -5,12 +5,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlushieCard } from "@/components/PlushieCard";
 import { feedPosts, marketplacePlushies } from "@/data/plushies";
-import { PlusCircle, Settings, Edit2, Heart, ShoppingBag, Tag, Store, Bell } from "lucide-react";
+import { PlusCircle, Settings, Edit2, Heart, ShoppingBag, Tag, Store } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import NotificationsTab from "@/components/profile/NotificationsTab";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
@@ -123,12 +122,11 @@ const Profile = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid grid-cols-5 mb-8">
+          <TabsList className="grid grid-cols-4 mb-8">
             <TabsTrigger value="posts">My Posts</TabsTrigger>
             <TabsTrigger value="listings">My Listings</TabsTrigger>
             <TabsTrigger value="liked-posts">Liked Posts</TabsTrigger>
             <TabsTrigger value="liked-items">Liked Items</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
           
           <TabsContent value="posts">
@@ -215,7 +213,7 @@ const Profile = () => {
             )}
           </TabsContent>
           
-          {/* New Liked Posts Tab */}
+          {/* Liked Posts Tab */}
           <TabsContent value="liked-posts">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-900">Liked Posts</h2>
@@ -288,11 +286,6 @@ const Profile = () => {
                 </div>
               </Card>
             )}
-          </TabsContent>
-          
-          {/* Notifications Tab */}
-          <TabsContent value="notifications">
-            <NotificationsTab />
           </TabsContent>
         </Tabs>
       </div>

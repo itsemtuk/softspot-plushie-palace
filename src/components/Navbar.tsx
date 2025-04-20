@@ -8,15 +8,27 @@ import { useClerk, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { MobileNav } from "@/components/navigation/MobileNav";
 import { useIsMobile } from "@/hooks/use-mobile";
+import PostCreationFlow from "@/components/post/PostCreationFlow";
+import { PostCreationData } from "@/types/marketplace";
+import { toast } from "@/components/ui/use-toast";
 
 export function Navbar() {
   const isMobile = useIsMobile();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   const { signOut } = useClerk();
   const navigate = useNavigate();
 
   const handleSignOut = () => {
     signOut(() => navigate("/"));
+  };
+
+  const handleCreatePost = (postData: PostCreationData) => {
+    console.log("New post created:", postData);
+    toast({
+      title: "Post created successfully!",
+      description: "Your post is now visible in your profile and feed."
+    });
   };
 
   if (isMobile) {
@@ -63,15 +75,31 @@ export function Navbar() {
                   <SheetDescription>Choose what you'd like to do</SheetDescription>
                 </SheetHeader>
                 <div className="grid gap-4 mt-4">
-                  <Button variant="outline" className="flex items-center gap-2 justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2 justify-start"
+                    onClick={() => {
+                      setIsPostCreationOpen(true);
+                    }}
+                  >
                     <PlusSquare className="h-4 w-4" />
                     Create Post
                   </Button>
-                  <Button variant="outline" className="flex items-center gap-2 justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2 justify-start"
+                    disabled
+                  >
                     <ShoppingBag className="h-4 w-4" />
-                    Sell Item
+                    Sell Item (Coming Soon)
                   </Button>
-                  <Button variant="outline" className="flex items-center gap-2 justify-start">
+                  <Button 
+                    variant="outline" 
+                    className="flex items-center gap-2 justify-start"
+                    onClick={() => {
+                      navigate('/messages');
+                    }}
+                  >
                     <MessageSquare className="h-4 w-4" />
                     Trade Request
                   </Button>
@@ -121,6 +149,13 @@ export function Navbar() {
           </div>
         </div>
       </div>
+      
+      {/* Post Creation Flow */}
+      <PostCreationFlow
+        isOpen={isPostCreationOpen}
+        onClose={() => setIsPostCreationOpen(false)}
+        onPostCreated={handleCreatePost}
+      />
     </nav>
   );
 }

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { Navbar } from "@/components/Navbar";
@@ -58,17 +58,17 @@ const Settings = () => {
   const existingInterests = user?.unsafeMetadata?.plushieInterests as string[] || [];
   
   // Parse existing preferences back to IDs for the form
-  const getExistingTypeIDs = () => {
+  const getExistingTypeIDs = useCallback(() => {
     return plushieTypes
       .filter(type => existingInterests.includes(type.label))
       .map(type => type.id);
-  };
+  }, [existingInterests]);
 
-  const getExistingBrandIDs = () => {
+  const getExistingBrandIDs = useCallback(() => {
     return plushieBrands
       .filter(brand => existingInterests.includes(brand.label))
       .map(brand => brand.id);
-  };
+  }, [existingInterests]);
 
   // Default values for the form
   const defaultValues: Partial<ProfileFormValues> = {
@@ -83,6 +83,19 @@ const Settings = () => {
     resolver: zodResolver(profileFormSchema),
     defaultValues,
   });
+
+  // Reset form when user data changes
+  useCallback(() => {
+    if (user) {
+      form.reset({
+        username: user?.username || "",
+        bio: user?.unsafeMetadata?.bio as string || "",
+        profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
+        plushieTypes: getExistingTypeIDs(),
+        plushieBrands: getExistingBrandIDs(),
+      });
+    }
+  }, [user, form, getExistingTypeIDs, getExistingBrandIDs]);
 
   async function onSubmit(data: ProfileFormValues) {
     setIsLoading(true);
@@ -110,24 +123,24 @@ const Settings = () => {
       });
       
       // Update the user's data
-      await user?.update({
-        username: data.username,
-        unsafeMetadata: {
-          ...user.unsafeMetadata,
-          bio: data.bio || "",
-          profilePicture: profilePicture || "",
-          plushieInterests,
-        },
-      });
-
-      toast({
-        title: "Profile updated",
-        description: "Your profile information has been updated successfully.",
-      });
-
-      // Reload user data to ensure the UI reflects the changes
-      await user?.reload();
-
+      if (user) {
+        await user.update({
+          username: data.username,
+          unsafeMetadata: {
+            bio: data.bio || "",
+            profilePicture: profilePicture || "",
+            plushieInterests,
+          },
+        });
+  
+        toast({
+          title: "Profile updated",
+          description: "Your profile information has been updated successfully.",
+        });
+  
+        // Reload user data to ensure the UI reflects the changes
+        await user.reload();
+      }
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
