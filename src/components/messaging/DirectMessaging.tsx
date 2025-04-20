@@ -19,7 +19,7 @@ import {
   Bell,
   ShieldAlert,
   Trash2,
-  PenFeather
+  Feather
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -235,7 +235,7 @@ const DirectMessaging = () => {
             className="bg-softspot-400 hover:bg-softspot-500 flex items-center gap-2"
             onClick={() => setIsNewMessageDialogOpen(true)}
           >
-            <PenFeather className="h-4 w-4" />
+            <Feather className="h-4 w-4" />
             Compose
           </Button>
         </div>

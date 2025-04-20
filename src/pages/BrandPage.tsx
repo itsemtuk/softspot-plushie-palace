@@ -40,7 +40,8 @@ import {
   PlushieFilling,
   PlushieSpecies,
   PlushieBrand,
-  MarketplaceFilters
+  MarketplaceFilters,
+  Post
 } from "@/types/marketplace";
 import { PostDialog } from "@/components/PostDialog";
 import { feedPosts, marketplacePlushies } from "@/data/plushies";
@@ -307,7 +308,7 @@ const BrandPage = () => {
   const [filters, setFilters] = useState<MarketplaceFilters>({});
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedPlushie, setSelectedPlushie] = useState<MarketplacePlushie | null>(null);
-  const [selectedPost, setSelectedPost] = useState<any | null>(null);
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
@@ -373,7 +374,8 @@ const BrandPage = () => {
     setIsDetailsOpen(true);
   };
 
-  const brandPosts = feedPosts.filter(post => post.tags?.includes(brandId || ''));
+  // Update type to ensure posts have tags property
+  const brandPosts = (feedPosts as Post[]).filter(post => post.tags?.includes(brandId || ''));
 
   const filteredPosts = brandPosts.filter(post =>
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -381,7 +383,7 @@ const BrandPage = () => {
     post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
-  const openPostDialog = (post: any) => {
+  const openPostDialog = (post: Post) => {
     setSelectedPost(post);
     setDialogOpen(true);
   };
