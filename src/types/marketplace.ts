@@ -90,20 +90,17 @@ export interface Wishlist {
 export interface DirectMessage {
   id: string;
   senderId: string;
-  senderName: string;
+  senderName?: string;
+  recipientId?: string;
   content: string;
-  timestamp: string;
+  timestamp: Date;
   read: boolean;
   attachments?: string[];
 }
 
 export interface MessageThread {
   id: string;
-  participants: {
-    id: string;
-    username: string;
-    profileImageUrl: string;
-  }[];
+  participants: UserProfile[];
   lastMessage: DirectMessage;
   unreadCount: number;
 }
@@ -143,4 +140,16 @@ export interface PostCreationData {
   description?: string;
   location?: string;
   tags?: string[];
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'follow' | 'like' | 'comment' | 'message' | 'trade' | 'system';
+  content: string;
+  timestamp: Date;
+  read: boolean;
+  relatedUserId?: string;
+  relatedItemId?: string;
+  relatedItemType?: 'post' | 'plushie' | 'message' | 'trade';
 }

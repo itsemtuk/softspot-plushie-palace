@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { 
   Card,
@@ -17,7 +18,8 @@ import {
   User,
   Bell,
   ShieldAlert,
-  Trash2
+  Trash2,
+  PenFeather
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -30,19 +32,28 @@ import {
   DialogHeader,
   DialogTitle
 } from "@/components/ui/dialog";
-import { DirectMessage, MessageThread } from '@/types/marketplace';
+import { DirectMessage, MessageThread, UserProfile } from '@/types/marketplace';
 import { toast } from '@/components/ui/use-toast';
 import { useUser } from '@clerk/clerk-react';
 
 // Mock data - in a real app, this would come from an API
+const mockUsers: UserProfile[] = [
+  { id: "user-1", username: "plushielover", profileImageUrl: "https://i.pravatar.cc/150?img=1", bio: "Plushie enthusiast", followers: 120, following: 85 },
+  { id: "user-2", username: "sarahlovesplushies", profileImageUrl: "https://i.pravatar.cc/150?img=5", bio: "Sarah's plushie collection", followers: 78, following: 42 },
+  { id: "user-3", username: "mikeplush", profileImageUrl: "https://i.pravatar.cc/150?img=12", bio: "Plushie trader", followers: 56, following: 30 },
+  { id: "user-4", username: "emmacollects", profileImageUrl: "https://i.pravatar.cc/150?img=9", bio: "Plushie collector", followers: 91, following: 67 }
+];
+
 const mockThreads: MessageThread[] = [
   {
     id: "thread-1",
-    participants: ["user-1", "user-2"],
+    participants: [
+      mockUsers.find(u => u.id === "user-1")!,
+      mockUsers.find(u => u.id === "user-2")!
+    ],
     lastMessage: {
       id: "msg-1",
       senderId: "user-2",
-      recipientId: "user-1",
       content: "Hi! I'm interested in your teddy bear listing.",
       timestamp: new Date(Date.now() - 3600000),
       read: false,
@@ -51,7 +62,10 @@ const mockThreads: MessageThread[] = [
   },
   {
     id: "thread-2",
-    participants: ["user-1", "user-3"],
+    participants: [
+      mockUsers.find(u => u.id === "user-1")!,
+      mockUsers.find(u => u.id === "user-3")!
+    ],
     lastMessage: {
       id: "msg-2",
       senderId: "user-1",
@@ -91,13 +105,6 @@ const mockMessages: DirectMessage[] = [
   }
 ];
 
-const mockUsers = [
-  { id: "user-1", name: "You", username: "plushielover", avatar: "https://i.pravatar.cc/150?img=1" },
-  { id: "user-2", name: "Sarah", username: "sarahlovesplushies", avatar: "https://i.pravatar.cc/150?img=5" },
-  { id: "user-3", name: "Mike", username: "mikeplush", avatar: "https://i.pravatar.cc/150?img=12" },
-  { id: "user-4", name: "Emma", username: "emmacollects", avatar: "https://i.pravatar.cc/150?img=9" }
-];
-
 const DirectMessaging = () => {
   const { user } = useUser();
   const [threads, setThreads] = useState<MessageThread[]>(mockThreads);
@@ -123,10 +130,15 @@ const DirectMessaging = () => {
   const handleSendMessage = () => {
     if (!messageText.trim() || !activeThread) return;
     
+    const currentThread = threads.find(t => t.id === activeThread);
+    if (!currentThread) return;
+    
+    const recipientId = currentThread.participants.find(p => p.id !== "user-1")?.id || "";
+    
     const newMessage: DirectMessage = {
       id: `msg-${Date.now()}`,
-      senderId: "user-1", // Current user's ID
-      recipientId: threads.find(t => t.id === activeThread)?.participants.find(p => p !== "user-1") || "",
+      senderId: "user-1",
+      recipientId,
       content: messageText,
       timestamp: new Date(),
       read: false,
@@ -148,9 +160,14 @@ const DirectMessaging = () => {
   const handleStartNewConversation = () => {
     if (!selectedUser) return;
     
+    // Find the selected user profile
+    const selectedUserProfile = mockUsers.find(u => u.id === selectedUser);
+    if (!selectedUserProfile) return;
+    
     // Create a new thread
     const existingThread = threads.find(t => 
-      t.participants.includes("user-1") && t.participants.includes(selectedUser)
+      t.participants.some(p => p.id === "user-1") && 
+      t.participants.some(p => p.id === selectedUser)
     );
     
     if (existingThread) {
@@ -159,13 +176,15 @@ const DirectMessaging = () => {
       return;
     }
     
+    // Find current user profile
+    const currentUserProfile = mockUsers.find(u => u.id === "user-1")!;
+    
     const newThread: MessageThread = {
       id: `thread-${Date.now()}`,
-      participants: ["user-1", selectedUser],
+      participants: [currentUserProfile, selectedUserProfile],
       lastMessage: {
         id: "",
         senderId: "",
-        recipientId: "",
         content: "Start a new conversation",
         timestamp: new Date(),
         read: true,
@@ -191,8 +210,8 @@ const DirectMessaging = () => {
 
   const filteredUsers = mockUsers.filter(u => 
     u.id !== "user-1" && // exclude current user
-    (u.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-     u.username.toLowerCase().includes(searchQuery.toLowerCase()))
+    (u.username.toLowerCase().includes(searchQuery.toLowerCase()) || 
+     u.bio.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   return (
@@ -211,17 +230,19 @@ const DirectMessaging = () => {
             <TabsTrigger value="requests">Message Requests</TabsTrigger>
           </TabsList>
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
+            className="bg-softspot-400 hover:bg-softspot-500 flex items-center gap-2"
             onClick={() => setIsNewMessageDialogOpen(true)}
           >
-            New Message
+            <PenFeather className="h-4 w-4" />
+            Compose
           </Button>
         </div>
         
         <div className="flex h-full">
           <TabsContent value="messages" className="flex h-full w-full m-0">
-            <div className="w-1/3 border-r h-full">
+            <div className="w-1/3 border-r h-full md:block hidden">
               <div className="p-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -238,9 +259,7 @@ const DirectMessaging = () => {
               <ScrollArea className="h-[calc(100%-64px)]">
                 {threads.length > 0 ? (
                   threads.map(thread => {
-                    const otherUser = mockUsers.find(u => 
-                      u.id === thread.participants.find(p => p !== "user-1")
-                    );
+                    const otherUser = thread.participants.find(p => p.id !== "user-1");
                     
                     if (!otherUser) return null;
                     
@@ -253,12 +272,12 @@ const DirectMessaging = () => {
                         onClick={() => setActiveThread(thread.id)}
                       >
                         <Avatar className="h-10 w-10 mr-3">
-                          <AvatarImage src={otherUser.avatar} alt={otherUser.name} />
-                          <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
+                          <AvatarImage src={otherUser.profileImageUrl} alt={otherUser.username} />
+                          <AvatarFallback>{otherUser.username.charAt(0)}</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between">
-                            <span className="block truncate">{otherUser.name}</span>
+                            <span className="block truncate">{otherUser.username}</span>
                             <span className="text-xs text-gray-500">
                               {formatTimestamp(thread.lastMessage.timestamp)}
                             </span>
@@ -285,24 +304,22 @@ const DirectMessaging = () => {
               </ScrollArea>
             </div>
             
-            <div className="w-2/3 flex flex-col h-full">
+            <div className="w-full md:w-2/3 flex flex-col h-full">
               {activeThread ? (
                 <>
                   <div className="border-b p-3 flex items-center justify-between">
                     {(() => {
-                      const otherUserId = threads
-                        .find(t => t.id === activeThread)
-                        ?.participants.find(p => p !== "user-1");
-                      const otherUser = mockUsers.find(u => u.id === otherUserId);
+                      const thread = threads.find(t => t.id === activeThread);
+                      const otherUser = thread?.participants.find(p => p.id !== "user-1");
                       
                       return otherUser ? (
                         <div className="flex items-center">
                           <Avatar className="h-8 w-8 mr-2">
-                            <AvatarImage src={otherUser.avatar} alt={otherUser.name} />
-                            <AvatarFallback>{otherUser.name.charAt(0)}</AvatarFallback>
+                            <AvatarImage src={otherUser.profileImageUrl} alt={otherUser.username} />
+                            <AvatarFallback>{otherUser.username.charAt(0)}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <div className="font-medium">{otherUser.name}</div>
+                            <div className="font-medium">{otherUser.username}</div>
                             <div className="text-xs text-gray-500">@{otherUser.username}</div>
                           </div>
                         </div>
@@ -312,8 +329,8 @@ const DirectMessaging = () => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-destructive"
-                      onClick={() => handleReportSpam(activeThread)}
+                      className="text-destructive md:block hidden"
+                      onClick={() => activeThread && handleReportSpam(activeThread)}
                     >
                       <ShieldAlert className="h-4 w-4 mr-1" />
                       Report Spam
@@ -331,10 +348,10 @@ const DirectMessaging = () => {
                             key={message.id}
                             className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
                           >
-                            {!isCurrentUser && (
+                            {!isCurrentUser && sender && (
                               <Avatar className="h-8 w-8 mr-2 mt-1">
-                                <AvatarImage src={sender?.avatar} alt={sender?.name} />
-                                <AvatarFallback>{sender?.name.charAt(0)}</AvatarFallback>
+                                <AvatarImage src={sender.profileImageUrl} alt={sender.username} />
+                                <AvatarFallback>{sender.username.charAt(0)}</AvatarFallback>
                               </Avatar>
                             )}
                             <div
@@ -391,10 +408,11 @@ const DirectMessaging = () => {
                       Choose a conversation from the sidebar or start a new one.
                     </p>
                     <Button
-                      className="mt-4 bg-softspot-400 hover:bg-softspot-500"
+                      className="mt-4 bg-softspot-400 hover:bg-softspot-500 flex items-center gap-2"
                       onClick={() => setIsNewMessageDialogOpen(true)}
                     >
-                      Start a new conversation
+                      <PenFeather className="h-4 w-4" />
+                      Compose
                     </Button>
                   </div>
                 </div>
@@ -417,7 +435,7 @@ const DirectMessaging = () => {
       <Dialog open={isNewMessageDialogOpen} onOpenChange={setIsNewMessageDialogOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>New Message</DialogTitle>
+            <DialogTitle>Compose Message</DialogTitle>
             <DialogDescription>
               Start a new conversation with another plushie enthusiast
             </DialogDescription>
@@ -446,11 +464,11 @@ const DirectMessaging = () => {
                     onClick={() => setSelectedUser(user.id)}
                   >
                     <Avatar className="h-10 w-10 mr-3">
-                      <AvatarImage src={user.avatar} alt={user.name} />
-                      <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                      <AvatarImage src={user.profileImageUrl} alt={user.username} />
+                      <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
                     </Avatar>
                     <div>
-                      <div className="font-medium">{user.name}</div>
+                      <div className="font-medium">{user.username}</div>
                       <div className="text-xs text-gray-500">@{user.username}</div>
                     </div>
                   </div>

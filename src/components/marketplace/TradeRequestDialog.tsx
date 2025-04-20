@@ -1,230 +1,309 @@
 
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { MarketplacePlushie, PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, PlushieBrand } from '@/types/marketplace';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Card } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Search, MessageSquare } from "lucide-react";
+import { MarketplacePlushie, UserProfile } from '@/types/marketplace';
 import { toast } from '@/components/ui/use-toast';
 
 interface TradeRequestDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  selectedPlushie?: MarketplacePlushie;
-  userPlushies: MarketplacePlushie[];
+  plushie?: MarketplacePlushie;
 }
 
-export const TradeRequestDialog = ({
-  isOpen,
-  onClose,
-  selectedPlushie,
-  userPlushies = []
-}: TradeRequestDialogProps) => {
-  const [selectedUserPlushie, setSelectedUserPlushie] = useState<MarketplacePlushie | null>(null);
-  const [message, setMessage] = useState('');
-  const [step, setStep] = useState(1);
+// Mock data
+const mockFollowers: UserProfile[] = [
+  { 
+    id: "user-2", 
+    username: "sarahlovesplushies", 
+    profileImageUrl: "https://i.pravatar.cc/150?img=5", 
+    bio: "Collector of rare plushies", 
+    followers: 123, 
+    following: 89 
+  },
+  { 
+    id: "user-3", 
+    username: "mikeplush", 
+    profileImageUrl: "https://i.pravatar.cc/150?img=12", 
+    bio: "Teddy bear enthusiast", 
+    followers: 56, 
+    following: 72 
+  },
+  { 
+    id: "user-4", 
+    username: "emmacollects", 
+    profileImageUrl: "https://i.pravatar.cc/150?img=9", 
+    bio: "Plushie photographer", 
+    followers: 208, 
+    following: 115 
+  }
+];
 
-  const handleClose = () => {
-    setStep(1);
-    setSelectedUserPlushie(null);
-    setMessage('');
-    onClose();
-  };
+const mockPlushies: MarketplacePlushie[] = [
+  {
+    id: "1",
+    image: "https://i.pravatar.cc/300?img=1",
+    title: "Mint Jellycat Bunny",
+    username: "plushielover",
+    likes: 24,
+    comments: 5,
+    price: 45.99,
+    forSale: true,
+    condition: "Like New",
+    description: "Adorable mint green bunny, super soft",
+    color: "Mint",
+    material: "Plush",
+    filling: "Cotton",
+    species: "Rabbit",
+    brand: "Jellycat",
+    deliveryMethod: 'Shipping',
+    deliveryCost: 5.00,
+    tags: ['bunny', 'jellycat', 'mint green']
+  },
+  {
+    id: "2",
+    image: "https://i.pravatar.cc/300?img=2",
+    title: "Limited Edition Teddy",
+    username: "plushielover",
+    likes: 42,
+    comments: 8,
+    price: 89.99,
+    forSale: true,
+    condition: "New",
+    description: "Limited edition anniversary teddy bear",
+    color: "Brown",
+    material: "Cotton",
+    filling: "Polyester",
+    species: "Bear",
+    brand: "Build-A-Bear",
+    deliveryMethod: 'Collection',
+    deliveryCost: 0,
+    tags: ['teddy', 'limited edition', 'anniversary']
+  }
+];
 
-  const handlePlushieSelect = (plushie: MarketplacePlushie) => {
-    setSelectedUserPlushie(plushie);
-  };
-
-  const handleContinue = () => {
-    if (selectedUserPlushie) {
-      setStep(2);
-    } else {
-      toast({
-        title: "Please select a plushie",
-        description: "You need to select one of your plushies to propose a trade.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleSubmit = () => {
-    if (!message.trim()) {
-      toast({
-        title: "Message required",
-        description: "Please add a message to the trade owner.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // In a real app, this would send the trade request to the API
+const TradeRequestDialog = ({ isOpen, onClose, plushie }: TradeRequestDialogProps) => {
+  const [activeTab, setActiveTab] = useState("followers");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+  const [selectedPlushieId, setSelectedPlushieId] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
+  
+  // Filter followers by search query
+  const filteredFollowers = mockFollowers.filter(follower => 
+    follower.username.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+  
+  // Filter my plushies
+  const myPlushies = mockPlushies;
+  
+  const handleSendTradeRequest = () => {
+    // In a real app, you would send the trade request to the backend
     toast({
       title: "Trade request sent!",
-      description: "The owner will be notified of your trade request.",
+      description: "Your trade request has been sent. You'll be notified when they respond."
     });
-
-    handleClose();
+    
+    // Reset form and close dialog
+    setSelectedUserId(null);
+    setSelectedPlushieId(null);
+    setMessage("");
+    onClose();
   };
-
-  if (!selectedPlushie) {
-    return null;
-  }
-
+  
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>
-            {step === 1 ? "Propose a Trade" : "Finalize Trade Request"}
-          </DialogTitle>
+          <DialogTitle>Trade Request</DialogTitle>
           <DialogDescription>
-            {step === 1
-              ? "Select one of your plushies to propose for a trade."
-              : "Send a message to the owner about your trade request."}
+            Choose who you want to trade with and which plushie you'd like to offer.
           </DialogDescription>
         </DialogHeader>
-
-        {step === 1 ? (
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4 p-4 border rounded-md bg-gray-50">
-              <div className="flex-shrink-0 w-16 h-16 overflow-hidden rounded-md">
-                <img
-                  src={selectedPlushie.image}
-                  alt={selectedPlushie.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium">{selectedPlushie.title}</h4>
-                <p className="text-sm text-gray-500">Owner: {selectedPlushie.username}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 max-h-[300px] overflow-y-auto">
-              {userPlushies.length > 0 ? (
-                userPlushies.map((plushie) => (
-                  <div
-                    key={plushie.id}
-                    className={`p-3 border rounded-md cursor-pointer transition-colors ${
-                      selectedUserPlushie?.id === plushie.id
-                        ? "border-primary bg-primary/10"
-                        : "hover:border-gray-400"
-                    }`}
-                    onClick={() => handlePlushieSelect(plushie)}
-                  >
-                    <div className="aspect-square mb-2 overflow-hidden rounded-md">
-                      <img
-                        src={plushie.image}
-                        alt={plushie.title}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <h5 className="font-medium text-sm truncate">{plushie.title}</h5>
-                    <p className="text-xs text-gray-500">${plushie.price}</p>
-                  </div>
-                ))
-              ) : (
-                <div className="col-span-2 p-4 text-center border rounded-md">
-                  <p>You don't have any plushies listed for trade.</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-2"
-                    onClick={handleClose}
-                  >
-                    Add a Listing First
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex-1 p-3 border rounded-md">
-                <div className="flex items-center mb-2">
-                  <div className="flex-shrink-0 mr-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={`https://i.pravatar.cc/150?u=you`} />
-                      <AvatarFallback>You</AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <p className="text-sm font-medium">Your plushie</p>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 overflow-hidden rounded-md">
-                    <img
-                      src={selectedUserPlushie?.image}
-                      alt={selectedUserPlushie?.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h5 className="font-medium">{selectedUserPlushie?.title}</h5>
-                    <p className="text-xs text-gray-500">${selectedUserPlushie?.price}</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex-shrink-0 font-bold">for</div>
-
-              <div className="flex-1 p-3 border rounded-md">
-                <div className="flex items-center mb-2">
-                  <div className="flex-shrink-0 mr-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={`https://i.pravatar.cc/150?u=${selectedPlushie.username}`} />
-                      <AvatarFallback>{selectedPlushie.username[0]}</AvatarFallback>
-                    </Avatar>
-                  </div>
-                  <p className="text-sm font-medium">{selectedPlushie.username}'s plushie</p>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 overflow-hidden rounded-md">
-                    <img
-                      src={selectedPlushie.image}
-                      alt={selectedPlushie.title}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div>
-                    <h5 className="font-medium">{selectedPlushie.title}</h5>
-                    <p className="text-xs text-gray-500">${selectedPlushie.price}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="trade-message">Message to {selectedPlushie.username}</Label>
-              <Textarea
-                id="trade-message"
-                placeholder={`Hi ${selectedPlushie.username}, I'd like to trade my ${selectedUserPlushie?.title} for your ${selectedPlushie.title}!`}
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="mt-1"
-                rows={4}
+        
+        <Tabs defaultValue="followers" value={activeTab} onValueChange={setActiveTab}>
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="followers">Trade with Follower</TabsTrigger>
+            <TabsTrigger value="user">Request from User</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="followers" className="space-y-4 py-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search followers..."
+                className="pl-9"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-          </div>
-        )}
-
-        <DialogFooter>
-          {step === 1 ? (
-            <>
-              <Button variant="outline" onClick={handleClose}>
-                Cancel
+            
+            <div className="text-sm font-medium mb-2">Select a follower to trade with:</div>
+            
+            <ScrollArea className="h-[180px] rounded-md border">
+              <div className="p-2 space-y-2">
+                {filteredFollowers.map(follower => (
+                  <Card 
+                    key={follower.id}
+                    className={`p-3 cursor-pointer ${
+                      selectedUserId === follower.id ? 'bg-softspot-50 border-softspot-200' : ''
+                    }`}
+                    onClick={() => setSelectedUserId(follower.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar>
+                        <AvatarImage src={follower.profileImageUrl} alt={follower.username} />
+                        <AvatarFallback>{follower.username[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{follower.username}</div>
+                        <div className="text-xs text-gray-500">{follower.followers} followers</div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+                
+                {filteredFollowers.length === 0 && (
+                  <div className="text-center py-4 text-gray-500">
+                    No followers found
+                  </div>
+                )}
+              </div>
+            </ScrollArea>
+            
+            {selectedUserId && (
+              <>
+                <div className="text-sm font-medium mb-2">Select your plushie to offer:</div>
+                
+                <ScrollArea className="h-[180px] rounded-md border">
+                  <div className="p-2 space-y-2">
+                    {myPlushies.map(myPlushie => (
+                      <Card 
+                        key={myPlushie.id}
+                        className={`p-3 cursor-pointer ${
+                          selectedPlushieId === myPlushie.id ? 'bg-softspot-50 border-softspot-200' : ''
+                        }`}
+                        onClick={() => setSelectedPlushieId(myPlushie.id)}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100">
+                            <img 
+                              src={myPlushie.image} 
+                              alt={myPlushie.title} 
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div>
+                            <div className="font-medium">{myPlushie.title}</div>
+                            <div className="text-xs text-gray-500">{myPlushie.condition} • ${myPlushie.price}</div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                    
+                    {myPlushies.length === 0 && (
+                      <div className="text-center py-4 text-gray-500">
+                        You don't have any plushies to trade
+                      </div>
+                    )}
+                  </div>
+                </ScrollArea>
+              </>
+            )}
+            
+            <Textarea
+              placeholder="Add a message about your trade offer..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="min-h-[80px]"
+            />
+          </TabsContent>
+          
+          <TabsContent value="user" className="space-y-4 py-4">
+            <div className="flex items-center gap-2">
+              <Input 
+                type="text"
+                placeholder="Enter username..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <Button>
+                <Search className="h-4 w-4 mr-2" />
+                Search
               </Button>
-              <Button onClick={handleContinue}>Continue</Button>
-            </>
-          ) : (
-            <>
-              <Button variant="outline" onClick={() => setStep(1)}>
-                Back
-              </Button>
-              <Button onClick={handleSubmit}>Send Trade Request</Button>
-            </>
-          )}
+            </div>
+            
+            {/* Similar layout as followers tab */}
+            <div className="text-sm font-medium mb-2">Select your plushie to offer:</div>
+            
+            <ScrollArea className="h-[180px] rounded-md border">
+              <div className="p-2 space-y-2">
+                {myPlushies.map(myPlushie => (
+                  <Card 
+                    key={myPlushie.id}
+                    className={`p-3 cursor-pointer ${
+                      selectedPlushieId === myPlushie.id ? 'bg-softspot-50 border-softspot-200' : ''
+                    }`}
+                    onClick={() => setSelectedPlushieId(myPlushie.id)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-md overflow-hidden bg-gray-100">
+                        <img 
+                          src={myPlushie.image} 
+                          alt={myPlushie.title} 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <div>
+                        <div className="font-medium">{myPlushie.title}</div>
+                        <div className="text-xs text-gray-500">{myPlushie.condition} • ${myPlushie.price}</div>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </ScrollArea>
+            
+            <Textarea
+              placeholder="Add a message about your trade request..."
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              className="min-h-[80px]"
+            />
+          </TabsContent>
+        </Tabs>
+        
+        <DialogFooter className="flex flex-col sm:flex-row gap-2">
+          <Button 
+            variant="outline" 
+            className="sm:flex-1"
+            onClick={onClose}
+          >
+            Cancel
+          </Button>
+          <Button 
+            className="sm:flex-1 bg-softspot-400 hover:bg-softspot-500"
+            onClick={handleSendTradeRequest}
+            disabled={!selectedUserId || !selectedPlushieId}
+          >
+            <MessageSquare className="h-4 w-4 mr-2" />
+            {activeTab === "followers" ? "Send Trade Offer" : "Send Trade Request"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

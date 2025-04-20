@@ -1,328 +1,271 @@
 
 import { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { 
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from "@/components/ui/card";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
-import { 
+import {
   Form,
   FormControl,
   FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormMessage
+  FormMessage,
 } from "@/components/ui/form";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
-import { PrivacySetting, UserPrivacySettings } from "@/types/marketplace";
-import { Lock, Shield, MessageCircle, Activity, Eye } from "lucide-react";
+import { UserPrivacySettings, PrivacySetting } from "@/types/marketplace";
+import { Save, Lock } from "lucide-react";
 
-const privacySettingsSchema = z.object({
-  profileVisibility: z.enum(['Public', 'Followers', 'Private'] as const),
-  postsVisibility: z.enum(['Public', 'Followers', 'Private'] as const),
-  listingsVisibility: z.enum(['Public', 'Followers', 'Private'] as const),
-  allowMessages: z.enum(['Everyone', 'Followers', 'Nobody'] as const),
-  showActivity: z.boolean()
+// Define schema for Privacy Settings
+const privacyFormSchema = z.object({
+  profile: z.enum(['public', 'friends', 'private'] as const),
+  posts: z.enum(['public', 'friends', 'private'] as const),
+  wishlist: z.enum(['public', 'friends', 'private'] as const),
+  marketplace: z.enum(['public', 'friends', 'private'] as const),
+  messages: z.enum(['public', 'friends', 'private'] as const),
+  showActivity: z.boolean(),
 });
+
+type PrivacyFormValues = z.infer<typeof privacyFormSchema>;
 
 const PrivacySettings = () => {
   const { user } = useUser();
   const [isLoading, setIsLoading] = useState(false);
-  
-  // Get existing privacy settings from user metadata or use defaults
-  const existingSettings = (user?.unsafeMetadata?.privacySettings as UserPrivacySettings) || {
-    profileVisibility: 'Public',
-    postsVisibility: 'Public',
-    listingsVisibility: 'Public',
-    allowMessages: 'Everyone',
-    showActivity: true
-  };
 
-  const form = useForm<UserPrivacySettings>({
-    resolver: zodResolver(privacySettingsSchema),
-    defaultValues: existingSettings
+  // Get existing privacy settings from user metadata or use defaults
+  const userPrivacySettings = user?.unsafeMetadata?.privacySettings as UserPrivacySettings || {
+    profile: 'public',
+    posts: 'public',
+    wishlist: 'private',
+    marketplace: 'public',
+    messages: 'friends'
+  };
+  
+  const showActivity = user?.unsafeMetadata?.showActivity !== false;
+
+  const form = useForm<PrivacyFormValues>({
+    resolver: zodResolver(privacyFormSchema),
+    defaultValues: {
+      profile: userPrivacySettings.profile,
+      posts: userPrivacySettings.posts,
+      wishlist: userPrivacySettings.wishlist,
+      marketplace: userPrivacySettings.marketplace,
+      messages: userPrivacySettings.messages,
+      showActivity: showActivity,
+    },
   });
 
-  const onSubmit = async (data: UserPrivacySettings) => {
+  async function onSubmit(data: PrivacyFormValues) {
     setIsLoading(true);
     try {
-      // Update user metadata with new privacy settings
+      // Update the user's privacy settings in metadata
       await user?.update({
         unsafeMetadata: {
           ...user.unsafeMetadata,
-          privacySettings: data
-        }
+          privacySettings: {
+            profile: data.profile,
+            posts: data.posts,
+            wishlist: data.wishlist,
+            marketplace: data.marketplace,
+            messages: data.messages,
+          },
+          showActivity: data.showActivity,
+        },
       });
-      
-      // Force reload user data to reflect changes immediately
-      await user?.reload();
-      
+
       toast({
         title: "Privacy settings updated",
-        description: "Your privacy preferences have been saved."
+        description: "Your privacy preferences have been saved.",
       });
     } catch (error) {
-      console.error("Error saving privacy settings:", error);
+      console.error("Error updating privacy settings:", error);
       toast({
         title: "Error",
-        description: "Failed to update privacy settings. Please try again.",
-        variant: "destructive"
+        description: "There was a problem updating your privacy settings.",
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-softspot-500" />
-          <CardTitle>Privacy Settings</CardTitle>
-        </div>
-        <CardDescription>
-          Control who can see your profile, posts, and who can message you
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="profileVisibility"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Eye className="h-4 w-4" /> Profile Visibility
-                  </FormLabel>
+    <div className="bg-white rounded-lg shadow p-6">
+      <div className="flex items-center gap-2 mb-6">
+        <Lock className="h-5 w-5 text-softspot-500" />
+        <h2 className="text-xl font-semibold">Privacy Settings</h2>
+      </div>
+
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <FormField
+            control={form.control}
+            name="profile"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Profile Visibility</FormLabel>
+                <Select onValueChange={field.onChange as (value: string) => void} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Who can see your profile" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="public">Everyone</SelectItem>
+                    <SelectItem value="friends">Followers only</SelectItem>
+                    <SelectItem value="private">Only me</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  This controls who can see your profile information.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="posts"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Posts Visibility</FormLabel>
+                <Select onValueChange={field.onChange as (value: string) => void} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Who can see your posts" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="public">Everyone</SelectItem>
+                    <SelectItem value="friends">Followers only</SelectItem>
+                    <SelectItem value="private">Only me</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  This controls who can see your posts and activity.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="wishlist"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Wishlists Visibility</FormLabel>
+                <Select onValueChange={field.onChange as (value: string) => void} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Who can see your wishlists" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="public">Everyone</SelectItem>
+                    <SelectItem value="friends">Followers only</SelectItem>
+                    <SelectItem value="private">Only me</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  This controls who can see your plushie wishlists.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="marketplace"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Marketplace Visibility</FormLabel>
+                <Select onValueChange={field.onChange as (value: string) => void} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Who can see your listings" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="public">Everyone</SelectItem>
+                    <SelectItem value="friends">Followers only</SelectItem>
+                    <SelectItem value="private">Only me</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  This controls who can see your marketplace listings.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="messages"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Message Privacy</FormLabel>
+                <Select onValueChange={field.onChange as (value: string) => void} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger className="bg-white">
+                      <SelectValue placeholder="Who can message you" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="public">Everyone</SelectItem>
+                    <SelectItem value="friends">Followers only</SelectItem>
+                    <SelectItem value="private">Nobody</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormDescription>
+                  This controls who can send you direct messages.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="showActivity"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Activity Status</FormLabel>
                   <FormDescription>
-                    Who can see your profile information
+                    Show when you're active on the site.
                   </FormDescription>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Public" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Public - Anyone can view your profile
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Followers" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Followers - Only your followers can view your profile
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Private" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Private - Only you can view your profile
-                        </FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="postsVisibility"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Activity className="h-4 w-4" /> Posts Visibility
-                  </FormLabel>
-                  <FormDescription>
-                    Who can see your posts on the feed
-                  </FormDescription>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Public" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Public - Anyone can see your posts
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Followers" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Followers - Only your followers can see your posts
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Private" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Private - Only you can see your posts
-                        </FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="listingsVisibility"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <Lock className="h-4 w-4" /> Marketplace Listings Visibility
-                  </FormLabel>
-                  <FormDescription>
-                    Control who can see your marketplace listings
-                  </FormDescription>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Public" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Public - Anyone can see your listings
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Followers" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Followers - Only your followers can see your listings
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Private" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Private - Only you can see your listings
-                        </FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="allowMessages"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <MessageCircle className="h-4 w-4" /> Direct Message Permissions
-                  </FormLabel>
-                  <FormDescription>
-                    Control who can send you direct messages
-                  </FormDescription>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-col space-y-1"
-                    >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Everyone" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Everyone - Anyone can message you (messages from non-followers require approval)
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Followers" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Followers - Only people you follow can message you
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="Nobody" />
-                        </FormControl>
-                        <FormLabel className="font-normal">
-                          Nobody - Disable direct messages
-                        </FormLabel>
-                      </FormItem>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="showActivity"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                  <div className="space-y-0.5">
-                    <FormLabel className="text-base">Activity Status</FormLabel>
-                    <FormDescription>
-                      Show when you're active on SoftSpot
-                    </FormDescription>
-                  </div>
-                  <FormControl>
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
-                  </FormControl>
-                </FormItem>
-              )}
-            />
-            
-            <div className="pt-4 flex justify-end">
-              <Button 
-                type="submit" 
-                disabled={isLoading} 
-                className="bg-softspot-400 hover:bg-softspot-500"
-              >
-                {isLoading ? "Saving..." : "Save Privacy Settings"}
-              </Button>
-            </div>
-          </form>
-        </Form>
-      </CardContent>
-    </Card>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          <Button type="submit" disabled={isLoading} className="bg-softspot-400 hover:bg-softspot-500">
+            {isLoading ? "Saving..." : "Save privacy settings"}
+            {!isLoading && <Save className="ml-2 h-4 w-4" />}
+          </Button>
+        </form>
+      </Form>
+    </div>
   );
 };
 

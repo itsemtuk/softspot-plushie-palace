@@ -74,7 +74,7 @@ const Settings = () => {
   const defaultValues: Partial<ProfileFormValues> = {
     username: user?.username || "",
     bio: user?.unsafeMetadata?.bio as string || "",
-    profilePicture: user?.unsafeMetadata?.profilePicture as string || "",
+    profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
     plushieTypes: getExistingTypeIDs(),
     plushieBrands: getExistingBrandIDs(),
   };
@@ -90,10 +90,6 @@ const Settings = () => {
     try {
       // Convert profile picture to proper format if needed
       let profilePicture = data.profilePicture;
-      if (profilePicture && profilePicture.startsWith('data:image')) {
-        // In a real app, we'd upload this to a storage service
-        // For now, we'll just use the data URL
-      }
 
       // Convert IDs to labels for plushie interests
       const selectedTypes = plushieTypes
@@ -105,6 +101,13 @@ const Settings = () => {
         .map(brand => brand.label);
       
       const plushieInterests = [...selectedTypes, ...selectedBrands];
+      
+      console.log("Updating user with:", {
+        username: data.username,
+        bio: data.bio,
+        profilePicture,
+        plushieInterests
+      });
       
       // Update the user's data
       await user?.update({
@@ -122,7 +125,7 @@ const Settings = () => {
         description: "Your profile information has been updated successfully.",
       });
 
-      // Reload user data
+      // Reload user data to ensure the UI reflects the changes
       await user?.reload();
 
     } catch (error) {

@@ -5,21 +5,27 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlushieCard } from "@/components/PlushieCard";
 import { feedPosts, marketplacePlushies } from "@/data/plushies";
-import { PlusCircle, Settings, Edit2, Heart, ShoppingBag, Tag, Store } from "lucide-react";
+import { PlusCircle, Settings, Edit2, Heart, ShoppingBag, Tag, Store, Bell } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { Link, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import NotificationsTab from "@/components/profile/NotificationsTab";
+import PostCreationFlow from "@/components/post/PostCreationFlow";
+import { PostCreationData } from "@/types/marketplace";
+import { toast } from "@/components/ui/use-toast";
 
 const Profile = () => {
   // Filter posts to show only user's posts (for demo, showing first 3)
   const userPosts = feedPosts.slice(0, 3); 
   const userListings = marketplacePlushies.slice(0, 2);
-  const userLikedItems = [...feedPosts.slice(3, 4), ...marketplacePlushies.slice(2, 3)];
+  const userLikedPosts = feedPosts.slice(3, 6); // Added dedicated liked posts
+  const userLikedItems = marketplacePlushies.slice(2, 5);
   
   const { user } = useUser();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
 
   // Get profile data once user is loaded
   useEffect(() => {
@@ -29,6 +35,14 @@ const Profile = () => {
       setProfileImage(userProfilePicture || user.imageUrl);
     }
   }, [user]);
+
+  const handleCreatePost = (postData: PostCreationData) => {
+    console.log("New post created:", postData);
+    toast({
+      title: "Post created successfully!",
+      description: "Your post is now visible in your profile and feed."
+    });
+  };
 
   // Display user's plushie interests (from metadata or default)
   const plushieInterests = user?.unsafeMetadata?.plushieInterests as string[] || ["Teddy Bears", "Unicorns", "Vintage"];
@@ -109,16 +123,21 @@ const Profile = () => {
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="grid grid-cols-3 mb-8">
+          <TabsList className="grid grid-cols-5 mb-8">
             <TabsTrigger value="posts">My Posts</TabsTrigger>
             <TabsTrigger value="listings">My Listings</TabsTrigger>
-            <TabsTrigger value="liked">Liked Items</TabsTrigger>
+            <TabsTrigger value="liked-posts">Liked Posts</TabsTrigger>
+            <TabsTrigger value="liked-items">Liked Items</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
           </TabsList>
           
           <TabsContent value="posts">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-900">My Posts</h2>
-              <Button className="bg-softspot-400 hover:bg-softspot-500 text-white">
+              <Button 
+                className="bg-softspot-400 hover:bg-softspot-500 text-white"
+                onClick={() => setIsPostDialogOpen(true)}
+              >
                 <PlusCircle className="mr-2 h-4 w-4" />
                 New Post
               </Button>
@@ -145,7 +164,10 @@ const Profile = () => {
                   <Heart className="h-12 w-12 text-softspot-300" />
                   <h3 className="mt-2 text-lg font-medium">No posts yet</h3>
                   <p className="mt-1 text-gray-500">Share your plushies with the community.</p>
-                  <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
+                  <Button 
+                    className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white"
+                    onClick={() => setIsPostDialogOpen(true)}
+                  >
                     Create Your First Post
                   </Button>
                 </div>
@@ -193,8 +215,46 @@ const Profile = () => {
             )}
           </TabsContent>
           
-          <TabsContent value="liked">
-            <h2 className="text-xl font-bold text-gray-900 mb-6">Liked Items</h2>
+          {/* New Liked Posts Tab */}
+          <TabsContent value="liked-posts">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold text-gray-900">Liked Posts</h2>
+            </div>
+            
+            {userLikedPosts.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {userLikedPosts.map((post) => (
+                  <PlushieCard 
+                    key={post.id}
+                    id={post.id}
+                    image={post.image}
+                    title={post.title}
+                    username={post.username}
+                    likes={post.likes}
+                    comments={post.comments}
+                    variant="feed"
+                  />
+                ))}
+              </div>
+            ) : (
+              <Card className="text-center py-12 bg-white">
+                <div className="flex flex-col items-center">
+                  <Heart className="h-12 w-12 text-softspot-300" />
+                  <h3 className="mt-2 text-lg font-medium">No liked posts</h3>
+                  <p className="mt-1 text-gray-500">Like posts in the community feed to save them here.</p>
+                  <Button 
+                    className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white"
+                    onClick={() => navigate('/feed')}
+                  >
+                    Explore Feed
+                  </Button>
+                </div>
+              </Card>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="liked-items">
+            <h2 className="text-xl font-bold text-gray-900 mb-6">Liked Marketplace Items</h2>
             
             {userLikedItems.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -207,7 +267,9 @@ const Profile = () => {
                     username={item.username}
                     likes={item.likes}
                     comments={item.comments}
-                    variant="feed"
+                    price={item.price}
+                    forSale={item.forSale}
+                    variant="marketplace"
                   />
                 ))}
               </div>
@@ -216,16 +278,30 @@ const Profile = () => {
                 <div className="flex flex-col items-center">
                   <Tag className="h-12 w-12 text-softspot-300" />
                   <h3 className="mt-2 text-lg font-medium">No liked items</h3>
-                  <p className="mt-1 text-gray-500">Find and like items in the community feed or marketplace.</p>
-                  <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
-                    Explore Feed
+                  <p className="mt-1 text-gray-500">Like items in the marketplace to save them here.</p>
+                  <Button 
+                    className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white"
+                    onClick={() => navigate('/marketplace')}
+                  >
+                    Explore Marketplace
                   </Button>
                 </div>
               </Card>
             )}
           </TabsContent>
+          
+          {/* Notifications Tab */}
+          <TabsContent value="notifications">
+            <NotificationsTab />
+          </TabsContent>
         </Tabs>
       </div>
+      
+      <PostCreationFlow 
+        isOpen={isPostDialogOpen}
+        onClose={() => setIsPostDialogOpen(false)}
+        onPostCreated={handleCreatePost}
+      />
     </div>
   );
 };

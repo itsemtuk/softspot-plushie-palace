@@ -8,7 +8,15 @@ import {
   SelectValue 
 } from "@/components/ui/select";
 import { Currency } from '@/types/marketplace';
-import { DollarSign, Euro, IndianRupee, JapaneseYen, PoundSterling } from 'lucide-react';
+import { 
+  DollarSign, 
+  Euro, 
+  IndianRupee, 
+  JapaneseYen, 
+  PoundSterling,
+  SquareAsterisk,
+  CircleDollarSign
+} from 'lucide-react';
 
 // Mock exchange rates - in a real app, these would come from an API
 const exchangeRates: Record<Currency, number> = {
@@ -45,6 +53,11 @@ const getCurrencyIcon = (currency: Currency) => {
       return <JapaneseYen className="h-4 w-4" />;
     case 'INR':
       return <IndianRupee className="h-4 w-4" />;
+    case 'CAD':
+    case 'AUD':
+      return <CircleDollarSign className="h-4 w-4" />;
+    case 'CNY':
+      return <SquareAsterisk className="h-4 w-4" />;
     default:
       return <DollarSign className="h-4 w-4" />;
   }
@@ -71,10 +84,10 @@ const CurrencyConverter = ({ price, className }: CurrencyConverterProps) => {
         value={selectedCurrency} 
         onValueChange={(value) => setSelectedCurrency(value as Currency)}
       >
-        <SelectTrigger className="w-[90px] h-8">
+        <SelectTrigger className="w-[90px] h-8 bg-white">
           <SelectValue placeholder="Currency" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-white">
           {Object.entries(exchangeRates).map(([currency]) => (
             <SelectItem key={currency} value={currency}>
               {currency}
@@ -83,7 +96,7 @@ const CurrencyConverter = ({ price, className }: CurrencyConverterProps) => {
         </SelectContent>
       </Select>
       <span className="font-medium">
-        {currencySymbols[selectedCurrency]}{convertedPrice}
+        {price > 0 ? `${currencySymbols[selectedCurrency]}${convertedPrice}` : ''}
       </span>
     </div>
   );

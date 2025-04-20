@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Navbar } from "@/components/Navbar";
 import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
 import { PlushieCard } from "@/components/PlushieCard";
@@ -6,44 +7,7 @@ import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialo
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MarketplacePlushie, MarketplaceFilters } from "@/types/marketplace";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-  CardFooter
-} from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  PlushieCondition,
-  PlushieMaterial,
-  PlushieFilling,
-  PlushieSpecies,
-  PlushieBrand,
-} from "@/types/marketplace";
+import { CurrencyConverter } from "@/components/marketplace/CurrencyConverter";
 
 // Mock data - in a real app, this would come from an API
 const mockPlushies: MarketplacePlushie[] = [
@@ -270,28 +234,28 @@ const Marketplace = () => {
 
       // Material filter
       if (filters.material && filters.material.length > 0) {
-        if (!filters.material.includes(plushie.material as PlushieMaterial)) {
+        if (!filters.material.includes(plushie.material)) {
           return false;
         }
       }
       
       // Filling filter
       if (filters.filling && filters.filling.length > 0) {
-        if (!filters.filling.includes(plushie.filling as PlushieFilling)) {
+        if (!filters.filling.includes(plushie.filling)) {
           return false;
         }
       }
       
       // Species filter
       if (filters.species && filters.species.length > 0) {
-        if (!filters.species.includes(plushie.species as PlushieSpecies)) {
+        if (!filters.species.includes(plushie.species)) {
           return false;
         }
       }
       
       // Brand filter
       if (filters.brand && filters.brand.length > 0) {
-        if (!filters.brand.includes(plushie.brand as PlushieBrand)) {
+        if (!filters.brand.includes(plushie.brand)) {
           return false;
         }
       }
@@ -299,24 +263,18 @@ const Marketplace = () => {
       return matchesSearch && isInPriceRange && isAvailable;
     });
 
-  const handleFilterChange = (filterType: keyof MarketplaceFilters, value: string[]) => {
-    setFilters(prev => ({ ...prev, [filterType]: value }));
+  const handleFilterUpdate = (newFilters: MarketplaceFilters) => {
+    setFilters(newFilters);
   };
 
   const handlePlushieClick = (plushie: MarketplacePlushie) => {
-    setSelectedPlushie({
-      ...plushie,
-      condition: plushie.condition as PlushieCondition,
-      material: plushie.material as PlushieMaterial,
-      filling: plushie.filling as PlushieFilling,
-      species: plushie.species as PlushieSpecies,
-      brand: plushie.brand as PlushieBrand
-    });
+    setSelectedPlushie(plushie);
     setIsDetailsOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Navbar />
       <div className="relative h-[300px] bg-gradient-to-r from-softspot-100 to-softspot-200">
         <div className="absolute inset-0 bg-opacity-50 bg-white">
           <div className="container mx-auto px-4 h-full flex flex-col justify-center">
@@ -333,8 +291,8 @@ const Marketplace = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col gap-6">
           {/* Search and Filters Bar */}
-          <div className="flex items-center gap-4 bg-white p-4 rounded-lg shadow-sm">
-            <div className="flex-1 relative">
+          <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-lg shadow-sm">
+            <div className="flex-1 relative min-w-[200px]">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
@@ -344,16 +302,19 @@ const Marketplace = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            <div className="flex items-center">
+              <CurrencyConverter price={0} className="ml-2" />
+            </div>
           </div>
 
-          <div className="grid grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {/* Filters */}
-            <div className="col-span-1">
-              <FilterPanel filters={filters} onFilterChange={handleFilterChange} />
+            <div className="col-span-1 md:block hidden">
+              <FilterPanel filters={filters} onFilterChange={handleFilterUpdate} />
             </div>
 
             {/* Plushie Grid */}
-            <div className="col-span-3">
+            <div className="col-span-1 md:col-span-3">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredPlushies.map((plushie) => (
                   <div 
@@ -373,11 +334,13 @@ const Marketplace = () => {
         </div>
       </div>
 
-      <PlushieDetailDialog 
-        isOpen={isDetailsOpen} 
-        onClose={() => setIsDetailsOpen(false)} 
-        plushie={selectedPlushie!}
-      />
+      {selectedPlushie && (
+        <PlushieDetailDialog 
+          isOpen={isDetailsOpen} 
+          onClose={() => setIsDetailsOpen(false)} 
+          plushie={selectedPlushie}
+        />
+      )}
     </div>
   );
 };
