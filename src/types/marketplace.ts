@@ -1,3 +1,4 @@
+
 export interface Plushie {
   id: string;
   name: string;
@@ -32,4 +33,91 @@ export interface UserProfile {
   bio: string;
   followers: number;
   following: number;
+}
+
+// Add missing types for marketplace functionality
+export type PlushieCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor';
+export type PlushieMaterial = 'Cotton' | 'Polyester' | 'Plush' | 'Fur' | 'Velvet' | 'Other';
+export type PlushieFilling = 'Cotton' | 'Polyester' | 'Beads' | 'Memory Foam' | 'Other';
+export type PlushieSpecies = 'Bear' | 'Cat' | 'Dog' | 'Rabbit' | 'Mythical' | 'Other';
+export type PlushieBrand = 'Build-A-Bear' | 'Squishmallows' | 'Jellycat' | 'Care Bears' | 'Disney' | 'Other';
+
+export interface MarketplacePlushie {
+  id: string;
+  image: string;
+  title: string;
+  username: string;
+  likes: number;
+  comments: number;
+  price: number;
+  forSale: boolean;
+  condition: PlushieCondition;
+  description: string;
+  color: string;
+  material: PlushieMaterial;
+  filling: PlushieFilling;
+  species: PlushieSpecies;
+  brand: PlushieBrand;
+  deliveryMethod: 'Shipping' | 'Collection' | 'Both';
+  deliveryCost: number;
+  tags?: string[];
+}
+
+export interface MarketplaceFilters {
+  color?: string[];
+  material?: string[];
+  filling?: string[];
+  species?: string[];
+  brand?: string[];
+  priceRange?: [number, number];
+  condition?: string[];
+  search?: string;
+}
+
+export interface Wishlist {
+  id: string;
+  userId: string;
+  name: string;
+  description?: string;
+  isPublic: boolean;
+  items: MarketplacePlushie[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DirectMessage {
+  id: string;
+  senderId: string;
+  senderName: string;
+  content: string;
+  timestamp: string;
+  read: boolean;
+  attachments?: string[];
+}
+
+export interface MessageThread {
+  id: string;
+  participants: {
+    id: string;
+    username: string;
+    profileImageUrl: string;
+  }[];
+  lastMessage: DirectMessage;
+  unreadCount: number;
+}
+
+export type PrivacySetting = 'public' | 'friends' | 'private';
+
+export interface UserPrivacySettings {
+  profile: PrivacySetting;
+  posts: PrivacySetting;
+  wishlist: PrivacySetting;
+  marketplace: PrivacySetting;
+  messages: PrivacySetting;
+}
+
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'CAD' | 'AUD' | 'JPY' | 'CNY' | 'INR';
+
+export interface CurrencyRates {
+  [key: string]: number;
 }

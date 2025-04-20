@@ -123,11 +123,11 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
           {items.map(item => (
             <div key={item.value} className="flex items-center space-x-2">
               <Checkbox 
-                id={`${category}-${item.value}`}
+                id={`${String(category)}-${item.value}`}
                 checked={(filters[category] as string[] || []).includes(item.value)}
                 onCheckedChange={() => updateFilter(category, item.value)}
               />
-              <Label htmlFor={`${category}-${item.value}`}>{item.label}</Label>
+              <Label htmlFor={`${String(category)}-${item.value}`}>{item.label}</Label>
             </div>
           ))}
         </CollapsibleContent>
