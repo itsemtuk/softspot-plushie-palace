@@ -1,5 +1,4 @@
-
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { Navbar } from "@/components/Navbar";
@@ -46,7 +45,7 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 const Settings = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tabFromUrl = searchParams.get("tab");
@@ -54,56 +53,50 @@ const Settings = () => {
   const [activeTab, setActiveTab] = useState(tabFromUrl === "privacy" ? "privacy" : 
                                            tabFromUrl === "preferences" ? "preferences" : "profile");
   
-  // Get existing plushie interests from user metadata
-  const existingInterests = user?.unsafeMetadata?.plushieInterests as string[] || [];
-  
-  // Parse existing preferences back to IDs for the form
-  const getExistingTypeIDs = useCallback(() => {
-    return plushieTypes
-      .filter(type => existingInterests.includes(type.label))
-      .map(type => type.id);
-  }, [existingInterests]);
-
-  const getExistingBrandIDs = useCallback(() => {
-    return plushieBrands
-      .filter(brand => existingInterests.includes(brand.label))
-      .map(brand => brand.id);
-  }, [existingInterests]);
-
-  // Default values for the form
-  const defaultValues: Partial<ProfileFormValues> = {
-    username: user?.username || "",
-    bio: user?.unsafeMetadata?.bio as string || "",
-    profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
-    plushieTypes: getExistingTypeIDs(),
-    plushieBrands: getExistingBrandIDs(),
-  };
-
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
+    defaultValues: {
+      username: "",
+      bio: "",
+      profilePicture: "",
+      plushieTypes: [],
+      plushieBrands: [],
+    },
   });
-
-  // Reset form when user data changes
-  useCallback(() => {
-    if (user) {
+  
+  // Load user data into form when user data is available
+  useEffect(() => {
+    if (isLoaded && user) {
+      // Get existing plushie interests from user metadata
+      const existingInterests = user?.unsafeMetadata?.plushieInterests as string[] || [];
+      
+      // Parse existing preferences back to IDs for the form
+      const existingTypeIDs = plushieTypes
+        .filter(type => existingInterests.includes(type.label))
+        .map(type => type.id);
+      
+      const existingBrandIDs = plushieBrands
+        .filter(brand => existingInterests.includes(brand.label))
+        .map(brand => brand.id);
+      
       form.reset({
         username: user?.username || "",
         bio: user?.unsafeMetadata?.bio as string || "",
         profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
-        plushieTypes: getExistingTypeIDs(),
-        plushieBrands: getExistingBrandIDs(),
+        plushieTypes: existingTypeIDs,
+        plushieBrands: existingBrandIDs,
       });
     }
-  }, [user, form, getExistingTypeIDs, getExistingBrandIDs]);
+  }, [isLoaded, user, form]);
 
   async function onSubmit(data: ProfileFormValues) {
     setIsLoading(true);
 
     try {
-      // Convert profile picture to proper format if needed
-      let profilePicture = data.profilePicture;
-
+      if (!user) {
+        throw new Error("User not found");
+      }
+      
       // Convert IDs to labels for plushie interests
       const selectedTypes = plushieTypes
         .filter(type => data.plushieTypes?.includes(type.id))
@@ -118,29 +111,28 @@ const Settings = () => {
       console.log("Updating user with:", {
         username: data.username,
         bio: data.bio,
-        profilePicture,
+        profilePicture: data.profilePicture,
         plushieInterests
       });
       
       // Update the user's data
-      if (user) {
-        await user.update({
-          username: data.username,
-          unsafeMetadata: {
-            bio: data.bio || "",
-            profilePicture: profilePicture || "",
-            plushieInterests,
-          },
-        });
-  
-        toast({
-          title: "Profile updated",
-          description: "Your profile information has been updated successfully.",
-        });
-  
-        // Reload user data to ensure the UI reflects the changes
-        await user.reload();
-      }
+      await user.update({
+        username: data.username,
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          bio: data.bio || "",
+          profilePicture: data.profilePicture || "",
+          plushieInterests,
+        },
+      });
+
+      toast({
+        title: "Profile updated",
+        description: "Your profile information has been updated successfully.",
+      });
+
+      // Reload user data to ensure the UI reflects the changes
+      await user.reload();
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({

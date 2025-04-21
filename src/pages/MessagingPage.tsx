@@ -1,8 +1,14 @@
 
 import { Navbar } from "@/components/Navbar";
 import DirectMessaging from "@/components/messaging/DirectMessaging";
+import { useEffect } from "react";
 
 const MessagingPage = () => {
+  // Force scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />

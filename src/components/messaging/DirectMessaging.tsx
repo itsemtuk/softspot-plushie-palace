@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   Card,
@@ -411,7 +410,7 @@ const DirectMessaging = () => {
                       className="mt-4 bg-softspot-400 hover:bg-softspot-500 flex items-center gap-2"
                       onClick={() => setIsNewMessageDialogOpen(true)}
                     >
-                      <PenFeather className="h-4 w-4" />
+                      <Feather className="h-4 w-4" />
                       Compose
                     </Button>
                   </div>
