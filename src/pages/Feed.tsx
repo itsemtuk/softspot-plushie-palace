@@ -35,8 +35,10 @@ const Feed = () => {
   // Load user posts from localStorage on component mount
   useEffect(() => {
     const storedPosts = localStorage.getItem('userPosts');
-    const userPosts = storedPosts ? JSON.parse(storedPosts) : [];
-    setPosts([...userPosts]); // Only use user posts, remove sample data
+    if (storedPosts) {
+      const userPosts = JSON.parse(storedPosts);
+      setPosts(userPosts);
+    }
   }, []);
   
   const filteredPosts = posts.filter(post => 
@@ -84,6 +86,9 @@ const Feed = () => {
       title: "Post created successfully!",
       description: "Your post is now visible in your profile and feed."
     });
+    
+    // Close the dialog
+    setIsPostCreationOpen(false);
   };
   
   return (

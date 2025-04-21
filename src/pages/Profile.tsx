@@ -1,17 +1,16 @@
+
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlushieCard } from "@/components/PlushieCard";
-import { feedPosts, marketplacePlushies } from "@/data/plushies";
-import { PlusCircle, Settings, Edit2, Heart, Store, Tag, ImagePlus } from "lucide-react";
+import { PlusCircle, Settings, Edit2, ImagePlus } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
-import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
+import PostCreationFlow from "@/components/post/PostCreationFlow";
 
 // Extended post type for consistency with Feed.tsx
 interface ExtendedPost {
@@ -27,11 +26,6 @@ interface ExtendedPost {
 }
 
 const Profile = () => {
-  // Use sample data only for liked posts, not for user's own posts
-  const userLikedPosts = feedPosts.slice(3, 6);
-  const userLikedItems = marketplacePlushies.slice(2, 5);
-  const userListings = marketplacePlushies.slice(0, 2);
-  
   const { user } = useUser();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -149,7 +143,7 @@ const Profile = () => {
           <div className="flex justify-center mt-6 border-b">
             <div className="flex space-x-8">
               <div className="text-center px-4 py-2 border-b-2 border-softspot-500">
-                <span className="block font-medium text-softspot-500">128</span>
+                <span className="block font-medium text-softspot-500">{userPosts.length || 0}</span>
                 <span className="text-xs text-gray-500">Posts</span>
               </div>
               <div className="text-center px-4 py-2">
@@ -189,16 +183,20 @@ const Profile = () => {
             {userPosts.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {userPosts.map((post) => (
-                  <PlushieCard 
-                    key={post.id}
-                    id={post.id}
-                    image={post.image}
-                    title={post.title}
-                    username={post.username}
-                    likes={post.likes}
-                    comments={post.comments}
-                    variant="feed"
-                  />
+                  <div 
+                    key={post.id} 
+                    className="relative aspect-square bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
+                    onClick={() => navigate('/feed')} // Navigate to feed when clicking on a post
+                  >
+                    <img 
+                      src={post.image} 
+                      alt={post.title} 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 flex flex-col justify-end p-4 transition-all duration-300">
+                      <h3 className="text-white font-medium opacity-0 hover:opacity-100">{post.title}</h3>
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : (
@@ -229,71 +227,60 @@ const Profile = () => {
               </Button>
             </div>
             
-            {userListings.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {userListings.map((listing) => (
-                  <PlushieCard 
-                    key={listing.id}
-                    id={listing.id}
-                    image={listing.image}
-                    title={listing.title}
-                    username={listing.username}
-                    likes={listing.likes}
-                    comments={listing.comments}
-                    price={listing.price}
-                    forSale={listing.forSale}
-                    variant="marketplace"
-                  />
-                ))}
+            <div className="py-12 text-center">
+              <div className="bg-white rounded-lg p-8 shadow-sm">
+                <div className="flex justify-center">
+                  <ImagePlus className="h-12 w-12 text-softspot-300" />
+                </div>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No listings yet</h3>
+                <p className="mt-2 text-gray-500">Create your first listing to sell or trade.</p>
+                <Button className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white">
+                  Create Listing
+                </Button>
               </div>
-            ) : null}
+            </div>
           </TabsContent>
           
-          {/* Liked Posts Tab */}
           <TabsContent value="liked-posts">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-gray-900">Liked Posts</h2>
             </div>
             
-            {userLikedPosts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {userLikedPosts.map((post) => (
-                  <PlushieCard 
-                    key={post.id}
-                    id={post.id}
-                    image={post.image}
-                    title={post.title}
-                    username={post.username}
-                    likes={post.likes}
-                    comments={post.comments}
-                    variant="feed"
-                  />
-                ))}
+            <div className="py-12 text-center">
+              <div className="bg-white rounded-lg p-8 shadow-sm">
+                <div className="flex justify-center">
+                  <ImagePlus className="h-12 w-12 text-softspot-300" />
+                </div>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No liked posts yet</h3>
+                <p className="mt-2 text-gray-500">Like some posts to see them here.</p>
+                <Button 
+                  className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white"
+                  onClick={() => navigate('/feed')}
+                >
+                  Browse Feed
+                </Button>
               </div>
-            ) : null}
+            </div>
           </TabsContent>
           
           <TabsContent value="liked-items">
             <h2 className="text-xl font-bold text-gray-900 mb-6">Liked Marketplace Items</h2>
             
-            {userLikedItems.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {userLikedItems.map((item) => (
-                  <PlushieCard 
-                    key={item.id}
-                    id={item.id}
-                    image={item.image}
-                    title={item.title}
-                    username={item.username}
-                    likes={item.likes}
-                    comments={item.comments}
-                    price={item.price}
-                    forSale={item.forSale}
-                    variant="marketplace"
-                  />
-                ))}
+            <div className="py-12 text-center">
+              <div className="bg-white rounded-lg p-8 shadow-sm">
+                <div className="flex justify-center">
+                  <ImagePlus className="h-12 w-12 text-softspot-300" />
+                </div>
+                <h3 className="mt-4 text-lg font-medium text-gray-900">No liked items yet</h3>
+                <p className="mt-2 text-gray-500">Like some marketplace items to see them here.</p>
+                <Button 
+                  className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white"
+                  onClick={() => navigate('/marketplace')}
+                >
+                  Browse Marketplace
+                </Button>
               </div>
-            ) : null}
+            </div>
           </TabsContent>
         </Tabs>
       </div>
