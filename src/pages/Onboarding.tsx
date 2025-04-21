@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 import { useUser, useAuth } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import OnboardingForm from "@/components/OnboardingForm";
 import { Button } from "@/components/ui/button";
@@ -80,6 +80,36 @@ const Onboarding = () => {
       </div>
     </div>
   );
+};
+
+// Create OnboardingRoute component to restrict access
+// This component will check if onboarding is complete and redirect accordingly
+export const OnboardingRoute = ({ children }: { children: React.ReactNode }) => {
+  const { isLoaded, user } = useUser();
+  
+  if (!isLoaded) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-bounce">
+          <div className="h-16 w-16 rounded-full bg-softspot-200 flex items-center justify-center">
+            <span className="text-3xl">🧸</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  const onboardingCompleted = user?.unsafeMetadata.onboardingCompleted as boolean;
+  
+  if (!user) {
+    return <Navigate to="/sign-in" replace />;
+  }
+  
+  if (!onboardingCompleted && window.location.pathname !== '/onboarding') {
+    return <Navigate to="/onboarding" replace />;
+  }
+  
+  return <>{children}</>;
 };
 
 export default Onboarding;

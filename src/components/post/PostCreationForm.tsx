@@ -15,12 +15,42 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PostCreationData } from "@/types/marketplace";
+import { toast } from "@/components/ui/use-toast";
+
+// List of inappropriate words to filter
+const inappropriateWords = [
+  "badword1", "badword2", "profanity", "explicit"
+  // In a real app, this would be a more comprehensive list
+];
+
+// Function to check for inappropriate content
+const containsInappropriateContent = (text: string): boolean => {
+  if (!text) return false;
+  const lowerText = text.toLowerCase();
+  return inappropriateWords.some(word => lowerText.includes(word));
+};
 
 const postSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  location: z.string().optional(),
-  tags: z.string().optional(),
+  title: z.string()
+    .min(1, "Title is required")
+    .refine(text => !containsInappropriateContent(text), {
+      message: "Title contains inappropriate content",
+    }),
+  description: z.string()
+    .optional()
+    .refine(text => !text || !containsInappropriateContent(text), {
+      message: "Description contains inappropriate content",
+    }),
+  location: z.string()
+    .optional()
+    .refine(text => !text || !containsInappropriateContent(text), {
+      message: "Location contains inappropriate content",
+    }),
+  tags: z.string()
+    .optional()
+    .refine(text => !text || !containsInappropriateContent(text), {
+      message: "Tags contain inappropriate content",
+    }),
 });
 
 interface PostCreationFormProps {
@@ -40,6 +70,18 @@ export const PostCreationForm = ({ onSubmit, imageUrl }: PostCreationFormProps) 
   });
 
   const handleSubmit = (values: z.infer<typeof postSchema>) => {
+    // Check for inappropriate content one more time as a safety measure
+    if (containsInappropriateContent(values.title) || 
+        containsInappropriateContent(values.description || '') || 
+        containsInappropriateContent(values.tags || '')) {
+      toast({
+        title: "Content not allowed",
+        description: "Your post contains inappropriate content that goes against our community guidelines.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     onSubmit({
       image: imageUrl,
       title: values.title,

@@ -24,6 +24,10 @@ const SignUp = () => {
             redirectUrl="/onboarding"
             signInUrl="/sign-in"
           />
+          <div className="mt-6 text-center text-sm text-gray-500">
+            <p>By signing up, you agree to our Terms of Service and Privacy Policy.</p>
+            <p className="mt-2">You must be at least 16 years old to create an account.</p>
+          </div>
         </div>
       </div>
     </div>

@@ -88,6 +88,19 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
     onClose();
   };
   
+  const getDialogSize = () => {
+    switch (currentStep) {
+      case 'upload':
+        return 'sm:max-w-md';
+      case 'edit':
+        return 'sm:max-w-lg max-h-[90vh] overflow-y-auto';
+      case 'details':
+        return 'sm:max-w-lg';
+      default:
+        return 'sm:max-w-md';
+    }
+  };
+  
   const renderStepContent = () => {
     switch (currentStep) {
       case 'upload':
@@ -143,7 +156,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
   
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`sm:max-w-${currentStep === 'details' ? 'lg' : 'md'}`}>
+      <DialogContent className={`${getDialogSize()} max-h-[90vh] overflow-y-auto`}>
         <DialogHeader>
           <DialogTitle>
             {currentStep === 'upload' && 'Upload Image'}

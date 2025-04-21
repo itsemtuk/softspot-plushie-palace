@@ -19,6 +19,7 @@ export const useOnboardingForm = () => {
   const existingPreferences = user?.unsafeMetadata?.plushieInterests as string[] || [];
   const existingBio = user?.unsafeMetadata?.bio as string || "";
   const existingProfilePicture = user?.unsafeMetadata?.profilePicture as string || "";
+  const existingAge = user?.unsafeMetadata?.age as number || null;
 
   // Parse existing preferences back to IDs for the form
   const getExistingTypeIDs = () => {
@@ -40,6 +41,7 @@ export const useOnboardingForm = () => {
       plushieBrands: getExistingBrandIDs(),
       bio: existingBio,
       profilePicture: existingProfilePicture,
+      age: existingAge || 0,
     },
   });
 
@@ -66,9 +68,42 @@ export const useOnboardingForm = () => {
     }
   };
 
+  // Function to follow the official SoftSpot account
+  const followOfficialAccount = async () => {
+    // In a real app, this would make an API call to follow the official account
+    // For now, we'll simulate this by storing it in the user's metadata
+    try {
+      await user?.update({
+        unsafeMetadata: {
+          ...user.unsafeMetadata,
+          following: [...(user.unsafeMetadata.following as string[] || []), "softspot_official"],
+        },
+      });
+      console.log("Followed official SoftSpot account");
+    } catch (error) {
+      console.error("Error following official account:", error);
+    }
+  };
+
+  const validateAge = (age: number | null | undefined): boolean => {
+    if (!age) return false;
+    return age >= 16;
+  };
+
   const onSubmit = async (data: FormSchemaType) => {
     setLoading(true);
     try {
+      // Validate age - must be at least 16
+      if (!validateAge(data.age)) {
+        toast({
+          title: "Age Restriction",
+          description: "You must be at least 16 years old to use SoftSpot.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+      
       // Convert IDs to labels for better readability in the profile
       const selectedTypes = plushieTypes
         .filter(type => data.plushieTypes.includes(type.id))
@@ -87,9 +122,15 @@ export const useOnboardingForm = () => {
           plushieInterests,
           bio: data.bio || "",
           profilePicture: data.profilePicture || "",
-          onboardingCompleted: true
+          age: data.age,
+          onboardingCompleted: true,
+          following: ["softspot_official"], // Auto-follow the official account
+          isPrivate: false, // Default to public profile
         },
       });
+
+      // Follow the official SoftSpot account
+      await followOfficialAccount();
 
       // Force reload user data to reflect changes immediately
       await user?.reload();

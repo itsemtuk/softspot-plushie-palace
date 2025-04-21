@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, ImagePlus, Search, Tag } from "lucide-react";
@@ -8,8 +8,9 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { PostDialog } from "@/components/PostDialog";
 import { feedPosts } from "@/data/plushies";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
-import { PostCreationData } from "@/types/marketplace";
+import { PostCreationData, Post } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
+import { useUser } from "@clerk/clerk-react";
 
 // Extended post type with additional fields
 interface ExtendedPost {
@@ -21,6 +22,7 @@ interface ExtendedPost {
   comments: number;
   description?: string;
   tags?: string[];
+  timestamp?: string;
 }
 
 // Add descriptions and tags to the sample data
@@ -41,12 +43,21 @@ const extendedFeedPosts: ExtendedPost[] = feedPosts.map(post => ({
 }));
 
 const Feed = () => {
+  const { user } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPost, setSelectedPost] = useState<ExtendedPost | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
+  const [posts, setPosts] = useState<ExtendedPost[]>([]);
   
-  const filteredPosts = extendedFeedPosts.filter(post => 
+  // Load posts from localStorage and combine with sample data on component mount
+  useEffect(() => {
+    const storedPosts = localStorage.getItem('userPosts');
+    const userPosts = storedPosts ? JSON.parse(storedPosts) : [];
+    setPosts([...userPosts, ...extendedFeedPosts]);
+  }, []);
+  
+  const filteredPosts = posts.filter(post => 
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     post.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
     post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
@@ -62,7 +73,31 @@ const Feed = () => {
   };
 
   const handleCreatePost = (postData: PostCreationData) => {
-    console.log("New post created:", postData);
+    const username = user?.username || user?.firstName || "Anonymous";
+    
+    // Create new post with user data
+    const newPost: ExtendedPost = {
+      id: `post-${Date.now()}`,
+      image: postData.image,
+      title: postData.title,
+      username: username as string,
+      likes: 0,
+      comments: 0,
+      description: postData.description,
+      tags: postData.tags || [],
+      timestamp: new Date().toISOString(),
+    };
+    
+    // Add new post to the beginning of the list
+    const updatedPosts = [newPost, ...posts];
+    setPosts(updatedPosts);
+    
+    // Store user's posts in localStorage
+    const storedPosts = localStorage.getItem('userPosts');
+    const existingUserPosts = storedPosts ? JSON.parse(storedPosts) : [];
+    const updatedUserPosts = [newPost, ...existingUserPosts];
+    localStorage.setItem('userPosts', JSON.stringify(updatedUserPosts));
+    
     toast({
       title: "Post created successfully!",
       description: "Your post is now visible in your profile and feed."

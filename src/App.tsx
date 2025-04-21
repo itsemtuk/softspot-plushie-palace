@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ClerkProvider, SignIn, SignUp } from "@clerk/clerk-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
-import Onboarding from "./pages/Onboarding";
+import Onboarding, { OnboardingRoute } from "./pages/Onboarding";
 import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import Feed from "./pages/Feed";
@@ -33,6 +33,9 @@ function AppContent() {
     setShowFooter(!authPaths.some(path => location.pathname.startsWith(path)));
   }, [location]);
 
+  // Public routes that don't require onboarding completion
+  const publicRoutes = ['/sign-in', '/sign-up', '/onboarding', '/'];
+
   return (
     <>
       <Routes>
@@ -40,14 +43,48 @@ function AppContent() {
         <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
         <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
         <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/settings" element={<Settings />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/feed" element={<Feed />} />
-        <Route path="/discover" element={<Discover />} />
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/brand/:brandId" element={<BrandPage />} />
-        <Route path="/messages" element={<MessagingPage />} />
-        <Route path="/wishlist" element={<WishlistPage />} />
+        
+        {/* Protected routes that require onboarding completion */}
+        <Route path="/settings" element={
+          <OnboardingRoute>
+            <Settings />
+          </OnboardingRoute>
+        } />
+        <Route path="/profile" element={
+          <OnboardingRoute>
+            <Profile />
+          </OnboardingRoute>
+        } />
+        <Route path="/feed" element={
+          <OnboardingRoute>
+            <Feed />
+          </OnboardingRoute>
+        } />
+        <Route path="/discover" element={
+          <OnboardingRoute>
+            <Discover />
+          </OnboardingRoute>
+        } />
+        <Route path="/marketplace" element={
+          <OnboardingRoute>
+            <Marketplace />
+          </OnboardingRoute>
+        } />
+        <Route path="/brand/:brandId" element={
+          <OnboardingRoute>
+            <BrandPage />
+          </OnboardingRoute>
+        } />
+        <Route path="/messages" element={
+          <OnboardingRoute>
+            <MessagingPage />
+          </OnboardingRoute>
+        } />
+        <Route path="/wishlist" element={
+          <OnboardingRoute>
+            <WishlistPage />
+          </OnboardingRoute>
+        } />
         <Route path="*" element={<NotFound />} />
       </Routes>
       

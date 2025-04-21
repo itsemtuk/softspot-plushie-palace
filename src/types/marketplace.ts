@@ -56,6 +56,8 @@ export interface UserProfile {
   bio: string;
   followers: number;
   following: number;
+  age?: number;
+  isPrivate?: boolean;
 }
 
 export interface Notification {
@@ -84,6 +86,12 @@ export interface MarketplacePlushie {
   timestamp: string;
   likes: number;
   comments: number;
+  material?: PlushieMaterial;
+  filling?: PlushieFilling;
+  species?: PlushieSpecies;
+  color?: string;
+  forSale?: boolean;
+  username?: string;
 }
 
 export interface MarketplaceFilters {
@@ -94,6 +102,10 @@ export interface MarketplaceFilters {
   conditions: PlushieCondition[];
   sortBy: 'newest' | 'price-low' | 'price-high' | 'popularity';
   species: string[];
+  color?: string[];
+  material?: PlushieMaterial[];
+  filling?: PlushieFilling[];
+  brand?: string;
 }
 
 export enum PlushieCondition {
@@ -151,8 +163,9 @@ export interface Wishlist {
   userId: string;
   name: string;
   isPublic: boolean;
-  createdAt: Date;
+  createdAt: Date | string;
   items: MarketplacePlushie[];
+  description?: string;
 }
 
 export interface Currency {
@@ -169,6 +182,11 @@ export interface UserPrivacySettings {
   messagePermissions: PrivacySetting;
   wishlistVisibility: PrivacySetting;
   activityVisibility: PrivacySetting;
+  profile?: string;
+  posts?: string;
+  wishlist?: string;
+  marketplace?: string;
+  messages?: string;
 }
 
 export enum PrivacySetting {
