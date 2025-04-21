@@ -8,7 +8,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { PostDialog } from "@/components/PostDialog";
 import { feedPosts } from "@/data/plushies";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
-import { PostCreationData, Post } from "@/types/marketplace";
+import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/clerk-react";
 
@@ -201,3 +201,4 @@ const Feed = () => {
 };
 
 export default Feed;
+
