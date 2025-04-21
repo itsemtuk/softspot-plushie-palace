@@ -1,11 +1,10 @@
-
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { PlushieCard } from "@/components/PlushieCard";
 import { feedPosts, marketplacePlushies } from "@/data/plushies";
-import { PlusCircle, Settings, Edit2, Heart, Store, Tag } from "lucide-react";
+import { PlusCircle, Settings, Edit2, Heart, Store, Tag, ImagePlus } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -14,33 +13,79 @@ import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 
+// Extended post type for consistency with Feed.tsx
+interface ExtendedPost {
+  id: string;
+  image: string;
+  title: string;
+  username: string;
+  likes: number;
+  comments: number;
+  description?: string;
+  tags?: string[];
+  timestamp?: string;
+}
+
 const Profile = () => {
-  // Filter posts to show only user's posts (for demo, showing first 3)
-  const userPosts = feedPosts.slice(0, 3); 
-  const userListings = marketplacePlushies.slice(0, 2);
-  const userLikedPosts = feedPosts.slice(3, 6); // Dedicated liked posts
+  // Use sample data only for liked posts, not for user's own posts
+  const userLikedPosts = feedPosts.slice(3, 6);
   const userLikedItems = marketplacePlushies.slice(2, 5);
+  const userListings = marketplacePlushies.slice(0, 2);
   
   const { user } = useUser();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isPostDialogOpen, setIsPostDialogOpen] = useState(false);
+  const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
 
-  // Get profile data once user is loaded
+  // Get profile data and user posts once user is loaded
   useEffect(() => {
     if (user) {
       // Get the profile picture from metadata
       const userProfilePicture = user.unsafeMetadata?.profilePicture as string;
       setProfileImage(userProfilePicture || user.imageUrl);
+      
+      // Load user posts from localStorage
+      const storedPosts = localStorage.getItem('userPosts');
+      if (storedPosts) {
+        setUserPosts(JSON.parse(storedPosts));
+      }
     }
   }, [user]);
 
   const handleCreatePost = (postData: PostCreationData) => {
-    console.log("New post created:", postData);
+    const username = user?.username || user?.firstName || "Anonymous";
+    
+    // Create new post with user data
+    const newPost: ExtendedPost = {
+      id: `post-${Date.now()}`,
+      image: postData.image,
+      title: postData.title,
+      username: username as string,
+      likes: 0,
+      comments: 0,
+      description: postData.description,
+      tags: postData.tags || [],
+      timestamp: new Date().toISOString(),
+    };
+    
+    // Add new post to user posts
+    const updatedPosts = [newPost, ...userPosts];
+    setUserPosts(updatedPosts);
+    
+    // Store user's posts in localStorage
+    const storedPosts = localStorage.getItem('userPosts');
+    const existingUserPosts = storedPosts ? JSON.parse(storedPosts) : [];
+    const updatedUserPosts = [newPost, ...existingUserPosts];
+    localStorage.setItem('userPosts', JSON.stringify(updatedUserPosts));
+    
     toast({
       title: "Post created successfully!",
       description: "Your post is now visible in your profile and feed."
     });
+    
+    // Close the dialog
+    setIsPostDialogOpen(false);
   };
 
   // Display user's plushie interests (from metadata or default)
@@ -156,7 +201,23 @@ const Profile = () => {
                   />
                 ))}
               </div>
-            ) : null}
+            ) : (
+              <div className="py-12 text-center">
+                <div className="bg-white rounded-lg p-8 shadow-sm">
+                  <div className="flex justify-center">
+                    <ImagePlus className="h-12 w-12 text-softspot-300" />
+                  </div>
+                  <h3 className="mt-4 text-lg font-medium text-gray-900">No posts yet</h3>
+                  <p className="mt-2 text-gray-500">Create your first post to share with the community.</p>
+                  <Button 
+                    className="mt-4 bg-softspot-400 hover:bg-softspot-500 text-white"
+                    onClick={() => setIsPostDialogOpen(true)}
+                  >
+                    Create Post
+                  </Button>
+                </div>
+              </div>
+            )}
           </TabsContent>
           
           <TabsContent value="listings">
@@ -247,4 +308,3 @@ const Profile = () => {
 };
 
 export default Profile;
-

@@ -6,7 +6,6 @@ import { PlusCircle, ImagePlus, Search, Tag } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { PostDialog } from "@/components/PostDialog";
-import { feedPosts } from "@/data/plushies";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
@@ -25,23 +24,6 @@ interface ExtendedPost {
   timestamp?: string;
 }
 
-// Add descriptions and tags to the sample data
-const extendedFeedPosts: ExtendedPost[] = feedPosts.map(post => ({
-  ...post,
-  description: post.id === "post-1" 
-    ? "Just got this adorable teddy bear! It's so soft and cuddly." 
-    : post.id === "post-2"
-    ? "Check out my new plushie collection addition!"
-    : undefined,
-  tags: post.id === "post-1" 
-    ? ["teddybear", "cute", "plushie"] 
-    : post.id === "post-2"
-    ? ["bunny", "plushiecollection", "kawaii"]
-    : post.id === "post-3"
-    ? ["pokemon", "pikachu", "gaming"]
-    : []
-}));
-
 const Feed = () => {
   const { user } = useUser();
   const [searchQuery, setSearchQuery] = useState("");
@@ -50,11 +32,11 @@ const Feed = () => {
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   
-  // Load posts from localStorage and combine with sample data on component mount
+  // Load user posts from localStorage on component mount
   useEffect(() => {
     const storedPosts = localStorage.getItem('userPosts');
     const userPosts = storedPosts ? JSON.parse(storedPosts) : [];
-    setPosts([...userPosts, ...extendedFeedPosts]);
+    setPosts([...userPosts]); // Only use user posts, remove sample data
   }, []);
   
   const filteredPosts = posts.filter(post => 
@@ -201,4 +183,3 @@ const Feed = () => {
 };
 
 export default Feed;
-
