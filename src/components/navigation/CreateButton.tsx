@@ -13,7 +13,7 @@ interface CreateButtonProps {
 }
 
 export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButtonProps = {}) => {
-  const { isSheetOpen, isPostCreationOpen, onOpenChange, onCreatePost, onClosePostCreation } = useCreatePost();
+  const { isSheetOpen, isPostCreationOpen, onOpenChange, onCreatePost, onClosePostCreation, setIsPostCreationOpen } = useCreatePost();
   const navigate = useNavigate();
 
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
@@ -47,7 +47,7 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
                 if (externalOnCreatePost) {
                   externalOnCreatePost();
                 } else {
-                  onCreatePost();
+                  setIsPostCreationOpen(true);
                 }
               }}
             >

@@ -9,7 +9,7 @@ import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 
 export function CreatePostSheet() {
-  const { isSheetOpen, isPostCreationOpen, onOpenChange, onCreatePost, onClosePostCreation } = useCreatePost();
+  const { isSheetOpen, isPostCreationOpen, onOpenChange, onClosePostCreation, setIsPostCreationOpen } = useCreatePost();
   const navigate = useNavigate();
 
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
@@ -39,7 +39,7 @@ export function CreatePostSheet() {
               className="flex flex-col items-center justify-center gap-2 h-auto py-6"
               onClick={() => {
                 onOpenChange(false);
-                onCreatePost();
+                setIsPostCreationOpen(true);
               }}
             >
               <PlusSquare className="h-8 w-8" />

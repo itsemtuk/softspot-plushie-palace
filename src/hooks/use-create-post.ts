@@ -27,5 +27,6 @@ export function useCreatePost() {
     onOpenChange,
     onCreatePost,
     onClosePostCreation,
+    setIsPostCreationOpen
   };
 }

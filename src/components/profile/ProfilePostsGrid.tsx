@@ -4,6 +4,7 @@ import { ExtendedPost } from "@/types/marketplace";
 import { PlusSquare, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCreatePost } from "@/hooks/use-create-post";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ProfilePostsGridProps {
   posts: ExtendedPost[];
@@ -13,7 +14,8 @@ interface ProfilePostsGridProps {
 
 export function ProfilePostsGrid({ posts, onPostClick, isOwnProfile = true }: ProfilePostsGridProps) {
   const navigate = useNavigate();
-  const { onCreatePost } = useCreatePost();
+  const { setIsPostCreationOpen } = useCreatePost();
+  const isMobile = useIsMobile();
 
   if (posts.length === 0 && isOwnProfile) {
     return (
@@ -22,22 +24,24 @@ export function ProfilePostsGrid({ posts, onPostClick, isOwnProfile = true }: Pr
         <p className="text-gray-500 max-w-md mx-auto">
           Share your plushie collection with the community or sell items in the marketplace.
         </p>
-        <div className="flex flex-col sm:flex-row justify-center gap-3 mt-6">
-          <Button
-            onClick={onCreatePost}
-            className="bg-softspot-500 hover:bg-softspot-600 text-white"
-          >
-            <PlusSquare className="mr-2 h-4 w-4" />
-            Create Post
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => navigate('/sell')}
-          >
-            <ShoppingBag className="mr-2 h-4 w-4" />
-            List Item for Sale
-          </Button>
-        </div>
+        {!isMobile && (
+          <div className="flex flex-col sm:flex-row justify-center gap-3 mt-6">
+            <Button
+              onClick={() => setIsPostCreationOpen(true)}
+              className="bg-softspot-500 hover:bg-softspot-600 text-white"
+            >
+              <PlusSquare className="mr-2 h-4 w-4" />
+              Create Post
+            </Button>
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/sell')}
+            >
+              <ShoppingBag className="mr-2 h-4 w-4" />
+              List Item for Sale
+            </Button>
+          </div>
+        )}
       </div>
     );
   }
@@ -55,10 +59,10 @@ export function ProfilePostsGrid({ posts, onPostClick, isOwnProfile = true }: Pr
 
   return (
     <div>
-      {isOwnProfile && (
+      {isOwnProfile && !isMobile && (
         <div className="mb-6 flex justify-end space-x-3">
           <Button
-            onClick={onCreatePost}
+            onClick={() => setIsPostCreationOpen(true)}
             className="bg-softspot-500 hover:bg-softspot-600 text-white"
           >
             <PlusSquare className="mr-2 h-4 w-4" />

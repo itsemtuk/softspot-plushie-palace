@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useUser } from "@clerk/clerk-react";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +28,7 @@ export default function UserProfileHeader({
   const [isFollowing, setIsFollowing] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const [followersCount, setFollowersCount] = useState(128); // Placeholder
+  const [postsCount, setPostsCount] = useState(0);
   
   const isPrivate = profileData?.isPrivate ?? false;
   
@@ -151,6 +153,11 @@ export default function UserProfileHeader({
   // Placeholder plushie interests (from metadata or default)
   const plushieInterests = profileData?.interests || ["Teddy Bears", "Unicorns", "Vintage"];
   
+  // Get following count
+  const followingCount = user?.unsafeMetadata?.following 
+    ? (user.unsafeMetadata.following as string[]).length 
+    : 0;
+  
   return (
     <div className="bg-gradient-to-b from-softspot-100 to-white py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -199,7 +206,7 @@ export default function UserProfileHeader({
         <div className="flex justify-center mt-6 border-b">
           <div className="flex space-x-8">
             <div className="text-center px-4 py-2 border-b-2 border-softspot-500">
-              <span className="block font-medium text-softspot-500">128</span>
+              <span className="block font-medium text-softspot-500">{postsCount}</span>
               <span className="text-xs text-gray-500">Posts</span>
             </div>
             <div className="text-center px-4 py-2">
@@ -207,10 +214,7 @@ export default function UserProfileHeader({
               <span className="text-xs text-gray-500">Followers</span>
             </div>
             <div className="text-center px-4 py-2">
-              <span className="block font-medium">
-                {user?.unsafeMetadata?.following ? 
-                  (user.unsafeMetadata.following as string[]).length : 450}
-              </span>
+              <span className="block font-medium">{followingCount}</span>
               <span className="text-xs text-gray-500">Following</span>
             </div>
           </div>

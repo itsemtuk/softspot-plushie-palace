@@ -74,7 +74,7 @@ export function PostDialogContent({
         onCommentLikeToggle={onCommentLikeToggle}
         onCommentSubmit={onCommentSubmit}
         onFindSimilar={onFindSimilar}
-        onClose={isMobile ? null : onClose}  // Only show close button on desktop
+        onClose={onClose}  // Always pass onClose regardless of device
         onSaveEdit={onSaveEdit}
         onDeletePost={onDeletePost}
       />
