@@ -30,6 +30,7 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post?.likes || 0);
   const [commentList, setCommentList] = useState<Comment[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   
   // Update local state when post changes
@@ -42,24 +43,34 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
   
   if (!post) return null;
 
-  const handleLikeToggle = () => {
-    if (!isLiked) {
+  const handleLikeToggle = async () => {
+    if (!isLiked && !isSubmitting) {
+      // Set submitting state to prevent multiple clicks
+      setIsSubmitting(true);
+      
       // Optimistically update UI
       setLikeCount(prev => prev + 1);
       setIsLiked(true);
       
-      // Update in storage
-      const result = togglePostLike(post.id);
-      
-      if (!result.success) {
-        // Revert UI if storage update failed
-        setLikeCount(prev => prev - 1);
-        setIsLiked(false);
+      try {
+        // Update in Supabase
+        const result = await togglePostLike(post.id);
+        
+        if (!result.success) {
+          // Revert UI if storage update failed
+          setLikeCount(prev => prev - 1);
+          setIsLiked(false);
+          throw new Error("Failed to like post");
+        }
+      } catch (error) {
+        console.error('Error toggling like:', error);
         toast({
           variant: "destructive",
           title: "Failed to like post",
-          description: "Please try again later."
+          description: "Please check your connection and try again."
         });
+      } finally {
+        setIsSubmitting(false);
       }
     }
   };

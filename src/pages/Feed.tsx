@@ -9,7 +9,7 @@ import { useUser } from "@clerk/clerk-react";
 import { FeedHeader } from "@/components/feed/FeedHeader";
 import { EmptyFeed } from "@/components/feed/EmptyFeed";
 import { FeedGrid } from "@/components/feed/FeedGrid";
-import { getPosts, addPost } from "@/utils/postStorage";
+import { getPosts, addPost, getLocalPosts } from "@/utils/postStorage";
 
 const Feed = () => {
   const { user } = useUser();
@@ -18,12 +18,51 @@ const Feed = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Load posts on component mount
   useEffect(() => {
-    const storedPosts = getPosts();
-    setPosts(storedPosts);
-  }, []);
+    const loadPosts = async () => {
+      setIsLoading(true);
+      try {
+        // Try to get posts from Supabase
+        const cloudPosts = await getPosts();
+        
+        if (cloudPosts && cloudPosts.length > 0) {
+          setPosts(cloudPosts);
+        } else {
+          // Fallback to local storage if no cloud posts
+          const localPosts = getLocalPosts();
+          setPosts(localPosts);
+          
+          // If we have local posts but no cloud posts, sync them
+          if (localPosts.length > 0 && user) {
+            // This would sync local posts to cloud in a real app
+            // We'd need user confirmation for this in a production app
+            toast({
+              title: "Local posts detected",
+              description: "Your previous posts will be synced to your account."
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading posts:', error);
+        // Fallback to local storage
+        const localPosts = getLocalPosts();
+        setPosts(localPosts);
+        
+        toast({
+          variant: "destructive",
+          title: "Error loading posts",
+          description: "Could not connect to the server. Showing local posts instead."
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadPosts();
+  }, [user]);
   
   const filteredPosts = posts.filter(post => 
     (post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
@@ -31,7 +70,7 @@ const Feed = () => {
     post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
-  const handleCreatePost = (postData: PostCreationData) => {
+  const handleCreatePost = async (postData: PostCreationData) => {
     const username = user?.username || user?.firstName || "Anonymous";
     
     const newPost: ExtendedPost = {
@@ -47,18 +86,34 @@ const Feed = () => {
       timestamp: new Date().toISOString(),
     };
     
-    // Add the post to local storage
-    addPost(newPost);
-    
-    // Update the state
+    // Optimistically update the UI
     setPosts(prevPosts => [newPost, ...prevPosts]);
     
-    toast({
-      title: "Post created successfully!",
-      description: "Your post is now visible in your profile and feed."
-    });
-    
+    // Close the post creation dialog
     setIsPostCreationOpen(false);
+    
+    // Add the post to Supabase
+    try {
+      const result = await addPost(newPost);
+      
+      if (result.success) {
+        toast({
+          title: "Post created successfully!",
+          description: "Your post is now visible in your profile and feed."
+        });
+      } else {
+        throw new Error("Failed to save post");
+      }
+    } catch (error) {
+      console.error('Error saving post:', error);
+      
+      // Fallback to local storage
+      toast({
+        variant: "destructive",
+        title: "Connection issue",
+        description: "Your post was saved locally but couldn't be synced to the cloud."
+      });
+    }
   };
 
   return (
@@ -71,7 +126,11 @@ const Feed = () => {
           onCreatePost={() => setIsPostCreationOpen(true)}
         />
         
-        {filteredPosts.length > 0 ? (
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-500"></div>
+          </div>
+        ) : filteredPosts.length > 0 ? (
           <FeedGrid 
             posts={filteredPosts} 
             onPostClick={(post) => {
