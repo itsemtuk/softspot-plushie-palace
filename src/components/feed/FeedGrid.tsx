@@ -1,0 +1,54 @@
+
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Tag } from "lucide-react";
+import { ShareMenu } from "@/components/post/ShareMenu";
+import { ExtendedPost } from "@/types/marketplace";
+
+interface FeedGridProps {
+  posts: ExtendedPost[];
+  onPostClick: (post: ExtendedPost) => void;
+}
+
+export const FeedGrid = ({ posts, onPostClick }: FeedGridProps) => {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 md:gap-3">
+      {posts.map((post) => (
+        <div 
+          key={post.id}
+          className="relative group"
+        >
+          <div 
+            className="cursor-pointer"
+            onClick={() => onPostClick(post)}
+          >
+            <AspectRatio ratio={1} className="bg-gray-100">
+              <img
+                src={post.image}
+                alt={post.title || "Post"}
+                className="object-cover w-full h-full"
+              />
+            </AspectRatio>
+          
+            <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
+              <div className="text-white font-medium p-2 text-center">
+                <h3 className="text-lg line-clamp-2">{post.title}</h3>
+                <div className="flex items-center justify-center gap-4 mt-2">
+                  {post.tags && post.tags.length > 0 && (
+                    <div className="flex items-center">
+                      <Tag className="h-4 w-4 mr-1" />
+                      <span>{post.tags.length}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <ShareMenu postId={post.id} title={post.title || ''} />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+};
