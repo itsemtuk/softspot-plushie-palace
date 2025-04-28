@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -220,6 +221,7 @@ const WishlistManager: React.FC<WishlistManagerProps> = ({ wishlist, onUpdateWis
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       isPublic: newWishlistPrivacy === "public",
+      userId: '', // Add missing userId property
     };
 
     updateWishlist([...wishlist, newWishlist]);
@@ -540,7 +542,7 @@ const WishlistManager: React.FC<WishlistManagerProps> = ({ wishlist, onUpdateWis
               <Label htmlFor="priority" className="text-right">
                 Priority
               </Label>
-              <Select onValueChange={(value) => setEditedItemPriority(value as "low" | "medium" | "high")}>
+              <Select onValueChange={(value) => setEditedItemPriority(value as "low" | "medium" | "high")} defaultValue={editedItemPriority}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
@@ -555,7 +557,7 @@ const WishlistManager: React.FC<WishlistManagerProps> = ({ wishlist, onUpdateWis
               <Label htmlFor="status" className="text-right">
                 Status
               </Label>
-              <Select onValueChange={(value) => setEditedItemStatus(value as "wanted" | "purchased" | "received")}>
+              <Select onValueChange={(value) => setEditedItemStatus(value as "wanted" | "purchased" | "received")} defaultValue={editedItemStatus}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
@@ -570,7 +572,7 @@ const WishlistManager: React.FC<WishlistManagerProps> = ({ wishlist, onUpdateWis
               <Label htmlFor="currencyCode" className="text-right">
                 Currency
               </Label>
-              <Select onValueChange={(value) => setEditedItemCurrencyCode(value)}>
+              <Select onValueChange={(value) => setEditedItemCurrencyCode(value)} defaultValue={editedItemCurrencyCode}>
                 <SelectTrigger className="col-span-3">
                   <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
