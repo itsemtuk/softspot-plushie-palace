@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -39,8 +38,8 @@ export function Footer() {
               <li><Link to="/" className="hover:underline">Home</Link></li>
               <li><Link to="/feed" className="hover:underline">Feed</Link></li>
               <li><Link to="/discover" className="hover:underline">Discover</Link></li>
+              <li><Link to="/about" className="hover:underline">About</Link></li>
               <li><Link to="/profile" className="hover:underline">Profile</Link></li>
-              <li><Link to="/settings" className="hover:underline">Settings</Link></li>
             </ul>
           </div>
           

@@ -1,0 +1,283 @@
+import { useState } from "react";
+import { Navbar } from "@/components/Navbar";
+import { Form } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, DeliveryMethod, ImageUploadResult } from "@/types/marketplace";
+import { ImageUploader } from "@/components/post/ImageUploader";
+import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
+import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
+
+interface SellItemFormData {
+  title: string;
+  price: number;
+  description: string;
+  condition: PlushieCondition;
+  material: PlushieMaterial;
+  filling: PlushieFilling;
+  species: PlushieSpecies;
+  brand: string;
+  deliveryMethod: DeliveryMethod;
+  deliveryCost: number;
+  color: string;
+  image: string;
+}
+
+const SellItemPage = () => {
+  const navigate = useNavigate();
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<SellItemFormData>();
+
+  const onSubmit = (data: SellItemFormData) => {
+    // Add the image URL to the form data
+    const listingData = { ...data, image: imageUrl };
+    
+    // Log the data for debugging
+    console.log("Form submitted:", listingData);
+    
+    // Store the listing in localStorage
+    const existingListings = localStorage.getItem('marketplaceListings');
+    const listings = existingListings ? JSON.parse(existingListings) : [];
+    
+    const newListing = {
+      ...listingData,
+      id: `listing-${Date.now()}`,
+      username: "Me", // In a real app, this would come from the authenticated user
+      likes: 0,
+      comments: 0,
+      timestamp: new Date().toISOString(),
+      forSale: true
+    };
+    
+    listings.unshift(newListing);
+    localStorage.setItem('marketplaceListings', JSON.stringify(listings));
+    
+    // Show success message
+    toast({
+      title: "Listing created!",
+      description: "Your item has been listed for sale.",
+    });
+    
+    // Redirect to marketplace
+    navigate('/marketplace');
+  };
+
+  // Handle the image upload result
+  const handleImageSelect = (result: ImageUploadResult) => {
+    if (result.success && result.url) {
+      setImageUrl(result.url);
+    }
+  };
+  
+  // Handle select field changes
+  const handleSelectChange = (field: keyof SellItemFormData, value: any) => {
+    setValue(field, value);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <main className="container mx-auto px-4 py-8">
+        <div className="max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-6">Sell Your Plushie</h1>
+          
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <div className="mb-6">
+                <Label htmlFor="image">Plushie Image</Label>
+                <ImageUploader
+                  onImageSelect={handleImageSelect}
+                />
+                {!imageUrl && (
+                  <p className="text-sm text-gray-500 mt-2">
+                    Please upload at least one image of your plushie
+                  </p>
+                )}
+                {imageUrl && (
+                  <div className="mt-4">
+                    <img 
+                      src={imageUrl} 
+                      alt="Preview" 
+                      className="h-32 w-32 object-cover rounded-md"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="title">Title</Label>
+                  <Input
+                    id="title"
+                    placeholder="Enter plushie name"
+                    {...register("title", { required: true })}
+                  />
+                  {errors.title && <p className="text-red-500 text-sm mt-1">Title is required</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="price">Price</Label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      {...register("price", { required: true, min: 0 })}
+                      className="flex-1"
+                    />
+                    <CurrencyConverter price={0} className="w-32" />
+                  </div>
+                  {errors.price && <p className="text-red-500 text-sm mt-1">Valid price is required</p>}
+                </div>
+
+                <div>
+                  <Label htmlFor="brand">Brand</Label>
+                  <Select onValueChange={(value) => handleSelectChange("brand", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select brand" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Jellycat">Jellycat</SelectItem>
+                      <SelectItem value="Squishmallows">Squishmallows</SelectItem>
+                      <SelectItem value="Build-A-Bear">Build-A-Bear</SelectItem>
+                      <SelectItem value="Care Bears">Care Bears</SelectItem>
+                      <SelectItem value="Disney">Disney</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="color">Color</Label>
+                  <Input
+                    id="color"
+                    placeholder="Main color"
+                    {...register("color")}
+                  />
+                </div>
+
+                <div>
+                  <Label htmlFor="condition">Condition</Label>
+                  <Select onValueChange={(value) => handleSelectChange("condition", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select condition" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="New">New</SelectItem>
+                      <SelectItem value="Like New">Like New</SelectItem>
+                      <SelectItem value="Good">Good</SelectItem>
+                      <SelectItem value="Fair">Fair</SelectItem>
+                      <SelectItem value="Poor">Poor</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="material">Material</Label>
+                  <Select onValueChange={(value) => handleSelectChange("material", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select material" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Plush">Plush</SelectItem>
+                      <SelectItem value="Cotton">Cotton</SelectItem>
+                      <SelectItem value="Polyester">Polyester</SelectItem>
+                      <SelectItem value="Fur">Fur</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="filling">Filling</Label>
+                  <Select onValueChange={(value) => handleSelectChange("filling", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select filling" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Cotton">Cotton</SelectItem>
+                      <SelectItem value="Polyester">Polyester</SelectItem>
+                      <SelectItem value="Memory Foam">Memory Foam</SelectItem>
+                      <SelectItem value="Beans">Beans</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="species">Species</Label>
+                  <Select onValueChange={(value) => handleSelectChange("species", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select species" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Bear">Bear</SelectItem>
+                      <SelectItem value="Rabbit">Rabbit</SelectItem>
+                      <SelectItem value="Cat">Cat</SelectItem>
+                      <SelectItem value="Dog">Dog</SelectItem>
+                      <SelectItem value="Mythical">Mythical</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="deliveryMethod">Delivery Method</Label>
+                  <Select onValueChange={(value) => handleSelectChange("deliveryMethod", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select delivery method" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Shipping">Shipping</SelectItem>
+                      <SelectItem value="Collection">Collection</SelectItem>
+                      <SelectItem value="Both">Both</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div>
+                  <Label htmlFor="deliveryCost">Delivery Cost ($)</Label>
+                  <Input
+                    id="deliveryCost"
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
+                    {...register("deliveryCost", { min: 0 })}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  placeholder="Describe your plushie (condition, size, history, etc.)"
+                  className="h-32"
+                  {...register("description", { required: true })}
+                />
+                {errors.description && <p className="text-red-500 text-sm mt-1">Description is required</p>}
+              </div>
+
+              <div className="flex justify-end space-x-4 pt-4">
+                <Button type="button" variant="outline" onClick={() => navigate('/marketplace')}>
+                  Cancel
+                </Button>
+                <Button type="submit" className="bg-softspot-500 hover:bg-softspot-600">
+                  List Item for Sale
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default SellItemPage;
