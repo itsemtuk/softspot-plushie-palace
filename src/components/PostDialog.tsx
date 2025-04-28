@@ -2,7 +2,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
 import { ExtendedPost, Comment as MarketplaceComment } from "@/types/marketplace";
-import { Comment as PostCommentItemComment } from "./post-dialog/PostCommentItem";
+import { Comment } from "./post-dialog/PostCommentItem";
 import { useEffect, useRef } from "react";
 
 interface PostDialogProps {
@@ -12,7 +12,7 @@ interface PostDialogProps {
   isLoading?: boolean;
 }
 
-function convertToPostCommentItemComment(comment: MarketplaceComment): PostCommentItemComment {
+function convertToPostCommentItemComment(comment: MarketplaceComment): Comment {
   // Ensure we have a valid comment object
   if (!comment) return null as any;
   
@@ -75,15 +75,15 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
   };
 
   // Convert commentList to format expected by PostCommentItem
-  const formattedComments: PostCommentItemComment[] = commentList
+  const formattedComments: Comment[] = commentList
     .filter(comment => !!comment) // Filter out any null or undefined comments
     .map(comment => {
       // Check if the comment is already in the correct format
       if ('text' in comment) {
-        return comment as PostCommentItemComment;
+        return comment as Comment;
       }
       // Otherwise convert from MarketplaceComment format
-      return convertToPostCommentItemComment(comment);
+      return convertToPostCommentItemComment(comment as MarketplaceComment);
     });
 
   return (

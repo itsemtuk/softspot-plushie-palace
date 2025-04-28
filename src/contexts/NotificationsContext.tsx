@@ -32,18 +32,18 @@ export const useNotifications = () => useContext(NotificationsContext);
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
   const unreadCount = notifications.filter(notification => !notification.read).length;
 
-  // Sync username when user changes
+  // Sync username when user changes - only if user is loaded and exists
   useEffect(() => {
-    if (user) {
+    if (isLoaded && user) {
       const username = user.username || user.firstName || "Anonymous";
       localStorage.setItem('currentUsername', username);
       localStorage.setItem('currentUserId', user.id);
     }
-  }, [user]);
+  }, [user, isLoaded]);
 
   const addNotification = (notification: Omit<Notification, 'id' | 'read'>) => {
     const newNotification: Notification = {
@@ -63,14 +63,12 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
   
-  // Add markAllAsRead function
   const markAllAsRead = () => {
     setNotifications(prevNotifications => 
       prevNotifications.map(notification => ({ ...notification, read: true }))
     );
   };
   
-  // Add deleteNotification function
   const deleteNotification = (id: string) => {
     setNotifications(prevNotifications => 
       prevNotifications.filter(notification => notification.id !== id)
