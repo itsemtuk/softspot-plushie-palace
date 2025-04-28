@@ -28,6 +28,8 @@ const Onboarding = () => {
       }
       
       if (onboardingCompleted && !isEditing) {
+        // Only redirect to feed if this is actually onboarding, not profile editing
+        // and onboarding is already completed
         navigate('/feed');
       } else {
         // Delay setting ready to ensure all components are loaded first

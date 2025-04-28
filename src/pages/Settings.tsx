@@ -76,8 +76,8 @@ const Settings = () => {
         .map(type => type.id);
       
       const existingBrandIDs = plushieBrands
-        .filter(brand => existingInterests.includes(brand.label))
-        .map(brand => brand.id);
+        .filter(brand => existingInterests.includes(type.label))
+        .map(type => type.id);
       
       form.reset({
         username: user?.username || "",
@@ -104,7 +104,7 @@ const Settings = () => {
       
       const selectedBrands = plushieBrands
         .filter(brand => data.plushieBrands?.includes(brand.id))
-        .map(brand => brand.label);
+        .map(type => type.label);
       
       const plushieInterests = [...selectedTypes, ...selectedBrands];
       
@@ -123,6 +123,8 @@ const Settings = () => {
           bio: data.bio || "",
           profilePicture: data.profilePicture || "",
           plushieInterests,
+          // Ensure onboardingCompleted is set to true
+          onboardingCompleted: true,
         },
       });
 
