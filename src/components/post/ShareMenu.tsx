@@ -1,5 +1,5 @@
 
-import { Share, Link, Mail, Facebook, Twitter, Linkedin } from "lucide-react";
+import { Share, Link, Mail, Facebook, Twitter, Linkedin, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import {
@@ -8,6 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useState } from "react";
 
 interface ShareMenuProps {
   postId: string;
@@ -15,14 +16,29 @@ interface ShareMenuProps {
 }
 
 export const ShareMenu = ({ postId, title }: ShareMenuProps) => {
+  const [hasCopied, setHasCopied] = useState(false);
   const shareUrl = `${window.location.origin}/post/${postId}`;
 
-  const handleCopyLink = () => {
-    navigator.clipboard.writeText(shareUrl);
-    toast({
-      title: "Link copied",
-      description: "The post link has been copied to your clipboard.",
-    });
+  const handleCopyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      setHasCopied(true);
+      
+      toast({
+        title: "Success!",
+        description: "Link copied to clipboard",
+        duration: 2000, // Show for 2 seconds
+      });
+
+      // Reset the copied state after 2 seconds
+      setTimeout(() => setHasCopied(false), 2000);
+    } catch (err) {
+      toast({
+        variant: "destructive",
+        title: "Failed to copy",
+        description: "Please try again",
+      });
+    }
   };
 
   const shareToSocial = (platform: string) => {
@@ -46,30 +62,40 @@ export const ShareMenu = ({ postId, title }: ShareMenuProps) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-gray-600 hover:text-gray-900">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="text-gray-600 hover:text-gray-900 focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 focus:outline-none"
+        >
           <Share className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-48">
-        <DropdownMenuItem onClick={handleCopyLink} className="cursor-pointer">
-          <Link className="mr-2 h-4 w-4" />
-          Copy link
+      <DropdownMenuContent align="end" className="w-56">
+        <DropdownMenuItem onClick={handleCopyLink} className="cursor-pointer flex items-center justify-between">
+          <div className="flex items-center">
+            {hasCopied ? (
+              <Check className="mr-2 h-4 w-4 text-green-500" />
+            ) : (
+              <Link className="mr-2 h-4 w-4" />
+            )}
+            Copy link
+          </div>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => shareToSocial('facebook')} className="cursor-pointer">
           <Facebook className="mr-2 h-4 w-4" />
-          Facebook
+          Share on Facebook
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => shareToSocial('twitter')} className="cursor-pointer">
           <Twitter className="mr-2 h-4 w-4" />
-          Twitter
+          Share on Twitter
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => shareToSocial('linkedin')} className="cursor-pointer">
           <Linkedin className="mr-2 h-4 w-4" />
-          LinkedIn
+          Share on LinkedIn
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => shareToSocial('mail')} className="cursor-pointer">
           <Mail className="mr-2 h-4 w-4" />
-          Email
+          Share via Email
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
