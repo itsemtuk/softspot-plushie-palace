@@ -44,7 +44,7 @@ const SellItemPage = () => {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <ImageUploader
-                onImageSelected={(url) => setImageUrl(url)}
+                onImageSelect={(url) => setImageUrl(url)}
                 className="w-full aspect-square mb-6 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors"
               />
 
