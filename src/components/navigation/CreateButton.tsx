@@ -25,7 +25,7 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
   } = useCreatePost();
   
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
 
   const handlePostCreation = async (postData: PostCreationData): Promise<void> => {
     if (!user) {
@@ -86,54 +86,74 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
     }
   };
 
+  const handleButtonClick = () => {
+    if (!isSignedIn) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to create content"
+      });
+      navigate('/sign-in');
+      return;
+    }
+    
+    // If signed in, continue with normal flow
+    onOpenChange(true);
+  };
+
   return (
     <>
       <Sheet open={isSheetOpen} onOpenChange={onOpenChange}>
         <SheetTrigger asChild>
-          <Button variant="default" className="flex items-center gap-2 bg-softspot-500 hover:bg-softspot-600">
+          <Button 
+            variant="default" 
+            className="flex items-center gap-2 bg-softspot-500 hover:bg-softspot-600"
+            onClick={handleButtonClick}
+          >
             <PlusSquare className="h-4 w-4" />
             Create
           </Button>
         </SheetTrigger>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Create New</SheetTitle>
-            <SheetDescription>Choose what you'd like to do</SheetDescription>
-          </SheetHeader>
-          <div className="grid gap-4 mt-4">
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 justify-start"
-              onClick={() => {
-                onOpenChange(false);
-                if (externalOnCreatePost) {
-                  externalOnCreatePost();
-                } else {
-                  handleCreatePost();
-                }
-              }}
-            >
-              <PlusSquare className="h-4 w-4" />
-              Create Post
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 justify-start"
-              onClick={() => navigate('/marketplace/sell')}
-            >
-              <ShoppingBag className="h-4 w-4" />
-              Sell Item
-            </Button>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 justify-start"
-              onClick={() => navigate('/messages')}
-            >
-              <MessageSquare className="h-4 w-4" />
-              Trade Request
-            </Button>
-          </div>
-        </SheetContent>
+        {isSignedIn && (
+          <SheetContent>
+            <SheetHeader>
+              <SheetTitle>Create New</SheetTitle>
+              <SheetDescription>Choose what you'd like to do</SheetDescription>
+            </SheetHeader>
+            <div className="grid gap-4 mt-4">
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2 justify-start"
+                onClick={() => {
+                  onOpenChange(false);
+                  if (externalOnCreatePost) {
+                    externalOnCreatePost();
+                  } else {
+                    handleCreatePost();
+                  }
+                }}
+              >
+                <PlusSquare className="h-4 w-4" />
+                Create Post
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2 justify-start"
+                onClick={() => navigate('/marketplace/sell')}
+              >
+                <ShoppingBag className="h-4 w-4" />
+                Sell Item
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2 justify-start"
+                onClick={() => navigate('/messages')}
+              >
+                <MessageSquare className="h-4 w-4" />
+                Trade Request
+              </Button>
+            </div>
+          </SheetContent>
+        )}
       </Sheet>
 
       <PostCreationFlow

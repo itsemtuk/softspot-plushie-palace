@@ -4,6 +4,7 @@ import { usePostDialog } from "@/hooks/use-post-dialog";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
 import { ExtendedPost, Comment as MarketplaceComment } from "@/types/marketplace";
 import { Comment as PostCommentItemComment } from "./post-dialog/PostCommentItem";
+import { useEffect } from "react";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -42,6 +43,19 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
     setIsDialogOpen
   } = usePostDialog(post);
 
+  // Reset dialog scroll position when opened
+  useEffect(() => {
+    if (isOpen) {
+      // Small timeout to ensure dialog is rendered
+      setTimeout(() => {
+        const dialogContent = document.querySelector('[role="dialog"] > div');
+        if (dialogContent) {
+          dialogContent.scrollTop = 0;
+        }
+      }, 50);
+    }
+  }, [isOpen, commentList.length]);
+
   // Close dialog and cleanup
   const handleCloseDialog = () => {
     setIsDialogOpen(false);
@@ -55,7 +69,7 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCloseDialog()}>
-      <DialogContent className="max-w-4xl p-0 overflow-hidden">
+      <DialogContent className="max-w-4xl p-0 overflow-hidden max-h-[90vh]">
         <PostDialogContent
           post={post}
           isLoading={isLoading}

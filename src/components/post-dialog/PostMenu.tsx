@@ -7,6 +7,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface PostMenuProps {
   onEdit: () => void;
@@ -14,14 +15,20 @@ export interface PostMenuProps {
 }
 
 export function PostMenu({ onEdit, onDelete }: PostMenuProps) {
+  const isMobile = useIsMobile();
+  
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="icon" className="text-gray-500 hover:text-gray-800">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className={`text-gray-500 hover:text-gray-800 ${isMobile ? 'absolute top-2 right-2' : ''}`}
+        >
           <MoreHorizontal className="h-5 w-5" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="z-[60]">
         <DropdownMenuItem onClick={onEdit} className="flex items-center cursor-pointer">
           <Edit className="mr-2 h-4 w-4" />
           <span>Edit Post</span>

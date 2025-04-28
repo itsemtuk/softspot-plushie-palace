@@ -1,5 +1,6 @@
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
+import { useUser } from "@clerk/clerk-react";
 
 export interface Notification {
   id: string;
@@ -14,8 +15,8 @@ interface NotificationsContextProps {
   unreadCount: number;
   addNotification: (notification: Omit<Notification, 'id' | 'read'>) => void;
   markAsRead: (id: string) => void;
-  markAllAsRead: () => void; // Added method
-  deleteNotification: (id: string) => void; // Added method
+  markAllAsRead: () => void;
+  deleteNotification: (id: string) => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextProps>({
@@ -23,16 +24,26 @@ const NotificationsContext = createContext<NotificationsContextProps>({
   unreadCount: 0,
   addNotification: () => {},
   markAsRead: () => {},
-  markAllAsRead: () => {}, // Added to default context
-  deleteNotification: () => {}, // Added to default context
+  markAllAsRead: () => {},
+  deleteNotification: () => {},
 });
 
 export const useNotifications = () => useContext(NotificationsContext);
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const { user } = useUser();
 
   const unreadCount = notifications.filter(notification => !notification.read).length;
+
+  // Sync username when user changes
+  useEffect(() => {
+    if (user) {
+      const username = user.username || user.firstName || "Anonymous";
+      localStorage.setItem('currentUsername', username);
+      localStorage.setItem('currentUserId', user.id);
+    }
+  }, [user]);
 
   const addNotification = (notification: Omit<Notification, 'id' | 'read'>) => {
     const newNotification: Notification = {

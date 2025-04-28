@@ -4,9 +4,22 @@ import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
 import { UserButton } from "./UserButton";
 import { useUser } from "@clerk/clerk-react";
+import { NotificationsButton } from "./NotificationsButton";
 
 export const UserMenu = () => {
-  const { user } = useUser();
+  const { user, isSignedIn } = useUser();
+
+  if (!isSignedIn) {
+    return (
+      <div className="flex items-center space-x-2">
+        <Link to="/sign-in">
+          <Button className="bg-softspot-400 hover:bg-softspot-500 text-white">
+            Sign In
+          </Button>
+        </Link>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center space-x-2">
@@ -15,6 +28,7 @@ export const UserMenu = () => {
           <MessageSquare className="h-4 w-4" />
         </Button>
       </Link>
+      <NotificationsButton />
       <div className="relative">
         <UserButton />
       </div>

@@ -21,6 +21,7 @@ import About from "./pages/About";
 import PostPage from "./pages/PostPage";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import NotificationsPage from "./pages/NotificationsPage";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { PostDialogProvider } from "@/hooks/use-post-dialog";
 
@@ -49,6 +50,11 @@ function AppContent() {
         <Route path="/profile" element={
           <OnboardingRoute>
             <Profile />
+          </OnboardingRoute>
+        } />
+        <Route path="/notifications" element={
+          <OnboardingRoute>
+            <NotificationsPage />
           </OnboardingRoute>
         } />
         <Route path="/feed" element={

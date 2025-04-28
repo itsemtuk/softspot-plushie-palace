@@ -62,17 +62,15 @@ export function PostDialogContent({
 
   return (
     <div className="relative grid grid-cols-1 md:grid-cols-2 h-full">
-      {/* Only one close button for desktop, positioned absolutely */}
-      {!isMobile && (
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="absolute right-2 top-2 z-10" 
-          onClick={onClose}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-      )}
+      {/* Only show one close button positioned according to device */}
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className={`absolute ${isMobile ? 'top-2 left-2' : 'top-2 right-2'} z-10 bg-white/80 hover:bg-white rounded-full`} 
+        onClick={onClose}
+      >
+        <X className={`h-${isMobile ? '5' : '4'} w-${isMobile ? '5' : '4'}`} />
+      </Button>
 
       {/* Left side - Image */}
       <PostImage imageUrl={post.image} altText={post.title} />
@@ -88,7 +86,7 @@ export function PostDialogContent({
         onCommentLikeToggle={onCommentLikeToggle}
         onCommentSubmit={onCommentSubmit}
         onFindSimilar={onFindSimilar}
-        onClose={isMobile ? onClose : null} // Only pass onClose for mobile
+        onClose={null} // Remove duplicate close button in PostContent
         onSaveEdit={onSaveEdit}
         onDeletePost={onDeletePost}
       />
