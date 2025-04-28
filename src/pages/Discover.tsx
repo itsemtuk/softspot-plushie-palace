@@ -26,6 +26,9 @@ import {
 import { Label } from "@/components/ui/label";
 import { MarketplacePlushie } from '@/types/marketplace';
 import { getMarketplaceListings } from '@/utils/storage/localStorageUtils';
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileNav } from "@/components/navigation/MobileNav";
+import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
 
 const Discover = () => {
   const [listings, setListings] = useState<MarketplacePlushie[]>([]);
@@ -34,14 +37,23 @@ const Discover = () => {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
   const [priceRange, setPriceRange] = useState<number[]>([0, 100]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [selectedPlushie, setSelectedPlushie] = useState<MarketplacePlushie | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const { user } = useUser();
   const navigate = useNavigate();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     // Load listings from local storage
-    const storedListings = getMarketplaceListings();
-    setListings(storedListings);
-    setFilteredListings(storedListings);
+    try {
+      console.log("Loading marketplace listings in Discover...");
+      const storedListings = getMarketplaceListings();
+      console.log("Loaded listings:", storedListings);
+      setListings(storedListings || []);
+      setFilteredListings(storedListings || []);
+    } catch (error) {
+      console.error("Error loading marketplace listings:", error);
+    }
   }, []);
 
   useEffect(() => {
@@ -74,13 +86,15 @@ const Discover = () => {
     setPriceRange(value);
   };
 
-  const handlePlushieClick = (id: string) => {
-    navigate(`/marketplace/${id}`);
+  const handlePlushieClick = (plushie: MarketplacePlushie) => {
+    console.log("Plushie clicked:", plushie);
+    setSelectedPlushie(plushie);
+    setIsDetailsOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {isMobile ? <MobileNav /> : <Navbar />}
       <main className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-4">
           <div className="relative w-full md:w-1/2">
@@ -119,35 +133,49 @@ const Discover = () => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredListings.map((listing) => (
-            <Card 
-              key={listing.id} 
-              className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer"
-              onClick={() => handlePlushieClick(listing.id)}
-            >
-              <div className="relative">
-                <AspectRatio ratio={1 / 1}>
-                  <img
-                    src={listing.image}
-                    alt={listing.title}
-                    className="object-cover w-full h-full"
-                  />
-                </AspectRatio>
-              </div>
-              <CardContent className="p-4">
-                <h3 className="text-lg font-medium mb-2 truncate">{listing.title}</h3>
-                <p className="text-gray-500 text-sm">${listing.price}</p>
-                <div className="flex items-center mt-2">
-                  <Heart className="h-4 w-4 text-gray-500 mr-1" />
-                  <span>{listing.likes}</span>
-                  <MessageSquare className="h-4 w-4 text-gray-500 ml-2 mr-1" />
-                  <span>{listing.comments}</span>
+          {filteredListings.length > 0 ? (
+            filteredListings.map((listing) => (
+              <Card 
+                key={listing.id} 
+                className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer"
+                onClick={() => handlePlushieClick(listing)}
+              >
+                <div className="relative">
+                  <AspectRatio ratio={1 / 1}>
+                    <img
+                      src={listing.image}
+                      alt={listing.title}
+                      className="object-cover w-full h-full"
+                    />
+                  </AspectRatio>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
+                <CardContent className="p-4">
+                  <h3 className="text-lg font-medium mb-2 truncate">{listing.title}</h3>
+                  <p className="text-gray-500 text-sm">${listing.price}</p>
+                  <div className="flex items-center mt-2">
+                    <Heart className="h-4 w-4 text-gray-500 mr-1" />
+                    <span>{listing.likes || 0}</span>
+                    <MessageSquare className="h-4 w-4 text-gray-500 ml-2 mr-1" />
+                    <span>{listing.comments || 0}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p>No plushies found. Try adjusting your filters.</p>
+            </div>
+          )}
         </div>
       </main>
+
+      {selectedPlushie && (
+        <PlushieDetailDialog 
+          isOpen={isDetailsOpen} 
+          onClose={() => setIsDetailsOpen(false)} 
+          plushie={selectedPlushie}
+        />
+      )}
     </div>
   );
 };

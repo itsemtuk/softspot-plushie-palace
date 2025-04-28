@@ -27,6 +27,7 @@ const Marketplace = () => {
   const [listings, setListings] = useState<MarketplacePlushie[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const isMobile = useIsMobile();
 
   // Get listings from localStorage
@@ -34,12 +35,20 @@ const Marketplace = () => {
     const fetchListings = () => {
       try {
         setIsLoading(true);
+        setError(null);
         console.log("Fetching marketplace listings...");
         const storedListings = getMarketplaceListings();
         console.log("Fetched marketplace listings:", storedListings);
-        setListings(storedListings || []);
+        
+        if (!storedListings) {
+          console.log("No listings found, creating empty array");
+          setListings([]);
+        } else {
+          setListings(storedListings);
+        }
       } catch (error) {
         console.error("Error fetching marketplace listings:", error);
+        setError("Failed to load marketplace listings. Please try again.");
       } finally {
         setIsLoading(false);
       }
@@ -97,7 +106,7 @@ const Marketplace = () => {
     // Color filter
     if (filters.color && filters.color.length > 0) {
       // Simple color matching, can be enhanced for better color detection
-      if (!filters.color.some(color => plushie.color.toLowerCase().includes(color.toLowerCase()))) {
+      if (!filters.color.some(color => plushie.color?.toLowerCase().includes(color.toLowerCase()))) {
         return false;
       }
     }
@@ -124,6 +133,21 @@ const Marketplace = () => {
     setPriceRange([0, 150]);
     setAvailableOnly(false);
   };
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {isMobile ? <MobileNav /> : <Navbar />}
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-white p-8 rounded-lg shadow-sm">
+            <h2 className="text-xl font-medium text-red-500 mb-4">Error Loading Marketplace</h2>
+            <p className="text-gray-700 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>Retry</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
