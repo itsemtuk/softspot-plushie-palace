@@ -1,7 +1,7 @@
 
 import { PostImage } from "./PostImage";
 import { PostContent } from "./PostContent";
-import { ExtendedPost } from "@/types/marketplace";
+import { ExtendedPost, Comment as MarketplaceComment } from "@/types/marketplace";
 import { Comment } from "./PostCommentItem";
 import { Spinner } from "@/components/ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";

@@ -25,12 +25,15 @@ import Discover from './pages/Discover';
 import { CloudSyncStatus } from './components/CloudSyncStatus';
 
 // Get Clerk publishable key
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+// Use a placeholder key for development when not provided
+const clerkPublishableKey = PUBLISHABLE_KEY || "pk_test_placeholder-key-for-dev-only";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <ClerkProvider publishableKey={clerkPublishableKey}>
         <NotificationsProvider>
           <Router>
             <Routes>

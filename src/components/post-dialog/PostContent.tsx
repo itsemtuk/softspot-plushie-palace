@@ -7,8 +7,7 @@ import { PostMenu } from "./PostMenu";
 import { Button } from "@/components/ui/button";
 import { ExtendedPost, Comment } from "@/types/marketplace";
 import { X } from "lucide-react";
-import { Map, MapPin } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { MapPin } from "lucide-react";
 import { EditPostForm } from "./EditPostForm";
 
 interface PostContentProps {

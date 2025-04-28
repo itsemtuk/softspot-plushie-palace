@@ -5,9 +5,10 @@ import { Comment as MarketplaceComment } from "@/types/marketplace";
 interface PostCommentListProps {
   comments: (Comment | MarketplaceComment)[];
   onCommentLikeToggle: (commentId: string) => void;
+  currentUserId?: string; // Make this prop optional
 }
 
-export function PostCommentList({ comments, onCommentLikeToggle }: PostCommentListProps) {
+export function PostCommentList({ comments, onCommentLikeToggle, currentUserId }: PostCommentListProps) {
   if (comments.length === 0) return null;
   
   return (
