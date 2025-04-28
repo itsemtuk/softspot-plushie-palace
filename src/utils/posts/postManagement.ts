@@ -1,4 +1,3 @@
-
 import { ExtendedPost } from "@/types/marketplace";
 import { supabase, isSupabaseConfigured } from '../supabase/client';
 import { getLocalPosts, savePosts, getCurrentUserId } from '../storage/localStorageUtils';
@@ -64,24 +63,28 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
  */
 export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, error?: any }> => {
   try {
+    // Ensure we have a timestamp
+    if (!post.timestamp) {
+      post.timestamp = new Date().toISOString();
+    }
+    
     // First, upload the image if it's a data URL
-    if (post.image && post.image.startsWith('data:') && isSupabaseConfigured()) {
+    if (post.image && post.image.startsWith('data:')) {
       const { imageUrl, error: uploadError } = await uploadImage(post.image, post.id);
       if (uploadError) {
         throw uploadError;
       }
-      
-      // Update the post with the new image URL
       post = { ...post, image: imageUrl };
     }
     
-    // Make sure timestamp is set
-    if (!post.timestamp) {
-      post = { ...post, timestamp: new Date().toISOString() };
+    // Save the post
+    const result = await savePost(post);
+    
+    if (!result.success) {
+      throw new Error(result.error || 'Failed to save post');
     }
     
-    // Save the post
-    return await savePost(post);
+    return { success: true };
   } catch (error) {
     console.error('Error adding post:', error);
     return { success: false, error };

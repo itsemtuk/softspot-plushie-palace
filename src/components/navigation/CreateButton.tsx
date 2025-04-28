@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
@@ -15,11 +14,19 @@ interface CreateButtonProps {
 }
 
 export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButtonProps = {}) => {
-  const { isSheetOpen, isPostCreationOpen, postToEdit, onOpenChange, onCreatePost, onClosePostCreation, setIsPostCreationOpen } = useCreatePost();
+  const { 
+    isSheetOpen, 
+    isPostCreationOpen, 
+    postToEdit, 
+    onOpenChange, 
+    onCreatePost: handleCreatePost, 
+    onClosePostCreation
+  } = useCreatePost();
+  
   const navigate = useNavigate();
   const { user } = useUser();
 
-  const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
+  const handlePostCreation = async (postData: PostCreationData): Promise<void> => {
     if (!user) {
       toast({
         variant: "destructive",
@@ -56,6 +63,9 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
         description: "Your post is now visible in your profile and feed."
       });
       
+      onClosePostCreation();
+      navigate('/feed');
+      
       return Promise.resolve();
     } catch (error) {
       console.error("Error creating post:", error);
@@ -91,7 +101,7 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
                 if (externalOnCreatePost) {
                   externalOnCreatePost();
                 } else {
-                  onCreatePost();
+                  handleCreatePost();
                 }
               }}
             >
@@ -121,7 +131,7 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
       <PostCreationFlow
         isOpen={isPostCreationOpen}
         onClose={onClosePostCreation}
-        onPostCreated={handleCreatePost}
+        onPostCreated={handlePostCreation}
         postToEdit={postToEdit}
       />
     </>

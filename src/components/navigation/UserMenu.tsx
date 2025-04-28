@@ -1,8 +1,8 @@
 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { User, MessageSquare } from "lucide-react";
-import { UserButton } from "@clerk/clerk-react";
+import { MessageSquare } from "lucide-react";
+import { UserButton } from "./UserButton";
 
 export const UserMenu = () => {
   return (
@@ -12,19 +12,7 @@ export const UserMenu = () => {
           <MessageSquare className="h-4 w-4" />
         </Button>
       </Link>
-      <Link to="/profile">
-        <Button variant="ghost" size="icon">
-          <User className="h-4 w-4" />
-        </Button>
-      </Link>
-      <UserButton 
-        appearance={{
-          elements: {
-            userButtonAvatarBox: "w-9 h-9"
-          }
-        }}
-        afterSignOutUrl="/"
-      />
+      <UserButton />
     </div>
   );
 };

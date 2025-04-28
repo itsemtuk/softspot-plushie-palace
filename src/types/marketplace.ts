@@ -1,128 +1,50 @@
-
-export type PlushieCondition = "New" | "Like New" | "Good" | "Fair" | "Poor";
-export type PlushieMaterial = "Plush" | "Cotton" | "Polyester" | "Fur" | "Other";
-export type PlushieFilling = "Cotton" | "Polyester" | "Memory Foam" | "Beans" | "Other";
-export type PlushieSpecies = "Bear" | "Rabbit" | "Cat" | "Dog" | "Mythical" | "Other";
-export type DeliveryMethod = "Shipping" | "Collection" | "Both";
-export type PrivacySetting = "public" | "followers" | "private";
-export type Currency = "USD" | "EUR" | "GBP" | "CAD" | "AUD" | "JPY" | "CNY" | "INR";
-
-export interface PlushieBrand {
-  id: string;
-  name: string;
-  logo: string;
-  description: string;
-  website?: string;
-  founded?: string;
-  headquarters?: string;
-  status?: "active" | "inactive";
-  verified?: boolean;
-  location?: string;
-}
-
-export interface DirectMessage {
-  id: string;
-  senderId: string;
-  recipientId: string;
-  content: string;
-  timestamp: string;
-  isRead: boolean;
-}
-
-export interface MessageThread {
-  id: string;
-  participants: string[];
-  lastMessage: DirectMessage;
-  unreadCount: number;
-  updatedAt?: string;
-}
-
 export interface UserProfile {
   id: string;
   username: string;
+  profileImageUrl: string;
+  bio: string;
+  followers: number;
+  isFollowing: boolean;
   avatar: string;
-  bio?: string;
-  isOnline?: boolean;
-  lastActive?: string;
-  isFollowing?: boolean;
-  followerCount?: number;
-  followingCount?: number;
-  profileImageUrl?: string;
-  followers?: number;
-}
-
-export interface ImageEditorOptions {
-  maxWidth?: number;
-  maxHeight?: number;
-  quality?: number;
-  format?: 'jpeg' | 'png';
-}
-
-export interface ImageUploadResult {
-  success: boolean;
-  url?: string;
-  error?: string;
-}
-
-export interface MarketplacePlushie {
-  id: string;
-  title: string;
-  price: number;
-  description: string;
-  condition: PlushieCondition;
-  material: PlushieMaterial;
-  filling: PlushieFilling;
-  species: PlushieSpecies;
-  brand: string;
-  deliveryMethod: DeliveryMethod;
-  deliveryCost: number;
-  color: string;
-  image: string;
-  username: string;
-  likes: number;
-  comments: number;
-  timestamp: string;
-  forSale: boolean;
-  tags?: string[];
-}
-
-export interface MarketplaceFilters {
-  material?: PlushieMaterial[];
-  filling?: PlushieFilling[];
-  species?: PlushieSpecies[];
-  brand?: string[];
-  color?: string[];
+  status?: "online" | "offline" | "away" | "busy";
 }
 
 export interface Notification {
   id: string;
   userId: string;
-  type: 'like' | 'comment' | 'follow' | 'mention' | 'tag' | 'message' | 'system';
-  relatedPostId?: string;
-  relatedUserId?: string;
   message: string;
-  isRead: boolean;
   timestamp: string;
+  read: boolean;
+  type: "like" | "comment" | "follow" | "mention";
+  relatedUserId?: string;
   content?: string;
 }
 
-export interface Post {
+export interface DirectMessage {
   id: string;
-  userId: string;
-  image: string;
-  title: string;
-  username: string;
-  likes: number;
-  comments: number | Comment[];
+  senderId: string;
+  receiverId: string;
+  content: string;
   timestamp: string;
-  tags?: string[];
+  isRead: boolean;
 }
 
-export interface ExtendedPost extends Post {
+export interface WishlistItem {
+  id: string;
+  userId: string;
+  title: string;
   description?: string;
-  location?: string;
-  likes: number | Array<{userId: string, username: string}>;
-  comments: number | Comment[];
+  imageUrl: string;
+  createdAt: string;
+  price?: number;
+}
+
+export interface Wishlist {
+  id: string;
+  userId: string;
+  name: string;
+  items: WishlistItem[];
+  createdAt: string;
 }
 
 export interface PostCreationData {
@@ -133,46 +55,50 @@ export interface PostCreationData {
   tags?: string[];
 }
 
-export interface Comment {
+export interface ExtendedPost {
   id: string;
   userId: string;
-  username: string;
-  content: string;
-  createdAt: string;
-  likes: { userId: string }[];
-}
-
-export interface UserPrivacySettings {
-  profileVisibility: PrivacySetting;
-  messagePrivacy: PrivacySetting;
-  activityVisibility: boolean;
-  allowMessages: boolean;
-  showActivity: boolean;
-  allowTagging: boolean;
-  profile: PrivacySetting;
-  posts: PrivacySetting;
-  wishlist: PrivacySetting;
-  marketplace: PrivacySetting;
-  messages: PrivacySetting;
-}
-
-export interface WishlistItem {
-  id: string;
-  name: string;
-  imageUrl: string;
-  price: number;
-  condition: PlushieCondition;
-  brand?: string;
-}
-
-export interface Wishlist {
-  id: string;
+  image: string;
   title: string;
-  items?: WishlistItem[];
+  username: string;
+  likes: number;
+  comments: number;
   description?: string;
-  acceptedConditions: PlushieCondition[];
-  isPublic?: boolean;
-  userId?: string;
-  username?: string;
-  createdAt?: string;
+  tags?: string[];
+  timestamp: string;
+  location?: string;
+}
+
+export type PlushieCondition = "New" | "Like New" | "Good" | "Fair" | "Poor";
+export type PlushieMaterial = "Plush" | "Cotton" | "Polyester" | "Fur" | "Other";
+export type PlushieFilling = "Cotton" | "Polyester" | "Memory Foam" | "Beans" | "Other";
+export type PlushieSpecies = "Bear" | "Rabbit" | "Cat" | "Dog" | "Mythical" | "Other";
+export type DeliveryMethod = "Shipping" | "Collection" | "Both";
+
+export interface MarketplacePlushie {
+  id: string;
+  userId: string;
+  image: string;
+  title: string;
+  username: string;
+  likes: number;
+  comments: number;
+  description: string;
+  condition: PlushieCondition;
+  material: PlushieMaterial;
+  filling: PlushieFilling;
+  species: PlushieSpecies;
+  brand: string;
+  deliveryMethod: DeliveryMethod;
+  deliveryCost: number;
+  color: string;
+  timestamp: string;
+  forSale: boolean;
+  tags: string[];
+}
+
+export interface ImageUploadResult {
+  success: boolean;
+  url?: string;
+  error?: string;
 }
