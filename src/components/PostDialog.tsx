@@ -141,7 +141,7 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
       const updatedPost: ExtendedPost = {
         ...post,
         comments: updatedComments,
-        commentsCount: updatedComments.length // Ensure this is a number
+        commentsCount: updatedComments.length || 0 // Fix: Ensure this is a number (not an array) 
       };
       
       // This is optional and can fail silently
