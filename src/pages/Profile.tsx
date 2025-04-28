@@ -4,16 +4,16 @@ import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Settings } from 'lucide-react';
-import { Navbar } from "@/components/Navbar";
-import { PostCard } from "@/components/post/PostCard";
+import { Card } from "@/components/ui/card";
 import { getAllUserPosts } from "@/utils/postStorage";
 import { ExtendedPost } from "@/types/marketplace";
 import NotificationsTab from "@/components/profile/NotificationsTab";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileNav } from "@/components/navigation/MobileNav";
+import { Navbar } from "@/components/Navbar";
+import UserProfileHeader from "@/components/UserProfileHeader";
+import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
+import { usePostDialog } from "@/hooks/use-post-dialog";
 
 const Profile = () => {
   const { user } = useUser();
@@ -21,6 +21,7 @@ const Profile = () => {
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
+  const { openPostDialog } = usePostDialog();
 
   useEffect(() => {
     const fetchUserPosts = async () => {
@@ -40,36 +41,34 @@ const Profile = () => {
     fetchUserPosts();
   }, [user]);
 
+  const handlePostClick = (post: ExtendedPost) => {
+    openPostDialog(post);
+  };
+
   if (!user) {
     return <div>Loading...</div>;
   }
 
+  // Extract profile data from user metadata for consistency
+  const profileData = {
+    bio: user.unsafeMetadata?.bio as string,
+    interests: user.unsafeMetadata?.interests as string[],
+    isPrivate: user.unsafeMetadata?.isPrivate as boolean,
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-8">
       {isMobile ? <MobileNav /> : <Navbar />}
-      <div className="container mx-auto px-4 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Your Profile</h1>
-          <Button onClick={() => navigate('/settings')}><Settings className="mr-2 h-4 w-4" /> Settings</Button>
-        </div>
+      
+      {/* Use the UserProfileHeader component for consistent design */}
+      <UserProfileHeader
+        username={user.username || undefined}
+        isOwnProfile={true}
+        profileData={profileData}
+      />
 
-        <Card className="bg-white rounded-lg shadow-sm overflow-hidden">
-          <CardContent className="p-6">
-            <div className="flex items-center space-x-6">
-              <Avatar className="h-20 w-20">
-                <AvatarImage src={user.imageUrl} alt={user.username || "Avatar"} />
-                <AvatarFallback>{user.firstName?.[0]}{user.lastName?.[0]}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h2 className="text-2xl font-semibold">{user.firstName} {user.lastName}</h2>
-                <p className="text-gray-500">@{user.username}</p>
-                {/* Removed email display for privacy */}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Tabs defaultValue="posts" className="mt-8">
+      <div className="container mx-auto px-4 py-6">
+        <Tabs defaultValue="posts" className="mt-4">
           <TabsList>
             <TabsTrigger value="posts">Posts</TabsTrigger>
             <TabsTrigger value="notifications">Notifications</TabsTrigger>
@@ -77,14 +76,12 @@ const Profile = () => {
           <TabsContent value="posts" className="mt-4">
             {isLoading ? (
               <div className="text-center py-12">Loading posts...</div>
-            ) : userPosts.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {userPosts.map((post) => (
-                  <PostCard key={post.id} post={post} />
-                ))}
-              </div>
             ) : (
-              <div className="text-center py-12">No posts yet.</div>
+              <ProfilePostsGrid 
+                posts={userPosts} 
+                onPostClick={handlePostClick} 
+                isOwnProfile={true} 
+              />
             )}
           </TabsContent>
           <TabsContent value="notifications" className="mt-4">
