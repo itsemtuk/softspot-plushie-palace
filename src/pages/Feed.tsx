@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { PostDialog } from "@/components/PostDialog";
@@ -8,7 +9,7 @@ import { useUser } from "@clerk/clerk-react";
 import { FeedHeader } from "@/components/feed/FeedHeader";
 import { EmptyFeed } from "@/components/feed/EmptyFeed";
 import { FeedGrid } from "@/components/feed/FeedGrid";
-import { getPosts, addPost, getLocalPosts, savePosts } from "@/utils/postStorage";
+import { getPosts, addPost } from "@/utils/postStorage";
 
 const Feed = () => {
   const { user } = useUser();
@@ -18,6 +19,7 @@ const Feed = () => {
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   // Store current username in localStorage for comments
   useEffect(() => {
@@ -27,50 +29,29 @@ const Feed = () => {
     }
   }, [user]);
   
-  // Load posts on component mount
-  useEffect(() => {
-    const loadPosts = async () => {
-      setIsLoading(true);
-      try {
-        // Try to get posts from Supabase
-        const cloudPosts = await getPosts();
-        
-        if (cloudPosts && cloudPosts.length > 0) {
-          setPosts(cloudPosts);
-          
-          // Also update local storage as a fallback
-          savePosts(cloudPosts);
-        } else {
-          // Fallback to local storage if no cloud posts
-          const localPosts = getLocalPosts();
-          setPosts(localPosts);
-          
-          // If we have local posts but no cloud posts, sync them
-          if (localPosts.length > 0 && user) {
-            // This would sync local posts to cloud in a real app
-            // We'd need user confirmation for this in a production app
-            toast({
-              title: "Using local posts",
-              description: "Your local posts will be displayed as Supabase connection hasn't been fully configured."
-            });
-          }
-        }
-      } catch (error) {
-        console.error('Error loading posts:', error);
-        // Fallback to local storage
-        const localPosts = getLocalPosts();
-        setPosts(localPosts);
-        
-        toast({
-          variant: "destructive",
-          title: "Error loading posts",
-          description: "Could not connect to the server. Showing local posts instead."
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // Load posts on component mount or when refresh is triggered
+  const loadPosts = async () => {
+    setIsLoading(prev => isRefreshing ? prev : true);
+    setIsRefreshing(true);
     
+    try {
+      // Get posts from storage (Supabase or localStorage)
+      const fetchedPosts = await getPosts();
+      setPosts(fetchedPosts);
+    } catch (error) {
+      console.error('Error loading posts:', error);
+      toast({
+        variant: "destructive",
+        title: "Error loading posts",
+        description: "Could not connect to the server. Please try again later."
+      });
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+  
+  useEffect(() => {
     loadPosts();
   }, [user]);
   
@@ -81,6 +62,15 @@ const Feed = () => {
   );
   
   const handleCreatePost = async (postData: PostCreationData) => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "You must be logged in to create posts."
+      });
+      return;
+    }
+    
     const username = user?.username || user?.firstName || "Anonymous";
     
     const newPost: ExtendedPost = {
@@ -96,35 +86,27 @@ const Feed = () => {
       timestamp: new Date().toISOString(),
     };
     
-    // Optimistically update the UI
-    setPosts(prevPosts => [newPost, ...prevPosts]);
-    
-    // Close the post creation dialog
-    setIsPostCreationOpen(false);
-    
-    // Add the post to Supabase
     try {
+      // Add the post to storage
       const result = await addPost(newPost);
       
       if (result.success) {
+        // Update the local state with the new post at the top
+        setPosts(prevPosts => [newPost, ...prevPosts]);
+        
+        // Close the post creation dialog
+        setIsPostCreationOpen(false);
+        
         toast({
           title: "Post created successfully!",
           description: "Your post is now visible in your profile and feed."
         });
       } else {
-        throw new Error("Failed to save post");
+        throw new Error(result.error || "Failed to save post");
       }
     } catch (error) {
       console.error('Error saving post:', error);
-      
-      // Fallback to local storage
-      savePosts([newPost, ...getLocalPosts()]);
-      
-      toast({
-        variant: "destructive",
-        title: "Connection issue",
-        description: "Your post was saved locally but couldn't be synced to the cloud."
-      });
+      throw error; // Re-throw to be caught by the PostCreationFlow component
     }
   };
 
@@ -136,6 +118,8 @@ const Feed = () => {
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           onCreatePost={() => setIsPostCreationOpen(true)}
+          onRefresh={loadPosts}
+          isRefreshing={isRefreshing}
         />
         
         {isLoading ? (
@@ -158,6 +142,12 @@ const Feed = () => {
           isOpen={dialogOpen} 
           onClose={() => setDialogOpen(false)} 
           post={selectedPost} 
+          onPostUpdate={(updatedPost) => {
+            // Update post in local state when it changes
+            setPosts(prevPosts => 
+              prevPosts.map(p => p.id === updatedPost.id ? updatedPost : p)
+            );
+          }}
         />
 
         <PostCreationFlow

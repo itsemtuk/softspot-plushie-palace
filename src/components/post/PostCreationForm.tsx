@@ -16,6 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 // List of inappropriate words to filter
 const inappropriateWords = [
@@ -56,9 +57,10 @@ const postSchema = z.object({
 interface PostCreationFormProps {
   onSubmit: (data: PostCreationData) => void;
   imageUrl: string;
+  isSubmitting?: boolean;
 }
 
-export const PostCreationForm = ({ onSubmit, imageUrl }: PostCreationFormProps) => {
+export const PostCreationForm = ({ onSubmit, imageUrl, isSubmitting = false }: PostCreationFormProps) => {
   const form = useForm<z.infer<typeof postSchema>>({
     resolver: zodResolver(postSchema),
     defaultValues: {
@@ -101,7 +103,11 @@ export const PostCreationForm = ({ onSubmit, imageUrl }: PostCreationFormProps) 
             <FormItem>
               <FormLabel>Title *</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Give your post a title" />
+                <Input 
+                  {...field} 
+                  placeholder="Give your post a title" 
+                  disabled={isSubmitting}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -115,7 +121,11 @@ export const PostCreationForm = ({ onSubmit, imageUrl }: PostCreationFormProps) 
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea {...field} placeholder="Add a description..." />
+                <Textarea 
+                  {...field} 
+                  placeholder="Add a description..." 
+                  disabled={isSubmitting}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -129,7 +139,11 @@ export const PostCreationForm = ({ onSubmit, imageUrl }: PostCreationFormProps) 
             <FormItem>
               <FormLabel>Location</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Add a location" />
+                <Input 
+                  {...field} 
+                  placeholder="Add a location" 
+                  disabled={isSubmitting}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -143,15 +157,26 @@ export const PostCreationForm = ({ onSubmit, imageUrl }: PostCreationFormProps) 
             <FormItem>
               <FormLabel>Tags</FormLabel>
               <FormControl>
-                <Input {...field} placeholder="Add tags separated by commas" />
+                <Input 
+                  {...field} 
+                  placeholder="Add tags separated by commas" 
+                  disabled={isSubmitting}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
 
-        <Button type="submit" className="w-full">
-          Create Post
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Creating Post...
+            </>
+          ) : (
+            'Create Post'
+          )}
         </Button>
       </form>
     </Form>

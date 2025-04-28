@@ -18,7 +18,7 @@ import { ArrowLeft } from 'lucide-react';
 interface PostCreationFlowProps {
   isOpen: boolean;
   onClose: () => void;
-  onPostCreated?: (post: PostCreationData) => void;
+  onPostCreated?: (post: PostCreationData) => Promise<void>;
 }
 
 type FlowStep = 'upload' | 'edit' | 'details';
@@ -27,6 +27,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
   const [currentStep, setCurrentStep] = useState<FlowStep>('upload');
   const [uploadedImage, setUploadedImage] = useState<string>('');
   const [editedImage, setEditedImage] = useState<string>('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleImageSelect = (result: ImageUploadResult) => {
     if (result.success && result.url) {
@@ -46,33 +47,47 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
     setCurrentStep('details');
   };
   
-  const handleCreatePost = (data: PostCreationData) => {
+  const handleCreatePost = async (data: PostCreationData) => {
     // Combine form data with the edited image
     const finalPost = {
       ...data,
       image: editedImage || uploadedImage, // Use edited image if available, otherwise use the uploaded one
     };
     
-    // Call the callback function
-    if (onPostCreated) {
-      onPostCreated(finalPost);
+    setIsSubmitting(true);
+    
+    try {
+      // Call the callback function and await its completion
+      if (onPostCreated) {
+        await onPostCreated(finalPost);
+      }
+      
+      // Show success message
+      toast({
+        title: "Post created!",
+        description: "Your post has been successfully created and saved."
+      });
+      
+      // Reset state and close dialog
+      resetState();
+      onClose();
+    } catch (error) {
+      console.error('Error creating post:', error);
+      toast({
+        variant: "destructive",
+        title: "Post creation failed",
+        description: "There was an error saving your post. Please try again."
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    // Show success message
-    toast({
-      title: "Post created!",
-      description: "Your post has been successfully created."
-    });
-    
-    // Reset state and close dialog
-    resetState();
-    onClose();
   };
   
   const resetState = () => {
     setCurrentStep('upload');
     setUploadedImage('');
     setEditedImage('');
+    setIsSubmitting(false);
   };
   
   const handleGoBack = () => {
@@ -84,6 +99,9 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
   };
   
   const handleClose = () => {
+    // Don't allow closing during submission
+    if (isSubmitting) return;
+    
     resetState();
     onClose();
   };
@@ -134,6 +152,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
               variant="ghost" 
               className="flex items-center text-gray-500"
               onClick={handleGoBack}
+              disabled={isSubmitting}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to editor
@@ -148,6 +167,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
             <PostCreationForm 
               onSubmit={handleCreatePost} 
               imageUrl={editedImage || uploadedImage} 
+              isSubmitting={isSubmitting}
             />
           </div>
         );
