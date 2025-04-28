@@ -3,6 +3,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Tag } from "lucide-react";
 import { ShareMenu } from "@/components/post/ShareMenu";
 import { ExtendedPost } from "@/types/marketplace";
+import { useNavigate } from "react-router-dom";
 
 interface FeedGridProps {
   posts: ExtendedPost[];
@@ -10,6 +11,12 @@ interface FeedGridProps {
 }
 
 export const FeedGrid = ({ posts, onPostClick }: FeedGridProps) => {
+  const navigate = useNavigate();
+
+  const handlePostClick = (post: ExtendedPost) => {
+    onPostClick(post);
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-1 md:gap-3">
       {posts.map((post) => (
@@ -19,7 +26,7 @@ export const FeedGrid = ({ posts, onPostClick }: FeedGridProps) => {
         >
           <div 
             className="cursor-pointer"
-            onClick={() => onPostClick(post)}
+            onClick={() => handlePostClick(post)}
           >
             <AspectRatio ratio={1} className="bg-gray-100">
               <img
@@ -44,7 +51,7 @@ export const FeedGrid = ({ posts, onPostClick }: FeedGridProps) => {
             </div>
           </div>
 
-          {/* Share button is now always visible with a semi-transparent background */}
+          {/* Share button with semi-transparent background */}
           <div className="absolute top-2 right-2 bg-white bg-opacity-75 rounded-full p-1 shadow-sm">
             <ShareMenu postId={post.id} title={post.title || ''} />
           </div>
@@ -52,4 +59,4 @@ export const FeedGrid = ({ posts, onPostClick }: FeedGridProps) => {
       ))}
     </div>
   );
-};
+}
