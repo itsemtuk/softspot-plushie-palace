@@ -7,34 +7,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { formatTimeAgo } from "@/lib/utils";
-
-// Mock notifications data
-const notifications = [
-  {
-    id: "notif-1",
-    content: "Sarah started following you",
-    timestamp: new Date(Date.now() - 30 * 60000),
-    read: false,
-    user: {
-      name: "Sarah",
-      avatar: "https://i.pravatar.cc/150?img=5"
-    }
-  },
-  {
-    id: "notif-2",
-    content: "Mike liked your post",
-    timestamp: new Date(Date.now() - 2 * 3600000),
-    read: false,
-    user: {
-      name: "Mike",
-      avatar: "https://i.pravatar.cc/150?img=12"
-    }
-  }
-];
+import { useNotifications } from "@/contexts/NotificationsContext";
 
 export function MobileNotifications() {
   const navigate = useNavigate();
-  const unreadCount = notifications.filter(n => !n.read).length;
+  const { notifications, unreadCount, markAsRead } = useNotifications();
 
   return (
     <Popover>
@@ -61,10 +38,15 @@ export function MobileNotifications() {
               className={`p-3 border-b flex items-start gap-3 hover:bg-gray-50 cursor-pointer ${
                 !notification.read ? 'bg-softspot-50' : ''
               }`}
+              onClick={() => markAsRead(notification.id)}
             >
               <Avatar>
-                <AvatarImage src={notification.user.avatar} />
-                <AvatarFallback>{notification.user.name[0]}</AvatarFallback>
+                <AvatarImage 
+                  src={notification.relatedUserId ? `https://i.pravatar.cc/150?img=${notification.id}` : undefined} 
+                />
+                <AvatarFallback>
+                  {notification.relatedUserId ? notification.relatedUserId.charAt(0).toUpperCase() : 'N'}
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <p className="text-sm">{notification.content}</p>

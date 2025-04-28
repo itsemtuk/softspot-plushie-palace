@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { 
   Bell, 
@@ -11,74 +12,9 @@ import {
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Notification } from '@/types/marketplace';
-import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from "@/components/ui/scroll-area";
-
-// Mock notifications data with updated Date objects
-const mockNotifications: Notification[] = [
-  {
-    id: "notif-1",
-    userId: "user-1",
-    type: "follow",
-    content: "Sarah started following you",
-    timestamp: new Date(Date.now() - 30 * 60000), // 30 minutes ago
-    read: false,
-    relatedUserId: "user-2"
-  },
-  {
-    id: "notif-2",
-    userId: "user-1",
-    type: "like",
-    content: "Mike liked your post",
-    timestamp: new Date(Date.now() - 2 * 3600000), // 2 hours ago
-    read: false,
-    relatedUserId: "user-3",
-    relatedItemId: "post-1",
-    relatedItemType: "post"
-  },
-  {
-    id: "notif-3",
-    userId: "user-1",
-    type: "comment",
-    content: "Emma commented on your post: 'This is so cute!'",
-    timestamp: new Date(Date.now() - 1 * 86400000), // 1 day ago
-    read: true,
-    relatedUserId: "user-4",
-    relatedItemId: "post-2",
-    relatedItemType: "post"
-  },
-  {
-    id: "notif-4",
-    userId: "user-1",
-    type: "message",
-    content: "You have a new message from Sarah",
-    timestamp: new Date(Date.now() - 2 * 86400000), // 2 days ago
-    read: true,
-    relatedUserId: "user-2",
-    relatedItemId: "thread-1",
-    relatedItemType: "message"
-  },
-  {
-    id: "notif-5",
-    userId: "user-1",
-    type: "trade",
-    content: "Sarah wants to trade with you",
-    timestamp: new Date(Date.now() - 3 * 86400000), // 3 days ago
-    read: true,
-    relatedUserId: "user-2",
-    relatedItemId: "trade-1",
-    relatedItemType: "trade"
-  },
-  {
-    id: "notif-6",
-    userId: "user-1",
-    type: "system",
-    content: "Welcome to Plushie Palace! Complete your profile to get started.",
-    timestamp: new Date(Date.now() - 7 * 86400000), // 7 days ago
-    read: true
-  }
-];
+import { formatDistanceToNow } from 'date-fns';
+import { useNotifications } from '@/contexts/NotificationsContext';
 
 // Mock users for notifications
 const mockUsers = [
@@ -107,22 +43,8 @@ const getNotificationIcon = (type: string) => {
 };
 
 const NotificationsTab = () => {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
+  const { notifications, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
   const [filter, setFilter] = useState<string>('all');
-  
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-  
-  const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
-    );
-  };
-  
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
   
   const filteredNotifications = filter === 'all' 
     ? notifications 

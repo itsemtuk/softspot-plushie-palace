@@ -7,25 +7,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { formatTimeAgo } from "@/lib/utils";
+import { useNotifications } from "@/contexts/NotificationsContext";
 
-interface Notification {
-  id: string;
-  content: string;
-  timestamp: Date;
-  read: boolean;
-  user: {
-    name: string;
-    avatar: string;
-  };
-}
-
-interface NotificationsButtonProps {
-  notifications: Notification[];
-  unreadCount: number;
-}
-
-export const NotificationsButton = ({ notifications, unreadCount }: NotificationsButtonProps) => {
+export const NotificationsButton = () => {
   const navigate = useNavigate();
+  const { notifications, unreadCount, markAsRead } = useNotifications();
 
   return (
     <Popover>
@@ -52,10 +38,15 @@ export const NotificationsButton = ({ notifications, unreadCount }: Notification
               className={`p-3 border-b flex items-start gap-3 hover:bg-gray-50 cursor-pointer ${
                 !notification.read ? 'bg-softspot-50' : ''
               }`}
+              onClick={() => markAsRead(notification.id)}
             >
               <Avatar>
-                <AvatarImage src={notification.user.avatar} />
-                <AvatarFallback>{notification.user.name[0]}</AvatarFallback>
+                <AvatarImage 
+                  src={notification.relatedUserId ? `https://i.pravatar.cc/150?img=${notification.id}` : undefined} 
+                />
+                <AvatarFallback>
+                  {notification.relatedUserId ? notification.relatedUserId.charAt(0).toUpperCase() : 'N'}
+                </AvatarFallback>
               </Avatar>
               <div className="flex-1">
                 <p className="text-sm">{notification.content}</p>

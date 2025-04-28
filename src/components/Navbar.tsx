@@ -19,42 +19,6 @@ export function Navbar() {
   const isMobile = useIsMobile();
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
 
-  // Mock notifications data for the navbar
-  const notifications = [
-    {
-      id: "notif-1",
-      content: "Sarah started following you",
-      timestamp: new Date(Date.now() - 30 * 60000),
-      read: false,
-      user: {
-        name: "Sarah",
-        avatar: "https://i.pravatar.cc/150?img=5"
-      }
-    },
-    {
-      id: "notif-2",
-      content: "Mike liked your post",
-      timestamp: new Date(Date.now() - 2 * 3600000),
-      read: false,
-      user: {
-        name: "Mike",
-        avatar: "https://i.pravatar.cc/150?img=12"
-      }
-    },
-    {
-      id: "notif-3",
-      content: "Emma commented on your post: 'This is so cute!'",
-      timestamp: new Date(Date.now() - 1 * 86400000),
-      read: true,
-      user: {
-        name: "Emma",
-        avatar: "https://i.pravatar.cc/150?img=9"
-      }
-    }
-  ];
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-
   // Updated to return a Promise
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
     console.log("New post created:", postData);
@@ -86,10 +50,7 @@ export function Navbar() {
             
             <SignedIn>
               <div className="flex items-center space-x-2">
-                <NotificationsButton 
-                  notifications={notifications}
-                  unreadCount={unreadCount}
-                />
+                <NotificationsButton />
                 <UserMenu />
               </div>
             </SignedIn>

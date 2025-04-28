@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
 import Index from "./pages/Index";
@@ -16,13 +15,14 @@ import { ThemeProvider } from "@/components/ui/theme-provider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Discover from "./pages/Discover";
 import Footer from "./components/Footer";
-import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 import SellItemPage from "./pages/SellItemPage";
 import About from "./pages/About";
 import PostPage from "./pages/PostPage";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
+import { NotificationsProvider } from "@/contexts/NotificationsContext";
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 // Use a fixed publishable key for development
 const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
@@ -104,10 +104,12 @@ function App() {
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
       <QueryClientProvider client={queryClient}>
         <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-          <BrowserRouter>
-            <AppContent />
-          </BrowserRouter>
-          <Toaster />
+          <NotificationsProvider>
+            <BrowserRouter>
+              <AppContent />
+            </BrowserRouter>
+            <Toaster />
+          </NotificationsProvider>
         </ClerkProvider>
       </QueryClientProvider>
     </ThemeProvider>
