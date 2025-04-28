@@ -36,10 +36,10 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
           <Button 
             variant="outline" 
             className="flex items-center gap-2 justify-start"
-            disabled
+            onClick={() => navigate('/marketplace/sell')}
           >
             <ShoppingBag className="h-4 w-4" />
-            Sell Item (Coming Soon)
+            Sell Item
           </Button>
           <Button 
             variant="outline" 

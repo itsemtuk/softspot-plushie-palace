@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 const mockPosts: Post[] = [
   {
     id: "1",
+    userId: "user1",
     image: "https://i.pravatar.cc/300?img=1",
     title: "My new Jellycat bunny!",
     username: "plushielover",
@@ -25,6 +26,7 @@ const mockPosts: Post[] = [
   },
   {
     id: "2",
+    userId: "user2",
     image: "https://i.pravatar.cc/300?img=2",
     title: "Vintage teddy collection",
     username: "teddycollector",
@@ -35,6 +37,7 @@ const mockPosts: Post[] = [
   },
   {
     id: "3",
+    userId: "user3",
     image: "https://i.pravatar.cc/300?img=3",
     title: "Look at this adorable Care Bear!",
     username: "carebearfan",
