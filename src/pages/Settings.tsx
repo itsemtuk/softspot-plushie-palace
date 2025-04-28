@@ -1,3 +1,4 @@
+
 import { useState, useCallback, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
@@ -76,8 +77,8 @@ const Settings = () => {
         .map(type => type.id);
       
       const existingBrandIDs = plushieBrands
-        .filter(brand => existingInterests.includes(type.label))
-        .map(type => type.id);
+        .filter(brand => existingInterests.includes(brand.label))
+        .map(brand => brand.id);
       
       form.reset({
         username: user?.username || "",
@@ -104,7 +105,7 @@ const Settings = () => {
       
       const selectedBrands = plushieBrands
         .filter(brand => data.plushieBrands?.includes(brand.id))
-        .map(type => type.label);
+        .map(brand => brand.label);
       
       const plushieInterests = [...selectedTypes, ...selectedBrands];
       

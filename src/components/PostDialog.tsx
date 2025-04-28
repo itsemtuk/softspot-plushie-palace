@@ -133,7 +133,8 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
         likes: 0
       }];
       
-      const updatedPost = {
+      // Create a proper updated post object that matches the ExtendedPost type
+      const updatedPost: ExtendedPost = {
         ...post,
         comments: updatedComments
       };
