@@ -13,10 +13,15 @@ interface PostDialogProps {
 }
 
 function convertToPostCommentItemComment(comment: MarketplaceComment): PostCommentItemComment {
+  // Ensure we have a valid comment object
+  if (!comment) return null as any;
+  
   return {
-    ...comment,
-    text: comment.content,
-    timestamp: comment.createdAt,
+    id: comment.id || "",
+    text: comment.content || "",
+    timestamp: comment.createdAt || new Date().toISOString(),
+    userId: comment.userId || "",
+    username: comment.username || "Anonymous",
     isLiked: Array.isArray(comment.likes) ? comment.likes.some(like => like.userId === "user-1") : false,
     likes: Array.isArray(comment.likes) ? comment.likes.length : 0
   };
@@ -29,6 +34,7 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
     commentList,
     isAuthor,
     handleSaveEdit,
+    handleDeletePost,
     handleLikeToggle,
     handleCommentLikeToggle,
     handleCommentSubmit,
@@ -36,7 +42,9 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
   } = usePostDialog(post);
 
   // Convert commentList to format expected by PostCommentItem
-  const formattedComments: PostCommentItemComment[] = commentList.map(convertToPostCommentItemComment);
+  const formattedComments: PostCommentItemComment[] = commentList
+    .filter(comment => !!comment) // Filter out any null or undefined comments
+    .map(convertToPostCommentItemComment);
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -54,6 +62,7 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
           onFindSimilar={handleFindSimilar}
           onClose={onClose}
           onSaveEdit={handleSaveEdit}
+          onDeletePost={handleDeletePost}
         />
       </DialogContent>
     </Dialog>

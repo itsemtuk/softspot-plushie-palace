@@ -6,9 +6,10 @@ import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
 import { PlushieCard } from "@/components/PlushieCard";
 import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
-import { Search } from "lucide-react";
+import { Search, Filter, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { MarketplacePlushie, MarketplaceFilters } from "@/types/marketplace";
 import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
 import { MobileNav } from "@/components/navigation/MobileNav";
@@ -23,6 +24,7 @@ const Marketplace = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedPlushie, setSelectedPlushie] = useState<MarketplacePlushie | null>(null);
   const [listings, setListings] = useState<MarketplacePlushie[]>([]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const isMobile = useIsMobile();
 
   // Get listings from localStorage
@@ -83,6 +85,9 @@ const Marketplace = () => {
 
   const handleFilterUpdate = (newFilters: MarketplaceFilters) => {
     setFilters(newFilters);
+    if (isMobile) {
+      setIsFilterOpen(false);
+    }
   };
 
   const handlePlushieClick = (plushie: MarketplacePlushie) => {
@@ -90,14 +95,20 @@ const Marketplace = () => {
     setIsDetailsOpen(true);
   };
 
+  const clearFilters = () => {
+    setFilters({});
+    setPriceRange([0, 150]);
+    setAvailableOnly(false);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pb-16">
       {!isMobile ? <Navbar /> : <MobileNav />}
-      <div className="relative h-[300px] bg-gradient-to-r from-softspot-100 to-softspot-200">
+      <div className="relative h-[200px] md:h-[300px] bg-gradient-to-r from-softspot-100 to-softspot-200">
         <div className="absolute inset-0 bg-opacity-50 bg-white">
           <div className="container mx-auto px-4 h-full flex flex-col justify-center">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">Marketplace</h1>
-            <p className="text-lg text-gray-700 max-w-2xl">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 md:mb-4">Marketplace</h1>
+            <p className="text-md md:text-lg text-gray-700 max-w-2xl">
               Discover unique plushies from collectors worldwide. Buy, sell, and trade your favorite companions.
             </p>
           </div>
@@ -106,7 +117,7 @@ const Marketplace = () => {
 
       <MarketplaceNav />
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
         <div className="flex flex-col gap-6">
           {/* Search and Filters Bar */}
           <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-lg shadow-sm">
@@ -120,6 +131,35 @@ const Marketplace = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
+            
+            {isMobile && (
+              <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="outline" className="gap-2">
+                    <Filter className="h-4 w-4" />
+                    Filters
+                    {Object.keys(filters).length > 0 && (
+                      <span className="bg-softspot-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                        {Object.keys(filters).length}
+                      </span>
+                    )}
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="right" className="w-full sm:max-w-md">
+                  <div className="flex items-center justify-between mb-6">
+                    <h3 className="text-lg font-medium">Filters</h3>
+                    {Object.keys(filters).length > 0 && (
+                      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-red-500">
+                        <X className="h-3 w-3 mr-1" />
+                        Clear all
+                      </Button>
+                    )}
+                  </div>
+                  <FilterPanel filters={filters} onFilterChange={handleFilterUpdate} />
+                </SheetContent>
+              </Sheet>
+            )}
+            
             <div className="flex items-center">
               <CurrencyConverter price={0} className="ml-2" />
             </div>
@@ -153,7 +193,7 @@ const Marketplace = () => {
                   <h3 className="text-xl font-medium text-gray-700">No plushies found</h3>
                   <p className="text-gray-500 mt-2">Try adjusting your filters or add a new listing</p>
                   <Button 
-                    onClick={() => navigate('/sell')} 
+                    onClick={() => navigate('/marketplace/sell')} 
                     className="mt-4 bg-softspot-500 hover:bg-softspot-600"
                   >
                     List a Plushie for Sale

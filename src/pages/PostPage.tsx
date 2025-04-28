@@ -1,14 +1,16 @@
 
 import { useState, useEffect } from "react";
-import { useParams, Navigate, Link } from "react-router-dom";
+import { useParams, Navigate, Link, useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { PostDialog } from "@/components/PostDialog";
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { ExtendedPost } from "@/types/marketplace";
 import { getPostById } from "@/utils/postStorage";
 import { toast } from "@/components/ui/use-toast";
 import { Spinner } from "@/components/ui/spinner";
+import { MobileNav } from "@/components/navigation/MobileNav";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const PostPage = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -16,7 +18,10 @@ const PostPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-
+  const navigate = useNavigate();
+  const { isSignedIn } = useUser();
+  const isMobile = useIsMobile();
+  
   useEffect(() => {
     const loadPost = async () => {
       if (!postId) {
@@ -30,7 +35,10 @@ const PostPage = () => {
         
         if (foundPost) {
           setPost(foundPost);
-          // Only open dialog for signed-in users (handled in render)
+          // Open dialog after short delay to ensure smooth transition
+          setTimeout(() => {
+            setDialogOpen(isSignedIn || false);
+          }, 100);
         } else {
           setNotFound(true);
           toast({
@@ -52,28 +60,25 @@ const PostPage = () => {
     };
 
     loadPost();
-  }, [postId]);
+  }, [postId, isSignedIn]);
 
-  // Open dialog when post is loaded
-  useEffect(() => {
-    if (post && !isLoading) {
-      setDialogOpen(true);
-    }
-  }, [post, isLoading]);
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    
+    // Use timeout to let dialog animation complete before navigating
+    setTimeout(() => {
+      // Navigate back to previous page or home
+      window.history.length > 2 ? navigate(-1) : navigate('/');
+    }, 300);
+  };
 
   if (notFound) {
     return <Navigate to="/404" replace />;
   }
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    // Navigate back to previous page or home
-    window.history.length > 2 ? window.history.back() : window.location.href = '/';
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {isMobile ? <MobileNav /> : <Navbar />}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
           <div className="flex justify-center py-12">

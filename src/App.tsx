@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ClerkProvider } from "@clerk/clerk-react";
 import Index from "./pages/Index";
@@ -21,20 +22,12 @@ import PostPage from "./pages/PostPage";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
-import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
 
 // Use a fixed publishable key for development
 const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 const queryClient = new QueryClient();
 
 function AppContent() {
-  const location = useLocation();
-  const [showFooter, setShowFooter] = useState(true);
-  
-  // Public routes that don't require onboarding completion
-  const publicRoutes = ['/sign-in', '/sign-up', '/onboarding', '/', '/post'];
-
   return (
     <>
       <Routes>
@@ -44,6 +37,7 @@ function AppContent() {
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/about" element={<About />} />
         <Route path="/post/:postId" element={<PostPage />} />
+        <Route path="/404" element={<NotFound />} />
         
         {/* Protected routes that require onboarding completion */}
         <Route path="/settings" element={

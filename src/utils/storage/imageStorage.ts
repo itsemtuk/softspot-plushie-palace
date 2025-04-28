@@ -38,6 +38,7 @@ export const uploadImage = async (dataUrl: string, imageId: string): Promise<{ i
     return { imageUrl: data.publicUrl };
   } catch (error) {
     console.error('Error uploading image to Supabase Storage:', error);
+    // Fall back to the original data URL if there's an error
     return { imageUrl: dataUrl, error };
   }
 };

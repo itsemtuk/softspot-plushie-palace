@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 
 interface ActivityStatusProps extends React.HTMLAttributes<HTMLDivElement> {
   status: "online" | "offline" | "away" | "busy";
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "xl";
+  pulseAnimation?: boolean;
 }
 
 const statusColors = {
@@ -17,12 +18,14 @@ const statusColors = {
 const sizes = {
   sm: "w-2 h-2",
   md: "w-3 h-3",
-  lg: "w-4 h-4"
+  lg: "w-4 h-4",
+  xl: "w-5 h-5"
 };
 
 export function ActivityStatus({
   status,
   size = "md",
+  pulseAnimation = true,
   className,
   ...props
 }: ActivityStatusProps) {
@@ -32,7 +35,7 @@ export function ActivityStatus({
         "relative flex items-center justify-center rounded-full",
         sizes[size],
         statusColors[status],
-        "animate-pulse",
+        pulseAnimation && "animate-pulse",
         className
       )}
       {...props}

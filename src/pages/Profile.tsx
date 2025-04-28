@@ -31,7 +31,7 @@ const Profile = () => {
       setIsLoading(true);
       const fetchedPosts = await getUserPosts(user.id);
       console.log("Fetched user posts:", fetchedPosts);
-      setPosts(fetchedPosts);
+      setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : []);
     } catch (error) {
       console.error('Error fetching user posts:', error);
       toast({
@@ -65,7 +65,7 @@ const Profile = () => {
 
   if (!isLoaded) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center min-h-screen">
         <Spinner size="lg" />
       </div>
     );
@@ -74,7 +74,7 @@ const Profile = () => {
   // Get user metadata
   const profileData = user ? {
     bio: user.unsafeMetadata?.bio as string,
-    interests: user.unsafeMetadata?.interests as string[],
+    interests: user.unsafeMetadata?.plushieInterests as string[],
     isPrivate: user.unsafeMetadata?.isPrivate as boolean,
   } : undefined;
 
@@ -93,7 +93,7 @@ const Profile = () => {
         
         <div className="mt-6">
           <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+            <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
               <button
                 onClick={() => setActiveTab("posts")}
                 className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
@@ -155,6 +155,6 @@ const Profile = () => {
       />
     </div>
   );
-}
+};
 
 export default Profile;

@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -34,27 +34,35 @@ export const useProfileSettings = () => {
     },
   });
 
-  useEffect(() => {
+  const loadUserData = useCallback(() => {
     if (isLoaded && user) {
-      const existingInterests = user?.unsafeMetadata?.plushieInterests as string[] || [];
-      
-      const existingTypeIDs = plushieTypes
-        .filter(type => existingInterests.includes(type.label))
-        .map(type => type.id);
-      
-      const existingBrandIDs = plushieBrands
-        .filter(brand => existingInterests.includes(brand.label))
-        .map(brand => brand.id);
-      
-      form.reset({
-        username: user?.username || "",
-        bio: user?.unsafeMetadata?.bio as string || "",
-        profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
-        plushieTypes: existingTypeIDs,
-        plushieBrands: existingBrandIDs,
-      });
+      try {
+        const existingInterests = user?.unsafeMetadata?.plushieInterests as string[] || [];
+        
+        const existingTypeIDs = plushieTypes
+          .filter(type => existingInterests.includes(type.label))
+          .map(type => type.id);
+        
+        const existingBrandIDs = plushieBrands
+          .filter(brand => existingInterests.includes(brand.label))
+          .map(brand => brand.id);
+        
+        form.reset({
+          username: user?.username || "",
+          bio: user?.unsafeMetadata?.bio as string || "",
+          profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
+          plushieTypes: existingTypeIDs,
+          plushieBrands: existingBrandIDs,
+        });
+      } catch (error) {
+        console.error("Error loading user profile data:", error);
+      }
     }
   }, [isLoaded, user, form]);
+
+  useEffect(() => {
+    loadUserData();
+  }, [loadUserData]);
 
   const onSubmit = async (data: ProfileFormValues) => {
     setIsLoading(true);
@@ -97,6 +105,7 @@ export const useProfileSettings = () => {
         description: "There was a problem updating your profile. Please try again.",
         variant: "destructive",
       });
+      throw error; // Re-throw for component to handle
     } finally {
       setIsLoading(false);
     }
@@ -106,5 +115,6 @@ export const useProfileSettings = () => {
     form,
     isLoading,
     onSubmit,
+    loadUserData,
   };
 };
