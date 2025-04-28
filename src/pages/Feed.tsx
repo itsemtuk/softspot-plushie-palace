@@ -51,8 +51,8 @@ const Feed = () => {
             // This would sync local posts to cloud in a real app
             // We'd need user confirmation for this in a production app
             toast({
-              title: "Local posts detected",
-              description: "Your previous posts will be synced to your account."
+              title: "Using local posts",
+              description: "Your local posts will be displayed as Supabase connection hasn't been fully configured."
             });
           }
         }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Dialog,
@@ -54,10 +53,9 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
     
     // Optimistically update UI
     if (isLiked) {
-      // Unlike post (this functionality would need to be implemented in Supabase)
+      // Unlike post
       setLikeCount(prev => Math.max(0, prev - 1));
       setIsLiked(false);
-      // In a real app, we'd call an unlikePost function here
       toast({
         title: "Post unliked",
         description: "You have removed your like from this post."
@@ -68,11 +66,11 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
       setIsLiked(true);
       
       try {
-        // Update in Supabase
+        // Update in Supabase or local storage
         const result = await togglePostLike(post.id);
         
         if (!result.success) {
-          // Revert UI if storage update failed
+          // Revert UI if update failed
           setLikeCount(prev => Math.max(0, prev - 1));
           setIsLiked(false);
           throw new Error("Failed to like post");

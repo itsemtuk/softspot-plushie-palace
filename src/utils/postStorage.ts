@@ -4,18 +4,50 @@ import { ExtendedPost } from "@/types/marketplace";
 import { createClient } from '@supabase/supabase-js';
 
 // Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project-url.supabase.co';
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Check if we have the required Supabase credentials
+const hasValidSupabaseConfig = supabaseUrl !== 'https://your-project-url.supabase.co' && supabaseKey !== '';
+
+// Create Supabase client only if we have valid credentials
+const supabase = hasValidSupabaseConfig 
+  ? createClient(supabaseUrl, supabaseKey)
+  : null;
 
 const POSTS_TABLE = 'posts';
+
+// Helper function to check if Supabase is properly configured
+const isSupabaseConfigured = () => {
+  if (!hasValidSupabaseConfig) {
+    console.warn('Supabase is not properly configured. Using local storage fallback.');
+    return false;
+  }
+  return true;
+};
 
 /**
  * Saves a post to Supabase
  */
 export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, error?: any }> => {
+  if (!isSupabaseConfigured()) {
+    // Fallback to local storage if Supabase is not configured
+    try {
+      const existingPosts = getLocalPosts();
+      const updatedPosts = existingPosts.map(p => p.id === post.id ? post : p);
+      if (!updatedPosts.some(p => p.id === post.id)) {
+        updatedPosts.unshift(post);
+      }
+      savePosts(updatedPosts);
+      return { success: true };
+    } catch (error) {
+      console.error('Error saving post to localStorage:', error);
+      return { success: false, error };
+    }
+  }
+
   try {
-    const { error } = await supabase
+    const { error } = await supabase!
       .from(POSTS_TABLE)
       .upsert({
         id: post.id,
@@ -42,8 +74,13 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
  * Retrieves posts from Supabase
  */
 export const getPosts = async (): Promise<ExtendedPost[]> => {
+  if (!isSupabaseConfigured()) {
+    // Fallback to local storage if Supabase is not configured
+    return getLocalPosts();
+  }
+
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from(POSTS_TABLE)
       .select('*')
       .order('timestamp', { ascending: false });
@@ -52,7 +89,7 @@ export const getPosts = async (): Promise<ExtendedPost[]> => {
     return data as ExtendedPost[];
   } catch (error) {
     console.error('Error retrieving posts from Supabase:', error);
-    return [];
+    return getLocalPosts(); // Fallback to local storage
   }
 };
 
@@ -60,8 +97,13 @@ export const getPosts = async (): Promise<ExtendedPost[]> => {
  * Retrieves posts by a specific user from Supabase
  */
 export const getUserPosts = async (userId: string): Promise<ExtendedPost[]> => {
+  if (!isSupabaseConfigured()) {
+    // Fallback to local storage if Supabase is not configured
+    return getLocalPosts().filter(post => post.userId === userId);
+  }
+
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabase!
       .from(POSTS_TABLE)
       .select('*')
       .eq('userId', userId)
@@ -71,7 +113,8 @@ export const getUserPosts = async (userId: string): Promise<ExtendedPost[]> => {
     return data as ExtendedPost[];
   } catch (error) {
     console.error('Error retrieving user posts from Supabase:', error);
-    return [];
+    // Fallback to local storage
+    return getLocalPosts().filter(post => post.userId === userId);
   }
 };
 
@@ -81,7 +124,7 @@ export const getUserPosts = async (userId: string): Promise<ExtendedPost[]> => {
 export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, error?: any }> => {
   try {
     // First, upload the image to Supabase Storage if it's a data URL
-    if (post.image && post.image.startsWith('data:')) {
+    if (post.image && post.image.startsWith('data:') && isSupabaseConfigured()) {
       const { imageUrl, error: uploadError } = await uploadImage(post.image, post.id);
       if (uploadError) {
         throw uploadError;
@@ -199,6 +242,11 @@ export const togglePostLike = async (postId: string): Promise<{ success: boolean
  * Uploads an image to Supabase Storage and returns the public URL
  */
 export const uploadImage = async (dataUrl: string, imageId: string): Promise<{ imageUrl: string, error?: any }> => {
+  if (!isSupabaseConfigured()) {
+    // If Supabase is not configured, just return the original data URL
+    return { imageUrl: dataUrl };
+  }
+
   try {
     // Convert data URL to Blob
     const res = await fetch(dataUrl);
@@ -208,7 +256,7 @@ export const uploadImage = async (dataUrl: string, imageId: string): Promise<{ i
     const filePath = `posts/${imageId}/image.jpg`;
     
     // Upload to Supabase Storage
-    const { error: uploadError } = await supabase
+    const { error: uploadError } = await supabase!
       .storage
       .from('images')
       .upload(filePath, blob, {
@@ -219,7 +267,7 @@ export const uploadImage = async (dataUrl: string, imageId: string): Promise<{ i
     if (uploadError) throw uploadError;
     
     // Get the public URL
-    const { data } = supabase
+    const { data } = supabase!
       .storage
       .from('images')
       .getPublicUrl(filePath);
@@ -238,10 +286,14 @@ export const uploadImage = async (dataUrl: string, imageId: string): Promise<{ i
  * Deletes an image from Supabase Storage
  */
 export const deleteImage = async (imageId: string): Promise<{ success: boolean, error?: any }> => {
+  if (!isSupabaseConfigured()) {
+    return { success: true }; // Nothing to delete if not using Supabase
+  }
+
   try {
     const filePath = `posts/${imageId}/image.jpg`;
     
-    const { error } = await supabase
+    const { error } = await supabase!
       .storage
       .from('images')
       .remove([filePath]);
