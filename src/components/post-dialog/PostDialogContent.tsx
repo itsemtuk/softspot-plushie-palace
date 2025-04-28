@@ -4,6 +4,7 @@ import { PostContent } from "./PostContent";
 import { ExtendedPost } from "@/types/marketplace";
 import { Comment } from "./PostCommentItem";
 import { Spinner } from "@/components/ui/spinner";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PostDialogContentProps {
   post: ExtendedPost | null;
@@ -36,6 +37,8 @@ export function PostDialogContent({
   onSaveEdit,
   onDeletePost
 }: PostDialogContentProps) {
+  const isMobile = useIsMobile();
+  
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64 w-full">
@@ -71,7 +74,7 @@ export function PostDialogContent({
         onCommentLikeToggle={onCommentLikeToggle}
         onCommentSubmit={onCommentSubmit}
         onFindSimilar={onFindSimilar}
-        onClose={onClose}
+        onClose={isMobile ? null : onClose}  // Only pass onClose if not mobile
         onSaveEdit={onSaveEdit}
         onDeletePost={onDeletePost}
       />

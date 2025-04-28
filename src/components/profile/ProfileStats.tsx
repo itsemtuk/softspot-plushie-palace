@@ -15,10 +15,12 @@ export const ProfileStats = ({ postsCount }: ProfileStatsProps) => {
     // In a real app, this would fetch from the backend
     // For now, we'll just use simple logic for demo purposes
     if (user) {
-      // If we're on our own profile, use the actual post count
-      // For followers/following, use 0 since we're the only user as mentioned
+      // Get following count from user metadata
+      const following = user.unsafeMetadata?.following as string[] || [];
+      setFollowingCount(following.length);
+      
+      // Follower count will remain 0 until we implement that functionality
       setFollowerCount(0);
-      setFollowingCount(0);
     }
   }, [user]);
 

@@ -46,7 +46,7 @@ export default function UserProfileHeader({
   }, [user, isOwnProfile, username]);
 
   const handleEditProfile = () => {
-    navigate('/onboarding?edit=true');
+    navigate('/settings');
   };
 
   const handleFollow = () => {
