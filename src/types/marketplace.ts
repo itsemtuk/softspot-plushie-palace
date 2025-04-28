@@ -1,3 +1,4 @@
+
 export type ImageUploadResult = {
   url?: string;
   success: boolean;
@@ -113,6 +114,11 @@ export type Post = {
   timestamp: string;
   location?: string;
   tags?: string[];
+};
+
+// Add ExtendedPost type for Feed page
+export type ExtendedPost = Post & {
+  description?: string;
 };
 
 export type PlushieBrand = {
