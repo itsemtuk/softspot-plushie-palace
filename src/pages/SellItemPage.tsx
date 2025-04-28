@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
-import { PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, DeliveryMethod } from "@/types/marketplace";
+import { PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, DeliveryMethod, ImageUploadResult } from "@/types/marketplace";
 import { ImageUploader } from "@/components/post/ImageUploader";
 
 interface SellItemFormData {
@@ -34,6 +34,13 @@ const SellItemPage = () => {
     console.log("Form submitted:", { ...data, image: imageUrl });
   };
 
+  // Handle the image upload result
+  const handleImageSelect = (result: ImageUploadResult) => {
+    if (result.success && result.url) {
+      setImageUrl(result.url);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -44,8 +51,7 @@ const SellItemPage = () => {
           <div className="bg-white rounded-lg shadow-sm p-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <ImageUploader
-                onImageSelect={(url) => setImageUrl(url)}
-                className="w-full aspect-square mb-6 rounded-lg border-2 border-dashed border-gray-300 hover:border-gray-400 transition-colors"
+                onImageSelect={handleImageSelect}
               />
 
               <div className="space-y-4">
