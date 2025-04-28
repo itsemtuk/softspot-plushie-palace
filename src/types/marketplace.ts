@@ -1,5 +1,3 @@
-// Add missing types or correct existing types
-
 export type ImageUploadResult = {
   url?: string;
   success: boolean;
@@ -30,19 +28,105 @@ export type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'CHF' | '
 
 export type PrivacySetting = 'public' | 'private' | 'friends' | string;
 
-export type Wishlist = {
+export type MarketplacePlushie = {
   id: string;
+  image: string;
   title: string;
-  description?: string;
-  items: WishlistItem[];
-  isPublic: boolean;
-  createdAt: string;
-  updatedAt?: string; // Adding updatedAt as an optional field
+  username: string;
+  likes: number;
+  comments: number;
+  price: number;
+  forSale: boolean;
+  condition: PlushieCondition;
+  description: string;
+  color: string;
+  material: PlushieMaterial;
+  filling: PlushieFilling;
+  species: PlushieSpecies;
+  brand: string;
+  deliveryMethod: 'Shipping' | 'Collection';
+  deliveryCost: number;
+  tags: string[];
 };
 
-export type WishlistItem = {
+export type MarketplaceFilters = {
+  color?: string[];
+  material?: string[];
+  filling?: string[];
+  species?: string[];
+  brand?: string[];
+  condition?: PlushieCondition[];
+  priceRange?: [number, number];
+};
+
+export type UserProfile = {
+  id: string;
+  username: string;
+  profileImageUrl?: string;
+  bio?: string;
+  followers: number;
+  following: number;
+};
+
+export type DirectMessage = {
+  id: string;
+  senderId: string;
+  content: string;
+  timestamp: string;
+  read: boolean;
+  attachments?: string[];
+};
+
+export type MessageThread = {
+  id: string;
+  participants: string[];
+  lastMessage?: DirectMessage;
+  updatedAt: string;
+  unreadCount: number;
+};
+
+export type Notification = {
+  id: string;
+  userId: string;
+  type: 'follow' | 'like' | 'comment' | 'message' | 'trade';
+  content: string;
+  read: boolean;
+  timestamp: string;
+  relatedUserId?: string;
+  relatedPostId?: string;
+};
+
+export type Post = {
+  id: string;
+  userId: string;
+  image: string;
+  caption?: string;
+  likes: number;
+  comments: number;
+  timestamp: string;
+  location?: string;
+  tags?: string[];
+};
+
+export type PlushieBrand = {
   id: string;
   name: string;
+  logo?: string;
+  description?: string;
+  featured: boolean;
+};
+
+export type UserPrivacySettings = {
+  profileVisibility: PrivacySetting;
+  allowMessages: boolean;
+  showActivity: boolean;
+  allowTagging: boolean;
+};
+
+// Update WishlistItem to include name instead of title
+export type WishlistItem = {
+  id: string;
+  name: string; // Changed from title to match the error
   brand?: string;
   image?: string;
   price?: number;
@@ -54,4 +138,16 @@ export type WishlistItem = {
   material?: PlushieMaterial;
   filling?: PlushieFilling;
   species?: PlushieSpecies;
+};
+
+// Update Wishlist type to include userId
+export type Wishlist = {
+  id: string;
+  userId: string; // Added to match the error
+  title: string;
+  description?: string;
+  items: WishlistItem[];
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt?: string;
 };
