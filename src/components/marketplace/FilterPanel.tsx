@@ -67,9 +67,10 @@ const brands = [
 interface FilterPanelProps {
   filters: MarketplaceFilters;
   onFilterChange: (filters: MarketplaceFilters) => void;
+  className?: string;
 }
 
-export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
+export function FilterPanel({ filters, onFilterChange, className = "" }: FilterPanelProps) {
   const [openSections, setOpenSections] = useState<string[]>([]);
 
   const toggleSection = (section: string) => {
@@ -136,7 +137,7 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
   };
 
   return (
-    <div className="space-y-2 p-4 bg-white rounded-lg shadow-sm">
+    <div className={`space-y-2 p-4 bg-white rounded-lg shadow-sm ${className}`}>
       <FilterSection 
         title="Colors" 
         icon={Palette} 

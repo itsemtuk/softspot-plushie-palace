@@ -1,30 +1,48 @@
+
 import { ExtendedPost, Comment } from "@/types/marketplace";
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 
-// Add openPostDialog as a standalone export function
-let setCurrentPost: (post: ExtendedPost | null) => void = () => {};
-let setDialogOpen: (open: boolean) => void = () => {};
+// Global variables to track dialog state across components
+// These variables are shared between all instances of the hook
+let globalSetCurrentPost: (post: ExtendedPost | null) => void = () => {};
+let globalSetDialogOpen: (open: boolean) => void = () => {};
 
+// Exported standalone function to open the dialog from anywhere
 export const openPostDialog = (post: ExtendedPost) => {
-  setCurrentPost(post);
-  setDialogOpen(true);
+  if (globalSetCurrentPost && globalSetDialogOpen) {
+    console.log("Opening post dialog for post:", post.id);
+    globalSetCurrentPost(post);
+    globalSetDialogOpen(true);
+  } else {
+    console.error("Post dialog controls not initialized");
+  }
 };
 
 export const usePostDialog = (post: ExtendedPost | null = null) => {
   // State for the dialog visibility
   const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [currentPostData, setCurrentPostData] = useState<ExtendedPost | null>(post);
-  // Fix all the state definitions to match proper types
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [likeCount, setLikeCount] = useState<number>(currentPostData?.likes || 0);
   const [commentList, setCommentList] = useState<Comment[]>([]);
   const [isAuthor, setIsAuthor] = useState<boolean>(false);
   
-  // Set the references for the openPostDialog function
+  // Set the global references for the openPostDialog function - this is crucial!
   useEffect(() => {
-    setCurrentPost = setCurrentPostData;
-    setDialogOpen = setIsDialogOpen;
+    globalSetCurrentPost = setCurrentPostData;
+    globalSetDialogOpen = setIsDialogOpen;
+    
+    return () => {
+      // Optional cleanup if the component using this hook is unmounted
+      // and no other components are using it
+      if (globalSetCurrentPost === setCurrentPostData) {
+        globalSetCurrentPost = () => {};
+      }
+      if (globalSetDialogOpen === setIsDialogOpen) {
+        globalSetDialogOpen = () => {};
+      }
+    };
   }, []);
   
   // Check if the current user is the author of the post
@@ -38,6 +56,9 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
     // Check if the post is liked by the current user
     const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
     setIsLiked(likedPosts.includes(currentPostData.id));
+    
+    // Set like count from post data
+    setLikeCount(currentPostData.likes || 0);
     
     // Load comments for this post
     const loadComments = async () => {
@@ -55,7 +76,10 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
     loadComments();
   }, [currentPostData]);
   
+  // Handle like toggle
   const handleLikeToggle = () => {
+    if (!currentPostData) return;
+    
     if (isLiked) {
       // If already liked, decrease the count
       setLikeCount(likeCount - 1);
@@ -114,7 +138,7 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
     }
   };
   
-  // Fix commenting functionality
+  // Handle comment like toggle
   const handleCommentLikeToggle = (commentId: string) => {
     setCommentList(prevComments => 
       prevComments.map(comment => {
@@ -171,7 +195,7 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
     }
   };
   
-  // Handle post edit - Update to return a Promise<boolean>
+  // Handle post edit
   const handleSaveEdit = async (updatedPost: Partial<ExtendedPost>): Promise<boolean> => {
     if (!currentPostData) return false;
     

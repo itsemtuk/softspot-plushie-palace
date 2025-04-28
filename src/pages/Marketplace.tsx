@@ -39,7 +39,7 @@ const Marketplace = () => {
       // Instead of modifying the type, ensure all listings have the required fields
       const plushiesWithRequiredFields = storedPlushies.map((plushie: MarketplacePlushie) => ({
         ...plushie,
-        // Only add createdAt if it doesn't exist
+        // Only add timestamp if it doesn't exist
         ...(plushie.timestamp ? {} : { timestamp: new Date().toISOString() })
       }));
       
@@ -74,7 +74,7 @@ const Marketplace = () => {
       setFilteredPlushies(plushies);
     } else {
       const filtered = plushies.filter((plushie) => 
-        plushie.category === category || plushie.tags?.includes(category)
+        plushie.tags?.includes(category)
       );
       setFilteredPlushies(filtered);
     }
@@ -138,7 +138,11 @@ const Marketplace = () => {
           />
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <FilterPanel className="hidden md:block" />
+            {/* Filter panel needs to have filters prop */}
+            <FilterPanel 
+              filters={{}} 
+              onFilterChange={() => {}} 
+            />
             
             <div className="md:col-span-3">
               {isLoading ? (

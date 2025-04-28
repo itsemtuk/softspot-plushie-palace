@@ -11,7 +11,8 @@ import { MobileNav } from "@/components/navigation/MobileNav";
 import { Navbar } from "@/components/Navbar";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
-import { openPostDialog } from "@/hooks/use-post-dialog";
+import { usePostDialog } from "@/hooks/use-post-dialog";
+import { Spinner } from "@/components/ui/spinner";
 
 const Profile = () => {
   const { user } = useUser();
@@ -19,6 +20,9 @@ const Profile = () => {
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
+  
+  // Use the post dialog properly 
+  const { openPostDialog } = usePostDialog();
 
   useEffect(() => {
     const fetchUserPosts = async () => {
@@ -39,11 +43,16 @@ const Profile = () => {
   }, [user]);
 
   const handlePostClick = (post: ExtendedPost) => {
+    // Call the imported openPostDialog function
     openPostDialog(post);
   };
 
   if (!user) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner size="lg" />
+      </div>
+    );
   }
 
   // Extract profile data from user metadata for consistency
@@ -72,7 +81,10 @@ const Profile = () => {
           </TabsList>
           <TabsContent value="posts" className="mt-4">
             {isLoading ? (
-              <div className="text-center py-12">Loading posts...</div>
+              <div className="text-center py-12">
+                <Spinner size="lg" className="mx-auto" />
+                <p className="mt-4 text-gray-500">Loading posts...</p>
+              </div>
             ) : (
               <ProfilePostsGrid 
                 posts={userPosts} 
