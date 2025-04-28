@@ -1,293 +1,204 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
-import { FilterPanel } from "@/components/marketplace/FilterPanel";
-import { PlushieCard } from "@/components/PlushieCard";
-import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
-import { Search, Filter, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
-import { MarketplacePlushie, MarketplaceFilters } from "@/types/marketplace";
-import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
-import { MobileNav } from "@/components/navigation/MobileNav";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { FilterPanel } from "@/components/marketplace/FilterPanel";
+import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
+import { MarketplacePlushie } from "@/types/marketplace";
+import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
 import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Heart, MessageSquare, Bookmark } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileNav } from "@/components/navigation/MobileNav";
 import { toast } from "@/components/ui/use-toast";
 
 const Marketplace = () => {
-  const navigate = useNavigate();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 150]);
-  const [availableOnly, setAvailableOnly] = useState(false);
-  const [filters, setFilters] = useState<MarketplaceFilters>({});
-  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [plushies, setPlushies] = useState<MarketplacePlushie[]>([]);
+  const [filteredPlushies, setFilteredPlushies] = useState<MarketplacePlushie[]>([]);
   const [selectedPlushie, setSelectedPlushie] = useState<MarketplacePlushie | null>(null);
-  const [listings, setListings] = useState<MarketplacePlushie[]>([]);
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [wishlist, setWishlist] = useState<string[]>([]);
+  const navigate = useNavigate();
+  const { user } = useUser();
   const isMobile = useIsMobile();
 
-  // Get listings from localStorage
   useEffect(() => {
-    const fetchListings = async () => {
+    // Load marketplace listings from local storage or API
+    setIsLoading(true);
+    try {
+      const storedPlushies = getMarketplaceListings();
+      console.log("Loaded marketplace listings:", storedPlushies);
+      
+      // Make sure we add any missing fields required by the UI
+      // The error was about 'createdAt' not existing on the MarketplacePlushie type
+      // Instead of modifying the type, ensure all listings have the required fields
+      const plushiesWithRequiredFields = storedPlushies.map((plushie: MarketplacePlushie) => ({
+        ...plushie,
+        // Only add createdAt if it doesn't exist
+        ...(plushie.timestamp ? {} : { timestamp: new Date().toISOString() })
+      }));
+      
+      setPlushies(plushiesWithRequiredFields);
+      setFilteredPlushies(plushiesWithRequiredFields);
+    } catch (error) {
+      console.error("Error loading marketplace listings:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load marketplace listings."
+      });
+    } finally {
+      setIsLoading(false);
+    }
+
+    // Load user's wishlist
+    const savedWishlist = localStorage.getItem('wishlist');
+    if (savedWishlist) {
       try {
-        setIsLoading(true);
-        setError(null);
-        console.log("Fetching marketplace listings...");
-        
-        // Add a small delay to ensure the component is fully mounted
-        setTimeout(() => {
-          try {
-            const storedListings = getMarketplaceListings();
-            console.log("Fetched marketplace listings:", storedListings);
-            
-            if (!storedListings || storedListings.length === 0) {
-              console.log("No listings found, creating empty array");
-              setListings([]);
-              
-              // Create some sample listings if none exist
-              const sampleListings: MarketplacePlushie[] = [
-                {
-                  id: "sample-1",
-                  title: "Sample Teddy Bear",
-                  description: "A cute sample teddy bear for demonstration.",
-                  price: 25,
-                  image: "https://placehold.co/400x400?text=Sample+Plushie",
-                  username: "demouser",
-                  createdAt: new Date().toISOString(),
-                  material: "Cotton",
-                  filling: "Polyester",
-                  species: "Bear",
-                  brand: "SoftSpot",
-                  forSale: true,
-                  color: "Brown",
-                  likes: 5,
-                  comments: 2
-                }
-              ];
-              
-              setListings(sampleListings);
-            } else {
-              setListings(storedListings);
-            }
-            setIsLoading(false);
-          } catch (innerError) {
-            console.error("Error in delayed fetch:", innerError);
-            setError("Failed to load marketplace listings. Please try again.");
-            setIsLoading(false);
-            
-            toast({
-              variant: "destructive",
-              title: "Error loading listings",
-              description: "Could not load marketplace listings. Please try again later."
-            });
-          }
-        }, 500);
-        
+        setWishlist(JSON.parse(savedWishlist));
       } catch (error) {
-        console.error("Error fetching marketplace listings:", error);
-        setError("Failed to load marketplace listings. Please try again.");
-        setIsLoading(false);
-        
-        toast({
-          variant: "destructive",
-          title: "Error loading listings",
-          description: "Could not load marketplace listings. Please try again later."
-        });
+        console.error("Error parsing wishlist:", error);
       }
-    };
-    
-    fetchListings();
+    }
   }, []);
 
-  const filteredPlushies = listings.filter((plushie: MarketplacePlushie) => {
-    const searchTerm = searchQuery.toLowerCase();
-    const matchesSearch =
-      plushie.title.toLowerCase().includes(searchTerm) ||
-      plushie.description.toLowerCase().includes(searchTerm) ||
-      plushie.username.toLowerCase().includes(searchTerm);
-
-    const isInPriceRange = 
-      plushie.price !== undefined && 
-      plushie.price >= priceRange[0] && 
-      plushie.price <= priceRange[1];
-    const isAvailable = !availableOnly || plushie.forSale;
-
-    // Material filter
-    if (filters.material && filters.material.length > 0) {
-      if (!filters.material.includes(plushie.material)) {
-        return false;
-      }
-    }
-      
-    // Filling filter
-    if (filters.filling && filters.filling.length > 0) {
-      if (!filters.filling.includes(plushie.filling)) {
-        return false;
-      }
-    }
-      
-    // Species filter
-    if (filters.species && filters.species.length > 0) {
-      if (!filters.species.includes(plushie.species)) {
-        return false;
-      }
-    }
-      
-    // Brand filter
-    if (filters.brands && filters.brands.length > 0) {
-      if (!filters.brands.includes(plushie.brand)) {
-        return false;
-      }
-    }
-
-    // Color filter
-    if (filters.color && filters.color.length > 0) {
-      // Simple color matching, can be enhanced for better color detection
-      if (!filters.color.some(color => plushie.color?.toLowerCase().includes(color.toLowerCase()))) {
-        return false;
-      }
-    }
-
-    return matchesSearch && (isInPriceRange || !plushie.price) && isAvailable;
-  });
-
-  const handleFilterUpdate = (newFilters: MarketplaceFilters) => {
-    console.log("Updating filters:", newFilters);
-    setFilters(newFilters);
-    if (isMobile) {
-      setIsFilterOpen(false);
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    
+    if (category === 'all') {
+      setFilteredPlushies(plushies);
+    } else {
+      const filtered = plushies.filter((plushie) => 
+        plushie.category === category || plushie.tags?.includes(category)
+      );
+      setFilteredPlushies(filtered);
     }
   };
 
   const handlePlushieClick = (plushie: MarketplacePlushie) => {
-    console.log("Plushie clicked:", plushie);
     setSelectedPlushie(plushie);
     setIsDetailsOpen(true);
   };
 
-  const clearFilters = () => {
-    setFilters({});
-    setPriceRange([0, 150]);
-    setAvailableOnly(false);
+  const handleAddToWishlist = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to add items to your wishlist."
+      });
+      return;
+    }
+    
+    const newWishlist = wishlist.includes(id)
+      ? wishlist.filter(item => item !== id)
+      : [...wishlist, id];
+    
+    setWishlist(newWishlist);
+    localStorage.setItem('wishlist', JSON.stringify(newWishlist));
+    
+    toast({
+      title: wishlist.includes(id) ? "Removed from wishlist" : "Added to wishlist",
+      description: wishlist.includes(id) 
+        ? "This plushie has been removed from your wishlist." 
+        : "This plushie has been added to your wishlist."
+    });
+  };
+
+  const handleSellPlushie = () => {
+    navigate('/marketplace/sell');
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16">
-      {!isMobile ? <Navbar /> : <MobileNav />}
-      <div className="relative h-[200px] md:h-[300px] bg-gradient-to-r from-softspot-100 to-softspot-200">
-        <div className="absolute inset-0 bg-opacity-50 bg-white">
-          <div className="container mx-auto px-4 h-full flex flex-col justify-center">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-2 md:mb-4">Marketplace</h1>
-            <p className="text-md md:text-lg text-gray-700 max-w-2xl">
-              Discover unique plushies from collectors worldwide. Buy, sell, and trade your favorite companions.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <MarketplaceNav />
-
-      <div className="container mx-auto px-4 py-6 md:py-8">
-        <div className="flex flex-col gap-6">
-          {/* Search and Filters Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-lg shadow-sm">
-            <div className="flex-1 relative min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-              <Input
-                type="text"
-                placeholder="Search plushies..."
-                className="pl-9"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            
-            {isMobile && (
-              <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" className="gap-2">
-                    <Filter className="h-4 w-4" />
-                    Filters
-                    {Object.keys(filters).length > 0 && (
-                      <span className="bg-softspot-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                        {Object.keys(filters).length}
-                      </span>
-                    )}
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-full sm:max-w-md">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-lg font-medium">Filters</h3>
-                    {Object.keys(filters).length > 0 && (
-                      <Button variant="ghost" size="sm" onClick={clearFilters} className="text-red-500">
-                        <X className="h-3 w-3 mr-1" />
-                        Clear all
-                      </Button>
-                    )}
-                  </div>
-                  <FilterPanel filters={filters} onFilterChange={handleFilterUpdate} />
-                </SheetContent>
-              </Sheet>
-            )}
-            
-            <div className="flex items-center">
-              <CurrencyConverter price={0} className="ml-2" />
-            </div>
+    <div className="min-h-screen bg-gray-50">
+      {/* Keep using the appropriate navigation based on device */}
+      {isMobile ? <MobileNav /> : <Navbar />}
+      
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col space-y-4">
+          <div className="flex justify-between items-center">
+            <h1 className="text-3xl font-bold">Marketplace</h1>
+            <Button 
+              onClick={handleSellPlushie}
+              className="bg-softspot-500 hover:bg-softspot-600 text-white"
+            >
+              Sell a Plushie
+            </Button>
           </div>
 
+          <MarketplaceNav 
+            selectedCategory={selectedCategory}
+            onCategoryChange={handleCategoryChange}
+          />
+          
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Filters */}
-            <div className="col-span-1 md:block hidden">
-              <FilterPanel filters={filters} onFilterChange={handleFilterUpdate} />
-            </div>
-
-            {/* Plushie Grid */}
-            <div className="col-span-1 md:col-span-3">
+            <FilterPanel className="hidden md:block" />
+            
+            <div className="md:col-span-3">
               {isLoading ? (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-500 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Loading marketplace listings...</p>
+                <div className="flex justify-center items-center h-64">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-500"></div>
                 </div>
-              ) : error ? (
-                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                  <h3 className="text-xl font-medium text-red-600">Error loading listings</h3>
-                  <p className="text-gray-500 mt-2">{error}</p>
-                  <Button 
-                    onClick={() => window.location.reload()} 
-                    className="mt-4 bg-softspot-500 hover:bg-softspot-600"
-                  >
-                    Retry
-                  </Button>
-                </div>
-              ) : filteredPlushies.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredPlushies.map((plushie) => (
-                    <div 
-                      key={plushie.id} 
-                      className="cursor-pointer transform transition-transform hover:scale-[1.02]"
-                      onClick={() => handlePlushieClick(plushie)}
-                    >
-                      <PlushieCard 
-                        {...plushie} 
-                        variant="marketplace"
-                      />
-                    </div>
-                  ))}
+              ) : filteredPlushies.length === 0 ? (
+                <div className="text-center py-20">
+                  <h3 className="text-xl font-medium text-gray-600">No plushies found</h3>
+                  <p className="text-gray-500 mt-2">Try a different category or check back later</p>
                 </div>
               ) : (
-                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
-                  <h3 className="text-xl font-medium text-gray-700">No plushies found</h3>
-                  <p className="text-gray-500 mt-2">Try adjusting your filters or add a new listing</p>
-                  <Button 
-                    onClick={() => navigate('/marketplace/sell')} 
-                    className="mt-4 bg-softspot-500 hover:bg-softspot-600"
-                  >
-                    List a Plushie for Sale
-                  </Button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredPlushies.map((plushie) => (
+                    <Card 
+                      key={plushie.id} 
+                      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow bg-white"
+                      onClick={() => handlePlushieClick(plushie)}
+                    >
+                      <div className="aspect-square relative">
+                        <img 
+                          src={plushie.image} 
+                          alt={plushie.title}
+                          className="object-cover w-full h-full"
+                        />
+                        {plushie.condition && (
+                          <Badge className="absolute top-2 left-2 bg-softspot-500 hover:bg-softspot-600">
+                            {plushie.condition}
+                          </Badge>
+                        )}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full"
+                          onClick={(e) => handleAddToWishlist(plushie.id, e)}
+                        >
+                          <Bookmark 
+                            className={`h-5 w-5 ${wishlist.includes(plushie.id) ? 'fill-softspot-500 text-softspot-500' : 'text-gray-600'}`}
+                          />
+                        </Button>
+                      </div>
+                      <CardContent className="p-4">
+                        <h3 className="font-medium truncate">{plushie.title}</h3>
+                        <p className="text-softspot-500 font-bold">${plushie.price.toFixed(2)}</p>
+                      </CardContent>
+                      <CardFooter className="px-4 py-2 border-t flex justify-between text-sm text-gray-500">
+                        <div className="flex items-center space-x-4">
+                          <span className="flex items-center">
+                            <Heart className="h-4 w-4 mr-1" />
+                            {plushie.likes || 0}
+                          </span>
+                          <span className="flex items-center">
+                            <MessageSquare className="h-4 w-4 mr-1" />
+                            {plushie.comments || 0}
+                          </span>
+                        </div>
+                        <span>{plushie.location || 'Location unknown'}</span>
+                      </CardFooter>
+                    </Card>
+                  ))}
                 </div>
               )}
             </div>
@@ -296,10 +207,10 @@ const Marketplace = () => {
       </div>
 
       {selectedPlushie && (
-        <PlushieDetailDialog 
-          isOpen={isDetailsOpen} 
-          onClose={() => setIsDetailsOpen(false)} 
+        <PlushieDetailDialog
           plushie={selectedPlushie}
+          isOpen={isDetailsOpen}
+          onClose={() => setIsDetailsOpen(false)}
         />
       )}
     </div>

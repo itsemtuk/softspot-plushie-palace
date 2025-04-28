@@ -1,26 +1,43 @@
-
 import { ExtendedPost, Comment } from "@/types/marketplace";
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 
-export const usePostDialog = (post: ExtendedPost | null) => {
+// Add openPostDialog as a standalone export function
+let setCurrentPost: (post: ExtendedPost | null) => void = () => {};
+let setDialogOpen: (open: boolean) => void = () => {};
+
+export const openPostDialog = (post: ExtendedPost) => {
+  setCurrentPost(post);
+  setDialogOpen(true);
+};
+
+export const usePostDialog = (post: ExtendedPost | null = null) => {
+  // State for the dialog visibility
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const [currentPostData, setCurrentPostData] = useState<ExtendedPost | null>(post);
   // Fix all the state definitions to match proper types
   const [isLiked, setIsLiked] = useState<boolean>(false);
-  const [likeCount, setLikeCount] = useState<number>(post?.likes || 0);
+  const [likeCount, setLikeCount] = useState<number>(currentPostData?.likes || 0);
   const [commentList, setCommentList] = useState<Comment[]>([]);
   const [isAuthor, setIsAuthor] = useState<boolean>(false);
   
+  // Set the references for the openPostDialog function
+  useEffect(() => {
+    setCurrentPost = setCurrentPostData;
+    setDialogOpen = setIsDialogOpen;
+  }, []);
+  
   // Check if the current user is the author of the post
   useEffect(() => {
-    if (!post) return;
+    if (!currentPostData) return;
     
     // Get current user ID from localStorage or auth context
     const currentUserId = localStorage.getItem('currentUserId');
-    setIsAuthor(currentUserId === post.userId);
+    setIsAuthor(currentUserId === currentPostData.userId);
     
     // Check if the post is liked by the current user
     const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
-    setIsLiked(likedPosts.includes(post.id));
+    setIsLiked(likedPosts.includes(currentPostData.id));
     
     // Load comments for this post
     const loadComments = async () => {
@@ -28,7 +45,7 @@ export const usePostDialog = (post: ExtendedPost | null) => {
         // In a real app, this would be an API call
         // For now, we'll use mock data or localStorage
         const allComments = JSON.parse(localStorage.getItem('comments') || '[]');
-        const postComments = allComments.filter((c: any) => c.postId === post.id);
+        const postComments = allComments.filter((c: any) => c.postId === currentPostData.id);
         setCommentList(postComments);
       } catch (error) {
         console.error('Error loading comments:', error);
@@ -36,7 +53,7 @@ export const usePostDialog = (post: ExtendedPost | null) => {
     };
     
     loadComments();
-  }, [post]);
+  }, [currentPostData]);
   
   const handleLikeToggle = () => {
     if (isLiked) {
@@ -52,10 +69,10 @@ export const usePostDialog = (post: ExtendedPost | null) => {
     try {
       const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '[]');
       if (isLiked) {
-        const updatedLikes = likedPosts.filter((id: string) => id !== post?.id);
+        const updatedLikes = likedPosts.filter((id: string) => id !== currentPostData?.id);
         localStorage.setItem('likedPosts', JSON.stringify(updatedLikes));
       } else {
-        likedPosts.push(post?.id);
+        likedPosts.push(currentPostData?.id);
         localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
       }
     } catch (error) {
@@ -65,7 +82,7 @@ export const usePostDialog = (post: ExtendedPost | null) => {
   
   // Handle comment submission
   const handleCommentSubmit = (text: string) => {
-    if (!post || !text.trim()) return;
+    if (!currentPostData || !text.trim()) return;
     
     const currentUsername = localStorage.getItem('currentUsername') || 'Anonymous';
     const currentUserId = localStorage.getItem('currentUserId') || 'user-1';
@@ -85,7 +102,7 @@ export const usePostDialog = (post: ExtendedPost | null) => {
     // Save to localStorage
     try {
       const allComments = JSON.parse(localStorage.getItem('comments') || '[]');
-      allComments.push({...newComment, postId: post.id});
+      allComments.push({...newComment, postId: currentPostData.id});
       localStorage.setItem('comments', JSON.stringify(allComments));
     } catch (error) {
       console.error('Error saving comment:', error);
@@ -156,7 +173,7 @@ export const usePostDialog = (post: ExtendedPost | null) => {
   
   // Handle post edit - Update to return a Promise<boolean>
   const handleSaveEdit = async (updatedPost: Partial<ExtendedPost>): Promise<boolean> => {
-    if (!post) return false;
+    if (!currentPostData) return false;
     
     try {
       // In a real app, this would be an API call
@@ -180,7 +197,7 @@ export const usePostDialog = (post: ExtendedPost | null) => {
   
   // Handle finding similar posts
   const handleFindSimilar = () => {
-    if (!post) return;
+    if (!currentPostData) return;
     
     // In a real app, this would navigate to a search page with similar posts
     toast({
@@ -191,7 +208,7 @@ export const usePostDialog = (post: ExtendedPost | null) => {
   
   // Handle post deletion
   const handleDeletePost = async (): Promise<boolean> => {
-    if (!post || !isAuthor) return false;
+    if (!currentPostData || !isAuthor) return false;
     
     try {
       // In a real app, this would be an API call
@@ -225,5 +242,9 @@ export const usePostDialog = (post: ExtendedPost | null) => {
     handleCommentSubmit,
     handleFindSimilar,
     handleDeletePost,
+    openPostDialog,
+    currentPostData,
+    isDialogOpen,
+    setIsDialogOpen,
   };
 };

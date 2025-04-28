@@ -2,9 +2,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card } from "@/components/ui/card";
 import { getAllUserPosts } from "@/utils/postStorage";
 import { ExtendedPost } from "@/types/marketplace";
 import NotificationsTab from "@/components/profile/NotificationsTab";
@@ -13,7 +11,7 @@ import { MobileNav } from "@/components/navigation/MobileNav";
 import { Navbar } from "@/components/Navbar";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
-import { usePostDialog } from "@/hooks/use-post-dialog";
+import { openPostDialog } from "@/hooks/use-post-dialog";
 
 const Profile = () => {
   const { user } = useUser();
@@ -21,7 +19,6 @@ const Profile = () => {
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
-  const { openPostDialog } = usePostDialog();
 
   useEffect(() => {
     const fetchUserPosts = async () => {
