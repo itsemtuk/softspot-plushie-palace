@@ -124,14 +124,18 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
     
     // Update post with new comment (optional)
     if (post) {
-      const updatedComments = [...(Array.isArray(post.comments) ? post.comments : []), { 
-        id: newComment.id,
-        username: newComment.username,
-        text: newComment.text,
-        timestamp: newComment.timestamp,
-        isLiked: false,
-        likes: 0
-      }];
+      // Prepare comments array ensuring it's properly typed
+      const updatedComments = [
+        ...(Array.isArray(post.comments) ? post.comments : []), 
+        { 
+          id: newComment.id,
+          username: newComment.username,
+          text: newComment.text,
+          timestamp: newComment.timestamp,
+          isLiked: false,
+          likes: 0
+        }
+      ];
       
       // Create a proper updated post object that matches the ExtendedPost type
       const updatedPost: ExtendedPost = {
