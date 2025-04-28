@@ -165,7 +165,7 @@ export function FilterPanel({ filters, onFilterChange }: FilterPanelProps) {
         title="Brands" 
         icon={Package} 
         items={brands} 
-        category="brand"
+        category="brands"
       />
     </div>
   );

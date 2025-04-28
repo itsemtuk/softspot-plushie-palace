@@ -11,7 +11,7 @@ import { PrivacySetting, UserPrivacySettings } from "@/types/marketplace";
 export function PrivacySettings() {
   const [privacySettings, setPrivacySettings] = useState<UserPrivacySettings>({
     profileVisibility: "public",
-    messagePrivacy: "followers",
+    messagePermission: "followers",
     activityVisibility: true,
     allowMessages: true,
     showActivity: true,
@@ -74,8 +74,8 @@ export function PrivacySettings() {
             <div className="flex items-center justify-between">
               <Label htmlFor="allow-messages">Allow messages from</Label>
               <RadioGroup 
-                value={privacySettings.messagePrivacy} 
-                onValueChange={(value: PrivacySetting) => updatePrivacy("messagePrivacy", value)}
+                value={privacySettings.messagePermission} 
+                onValueChange={(value: PrivacySetting) => updatePrivacy("messagePermission", value)}
                 className="flex space-x-4"
               >
                 <div className="flex items-center space-x-2">

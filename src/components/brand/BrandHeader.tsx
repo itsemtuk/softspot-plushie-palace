@@ -11,7 +11,7 @@ interface BrandHeaderProps {
 
 export const BrandHeader = ({ brand }: BrandHeaderProps) => {
   const websiteUrl = brand.website || "#";
-  const isActive = brand.status === "active";
+  const isActive = brand.status === "online" || brand.status === "active";
   
   return (
     <div className="bg-white shadow-sm rounded-lg p-6 mb-8">

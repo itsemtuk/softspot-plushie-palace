@@ -25,6 +25,7 @@ export interface Notification {
   message: string;
   timestamp: string;
   read: boolean;
+  isRead?: boolean; // Adding for compatibility
   type: "like" | "comment" | "follow" | "mention";
   relatedUserId?: string;
   content?: string;
@@ -33,7 +34,7 @@ export interface Notification {
 export interface DirectMessage {
   id: string;
   senderId: string;
-  receiverId: string;
+  receiverId: string; // Adding for compatibility
   content: string;
   timestamp: string;
   isRead: boolean;
@@ -53,6 +54,7 @@ export interface WishlistItem {
   name: string;
   description?: string;
   imageUrl: string;
+  image?: string; // Adding for compatibility
   createdAt: string;
   price?: number;
   title?: string;
@@ -67,6 +69,7 @@ export interface Wishlist {
   createdAt: string;
   title?: string;
   description?: string;
+  isPublic?: boolean; // Adding for compatibility
 }
 
 export interface PostCreationData {
@@ -144,7 +147,9 @@ export interface ImageEditorOptions {
   aspectRatio?: number;
 }
 
-export interface Currency {
+export type Currency = string;
+
+export interface CurrencyInfo {
   code: string;
   name: string;
   symbol: string;
@@ -173,7 +178,7 @@ export interface PlushieBrand {
   followersCount: number;
   isFollowing: boolean;
   verified?: boolean;
-  status?: "online" | "offline" | "away" | "busy";
+  status?: "active" | "inactive" | "online" | "offline" | "away" | "busy";
 }
 
 export type PrivacySetting = "public" | "followers" | "private";
@@ -181,7 +186,16 @@ export type PrivacySetting = "public" | "followers" | "private";
 export interface UserPrivacySettings {
   profileVisibility: PrivacySetting;
   messagePermission: PrivacySetting;
-  activityStatus: boolean;
-  showWishlist: boolean;
+  messagePrivacy?: PrivacySetting; // Adding for compatibility
+  activityStatus?: boolean;
+  activityVisibility?: boolean;
+  showWishlist?: boolean;
   allowTagging: boolean;
+  showActivity?: boolean;
+  allowMessages?: boolean;
+  profile?: PrivacySetting;
+  posts?: PrivacySetting;
+  wishlist?: PrivacySetting;
+  marketplace?: PrivacySetting;
+  messages?: PrivacySetting;
 }

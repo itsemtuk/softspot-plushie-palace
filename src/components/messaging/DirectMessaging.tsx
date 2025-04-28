@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { 
   Card,
@@ -39,10 +38,10 @@ import { formatTimeAgo } from '@/lib/utils';
 
 // Mock data - in a real app, this would come from an API
 const mockUsers: UserProfile[] = [
-  { id: "user-1", username: "plushielover", profileImageUrl: "https://i.pravatar.cc/150?img=1", bio: "Plushie enthusiast", followers: 120, isFollowing: false },
-  { id: "user-2", username: "sarahlovesplushies", profileImageUrl: "https://i.pravatar.cc/150?img=5", bio: "Sarah's plushie collection", followers: 78, isFollowing: false },
-  { id: "user-3", username: "mikeplush", profileImageUrl: "https://i.pravatar.cc/150?img=12", bio: "Plushie trader", followers: 56, isFollowing: false },
-  { id: "user-4", username: "emmacollects", profileImageUrl: "https://i.pravatar.cc/150?img=9", bio: "Plushie collector", followers: 91, isFollowing: false }
+  { id: "user-1", username: "plushielover", profileImageUrl: "https://i.pravatar.cc/150?img=1", bio: "Plushie enthusiast", followers: 120, isFollowing: false, avatar: "https://i.pravatar.cc/150?img=1" },
+  { id: "user-2", username: "sarahlovesplushies", profileImageUrl: "https://i.pravatar.cc/150?img=5", bio: "Sarah's plushie collection", followers: 78, isFollowing: false, avatar: "https://i.pravatar.cc/150?img=5" },
+  { id: "user-3", username: "mikeplush", profileImageUrl: "https://i.pravatar.cc/150?img=12", bio: "Plushie trader", followers: 56, isFollowing: false, avatar: "https://i.pravatar.cc/150?img=12" },
+  { id: "user-4", username: "emmacollects", profileImageUrl: "https://i.pravatar.cc/150?img=9", bio: "Plushie collector", followers: 91, isFollowing: false, avatar: "https://i.pravatar.cc/150?img=9" }
 ];
 
 interface UpdatedMessageThread extends Omit<MessageThread, 'participants'> {
@@ -60,10 +59,10 @@ const mockThreads: UpdatedMessageThread[] = [
     lastMessage: {
       id: "msg-1",
       senderId: "user-2",
-      recipientId: "user-1",
+      receiverId: "user-1",
       content: "Hi! I'm interested in your teddy bear listing.",
       timestamp: new Date(Date.now() - 3600000).toISOString(),
-      read: false,
+      isRead: false,
     },
     updatedAt: new Date(Date.now() - 3600000).toISOString(),
     unreadCount: 1
@@ -77,10 +76,10 @@ const mockThreads: UpdatedMessageThread[] = [
     lastMessage: {
       id: "msg-2",
       senderId: "user-1",
-      recipientId: "user-3",
+      receiverId: "user-3",
       content: "Would you consider trading for my bunny plush?",
       timestamp: new Date(Date.now() - 86400000).toISOString(),
-      read: true,
+      isRead: true,
     },
     updatedAt: new Date(Date.now() - 86400000).toISOString(),
     unreadCount: 0
@@ -91,26 +90,26 @@ const mockMessages: DirectMessage[] = [
   {
     id: "msg-1",
     senderId: "user-2",
-    recipientId: "user-1",
+    receiverId: "user-1",
     content: "Hi! I'm interested in your teddy bear listing.",
     timestamp: new Date(Date.now() - 3600000).toISOString(),
-    read: false,
+    isRead: false,
   },
   {
     id: "msg-2",
     senderId: "user-1",
-    recipientId: "user-2",
+    receiverId: "user-2",
     content: "Hello! Yes, it's still available. Are you interested in buying or trading?",
     timestamp: new Date(Date.now() - 3500000).toISOString(),
-    read: true,
+    isRead: true,
   },
   {
     id: "msg-3",
     senderId: "user-2",
-    recipientId: "user-1",
+    receiverId: "user-1",
     content: "I'd like to buy it. Is the price negotiable?",
     timestamp: new Date(Date.now() - 3400000).toISOString(),
-    read: false,
+    isRead: false,
   }
 ];
 
@@ -149,10 +148,10 @@ const DirectMessaging = () => {
     const newMessage: DirectMessage = {
       id: `msg-${Date.now()}`,
       senderId: "user-1",
-      recipientId,
+      receiverId: recipientId,
       content: messageText,
       timestamp: new Date().toISOString(),
-      read: false,
+      isRead: false,
     };
     
     setMessages(prev => [...prev, newMessage]);
@@ -201,10 +200,10 @@ const DirectMessaging = () => {
       lastMessage: {
         id: "",
         senderId: "",
-        recipientId: "",
+        receiverId: "",
         content: "Start a new conversation",
         timestamp: new Date().toISOString(),
-        read: true,
+        isRead: true,
       },
       updatedAt: new Date().toISOString(),
       unreadCount: 0

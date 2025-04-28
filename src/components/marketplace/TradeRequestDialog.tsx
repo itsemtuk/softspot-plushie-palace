@@ -33,7 +33,8 @@ const mockFollowers: UserProfile[] = [
     profileImageUrl: "https://i.pravatar.cc/150?img=5", 
     bio: "Collector of rare plushies", 
     followers: 123, 
-    isFollowing: false
+    isFollowing: false,
+    avatar: "https://i.pravatar.cc/150?img=5"
   },
   { 
     id: "user-3", 
@@ -41,7 +42,8 @@ const mockFollowers: UserProfile[] = [
     profileImageUrl: "https://i.pravatar.cc/150?img=12", 
     bio: "Teddy bear enthusiast", 
     followers: 56, 
-    isFollowing: false
+    isFollowing: false,
+    avatar: "https://i.pravatar.cc/150?img=12"
   },
   { 
     id: "user-4", 
@@ -49,13 +51,15 @@ const mockFollowers: UserProfile[] = [
     profileImageUrl: "https://i.pravatar.cc/150?img=9", 
     bio: "Plushie photographer", 
     followers: 208, 
-    isFollowing: false
+    isFollowing: false,
+    avatar: "https://i.pravatar.cc/150?img=9"
   }
 ];
 
 const mockPlushies: MarketplacePlushie[] = [
   {
     id: "1",
+    userId: "user-1",
     image: "https://i.pravatar.cc/300?img=1",
     title: "Mint Jellycat Bunny",
     username: "plushielover",
@@ -77,6 +81,7 @@ const mockPlushies: MarketplacePlushie[] = [
   },
   {
     id: "2",
+    userId: "user-1",
     image: "https://i.pravatar.cc/300?img=2",
     title: "Limited Edition Teddy",
     username: "plushielover",

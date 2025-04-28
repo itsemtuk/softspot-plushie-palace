@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 // Mock exchange rates - in a real app, these would come from an API
-const exchangeRates: Record<Currency, number> = {
+const exchangeRates: Record<string, number> = {
   USD: 1.00,    // Base currency
   EUR: 0.93,    // 1 USD = 0.93 EUR
   GBP: 0.80,    // 1 USD = 0.80 GBP
@@ -30,7 +30,7 @@ const exchangeRates: Record<Currency, number> = {
   INR: 83.12    // 1 USD = 83.12 INR
 };
 
-const currencySymbols: Record<Currency, string> = {
+const currencySymbols: Record<string, string> = {
   USD: '$',
   EUR: '€',
   GBP: '£',
@@ -41,7 +41,7 @@ const currencySymbols: Record<Currency, string> = {
   INR: '₹'
 };
 
-const getCurrencyIcon = (currency: Currency) => {
+const getCurrencyIcon = (currency: string) => {
   switch (currency) {
     case 'USD':
       return <DollarSign className="h-4 w-4" />;
@@ -69,7 +69,7 @@ interface CurrencyConverterProps {
 }
 
 const CurrencyConverter = ({ price, className }: CurrencyConverterProps) => {
-  const [selectedCurrency, setSelectedCurrency] = useState<Currency>('USD');
+  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
   const [convertedPrice, setConvertedPrice] = useState<number>(price);
   
   useEffect(() => {
@@ -82,7 +82,7 @@ const CurrencyConverter = ({ price, className }: CurrencyConverterProps) => {
       {getCurrencyIcon(selectedCurrency)}
       <Select 
         value={selectedCurrency} 
-        onValueChange={(value) => setSelectedCurrency(value as Currency)}
+        onValueChange={(value) => setSelectedCurrency(value)}
       >
         <SelectTrigger className="w-[90px] h-8 bg-white">
           <SelectValue placeholder="Currency" />

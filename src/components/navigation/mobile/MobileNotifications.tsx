@@ -36,7 +36,7 @@ export function MobileNotifications() {
             <div 
               key={notification.id} 
               className={`p-3 border-b flex items-start gap-3 hover:bg-gray-50 cursor-pointer ${
-                !notification.isRead ? 'bg-softspot-50' : ''
+                !notification.read ? 'bg-softspot-50' : ''
               }`}
               onClick={() => markAsRead(notification.id)}
             >
