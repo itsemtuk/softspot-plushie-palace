@@ -542,7 +542,7 @@ const WishlistManager: React.FC<WishlistManagerProps> = ({ wishlist, onUpdateWis
               </Label>
               <Select onValueChange={(value) => setEditedItemPriority(value as "low" | "medium" | "high")}>
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select priority" value={editedItemPriority} />
+                  <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">Low</SelectItem>
@@ -557,7 +557,7 @@ const WishlistManager: React.FC<WishlistManagerProps> = ({ wishlist, onUpdateWis
               </Label>
               <Select onValueChange={(value) => setEditedItemStatus(value as "wanted" | "purchased" | "received")}>
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select status" value={editedItemStatus} />
+                  <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="wanted">Wanted</SelectItem>
@@ -572,7 +572,7 @@ const WishlistManager: React.FC<WishlistManagerProps> = ({ wishlist, onUpdateWis
               </Label>
               <Select onValueChange={(value) => setEditedItemCurrencyCode(value)}>
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select currency" value={editedItemCurrencyCode} />
+                  <SelectValue placeholder="Select currency" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="USD">USD</SelectItem>
