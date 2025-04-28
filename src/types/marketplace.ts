@@ -1,8 +1,10 @@
+
 export interface PostCreationData {
   image: string;
   title: string;
   description?: string;
   tags?: string[];
+  location?: string; // Added location property
 }
 
 export interface ImageUploadResult {
@@ -23,20 +25,23 @@ export interface ExtendedPost {
   image: string;
   title: string;
   username: string;
-  likes: number;
-  comments: number;
+  likes: number | { userId: string; username: string }[];
+  comments: number | Comment[];
   description?: string;
   tags?: string[];
   timestamp: string;
 }
 
-// Add the Comment interface if it doesn't exist
+// Comment interface updated to match PostCommentItem requirements
 export interface Comment {
   id: string;
   userId: string;
   username: string;
   content: string;
   createdAt: string;
+  text?: string; // Added for compatibility with PostCommentItem
+  timestamp?: string; // Added for compatibility with PostCommentItem
+  isLiked?: boolean; // Added for compatibility with PostCommentItem
   likes?: { userId: string; username: string }[];
 }
 
@@ -74,6 +79,7 @@ export interface MarketplaceFilters {
   filling?: PlushieFilling[];
   species?: PlushieSpecies[];
   brand?: string[];
+  color?: string[]; // Added color property
 }
 
 export interface Post {
@@ -91,31 +97,37 @@ export interface PlushieBrand {
   name: string;
   logo: string;
   description: string;
+  website?: string; // Added website property
   websiteUrl?: string;
+  instagram?: string; // Added Instagram property
 }
 
 export interface DirectMessage {
   id: string;
   senderId: string;
-  receiverId: string;
+  recipientId?: string;
   content: string;
-  timestamp: string;
+  timestamp: string | Date;
   read: boolean;
 }
 
 export interface MessageThread {
   id: string;
-  participants: string[];
+  participants: UserProfile[];
   lastMessage: DirectMessage;
   unreadCount: number;
+  updatedAt?: Date | string; // Added updatedAt property
 }
 
 export interface UserProfile {
   id: string;
   username: string;
-  avatar?: string;
   bio?: string;
   interests?: string[];
+  avatar?: string;
+  profileImageUrl?: string; // Added for compatibility
+  followers?: number; // Added followers count
+  following?: number; // Added following count
 }
 
 export interface WishlistItem {
@@ -125,11 +137,14 @@ export interface WishlistItem {
   maxPrice: number;
   condition: PlushieCondition[];
   notifications: boolean;
+  name?: string; // Added for compatibility
 }
 
 export interface Wishlist {
   userId: string;
   items: WishlistItem[];
+  id?: string; // Added for compatibility
+  title?: string; // Added for compatibility
 }
 
 export interface UserPrivacySettings {
@@ -147,4 +162,5 @@ export interface Notification {
   content: string;
   read: boolean;
   timestamp: string;
+  relatedUserId?: string; // Added for NotificationsButton component
 }

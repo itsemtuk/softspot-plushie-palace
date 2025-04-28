@@ -2,13 +2,24 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
-import { ExtendedPost } from "@/types/marketplace";
+import { ExtendedPost, Comment } from "@/types/marketplace";
+import { Comment as PostCommentItemComment } from "./post-dialog/PostCommentItem";
 
 interface PostDialogProps {
   isOpen: boolean;
   onClose: () => void;
   post: ExtendedPost | null;
   isLoading?: boolean;
+}
+
+function convertToPostCommentItemComment(comment: Comment): PostCommentItemComment {
+  return {
+    ...comment,
+    text: comment.content,
+    timestamp: comment.createdAt,
+    isLiked: comment.likes ? comment.likes.some(like => like.userId === "user-1") : false,
+    likes: comment.likes ? comment.likes.length : 0
+  };
 }
 
 export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDialogProps) {
@@ -24,6 +35,9 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
     handleFindSimilar,
   } = usePostDialog(post);
 
+  // Convert commentList to format expected by PostCommentItem
+  const formattedComments: PostCommentItemComment[] = commentList.map(convertToPostCommentItemComment);
+
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden">
@@ -33,7 +47,7 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
           isAuthor={isAuthor}
           isLiked={isLiked}
           likeCount={likeCount}
-          commentList={commentList}
+          commentList={formattedComments}
           onLikeToggle={handleLikeToggle}
           onCommentLikeToggle={handleCommentLikeToggle}
           onCommentSubmit={handleCommentSubmit}

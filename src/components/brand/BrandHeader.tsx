@@ -6,6 +6,9 @@ interface BrandHeaderProps {
 }
 
 export const BrandHeader = ({ brand }: BrandHeaderProps) => {
+  const websiteUrl = brand.websiteUrl || brand.website || "#";
+  const instagramUrl = brand.instagram ? `https://instagram.com/${brand.instagram}` : "#";
+
   return (
     <div className="mb-8 flex flex-col md:flex-row items-center gap-4">
       <img
@@ -18,7 +21,7 @@ export const BrandHeader = ({ brand }: BrandHeaderProps) => {
         <p className="text-gray-600">{brand.description}</p>
         <div className="mt-2 flex space-x-2">
           <a
-            href={brand.website}
+            href={websiteUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-softspot-500 hover:underline"
@@ -26,7 +29,7 @@ export const BrandHeader = ({ brand }: BrandHeaderProps) => {
             Website
           </a>
           <a
-            href={brand.instagram}
+            href={instagramUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="text-softspot-500 hover:underline"

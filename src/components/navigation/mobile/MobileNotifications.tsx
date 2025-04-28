@@ -51,7 +51,7 @@ export function MobileNotifications() {
               <div className="flex-1">
                 <p className="text-sm">{notification.content}</p>
                 <span className="text-xs text-gray-500">
-                  {formatTimeAgo(notification.timestamp)}
+                  {formatTimeAgo(new Date(notification.timestamp))}
                 </span>
               </div>
             </div>
@@ -61,7 +61,7 @@ export function MobileNotifications() {
           <Button 
             variant="ghost" 
             className="w-full text-softspot-500 text-sm"
-            onClick={() => navigate('/settings?tab=notifications')}
+            onClick={() => navigate('/notifications')} // Changed from '/settings?tab=notifications'
           >
             See all notifications
           </Button>

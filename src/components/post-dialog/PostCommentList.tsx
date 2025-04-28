@@ -1,8 +1,9 @@
 
 import { PostCommentItem, Comment } from "./PostCommentItem";
+import { Comment as MarketplaceComment } from "@/types/marketplace";
 
 interface PostCommentListProps {
-  comments: Comment[];
+  comments: (Comment | MarketplaceComment)[];
   onCommentLikeToggle: (commentId: string) => void;
 }
 
