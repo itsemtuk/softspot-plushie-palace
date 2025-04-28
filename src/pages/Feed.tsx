@@ -11,10 +11,10 @@ import { PostCreationData, Post } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/clerk-react";
 
-// Extended post type with additional fields
 interface ExtendedPost extends Post {
   description?: string;
   tags?: string[];
+  timestamp: string; // Add this to enforce timestamp as a required field
 }
 
 const Feed = () => {
@@ -61,7 +61,7 @@ const Feed = () => {
       username: username,
       likes: 0,
       comments: 0,
-      description: postData.description,
+      description: postData.description || "",
       tags: postData.tags || [],
       timestamp: new Date().toISOString(),
     };
