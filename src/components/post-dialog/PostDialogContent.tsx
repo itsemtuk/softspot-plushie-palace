@@ -18,6 +18,7 @@ interface PostDialogContentProps {
   onFindSimilar: () => void;
   onClose: () => void;
   onSaveEdit: (editedPost: ExtendedPost) => Promise<boolean>;
+  onDeletePost: () => void;
 }
 
 export function PostDialogContent({
@@ -32,7 +33,8 @@ export function PostDialogContent({
   onCommentSubmit,
   onFindSimilar,
   onClose,
-  onSaveEdit
+  onSaveEdit,
+  onDeletePost
 }: PostDialogContentProps) {
   if (isLoading) {
     return (
@@ -71,6 +73,7 @@ export function PostDialogContent({
         onFindSimilar={onFindSimilar}
         onClose={onClose}
         onSaveEdit={onSaveEdit}
+        onDeletePost={onDeletePost}
       />
     </div>
   );

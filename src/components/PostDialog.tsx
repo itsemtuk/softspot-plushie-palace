@@ -34,11 +34,11 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
     commentList,
     isAuthor,
     handleSaveEdit,
-    handleDeletePost,
     handleLikeToggle,
     handleCommentLikeToggle,
     handleCommentSubmit,
     handleFindSimilar,
+    handleDeletePost,
   } = usePostDialog(post);
 
   // Convert commentList to format expected by PostCommentItem

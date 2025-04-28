@@ -5,7 +5,7 @@ export type PlushieFilling = "Cotton" | "Polyester" | "Memory Foam" | "Beans" | 
 export type PlushieSpecies = "Bear" | "Rabbit" | "Cat" | "Dog" | "Mythical" | "Other";
 export type DeliveryMethod = "Shipping" | "Collection" | "Both";
 export type PrivacySetting = "public" | "followers" | "private";
-export type Currency = "USD" | "EUR" | "GBP" | "CAD" | "AUD" | "JPY";
+export type Currency = "USD" | "EUR" | "GBP" | "CAD" | "AUD" | "JPY" | "CNY" | "INR";
 
 export interface PlushieBrand {
   id: string;
@@ -15,6 +15,9 @@ export interface PlushieBrand {
   website?: string;
   founded?: string;
   headquarters?: string;
+  status?: "active" | "inactive";
+  verified?: boolean;
+  location?: string;
 }
 
 export interface DirectMessage {
@@ -31,6 +34,7 @@ export interface MessageThread {
   participants: string[];
   lastMessage: DirectMessage;
   unreadCount: number;
+  updatedAt?: string;
 }
 
 export interface UserProfile {
@@ -43,6 +47,8 @@ export interface UserProfile {
   isFollowing?: boolean;
   followerCount?: number;
   followingCount?: number;
+  profileImageUrl?: string;
+  followers?: number;
 }
 
 export interface ImageEditorOptions {

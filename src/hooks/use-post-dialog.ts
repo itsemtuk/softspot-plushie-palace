@@ -1,14 +1,16 @@
 
 import { useState, useEffect } from "react";
 import { Comment, ExtendedPost } from "@/types/marketplace";
-import { updatePost } from "@/utils/posts/postManagement";
+import { updatePost, deletePost } from "@/utils/posts/postManagement";
 import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 export function usePostDialog(post: ExtendedPost | null) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [commentList, setCommentList] = useState<Comment[]>([]);
   const [isAuthor, setIsAuthor] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (post) {
@@ -168,6 +170,32 @@ export function usePostDialog(post: ExtendedPost | null) {
     }
   };
 
+  const handleDeletePost = async () => {
+    if (!post) return;
+    
+    try {
+      const result = await deletePost(post.id);
+      
+      if (result.success) {
+        toast({
+          title: "Post deleted",
+          description: "Your post has been successfully deleted."
+        });
+        
+        // Navigate back or to profile
+        navigate('/profile');
+      } else {
+        throw new Error(result.error || "Failed to delete post");
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete post. Please try again."
+      });
+    }
+  };
+
   const handleFindSimilar = () => {
     // This would typically navigate to a search page with similar items
     console.log("Finding similar items to:", post?.title);
@@ -188,5 +216,6 @@ export function usePostDialog(post: ExtendedPost | null) {
     handleCommentSubmit,
     handleSaveEdit,
     handleFindSimilar,
+    handleDeletePost,
   };
 }
