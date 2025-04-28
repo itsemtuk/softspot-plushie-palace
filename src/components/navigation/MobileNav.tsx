@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Home, Search, PlusSquare, ShoppingBag, User, Bell, MessageSquare } from "lucide-react";
@@ -58,7 +57,8 @@ export function MobileNav() {
     return `${diffDays}d ago`;
   };
 
-  const handleCreatePost = (postData: PostCreationData) => {
+  // Updated to return a Promise
+  const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
     console.log("New post created:", postData);
     toast({
       title: "Post created successfully!",
@@ -66,6 +66,9 @@ export function MobileNav() {
     });
     setIsSheetOpen(false);
     navigate('/feed');
+    
+    // Return a resolved promise to satisfy the TypeScript requirement
+    return Promise.resolve();
   };
 
   return (
