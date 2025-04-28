@@ -38,17 +38,32 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
     if (post) {
       setLikeCount(post.likes);
       setIsLiked(false); // Reset like state for each post
+      
+      // In a real app, we would fetch comments for this post from Supabase here
+      // and check if the current user has liked this post
+      setCommentList([]);
     }
   }, [post]);
   
   if (!post) return null;
 
   const handleLikeToggle = async () => {
-    if (!isLiked && !isSubmitting) {
-      // Set submitting state to prevent multiple clicks
-      setIsSubmitting(true);
-      
-      // Optimistically update UI
+    if (isSubmitting) return; // Prevent multiple clicks while processing
+    
+    setIsSubmitting(true);
+    
+    // Optimistically update UI
+    if (isLiked) {
+      // Unlike post (this functionality would need to be implemented in Supabase)
+      setLikeCount(prev => Math.max(0, prev - 1));
+      setIsLiked(false);
+      // In a real app, we'd call an unlikePost function here
+      toast({
+        title: "Post unliked",
+        description: "You have removed your like from this post."
+      });
+    } else {
+      // Like post
       setLikeCount(prev => prev + 1);
       setIsLiked(true);
       
@@ -58,7 +73,7 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
         
         if (!result.success) {
           // Revert UI if storage update failed
-          setLikeCount(prev => prev - 1);
+          setLikeCount(prev => Math.max(0, prev - 1));
           setIsLiked(false);
           throw new Error("Failed to like post");
         }
@@ -69,10 +84,10 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
           title: "Failed to like post",
           description: "Please check your connection and try again."
         });
-      } finally {
-        setIsSubmitting(false);
       }
     }
+    
+    setIsSubmitting(false);
   };
 
   const handleCommentLikeToggle = (commentId: string) => {
@@ -90,9 +105,11 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
 
   const handleCommentSubmit = (newComment: string) => {
     // Add the new comment
+    const currentUsername = localStorage.getItem('currentUsername') || "You"; // Fallback to "You" if not set
+    
     const newCommentObj: Comment = {
       id: `c${Date.now()}`,
-      username: "currentUser", // In a real app, this would come from auth
+      username: currentUsername,
       text: newComment,
       timestamp: "Just now",
       likes: 0,
@@ -104,6 +121,8 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
       title: "Comment posted",
       description: "Your comment has been added to the post.",
     });
+    
+    // In a real app, we would save this comment to Supabase here
   };
 
   const handleFindSimilar = () => {

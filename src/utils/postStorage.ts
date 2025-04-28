@@ -79,7 +79,23 @@ export const getUserPosts = async (userId: string): Promise<ExtendedPost[]> => {
  * Adds a new post to Supabase
  */
 export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, error?: any }> => {
-  return await savePost(post);
+  try {
+    // First, upload the image to Supabase Storage if it's a data URL
+    if (post.image && post.image.startsWith('data:')) {
+      const { imageUrl, error: uploadError } = await uploadImage(post.image, post.id);
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      // Update the post with the new image URL
+      post = { ...post, image: imageUrl };
+    }
+    
+    return await savePost(post);
+  } catch (error) {
+    console.error('Error adding post to Supabase:', error);
+    return { success: false, error };
+  }
 };
 
 /**
@@ -87,6 +103,17 @@ export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, e
  */
 export const updatePost = async (updatedPost: ExtendedPost): Promise<{ success: boolean, error?: any }> => {
   try {
+    // Check if the image is a data URL and needs to be uploaded
+    if (updatedPost.image && updatedPost.image.startsWith('data:')) {
+      const { imageUrl, error: uploadError } = await uploadImage(updatedPost.image, updatedPost.id);
+      if (uploadError) {
+        throw uploadError;
+      }
+      
+      // Update the post with the new image URL
+      updatedPost = { ...updatedPost, image: imageUrl };
+    }
+    
     const { error } = await supabase
       .from(POSTS_TABLE)
       .update({
@@ -112,6 +139,14 @@ export const updatePost = async (updatedPost: ExtendedPost): Promise<{ success: 
  */
 export const deletePost = async (postId: string): Promise<{ success: boolean, error?: any }> => {
   try {
+    // First, delete the image from storage
+    try {
+      await deleteImage(postId);
+    } catch (error) {
+      console.error('Error deleting post image:', error);
+      // Continue with post deletion even if image deletion fails
+    }
+    
     const { error } = await supabase
       .from(POSTS_TABLE)
       .delete()
@@ -160,6 +195,65 @@ export const togglePostLike = async (postId: string): Promise<{ success: boolean
   }
 };
 
+/**
+ * Uploads an image to Supabase Storage and returns the public URL
+ */
+export const uploadImage = async (dataUrl: string, imageId: string): Promise<{ imageUrl: string, error?: any }> => {
+  try {
+    // Convert data URL to Blob
+    const res = await fetch(dataUrl);
+    const blob = await res.blob();
+    
+    // Generate a unique file path
+    const filePath = `posts/${imageId}/image.jpg`;
+    
+    // Upload to Supabase Storage
+    const { error: uploadError } = await supabase
+      .storage
+      .from('images')
+      .upload(filePath, blob, {
+        contentType: 'image/jpeg',
+        upsert: true
+      });
+    
+    if (uploadError) throw uploadError;
+    
+    // Get the public URL
+    const { data } = supabase
+      .storage
+      .from('images')
+      .getPublicUrl(filePath);
+      
+    return { imageUrl: data.publicUrl };
+  } catch (error) {
+    console.error('Error uploading image to Supabase Storage:', error);
+    
+    // Return the original data URL if upload fails
+    // This allows the app to continue working even if storage fails
+    return { imageUrl: dataUrl, error };
+  }
+};
+
+/**
+ * Deletes an image from Supabase Storage
+ */
+export const deleteImage = async (imageId: string): Promise<{ success: boolean, error?: any }> => {
+  try {
+    const filePath = `posts/${imageId}/image.jpg`;
+    
+    const { error } = await supabase
+      .storage
+      .from('images')
+      .remove([filePath]);
+      
+    if (error) throw error;
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting image from Supabase Storage:', error);
+    return { success: false, error };
+  }
+};
+
 // Fallback functions for backwards compatibility during migration
 // These will use local storage as a backup in case of Supabase errors
 // or for when offline functionality is needed
@@ -187,4 +281,3 @@ export const getLocalPosts = (): ExtendedPost[] => {
     return [];
   }
 };
-

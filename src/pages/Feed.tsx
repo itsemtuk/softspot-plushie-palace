@@ -9,7 +9,7 @@ import { useUser } from "@clerk/clerk-react";
 import { FeedHeader } from "@/components/feed/FeedHeader";
 import { EmptyFeed } from "@/components/feed/EmptyFeed";
 import { FeedGrid } from "@/components/feed/FeedGrid";
-import { getPosts, addPost, getLocalPosts } from "@/utils/postStorage";
+import { getPosts, addPost, getLocalPosts, savePosts } from "@/utils/postStorage";
 
 const Feed = () => {
   const { user } = useUser();
@@ -19,6 +19,14 @@ const Feed = () => {
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  
+  // Store current username in localStorage for comments
+  useEffect(() => {
+    if (user) {
+      const username = user.username || user.firstName || "Anonymous";
+      localStorage.setItem('currentUsername', username);
+    }
+  }, [user]);
   
   // Load posts on component mount
   useEffect(() => {
@@ -30,6 +38,9 @@ const Feed = () => {
         
         if (cloudPosts && cloudPosts.length > 0) {
           setPosts(cloudPosts);
+          
+          // Also update local storage as a fallback
+          savePosts(cloudPosts);
         } else {
           // Fallback to local storage if no cloud posts
           const localPosts = getLocalPosts();
@@ -108,6 +119,8 @@ const Feed = () => {
       console.error('Error saving post:', error);
       
       // Fallback to local storage
+      savePosts([newPost, ...getLocalPosts()]);
+      
       toast({
         variant: "destructive",
         title: "Connection issue",
