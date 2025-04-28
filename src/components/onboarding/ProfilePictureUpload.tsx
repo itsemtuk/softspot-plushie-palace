@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import {
   FormControl,
@@ -14,76 +13,68 @@ import { Button } from "@/components/ui/button";
 import { Camera, X, Edit2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
+import { useUser } from "@clerk/clerk-react";
 
 interface ProfilePictureUploadProps {
   form: UseFormReturn<FormSchemaType>;
 }
 
 const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
+  const { user } = useUser();
   const [previewUrl, setPreviewUrl] = useState<string | null>(
-    form.getValues("profilePicture") || null
+    form.getValues("profilePicture") || user?.imageUrl || null
   );
-
-  // Update preview if the form value changes externally
-  useEffect(() => {
-    const currentValue = form.getValues("profilePicture");
-    if (currentValue && currentValue !== previewUrl) {
-      setPreviewUrl(currentValue);
-    }
-  }, [form, previewUrl]);
   
-  const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File too large",
-          description: "Image must be less than 5MB",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Validate file type
-      if (!file.type.startsWith("image/")) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload an image file",
-          variant: "destructive",
-        });
-        return;
-      }
-      
+    if (!file) return;
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Image must be less than 5MB",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload an image file",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        try {
-          const result = reader.result as string;
-          setPreviewUrl(result);
-          form.setValue("profilePicture", result, { shouldValidate: true, shouldDirty: true });
+      reader.onloadend = async () => {
+        const result = reader.result as string;
+        setPreviewUrl(result);
+        
+        if (user) {
+          // Update both form value and Clerk profile
+          form.setValue("profilePicture", result, { shouldValidate: true });
+          await user.setProfileImage({ file });
+          
           toast({
-            title: "Image uploaded",
-            description: "Your profile picture has been selected. Don't forget to save your changes.",
-          });
-        } catch (error) {
-          console.error("Error processing image:", error);
-          toast({
-            title: "Upload failed",
-            description: "There was a problem processing your image",
-            variant: "destructive",
+            title: "Profile picture updated",
+            description: "Your profile picture has been updated successfully.",
           });
         }
       };
       
-      reader.onerror = () => {
-        toast({
-          title: "Upload failed",
-          description: "There was a problem reading your image file",
-          variant: "destructive",
-        });
-      };
-      
       reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error updating profile picture:", error);
+      toast({
+        title: "Update failed",
+        description: "There was a problem updating your profile picture",
+        variant: "destructive",
+      });
     }
   };
 
@@ -103,13 +94,10 @@ const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
       render={({ field }) => (
         <FormItem className="flex flex-col items-center space-y-4">
           <FormLabel className="text-lg text-center">Profile Picture</FormLabel>
-          <p className="text-sm text-muted-foreground text-center">
-            Upload a profile picture (optional)
-          </p>
           
           <div className="flex flex-col items-center space-y-4">
             <div className="relative">
-              <Avatar className="w-24 h-24 border-2 border-softspot-200">
+              <Avatar className="w-28 h-28 border-4 border-softspot-200">
                 {previewUrl ? (
                   <AvatarImage 
                     src={previewUrl} 
@@ -117,7 +105,7 @@ const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
                     className="object-cover" 
                   />
                 ) : (
-                  <AvatarFallback className="bg-softspot-100 text-softspot-500 text-3xl">
+                  <AvatarFallback className="bg-softspot-100 text-softspot-500 text-4xl">
                     🧸
                   </AvatarFallback>
                 )}
@@ -128,7 +116,7 @@ const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
                   type="button"
                   size="sm"
                   variant="outline"
-                  className="absolute bottom-0 right-0 rounded-full bg-white w-8 h-8 p-0"
+                  className="absolute -bottom-2 -right-2 rounded-full bg-white w-8 h-8 p-0"
                   onClick={() => document.getElementById("picture-upload")?.click()}
                 >
                   <Edit2 className="h-4 w-4" />
@@ -136,7 +124,7 @@ const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
               )}
             </div>
             
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2 justify-center">
               <FormControl>
                 <div className="relative">
                   <Button
@@ -152,7 +140,7 @@ const ProfilePictureUpload = ({ form }: ProfilePictureUploadProps) => {
                     id="picture-upload"
                     type="file"
                     accept="image/*"
-                    className="absolute inset-0 opacity-0 cursor-pointer"
+                    className="hidden"
                     onChange={handleImageChange}
                   />
                 </div>
