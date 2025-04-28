@@ -33,7 +33,7 @@ const mockFollowers: UserProfile[] = [
     profileImageUrl: "https://i.pravatar.cc/150?img=5", 
     bio: "Collector of rare plushies", 
     followers: 123, 
-    following: 89 
+    isFollowing: false
   },
   { 
     id: "user-3", 
@@ -41,7 +41,7 @@ const mockFollowers: UserProfile[] = [
     profileImageUrl: "https://i.pravatar.cc/150?img=12", 
     bio: "Teddy bear enthusiast", 
     followers: 56, 
-    following: 72 
+    isFollowing: false
   },
   { 
     id: "user-4", 
@@ -49,7 +49,7 @@ const mockFollowers: UserProfile[] = [
     profileImageUrl: "https://i.pravatar.cc/150?img=9", 
     bio: "Plushie photographer", 
     followers: 208, 
-    following: 115 
+    isFollowing: false
   }
 ];
 
@@ -72,6 +72,7 @@ const mockPlushies: MarketplacePlushie[] = [
     brand: "Jellycat",
     deliveryMethod: 'Shipping',
     deliveryCost: 5.00,
+    timestamp: new Date().toISOString(),
     tags: ['bunny', 'jellycat', 'mint green']
   },
   {
@@ -92,6 +93,7 @@ const mockPlushies: MarketplacePlushie[] = [
     brand: "Build-A-Bear",
     deliveryMethod: 'Collection',
     deliveryCost: 0,
+    timestamp: new Date().toISOString(),
     tags: ['teddy', 'limited edition', 'anniversary']
   }
 ];

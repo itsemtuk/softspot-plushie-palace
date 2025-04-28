@@ -36,20 +36,20 @@ export function MobileNotifications() {
             <div 
               key={notification.id} 
               className={`p-3 border-b flex items-start gap-3 hover:bg-gray-50 cursor-pointer ${
-                !notification.read ? 'bg-softspot-50' : ''
+                !notification.isRead ? 'bg-softspot-50' : ''
               }`}
               onClick={() => markAsRead(notification.id)}
             >
               <Avatar>
                 <AvatarImage 
-                  src={notification.relatedUserId ? `https://i.pravatar.cc/150?img=${notification.id}` : undefined} 
+                  src={`https://i.pravatar.cc/150?img=${notification.id}`}
                 />
                 <AvatarFallback>
-                  {notification.relatedUserId ? notification.relatedUserId.charAt(0).toUpperCase() : 'N'}
+                  {notification.message.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <p className="text-sm">{notification.content}</p>
+                <p className="text-sm">{notification.message}</p>
                 <span className="text-xs text-gray-500">
                   {formatTimeAgo(new Date(notification.timestamp))}
                 </span>
@@ -61,7 +61,7 @@ export function MobileNotifications() {
           <Button 
             variant="ghost" 
             className="w-full text-softspot-500 text-sm"
-            onClick={() => navigate('/notifications')} // Changed from '/settings?tab=notifications'
+            onClick={() => navigate('/notifications')}
           >
             See all notifications
           </Button>

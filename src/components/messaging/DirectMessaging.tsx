@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { 
   Card,
@@ -38,45 +39,50 @@ import { formatTimeAgo } from '@/lib/utils';
 
 // Mock data - in a real app, this would come from an API
 const mockUsers: UserProfile[] = [
-  { id: "user-1", username: "plushielover", profileImageUrl: "https://i.pravatar.cc/150?img=1", bio: "Plushie enthusiast", followers: 120, following: 85 },
-  { id: "user-2", username: "sarahlovesplushies", profileImageUrl: "https://i.pravatar.cc/150?img=5", bio: "Sarah's plushie collection", followers: 78, following: 42 },
-  { id: "user-3", username: "mikeplush", profileImageUrl: "https://i.pravatar.cc/150?img=12", bio: "Plushie trader", followers: 56, following: 30 },
-  { id: "user-4", username: "emmacollects", profileImageUrl: "https://i.pravatar.cc/150?img=9", bio: "Plushie collector", followers: 91, following: 67 }
+  { id: "user-1", username: "plushielover", profileImageUrl: "https://i.pravatar.cc/150?img=1", bio: "Plushie enthusiast", followers: 120, isFollowing: false },
+  { id: "user-2", username: "sarahlovesplushies", profileImageUrl: "https://i.pravatar.cc/150?img=5", bio: "Sarah's plushie collection", followers: 78, isFollowing: false },
+  { id: "user-3", username: "mikeplush", profileImageUrl: "https://i.pravatar.cc/150?img=12", bio: "Plushie trader", followers: 56, isFollowing: false },
+  { id: "user-4", username: "emmacollects", profileImageUrl: "https://i.pravatar.cc/150?img=9", bio: "Plushie collector", followers: 91, isFollowing: false }
 ];
 
+interface UpdatedMessageThread extends Omit<MessageThread, 'participants'> {
+  participants: UserProfile[];
+}
+
 // Updated mockThreads to use UserProfile objects as participants
-const mockThreads: MessageThread[] = [
+const mockThreads: UpdatedMessageThread[] = [
   {
     id: "thread-1",
     participants: [
-      mockUsers.find(u => u.id === "user-1")!,
-      mockUsers.find(u => u.id === "user-2")!
+      mockUsers[0],
+      mockUsers[1]
     ],
     lastMessage: {
       id: "msg-1",
       senderId: "user-2",
+      recipientId: "user-1",
       content: "Hi! I'm interested in your teddy bear listing.",
-      timestamp: new Date(Date.now() - 3600000),
+      timestamp: new Date(Date.now() - 3600000).toISOString(),
       read: false,
     },
-    updatedAt: new Date(Date.now() - 3600000),
+    updatedAt: new Date(Date.now() - 3600000).toISOString(),
     unreadCount: 1
   },
   {
     id: "thread-2",
     participants: [
-      mockUsers.find(u => u.id === "user-1")!,
-      mockUsers.find(u => u.id === "user-3")!
+      mockUsers[0],
+      mockUsers[2]
     ],
     lastMessage: {
       id: "msg-2",
       senderId: "user-1",
       recipientId: "user-3",
       content: "Would you consider trading for my bunny plush?",
-      timestamp: new Date(Date.now() - 86400000),
+      timestamp: new Date(Date.now() - 86400000).toISOString(),
       read: true,
     },
-    updatedAt: new Date(Date.now() - 86400000),
+    updatedAt: new Date(Date.now() - 86400000).toISOString(),
     unreadCount: 0
   }
 ];
@@ -87,7 +93,7 @@ const mockMessages: DirectMessage[] = [
     senderId: "user-2",
     recipientId: "user-1",
     content: "Hi! I'm interested in your teddy bear listing.",
-    timestamp: new Date(Date.now() - 3600000),
+    timestamp: new Date(Date.now() - 3600000).toISOString(),
     read: false,
   },
   {
@@ -95,7 +101,7 @@ const mockMessages: DirectMessage[] = [
     senderId: "user-1",
     recipientId: "user-2",
     content: "Hello! Yes, it's still available. Are you interested in buying or trading?",
-    timestamp: new Date(Date.now() - 3500000),
+    timestamp: new Date(Date.now() - 3500000).toISOString(),
     read: true,
   },
   {
@@ -103,14 +109,14 @@ const mockMessages: DirectMessage[] = [
     senderId: "user-2",
     recipientId: "user-1",
     content: "I'd like to buy it. Is the price negotiable?",
-    timestamp: new Date(Date.now() - 3400000),
+    timestamp: new Date(Date.now() - 3400000).toISOString(),
     read: false,
   }
 ];
 
 const DirectMessaging = () => {
   const { user } = useUser();
-  const [threads, setThreads] = useState<MessageThread[]>(mockThreads);
+  const [threads, setThreads] = useState<UpdatedMessageThread[]>(mockThreads);
   const [messages, setMessages] = useState<DirectMessage[]>(mockMessages);
   const [activeThread, setActiveThread] = useState<string | null>(null);
   const [messageText, setMessageText] = useState("");
@@ -119,7 +125,8 @@ const DirectMessaging = () => {
   const [selectedUser, setSelectedUser] = useState<string | null>(null);
   const [requestsTab, setRequestsTab] = useState("messages");
 
-  const formatTimestamp = (date: Date) => {
+  const formatTimestamp = (dateStr: string) => {
+    const date = new Date(dateStr);
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     
@@ -136,14 +143,15 @@ const DirectMessaging = () => {
     const currentThread = threads.find(t => t.id === activeThread);
     if (!currentThread) return;
     
-    const recipientId = currentThread.participants.find(p => p.id !== "user-1")?.id || "";
+    const recipientUser = currentThread.participants.find(p => p.id !== "user-1");
+    const recipientId = recipientUser ? recipientUser.id : "";
     
     const newMessage: DirectMessage = {
       id: `msg-${Date.now()}`,
       senderId: "user-1",
       recipientId,
       content: messageText,
-      timestamp: new Date(),
+      timestamp: new Date().toISOString(),
       read: false,
     };
     
@@ -152,7 +160,12 @@ const DirectMessaging = () => {
     // Update the thread's last message
     setThreads(prev => prev.map(thread => 
       thread.id === activeThread 
-        ? { ...thread, lastMessage: newMessage, updatedAt: new Date(), unreadCount: 0 } 
+        ? { 
+            ...thread, 
+            lastMessage: newMessage, 
+            updatedAt: new Date().toISOString(), 
+            unreadCount: 0 
+          } 
         : thread
     ));
     
@@ -182,17 +195,18 @@ const DirectMessaging = () => {
     // Find current user profile
     const currentUserProfile = mockUsers.find(u => u.id === "user-1")!;
     
-    const newThread: MessageThread = {
+    const newThread: UpdatedMessageThread = {
       id: `thread-${Date.now()}`,
       participants: [currentUserProfile, selectedUserProfile],
       lastMessage: {
         id: "",
         senderId: "",
+        recipientId: "",
         content: "Start a new conversation",
-        timestamp: new Date(),
+        timestamp: new Date().toISOString(),
         read: true,
       },
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
       unreadCount: 0
     };
     

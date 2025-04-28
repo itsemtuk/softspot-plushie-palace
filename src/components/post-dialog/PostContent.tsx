@@ -146,7 +146,10 @@ export function PostContent({
 
       {/* Comments section */}
       <div className="flex-grow overflow-y-auto mb-4">
-        <PostCommentList comments={commentList} onLikeToggle={onCommentLikeToggle} />
+        <PostCommentList 
+          comments={commentList} 
+          onCommentLikeToggle={onCommentLikeToggle} 
+        />
       </div>
 
       {/* Comment form */}

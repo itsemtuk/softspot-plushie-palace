@@ -49,7 +49,7 @@ const NotificationsTab = () => {
   const filteredNotifications = filter === 'all' 
     ? notifications 
     : filter === 'unread'
-      ? notifications.filter(n => !n.read)
+      ? notifications.filter(n => !n.isRead)
       : notifications.filter(n => n.type === filter);
       
   return (
@@ -134,20 +134,21 @@ const NotificationsTab = () => {
         {filteredNotifications.length > 0 ? (
           <div className="space-y-2">
             {filteredNotifications.map(notification => {
-              const relatedUser = notification.relatedUserId 
-                ? mockUsers.find(u => u.id === notification.relatedUserId)
-                : null;
+              // Get associated user based on the notification's message
+              const userMentionedInNotification = mockUsers.find(u => 
+                notification.message.toLowerCase().includes(u.username.toLowerCase())
+              );
 
               return (
                 <Card 
                   key={notification.id} 
-                  className={`p-4 ${!notification.read ? 'bg-softspot-50' : 'bg-white'}`}
+                  className={`p-4 ${!notification.isRead ? 'bg-softspot-50' : 'bg-white'}`}
                 >
                   <div className="flex items-start gap-3">
-                    {relatedUser ? (
+                    {userMentionedInNotification ? (
                       <Avatar>
-                        <AvatarImage src={relatedUser.avatar} alt={relatedUser.name} />
-                        <AvatarFallback>{relatedUser.name[0]}</AvatarFallback>
+                        <AvatarImage src={userMentionedInNotification.avatar} alt={userMentionedInNotification.name} />
+                        <AvatarFallback>{userMentionedInNotification.name[0]}</AvatarFallback>
                       </Avatar>
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
@@ -156,14 +157,14 @@ const NotificationsTab = () => {
                     )}
                     
                     <div className="flex-1">
-                      <p className="text-sm text-gray-800">{notification.content}</p>
+                      <p className="text-sm text-gray-800">{notification.message}</p>
                       <p className="text-xs text-gray-500 mt-1">
                         {formatDistanceToNow(notification.timestamp, { addSuffix: true })}
                       </p>
                     </div>
                     
                     <div className="flex flex-col gap-1">
-                      {!notification.read && (
+                      {!notification.isRead && (
                         <Button
                           variant="ghost" 
                           size="sm"
