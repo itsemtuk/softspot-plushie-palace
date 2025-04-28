@@ -4,7 +4,7 @@ import { Navbar } from "@/components/Navbar";
 import { Card, CardContent } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Button } from "@/components/ui/button";
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import {
   DropdownMenu,
@@ -35,6 +35,7 @@ const Discover = () => {
   const [priceRange, setPriceRange] = useState<number[]>([0, 100]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const { user } = useUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Load listings from local storage
@@ -71,6 +72,10 @@ const Discover = () => {
 
   const handlePriceRangeChange = (value: number[]) => {
     setPriceRange(value);
+  };
+
+  const handlePlushieClick = (id: string) => {
+    navigate(`/marketplace/${id}`);
   };
 
   return (
@@ -115,28 +120,30 @@ const Discover = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredListings.map((listing) => (
-            <Card key={listing.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <Link to={`/marketplace/${listing.id}`}>
-                <div className="relative">
-                  <AspectRatio ratio={1 / 1}>
-                    <img
-                      src={listing.image}
-                      alt={listing.title}
-                      className="object-cover w-full h-full"
-                    />
-                  </AspectRatio>
+            <Card 
+              key={listing.id} 
+              className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer"
+              onClick={() => handlePlushieClick(listing.id)}
+            >
+              <div className="relative">
+                <AspectRatio ratio={1 / 1}>
+                  <img
+                    src={listing.image}
+                    alt={listing.title}
+                    className="object-cover w-full h-full"
+                  />
+                </AspectRatio>
+              </div>
+              <CardContent className="p-4">
+                <h3 className="text-lg font-medium mb-2 truncate">{listing.title}</h3>
+                <p className="text-gray-500 text-sm">${listing.price}</p>
+                <div className="flex items-center mt-2">
+                  <Heart className="h-4 w-4 text-gray-500 mr-1" />
+                  <span>{listing.likes}</span>
+                  <MessageSquare className="h-4 w-4 text-gray-500 ml-2 mr-1" />
+                  <span>{listing.comments}</span>
                 </div>
-                <CardContent className="p-4">
-                  <h3 className="text-lg font-medium mb-2 truncate">{listing.title}</h3>
-                  <p className="text-gray-500 text-sm">${listing.price}</p>
-                  <div className="flex items-center mt-2">
-                    <Heart className="h-4 w-4 text-gray-500 mr-1" />
-                    <span>{listing.likes}</span>
-                    <MessageSquare className="h-4 w-4 text-gray-500 ml-2 mr-1" />
-                    <span>{listing.comments}</span>
-                  </div>
-                </CardContent>
-              </Link>
+              </CardContent>
             </Card>
           ))}
         </div>
