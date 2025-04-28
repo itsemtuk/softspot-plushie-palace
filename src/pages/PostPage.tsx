@@ -1,19 +1,21 @@
+
 import { useState, useEffect } from "react";
-import { useParams, Navigate } from "react-router-dom";
+import { useParams, Navigate, Link } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import { PostDialog } from "@/components/PostDialog";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { ExtendedPost } from "@/types/marketplace";
 import { getPostById } from "@/utils/postStorage";
 import { toast } from "@/components/ui/use-toast";
+import { Spinner } from "@/components/ui/spinner";
 
 const PostPage = () => {
   const { postId } = useParams<{ postId: string }>();
   const [post, setPost] = useState<ExtendedPost | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     const loadPost = async () => {
@@ -28,6 +30,7 @@ const PostPage = () => {
         
         if (foundPost) {
           setPost(foundPost);
+          // Only open dialog for signed-in users (handled in render)
         } else {
           setNotFound(true);
           toast({
@@ -51,9 +54,22 @@ const PostPage = () => {
     loadPost();
   }, [postId]);
 
+  // Open dialog when post is loaded
+  useEffect(() => {
+    if (post && !isLoading) {
+      setDialogOpen(true);
+    }
+  }, [post, isLoading]);
+
   if (notFound) {
     return <Navigate to="/404" replace />;
   }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false);
+    // Navigate back to previous page or home
+    window.history.length > 2 ? window.history.back() : window.location.href = '/';
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -61,7 +77,7 @@ const PostPage = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {isLoading ? (
           <div className="flex justify-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-500"></div>
+            <Spinner size="lg" />
           </div>
         ) : post ? (
           <>
@@ -79,6 +95,11 @@ const PostPage = () => {
                     src={post.image} 
                     alt={post.title || "Post"} 
                     className="w-full h-auto object-contain md:max-h-[600px]"
+                    onError={(e) => {
+                      // Fallback for image loading errors
+                      const target = e.target as HTMLImageElement;
+                      target.src = "/placeholder.svg";
+                    }}
                   />
                 </div>
 
@@ -117,11 +138,6 @@ const PostPage = () => {
                       </div>
                     </div>
                   </SignedOut>
-
-                  {/* Only show interactive elements for signed-in users */}
-                  <SignedIn>
-                    <PostDialog isOpen={true} onClose={() => {}} post={post} />
-                  </SignedIn>
                 </div>
               </div>
             </div>
@@ -136,6 +152,16 @@ const PostPage = () => {
           </div>
         )}
       </div>
+      
+      {/* Only show interactive dialog for signed-in users */}
+      <SignedIn>
+        <PostDialog 
+          isOpen={dialogOpen} 
+          onClose={handleDialogClose} 
+          post={post}
+          isLoading={isLoading}
+        />
+      </SignedIn>
     </div>
   );
 };

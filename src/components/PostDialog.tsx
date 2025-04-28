@@ -12,25 +12,16 @@ import { PostContent } from "./post-dialog/PostContent";
 import { togglePostLike, updatePost } from "@/utils/postStorage";
 import { useUser } from "@clerk/clerk-react";
 import { ExtendedPost } from "@/types/marketplace";
+import { Spinner } from "./ui/spinner";
 
 interface PostDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  post: {
-    id: string;
-    image: string;
-    title: string;
-    username: string;
-    likes: number;
-    comments: number;
-    description?: string;
-    tags?: string[];
-    userId?: string;
-    timestamp?: string;
-  } | null;
+  post: ExtendedPost | null;
+  isLoading?: boolean;
 }
 
-export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
+export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDialogProps) {
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(post?.likes || 0);
   const [commentList, setCommentList] = useState<Comment[]>([]);
@@ -47,7 +38,8 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
   }, [post]);
 
   const { user } = useUser();
-  const isAuthor = user?.username === post?.username;
+  // Only consider the user as author if both user and post exist and usernames match
+  const isAuthor = user && post ? user.username === post.username : false;
 
   const handleSaveEdit = async (newTitle: string, newDescription: string) => {
     if (!post) return;
@@ -112,34 +104,55 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
     navigate('/feed');
   };
 
-  if (!post) return null;
-
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-2 h-full">
-          {/* Left side - Image */}
-          <div className="bg-black flex items-center justify-center">
-            <AspectRatio ratio={1} className="w-full">
-              <img src={post.image} alt={post.title} className="object-cover w-full h-full" />
-            </AspectRatio>
+        {isLoading ? (
+          <div className="flex items-center justify-center h-64 w-full">
+            <Spinner size="lg" />
           </div>
-          
-          {/* Right side - Content */}
-          <PostContent 
-            post={post}
-            isAuthor={isAuthor}
-            isLiked={isLiked}
-            likeCount={likeCount}
-            commentList={commentList}
-            onLikeToggle={handleLikeToggle}
-            onCommentLikeToggle={handleCommentLikeToggle}
-            onCommentSubmit={handleCommentSubmit}
-            onFindSimilar={handleFindSimilar}
-            onClose={onClose}
-            onSaveEdit={handleSaveEdit}
-          />
-        </div>
+        ) : !post ? (
+          <div className="flex flex-col items-center justify-center h-64 w-full p-6 text-center">
+            <h3 className="text-lg font-medium text-gray-900">Post not found</h3>
+            <p className="mt-2 text-sm text-gray-500">
+              The post you're looking for doesn't exist or has been removed.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 h-full">
+            {/* Left side - Image */}
+            <div className="bg-black flex items-center justify-center">
+              <AspectRatio ratio={1} className="w-full">
+                <img 
+                  src={post.image} 
+                  alt={post.title} 
+                  className="object-cover w-full h-full" 
+                  onError={(e) => {
+                    // Fallback if image fails to load
+                    const target = e.target as HTMLImageElement;
+                    target.src = "/placeholder.svg";
+                    console.error("Failed to load image:", post.image);
+                  }}
+                />
+              </AspectRatio>
+            </div>
+            
+            {/* Right side - Content */}
+            <PostContent 
+              post={post}
+              isAuthor={isAuthor}
+              isLiked={isLiked}
+              likeCount={likeCount}
+              commentList={commentList}
+              onLikeToggle={handleLikeToggle}
+              onCommentLikeToggle={handleCommentLikeToggle}
+              onCommentSubmit={handleCommentSubmit}
+              onFindSimilar={handleFindSimilar}
+              onClose={onClose}
+              onSaveEdit={handleSaveEdit}
+            />
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
