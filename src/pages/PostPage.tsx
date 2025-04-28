@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Navigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
@@ -7,7 +6,7 @@ import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ExtendedPost } from "@/types/marketplace";
-import { getPosts } from "@/utils/postStorage";
+import { getPostById } from "@/utils/postStorage";
 import { toast } from "@/components/ui/use-toast";
 
 const PostPage = () => {
@@ -25,8 +24,7 @@ const PostPage = () => {
 
       try {
         setIsLoading(true);
-        const allPosts = await getPosts();
-        const foundPost = allPosts.find(p => p.id === postId);
+        const foundPost = await getPostById(postId);
         
         if (foundPost) {
           setPost(foundPost);

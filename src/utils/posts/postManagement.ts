@@ -7,7 +7,7 @@ import { uploadImage, deleteImage } from '../storage/imageStorage';
 const POSTS_TABLE = 'posts';
 
 /**
- * Saves a post to Supabase
+ * Saves a post to storage
  */
 export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, error?: any }> => {
   if (!isSupabaseConfigured()) {
@@ -47,51 +47,6 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
   } catch (error) {
     console.error('Error saving post to Supabase:', error);
     return { success: false, error };
-  }
-};
-
-/**
- * Retrieves posts from storage
- */
-export const getPosts = async (): Promise<ExtendedPost[]> => {
-  if (!isSupabaseConfigured()) {
-    return getLocalPosts();
-  }
-
-  try {
-    const { data, error } = await supabase!
-      .from(POSTS_TABLE)
-      .select('*')
-      .order('timestamp', { ascending: false });
-      
-    if (error) throw error;
-    return data as ExtendedPost[];
-  } catch (error) {
-    console.error('Error retrieving posts from Supabase:', error);
-    return getLocalPosts();
-  }
-};
-
-/**
- * Retrieves posts by a specific user
- */
-export const getUserPosts = async (userId: string): Promise<ExtendedPost[]> => {
-  if (!isSupabaseConfigured()) {
-    return getLocalPosts().filter(post => post.userId === userId);
-  }
-
-  try {
-    const { data, error } = await supabase!
-      .from(POSTS_TABLE)
-      .select('*')
-      .eq('userId', userId)
-      .order('timestamp', { ascending: false });
-      
-    if (error) throw error;
-    return data as ExtendedPost[];
-  } catch (error) {
-    console.error('Error retrieving user posts from Supabase:', error);
-    return getLocalPosts().filter(post => post.userId === userId);
   }
 };
 
@@ -178,59 +133,6 @@ export const deletePost = async (postId: string): Promise<{ success: boolean, er
     return { success: true };
   } catch (error) {
     console.error('Error deleting post:', error);
-    return { success: false, error };
-  }
-};
-
-/**
- * Toggle like on a post
- */
-export const togglePostLike = async (postId: string): Promise<{ success: boolean, post?: ExtendedPost, error?: any }> => {
-  if (!isSupabaseConfigured()) {
-    try {
-      const posts = getLocalPosts();
-      const post = posts.find(p => p.id === postId);
-      if (!post) throw new Error('Post not found');
-      
-      const updatedPost = {
-        ...post,
-        likes: post.likes + 1
-      };
-      
-      savePosts(posts.map(p => p.id === postId ? updatedPost : p));
-      return { success: true, post: updatedPost };
-    } catch (error) {
-      return { success: false, error };
-    }
-  }
-
-  try {
-    // First get the current post to get the current like count
-    const { data: posts, error: fetchError } = await supabase!
-      .from(POSTS_TABLE)
-      .select('*')
-      .eq('id', postId)
-      .single();
-      
-    if (fetchError) throw fetchError;
-    
-    const post = posts as ExtendedPost;
-    const updatedPost = {
-      ...post,
-      likes: post.likes + 1
-    };
-    
-    // Update the post with the new like count
-    const { error: updateError } = await supabase!
-      .from(POSTS_TABLE)
-      .update({ likes: updatedPost.likes })
-      .eq('id', postId);
-      
-    if (updateError) throw updateError;
-    
-    return { success: true, post: updatedPost };
-  } catch (error) {
-    console.error('Error toggling post like:', error);
     return { success: false, error };
   }
 };
