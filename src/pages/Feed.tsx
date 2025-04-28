@@ -9,6 +9,7 @@ import { useUser } from "@clerk/clerk-react";
 import { FeedHeader } from "@/components/feed/FeedHeader";
 import { EmptyFeed } from "@/components/feed/EmptyFeed";
 import { FeedGrid } from "@/components/feed/FeedGrid";
+import { getPosts, addPost } from "@/utils/postStorage";
 
 const Feed = () => {
   const { user } = useUser();
@@ -18,12 +19,10 @@ const Feed = () => {
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   
+  // Load posts on component mount
   useEffect(() => {
-    const storedPosts = localStorage.getItem('userPosts');
-    if (storedPosts) {
-      const userPosts = JSON.parse(storedPosts);
-      setPosts(userPosts);
-    }
+    const storedPosts = getPosts();
+    setPosts(storedPosts);
   }, []);
   
   const filteredPosts = posts.filter(post => 
@@ -48,13 +47,11 @@ const Feed = () => {
       timestamp: new Date().toISOString(),
     };
     
-    const updatedPosts = [newPost, ...posts];
-    setPosts(updatedPosts);
+    // Add the post to local storage
+    addPost(newPost);
     
-    const storedPosts = localStorage.getItem('userPosts');
-    const existingUserPosts = storedPosts ? JSON.parse(storedPosts) : [];
-    const updatedUserPosts = [newPost, ...existingUserPosts];
-    localStorage.setItem('userPosts', JSON.stringify(updatedUserPosts));
+    // Update the state
+    setPosts(prevPosts => [newPost, ...prevPosts]);
     
     toast({
       title: "Post created successfully!",

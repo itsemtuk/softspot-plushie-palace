@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   Dialog,
   DialogContent,
@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Comment } from "./post-dialog/PostCommentItem";
 import { PostContent } from "./post-dialog/PostContent";
+import { togglePostLike } from "@/utils/postStorage";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -31,15 +32,36 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
   const [commentList, setCommentList] = useState<Comment[]>([]);
   const navigate = useNavigate();
   
+  // Update local state when post changes
+  useEffect(() => {
+    if (post) {
+      setLikeCount(post.likes);
+      setIsLiked(false); // Reset like state for each post
+    }
+  }, [post]);
+  
   if (!post) return null;
 
   const handleLikeToggle = () => {
-    if (isLiked) {
-      setLikeCount(prev => prev - 1);
-    } else {
+    if (!isLiked) {
+      // Optimistically update UI
       setLikeCount(prev => prev + 1);
+      setIsLiked(true);
+      
+      // Update in storage
+      const result = togglePostLike(post.id);
+      
+      if (!result.success) {
+        // Revert UI if storage update failed
+        setLikeCount(prev => prev - 1);
+        setIsLiked(false);
+        toast({
+          variant: "destructive",
+          title: "Failed to like post",
+          description: "Please try again later."
+        });
+      }
     }
-    setIsLiked(!isLiked);
   };
 
   const handleCommentLikeToggle = (commentId: string) => {
