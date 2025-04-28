@@ -1,3 +1,4 @@
+
 export type ImageUploadResult = {
   url?: string;
   success: boolean;
@@ -71,29 +72,32 @@ export type UserProfile = {
 export type DirectMessage = {
   id: string;
   senderId: string;
+  recipientId?: string;
   content: string;
-  timestamp: string;
+  timestamp: Date;
   read: boolean;
   attachments?: string[];
 };
 
 export type MessageThread = {
   id: string;
-  participants: string[];
+  participants: UserProfile[];
   lastMessage?: DirectMessage;
-  updatedAt: string;
+  updatedAt: Date;
   unreadCount: number;
 };
 
 export type Notification = {
   id: string;
   userId: string;
-  type: 'follow' | 'like' | 'comment' | 'message' | 'trade';
+  type: 'follow' | 'like' | 'comment' | 'message' | 'trade' | 'system';
   content: string;
   read: boolean;
-  timestamp: string;
+  timestamp: Date;
   relatedUserId?: string;
   relatedPostId?: string;
+  relatedItemId?: string; 
+  relatedItemType?: string;
 };
 
 export type Post = {
@@ -121,6 +125,11 @@ export type UserPrivacySettings = {
   allowMessages: boolean;
   showActivity: boolean;
   allowTagging: boolean;
+  profile?: PrivacySetting;
+  posts?: PrivacySetting;
+  wishlist?: PrivacySetting;
+  marketplace?: PrivacySetting;
+  messages?: PrivacySetting;
 };
 
 // Update WishlistItem to include name instead of title
@@ -138,6 +147,7 @@ export type WishlistItem = {
   material?: PlushieMaterial;
   filling?: PlushieFilling;
   species?: PlushieSpecies;
+  title?: string; // Added for backward compatibility
 };
 
 // Update Wishlist type to include userId
@@ -150,4 +160,5 @@ export type Wishlist = {
   isPublic: boolean;
   createdAt: string;
   updatedAt?: string;
+  name?: string; // Added for backward compatibility
 };

@@ -34,6 +34,7 @@ import {
 import { DirectMessage, MessageThread, UserProfile } from '@/types/marketplace';
 import { toast } from '@/components/ui/use-toast';
 import { useUser } from '@clerk/clerk-react';
+import { formatTimeAgo } from '@/lib/utils';
 
 // Mock data - in a real app, this would come from an API
 const mockUsers: UserProfile[] = [
@@ -43,6 +44,7 @@ const mockUsers: UserProfile[] = [
   { id: "user-4", username: "emmacollects", profileImageUrl: "https://i.pravatar.cc/150?img=9", bio: "Plushie collector", followers: 91, following: 67 }
 ];
 
+// Updated mockThreads to use UserProfile objects as participants
 const mockThreads: MessageThread[] = [
   {
     id: "thread-1",
@@ -57,6 +59,7 @@ const mockThreads: MessageThread[] = [
       timestamp: new Date(Date.now() - 3600000),
       read: false,
     },
+    updatedAt: new Date(Date.now() - 3600000),
     unreadCount: 1
   },
   {
@@ -73,6 +76,7 @@ const mockThreads: MessageThread[] = [
       timestamp: new Date(Date.now() - 86400000),
       read: true,
     },
+    updatedAt: new Date(Date.now() - 86400000),
     unreadCount: 0
   }
 ];
@@ -148,7 +152,7 @@ const DirectMessaging = () => {
     // Update the thread's last message
     setThreads(prev => prev.map(thread => 
       thread.id === activeThread 
-        ? { ...thread, lastMessage: newMessage, unreadCount: 0 } 
+        ? { ...thread, lastMessage: newMessage, updatedAt: new Date(), unreadCount: 0 } 
         : thread
     ));
     
@@ -188,6 +192,7 @@ const DirectMessaging = () => {
         timestamp: new Date(),
         read: true,
       },
+      updatedAt: new Date(),
       unreadCount: 0
     };
     
@@ -278,12 +283,12 @@ const DirectMessaging = () => {
                           <div className="flex items-center justify-between">
                             <span className="block truncate">{otherUser.username}</span>
                             <span className="text-xs text-gray-500">
-                              {formatTimestamp(thread.lastMessage.timestamp)}
+                              {formatTimestamp(thread.lastMessage?.timestamp || thread.updatedAt)}
                             </span>
                           </div>
                           <p className="text-sm truncate text-gray-500">
-                            {thread.lastMessage.senderId === "user-1" ? "You: " : ""}
-                            {thread.lastMessage.content}
+                            {thread.lastMessage?.senderId === "user-1" ? "You: " : ""}
+                            {thread.lastMessage?.content}
                           </p>
                         </div>
                         {thread.unreadCount > 0 && (

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { 
   Bell, 
@@ -16,7 +15,7 @@ import { Notification } from '@/types/marketplace';
 import { formatDistanceToNow } from 'date-fns';
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-// Mock notifications data
+// Mock notifications data with updated Date objects
 const mockNotifications: Notification[] = [
   {
     id: "notif-1",
