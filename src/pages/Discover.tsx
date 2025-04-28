@@ -1,205 +1,145 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Navbar } from "@/components/Navbar";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Heart, MessageSquare, Share2, MoreHorizontal, Verified } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Button } from "@/components/ui/button";
+import { Link } from 'react-router-dom';
+import { useUser } from '@clerk/clerk-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Slider } from "@/components/ui/slider";
+import { Filter, Search as SearchIcon, Heart, MessageSquare } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useIsMobile } from "@/hooks/use-mobile";
-
-// Mock data for trending plushies
-const trendingPlushies = [
-  {
-    id: "1",
-    name: "Vintage Bear",
-    username: "plushielover",
-    likes: 42,
-    comments: 12,
-    imageUrl: "https://placekitten.com/200/300",
-    verified: true,
-  },
-  {
-    id: "2",
-    name: "Rainbow Unicorn",
-    username: "unicornfan",
-    likes: 68,
-    comments: 22,
-    imageUrl: "https://placekitten.com/201/301",
-    verified: false,
-  },
-  {
-    id: "3",
-    name: "Giant Panda",
-    username: "pandamania",
-    likes: 120,
-    comments: 45,
-    imageUrl: "https://placekitten.com/202/302",
-    verified: true,
-  },
-  {
-    id: "4",
-    name: "Sleepy Sloth",
-    username: "slothlife",
-    likes: 35,
-    comments: 8,
-    imageUrl: "https://placekitten.com/203/303",
-    verified: false,
-  },
-  {
-    id: "5",
-    name: "Curious Cat",
-    username: "catlover88",
-    likes: 88,
-    comments: 31,
-    imageUrl: "https://placekitten.com/204/304",
-    verified: true,
-  },
-];
-
-// Mock data for popular brands
-const popularBrands = [
-  {
-    id: "brand1",
-    name: "TeddyCo",
-    logoUrl: "https://placekitten.com/50/50",
-    verified: true,
-  },
-  {
-    id: "brand2",
-    name: "UnicornWorld",
-    logoUrl: "https://placekitten.com/51/51",
-    verified: false,
-  },
-  {
-    id: "brand3",
-    name: "PandaParadise",
-    logoUrl: "https://placekitten.com/52/52",
-    verified: true,
-  },
-];
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { MarketplacePlushie } from '@/types/marketplace';
+import { getMarketplaceListings } from '@/utils/storage/localStorageUtils';
 
 const Discover = () => {
-  const [searchQuery, setSearchQuery] = useState("");
-  const isMobile = useIsMobile();
-  const [trendingData, setTrendingData] = useState(trendingPlushies);
+  const [listings, setListings] = useState<MarketplacePlushie[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredListings, setFilteredListings] = useState<MarketplacePlushie[]>([]);
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [priceRange, setPriceRange] = useState<number[]>([0, 100]);
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const { user } = useUser();
 
-  const filteredData = trendingData.filter((item) =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.username.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  useEffect(() => {
+    // Load listings from local storage
+    const storedListings = getMarketplaceListings();
+    setListings(storedListings);
+    setFilteredListings(storedListings);
+  }, []);
 
-  const renderTrendingSection = () => {
-    const totalItems = Array.isArray(trendingData) ? trendingData.length : 0;
-    const visibleItems = Array.isArray(filteredData) ? filteredData.length : 0;
-
-    return (
-      <section className="mb-8">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-2xl font-bold">Trending Plushies</h2>
-          <span className="text-sm text-gray-500">
-            {visibleItems} of {totalItems}
-          </span>
-        </div>
-        <ScrollArea className="h-[300px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {filteredData.map((plushie) => (
-              <Card key={plushie.id}>
-                <CardContent className="p-3">
-                  <div className="relative">
-                    <img
-                      src={plushie.imageUrl}
-                      alt={plushie.name}
-                      className="w-full h-48 object-cover rounded-md mb-2"
-                    />
-                    <Button size="icon" variant="ghost" className="absolute top-2 right-2">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center">
-                      <Avatar className="mr-2 h-6 w-6">
-                        <AvatarImage src={plushie.imageUrl} alt={plushie.username} />
-                        <AvatarFallback>{plushie.username.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">{plushie.name}</span>
-                      {plushie.verified && (
-                        <Verified className="ml-1 h-4 w-4 text-blue-500" />
-                      )}
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center">
-                      <Heart className="h-3 w-3 mr-1" />
-                      <span>{plushie.likes}</span>
-                    </div>
-                    <div className="flex items-center">
-                      <MessageSquare className="h-3 w-3 mr-1" />
-                      <span>{plushie.comments}</span>
-                    </div>
-                    <Share2 className="h-3 w-3" />
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </ScrollArea>
-      </section>
+  useEffect(() => {
+    // Apply search filter
+    const searchedListings = listings.filter(listing =>
+      listing.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
+
+    // Apply price range filter
+    const priceFilteredListings = searchedListings.filter(
+      listing => listing.price >= priceRange[0] && listing.price <= priceRange[1]
+    );
+
+    setFilteredListings(priceFilteredListings);
+  }, [searchQuery, listings, priceRange]);
+
+  const handleSort = () => {
+    const sortedListings = [...filteredListings].sort((a, b) => {
+      if (sortOrder === "asc") {
+        return a.price - b.price;
+      } else {
+        return b.price - a.price;
+      }
+    });
+    setFilteredListings(sortedListings);
+    setSortOrder(sortOrder === "asc" ? "desc" : "asc");
   };
 
-  const renderPopularBrandsSection = () => (
-    <section className="mb-8">
-      <h2 className="text-2xl font-bold mb-4">Popular Brands</h2>
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {popularBrands.map((brand) => (
-          <Card key={brand.id} className="hover:bg-gray-50 cursor-pointer">
-            <CardContent className="flex flex-col items-center justify-center p-4">
-              <Avatar className="h-12 w-12 mb-2">
-                <AvatarImage src={brand.logoUrl} alt={brand.name} />
-                <AvatarFallback>{brand.name.charAt(0)}</AvatarFallback>
-              </Avatar>
-              <div className="flex items-center">
-                <span className="text-sm font-medium">{brand.name}</span>
-                {brand.verified && (
-                  <Verified className="ml-1 h-4 w-4 text-blue-500" />
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    </section>
-  );
+  const handlePriceRangeChange = (value: number[]) => {
+    setPriceRange(value);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
-      <div className="container mx-auto px-4 py-8">
-        <div className="mb-6">
-          <h1 className="text-3xl font-bold mb-2">Discover</h1>
-          <p className="text-gray-600">Explore trending plushies and popular brands.</p>
-        </div>
-
-        <div className="mb-4">
-          <div className="relative">
+      <main className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-4">
+          <div className="relative w-full md:w-1/2">
+            <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
             <Input
               type="text"
-              placeholder="Search plushies or brands..."
-              className="pl-10"
+              placeholder="Search for plushies..."
+              className="pl-9"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="ml-2">
+                <Filter className="h-4 w-4 mr-2" />
+                Filter
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <div className="px-4 py-2">
+                <h4 className="text-sm font-medium">Price Range</h4>
+                <div className="flex items-center gap-2">
+                  <Label>From: ${priceRange[0]}</Label>
+                  <Label>To: ${priceRange[1]}</Label>
+                </div>
+                <Slider
+                  defaultValue={priceRange}
+                  max={1000}
+                  step={10}
+                  onValueChange={handlePriceRangeChange}
+                />
+              </div>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        <Separator className="mb-6" />
-
-        {renderTrendingSection()}
-        {renderPopularBrandsSection()}
-      </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {filteredListings.map((listing) => (
+            <Card key={listing.id} className="bg-white rounded-lg shadow-sm overflow-hidden">
+              <Link to={`/marketplace/${listing.id}`}>
+                <div className="relative">
+                  <AspectRatio ratio={1 / 1}>
+                    <img
+                      src={listing.image}
+                      alt={listing.title}
+                      className="object-cover w-full h-full"
+                    />
+                  </AspectRatio>
+                </div>
+                <CardContent className="p-4">
+                  <h3 className="text-lg font-medium mb-2 truncate">{listing.title}</h3>
+                  <p className="text-gray-500 text-sm">${listing.price}</p>
+                  <div className="flex items-center mt-2">
+                    <Heart className="h-4 w-4 text-gray-500 mr-1" />
+                    <span>{listing.likes}</span>
+                    <MessageSquare className="h-4 w-4 text-gray-500 ml-2 mr-1" />
+                    <span>{listing.comments}</span>
+                  </div>
+                </CardContent>
+              </Link>
+            </Card>
+          ))}
+        </div>
+      </main>
     </div>
   );
 };

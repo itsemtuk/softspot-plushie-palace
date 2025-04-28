@@ -46,6 +46,7 @@ const mockUsers: UserProfile[] = [
 
 interface UpdatedMessageThread extends Omit<MessageThread, 'participants'> {
   participants: UserProfile[];
+  updatedAt: string; // Explicitly declare updatedAt
 }
 
 // Updated mockThreads to use UserProfile objects as participants
@@ -59,10 +60,10 @@ const mockThreads: UpdatedMessageThread[] = [
     lastMessage: {
       id: "msg-1",
       senderId: "user-2",
-      receiverId: "user-1",
       content: "Hi! I'm interested in your teddy bear listing.",
       timestamp: new Date(Date.now() - 3600000).toISOString(),
-      isRead: false,
+      read: false,
+      recipientId: "user-1"
     },
     updatedAt: new Date(Date.now() - 3600000).toISOString(),
     unreadCount: 1
@@ -76,10 +77,10 @@ const mockThreads: UpdatedMessageThread[] = [
     lastMessage: {
       id: "msg-2",
       senderId: "user-1",
-      receiverId: "user-3",
       content: "Would you consider trading for my bunny plush?",
       timestamp: new Date(Date.now() - 86400000).toISOString(),
-      isRead: true,
+      read: true,
+      recipientId: "user-3"
     },
     updatedAt: new Date(Date.now() - 86400000).toISOString(),
     unreadCount: 0
@@ -90,26 +91,26 @@ const mockMessages: DirectMessage[] = [
   {
     id: "msg-1",
     senderId: "user-2",
-    receiverId: "user-1",
     content: "Hi! I'm interested in your teddy bear listing.",
     timestamp: new Date(Date.now() - 3600000).toISOString(),
-    isRead: false,
+    read: false,
+    recipientId: "user-1"
   },
   {
     id: "msg-2",
     senderId: "user-1",
-    receiverId: "user-2",
     content: "Hello! Yes, it's still available. Are you interested in buying or trading?",
     timestamp: new Date(Date.now() - 3500000).toISOString(),
-    isRead: true,
+    read: true,
+    recipientId: "user-2"
   },
   {
     id: "msg-3",
     senderId: "user-2",
-    receiverId: "user-1",
     content: "I'd like to buy it. Is the price negotiable?",
     timestamp: new Date(Date.now() - 3400000).toISOString(),
-    isRead: false,
+    read: false,
+    recipientId: "user-1"
   }
 ];
 
@@ -148,10 +149,10 @@ const DirectMessaging = () => {
     const newMessage: DirectMessage = {
       id: `msg-${Date.now()}`,
       senderId: "user-1",
-      receiverId: recipientId,
       content: messageText,
       timestamp: new Date().toISOString(),
-      isRead: false,
+      read: false,
+      recipientId // Use recipientId instead of receiverId
     };
     
     setMessages(prev => [...prev, newMessage]);
@@ -200,10 +201,10 @@ const DirectMessaging = () => {
       lastMessage: {
         id: "",
         senderId: "",
-        receiverId: "",
         content: "Start a new conversation",
         timestamp: new Date().toISOString(),
-        isRead: true,
+        read: true,
+        recipientId: ""
       },
       updatedAt: new Date().toISOString(),
       unreadCount: 0

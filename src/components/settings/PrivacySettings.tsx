@@ -11,16 +11,11 @@ import { PrivacySetting, UserPrivacySettings } from "@/types/marketplace";
 export function PrivacySettings() {
   const [privacySettings, setPrivacySettings] = useState<UserPrivacySettings>({
     profileVisibility: "public",
+    postComments: "public",
+    messagePrivacy: "followers",
     messagePermission: "followers",
-    activityVisibility: true,
-    allowMessages: true,
     showActivity: true,
-    allowTagging: true,
-    profile: "public",
-    posts: "public",
-    wishlist: "public",
-    marketplace: "public",
-    messages: "followers"
+    allowTagging: true
   });
 
   const updatePrivacy = (field: keyof UserPrivacySettings, value: any) => {

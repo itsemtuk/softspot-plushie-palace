@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -78,7 +79,8 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCr
           title: data.title,
           description: data.description || postToEdit.description,
           image: editedImage || uploadedImage,
-          tags: data.tags || postToEdit.tags
+          tags: data.tags || postToEdit.tags,
+          location: data.location || postToEdit.location
         };
         
         const result = await updatePost(updatedPost);
@@ -103,7 +105,13 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCr
           description: finalPost.description || "",
           tags: finalPost.tags || [],
           timestamp: new Date().toISOString(),
-          location: finalPost.location
+          location: finalPost.location,
+          // Adding the required ExtendedPost properties
+          price: 0,
+          forSale: false,
+          condition: "New",
+          color: "",
+          material: ""
         };
         
         const result = await addPost(newPost);

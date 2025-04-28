@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   Dialog,
@@ -74,10 +73,9 @@ const mockPlushies: MarketplacePlushie[] = [
     filling: "Cotton",
     species: "Rabbit",
     brand: "Jellycat",
-    deliveryMethod: 'Shipping',
-    deliveryCost: 5.00,
     timestamp: new Date().toISOString(),
-    tags: ['bunny', 'jellycat', 'mint green']
+    tags: ['bunny', 'jellycat', 'mint green'],
+    deliveryCost: 5.00
   },
   {
     id: "2",
@@ -96,10 +94,9 @@ const mockPlushies: MarketplacePlushie[] = [
     filling: "Polyester",
     species: "Bear",
     brand: "Build-A-Bear",
-    deliveryMethod: 'Collection',
-    deliveryCost: 0,
     timestamp: new Date().toISOString(),
-    tags: ['teddy', 'limited edition', 'anniversary']
+    tags: ['teddy', 'limited edition', 'anniversary'],
+    deliveryCost: 0
   }
 ];
 

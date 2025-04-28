@@ -11,7 +11,8 @@ export interface WishlistItem {
   currencyCode: string;
   createdAt: string;
   updatedAt: string;
-  brand?: string; // Added for WishlistManager
+  brand?: string;
+  image?: string; // Added for WishlistManager
 }
 
 export interface Wishlist {
@@ -22,8 +23,9 @@ export interface Wishlist {
   privacy: 'public' | 'private' | 'friends';
   createdAt: string;
   updatedAt: string;
-  userId?: string; // Added for WishlistManager
-  title?: string; // Added for WishlistManager
+  userId?: string;
+  title?: string;
+  isPublic?: boolean; // Added for WishlistManager
 }
 
 export interface MarketplacePlushie {
@@ -45,9 +47,10 @@ export interface MarketplacePlushie {
   filling?: string;
   tags: string[];
   timestamp: string;
-  species?: string; // Added for components using it
-  location?: string; // Added for PostCreationFlow
-  deliveryCost?: number; // Added for PlushieInfo
+  species?: string;
+  location?: string;
+  deliveryCost?: number;
+  deliveryMethod?: string; // Added for TradeRequestDialog
 }
 
 export interface Post extends MarketplacePlushie {
@@ -94,7 +97,8 @@ export interface Comment {
   username: string;
   content: string;
   createdAt: string;
-  likes?: { userId: string }[];
+  likes?: { userId: string; }[];
+  isLiked?: boolean; // Added for PostCommentItem
 }
 
 // Types for plushie attributes
@@ -138,7 +142,7 @@ export interface UserProfile {
   bio: string;
   followers: number;
   isFollowing: boolean;
-  avatar: string; // Required for components
+  avatar: string;
 }
 
 // Messaging types
@@ -149,6 +153,7 @@ export interface DirectMessage {
   timestamp: string;
   read: boolean;
   recipientId?: string; // Added to fix DirectMessaging component
+  isRead?: boolean; // Added for backward compatibility
 }
 
 export interface MessageThread {
@@ -157,13 +162,29 @@ export interface MessageThread {
   lastMessage: DirectMessage;
   unreadCount: number;
   createdAt: string;
+  updatedAt?: string; // Added for DirectMessaging component
+}
+
+export interface UpdatedMessageThread extends Omit<MessageThread, 'participants'> {
+  participants: UserProfile[];
+  updatedAt: string; // Explicitly added for UpdatedMessageThread
 }
 
 // Privacy settings
-export type PrivacySetting = 'everyone' | 'friends' | 'none';
+export type PrivacySetting = 'everyone' | 'friends' | 'none' | 'public' | 'followers' | 'private';
 
 export interface UserPrivacySettings {
   profileVisibility: PrivacySetting;
   postComments: PrivacySetting;
   messagePrivacy: PrivacySetting; // Added for PrivacySettings component
+  messagePermission?: PrivacySetting; // Added for PrivacySettings component
+  showActivity?: boolean; // Added for PrivacySettings component
+  allowTagging?: boolean; // Added for PrivacySettings component
+  activityVisibility?: boolean; // For backward compatibility
+  allowMessages?: boolean; // For backward compatibility
+  profile?: PrivacySetting; // For backward compatibility
+  posts?: PrivacySetting; // For backward compatibility
+  wishlist?: PrivacySetting; // For backward compatibility
+  marketplace?: PrivacySetting; // For backward compatibility
+  messages?: PrivacySetting; // For backward compatibility
 }

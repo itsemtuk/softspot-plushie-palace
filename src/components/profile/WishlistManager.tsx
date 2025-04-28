@@ -1,262 +1,284 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
-import { WishlistItem, Wishlist, Currency, PlushieCondition } from '@/types/marketplace';
+import { useUser } from "@clerk/clerk-react";
+import {
+  Wishlist,
+  WishlistItem
+} from "@/types/marketplace";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Plus, Edit, Trash2 } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function WishlistManager() {
+  const { user } = useUser();
   const [wishlists, setWishlists] = useState<Wishlist[]>([]);
   const [selectedWishlist, setSelectedWishlist] = useState<Wishlist | null>(null);
-  const [newItemName, setNewItemName] = useState('');
-  const [newItemBrand, setNewItemBrand] = useState('');
-  const [newItemImage, setNewItemImage] = useState('');
-  const [newItemPrice, setNewItemPrice] = useState('');
-  const [newItemCurrency, setNewItemCurrency] = useState<Currency>('USD');
-  const [newItemCondition, setNewItemCondition] = useState<PlushieCondition>('New');
-  const [newItemUrl, setNewItemUrl] = useState('');
-  const [newItemNotes, setNewItemNotes] = useState('');
-  const [newItemPriority, setNewItemPriority] = useState('medium');
-  const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
-  const [isCreateWishlistDialogOpen, setIsCreateWishlistDialogOpen] = useState(false);
-  const [newWishlistName, setNewWishlistName] = useState('');
-  const [newWishlistDescription, setNewWishlistDescription] = useState('');
-  const [newWishlistIsPublic, setNewWishlistIsPublic] = useState(false);
-  const [newWishlistId, setNewWishlistId] = useState(`wishlist-${Date.now()}`);
-  const [isUpdateWishlistDialogOpen, setIsUpdateWishlistDialogOpen] = useState(false);
+  const [isCreatingWishlist, setIsCreatingWishlist] = useState(false);
+  const [isCreatingItem, setIsCreatingItem] = useState(false);
+  const [wishlistName, setWishlistName] = useState("");
+  const [wishlistDescription, setWishlistDescription] = useState("");
+  const [isPrivate, setIsPrivate] = useState(false);
+  const [itemName, setItemName] = useState("");
+  const [itemDescription, setItemDescription] = useState("");
+  const [itemPrice, setItemPrice] = useState("");
+  const [itemImage, setItemImage] = useState("");
+  const [itemPriority, setItemPriority] = useState("medium");
+  const [itemCurrency, setItemCurrency] = useState("USD");
+  const [itemBrand, setItemBrand] = useState("");
 
-  const handleAddItem = () => {
-    const newItem: WishlistItem = {
-      id: `item-${Date.now()}`,
-      name: newItemName,
-      brand: newItemBrand || undefined,
-      image: newItemImage || undefined,
-      price: newItemPrice ? Number(newItemPrice) : undefined,
-      currency: newItemCurrency || undefined,
-      condition: newItemCondition || undefined,
-      url: newItemUrl || undefined,
-      notes: newItemNotes || undefined,
-      priority: newItemPriority as 'low' | 'medium' | 'high',
-    };
-    
-    if (selectedWishlist) {
-      const updatedWishlist = {
-        ...selectedWishlist,
-        items: [...selectedWishlist.items, newItem],
-      };
-      setWishlists(
-        wishlists.map((wishlist) =>
-          wishlist.id === selectedWishlist.id ? updatedWishlist : wishlist
-        )
-      );
-      setSelectedWishlist(updatedWishlist);
-      setIsAddItemDialogOpen(false);
-      toast({
-        title: "Item added",
-        description: "The item has been added to your wishlist.",
-      });
+  useEffect(() => {
+    // Load wishlists from local storage or default data
+    const storedWishlists = localStorage.getItem("wishlists");
+    if (storedWishlists) {
+      setWishlists(JSON.parse(storedWishlists));
+    } else {
+      // Initialize with some default wishlists
+      setWishlists([
+        {
+          id: "wishlist-1",
+          name: "My Plushie Collection",
+          description: "A list of plushies I want to add to my collection",
+          items: [],
+          privacy: "public",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          userId: user?.id || 'anonymous'
+        },
+      ]);
     }
-  };
+  }, [user?.id]);
+
+  useEffect(() => {
+    // Save wishlists to local storage whenever they change
+    localStorage.setItem("wishlists", JSON.stringify(wishlists));
+  }, [wishlists]);
 
   const handleCreateWishlist = () => {
-    const newWishlistItem: WishlistItem = {
-      id: `item-${Date.now()}`,
-      name: newItemName,
-      brand: newItemBrand || undefined,
-      image: newItemImage || undefined,
-      price: newItemPrice ? Number(newItemPrice) : undefined,
-      currency: newItemCurrency || undefined,
-      condition: newItemCondition || undefined,
-      url: newItemUrl || undefined,
-      notes: newItemNotes || undefined,
-      priority: newItemPriority as 'low' | 'medium' | 'high',
-    };
-    
+    if (!wishlistName.trim()) {
+      toast({
+        title: "Error",
+        description: "Wishlist name is required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Fix wishlist creation to use proper properties
     const newWishlist: Wishlist = {
-      id: newWishlistId,
-      userId: 'current-user',
-      title: newWishlistName,
-      description: newWishlistDescription,
-      isPublic: newWishlistIsPublic,
-      items: [newWishlistItem],
+      id: `wishlist-${Date.now()}`,
+      name: wishlistName,
+      description: wishlistDescription,
+      items: [],
+      privacy: isPrivate ? 'private' : 'public', // Use privacy instead of isPublic
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      userId: user?.id || 'anonymous'
     };
+
     setWishlists([...wishlists, newWishlist]);
-    setSelectedWishlist(newWishlist);
-    setIsCreateWishlistDialogOpen(false);
+    setIsCreatingWishlist(false);
+    setWishlistName("");
+    setWishlistDescription("");
+    setIsPrivate(false);
     toast({
-      title: "Wishlist created",
-      description: "Your new wishlist has been created.",
+      title: "Success",
+      description: "Wishlist created successfully.",
     });
   };
 
-  const handleUpdateWishlist = () => {
-    const updatedItem: WishlistItem = {
-      id: `item-${Date.now()}`,
-      name: newItemName,
-      brand: newItemBrand || undefined,
-      image: newItemImage || undefined,
-      price: newItemPrice ? Number(newItemPrice) : undefined,
-      currency: newItemCurrency || undefined,
-      condition: newItemCondition || undefined,
-      url: newItemUrl || undefined,
-      notes: newItemNotes || undefined,
-      priority: newItemPriority as 'low' | 'medium' | 'high',
-    };
-    
-    if (selectedWishlist) {
-      const updatedWishlist = {
-        ...selectedWishlist,
-        items: [...selectedWishlist.items, updatedItem],
-      };
-      setWishlists(
-        wishlists.map((wishlist) =>
-          wishlist.id === selectedWishlist.id ? updatedWishlist : wishlist
-        )
-      );
-      setSelectedWishlist(updatedWishlist);
-      setIsUpdateWishlistDialogOpen(false);
+  const handleSelectItem = (wishlist: Wishlist) => {
+    setSelectedWishlist(wishlist);
+  };
+
+  const handleCreateItem = () => {
+    if (!itemName.trim() || !itemPrice.trim()) {
       toast({
-        title: "Wishlist updated",
-        description: "Your wishlist has been updated.",
+        title: "Error",
+        description: "Item name and price are required.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Fix wishlist item creation to match the WishlistItem interface
+    const newItem: WishlistItem = {
+      id: `item-${Date.now()}`,
+      name: itemName,
+      description: itemDescription,
+      price: parseFloat(itemPrice),
+      imageUrl: itemImage || "https://placehold.co/100x100?text=Item", // Use imageUrl instead of image
+      priority: itemPriority as 'low' | 'medium' | 'high',
+      status: 'wanted',
+      currencyCode: itemCurrency,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      brand: itemBrand
+    };
+
+    if (selectedWishlist) {
+      const updatedWishlists = wishlists.map((wishlist) =>
+        wishlist.id === selectedWishlist.id
+          ? { ...wishlist, items: [...wishlist.items, newItem] }
+          : wishlist
+      );
+      setWishlists(updatedWishlists);
+      setSelectedWishlist({ ...selectedWishlist, items: [...selectedWishlist.items, newItem] });
+      setIsCreatingItem(false);
+      setItemName("");
+      setItemDescription("");
+      setItemPrice("");
+      setItemImage("");
+      setItemPriority("medium");
+      setItemCurrency("USD");
+      setItemBrand("");
+      toast({
+        title: "Success",
+        description: "Item added to wishlist successfully.",
       });
     }
   };
 
-  const handleWishlistSelect = (wishlist: Wishlist) => {
-    setSelectedWishlist(wishlist);
-  };
-
-  const handleOpenAddItemDialog = () => {
-    setIsAddItemDialogOpen(true);
-  };
-
-  const handleCloseAddItemDialog = () => {
-    setIsAddItemDialogOpen(false);
-  };
-
-  const handleOpenCreateWishlistDialog = () => {
-    setIsCreateWishlistDialogOpen(true);
-  };
-
-  const handleCloseCreateWishlistDialog = () => {
-    setIsCreateWishlistDialogOpen(false);
-  };
-
-  const handleOpenUpdateWishlistDialog = () => {
-    setIsUpdateWishlistDialogOpen(true);
-  };
-
-  const handleCloseUpdateWishlistDialog = () => {
-    setIsUpdateWishlistDialogOpen(false);
-  };
-
-  const updateUserWishlistWithTitle = async () => {
-    const newWishlist: Wishlist = {
-      id: newWishlistId,
-      userId: 'current-user', // Using the required userId field
-      title: newWishlistName, // Using title field
-      description: newWishlistDescription,
-      isPublic: newWishlistIsPublic,
-      items: [] as WishlistItem[],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    
-    setWishlists([...wishlists, newWishlist]);
-    setSelectedWishlist(newWishlist);
-    setIsCreateWishlistDialogOpen(false);
+  const handleDeleteWishlist = (wishlistId: string) => {
+    setWishlists(wishlists.filter((wishlist) => wishlist.id !== wishlistId));
+    setSelectedWishlist(null);
     toast({
-      title: "Wishlist created",
-      description: "Your new wishlist has been created.",
+      title: "Success",
+      description: "Wishlist deleted successfully.",
     });
   };
 
   return (
-    <div className="space-y-4">
-      <Card>
+    <div className="flex flex-col md:flex-row gap-4">
+      {/* Wishlist List */}
+      <Card className="w-full md:w-1/3">
         <CardHeader>
-          <CardTitle>Wishlists</CardTitle>
-          <CardDescription>Manage your wishlists and items.</CardDescription>
+          <CardTitle>Your Wishlists</CardTitle>
+          <CardDescription>Manage your wishlists and items</CardDescription>
         </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="flex items-center space-x-4">
-            <Button onClick={handleOpenCreateWishlistDialog}>Create Wishlist</Button>
-            <Button onClick={handleOpenAddItemDialog} disabled={!selectedWishlist}>
-              Add Item
-            </Button>
-            <Button onClick={handleOpenUpdateWishlistDialog} disabled={!selectedWishlist}>
-              Update Wishlist
+        <CardContent className="p-0">
+          <ScrollArea className="h-[400px]">
+            <div className="p-4 space-y-2">
+              {wishlists.map((wishlist) => (
+                <div
+                  key={wishlist.id}
+                  className={`p-3 rounded-md cursor-pointer hover:bg-gray-100 ${
+                    selectedWishlist?.id === wishlist.id ? "bg-gray-100" : ""
+                  }`}
+                  onClick={() => handleSelectItem(wishlist)}
+                >
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium">{wishlist.name}</p>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="icon" className="hover:text-red-500">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Wishlist</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this wishlist? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={() => handleDeleteWishlist(wishlist.id)}>
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                  <p className="text-sm text-gray-500">{wishlist.description}</p>
+                </div>
+              ))}
+            </div>
+          </ScrollArea>
+          <div className="p-4">
+            <Button variant="outline" className="w-full" onClick={() => setIsCreatingWishlist(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create New Wishlist
             </Button>
           </div>
-          <div className="grid gap-2">
-            <Label htmlFor="wishlist">Select Wishlist</Label>
-            <Select onValueChange={(value) => {
-              const selected = wishlists.find((wishlist) => wishlist.id === value);
-              if (selected) {
-                handleWishlistSelect(selected);
-              }
-            }}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select a wishlist" />
-              </SelectTrigger>
-              <SelectContent>
-                {wishlists.map((wishlist) => (
-                  <SelectItem key={wishlist.id} value={wishlist.id}>
-                    {wishlist.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          {selectedWishlist && (
-            <div className="space-y-2">
-              <h3 className="text-lg font-semibold">
-                {selectedWishlist.title} Items
-              </h3>
-              {selectedWishlist.items.length === 0 ? (
-                <p className="text-sm text-muted-foreground">
-                  No items in this wishlist.
-                </p>
-              ) : (
-                <ul className="list-disc pl-5">
+        </CardContent>
+      </Card>
+
+      {/* Wishlist Items */}
+      <Card className="w-full md:w-2/3">
+        <CardHeader>
+          <CardTitle>
+            {selectedWishlist ? selectedWishlist.name : "Select a Wishlist"}
+          </CardTitle>
+          <CardDescription>
+            {selectedWishlist
+              ? "View and manage items in this wishlist"
+              : "Choose a wishlist to see its items"}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="p-0">
+          {selectedWishlist ? (
+            <>
+              <ScrollArea className="h-[320px]">
+                <div className="p-4 space-y-2">
                   {selectedWishlist.items.map((item) => (
-                    <li key={item.id}>{item.name}</li>
+                    <div key={item.id} className="p-3 rounded-md bg-gray-50">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-gray-500">${item.price}</p>
+                      </div>
+                      <p className="text-sm text-gray-500">{item.description}</p>
+                    </div>
                   ))}
-                </ul>
-              )}
+                </div>
+              </ScrollArea>
+              <div className="p-4">
+                <Button variant="outline" className="w-full" onClick={() => setIsCreatingItem(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Item
+                </Button>
+              </div>
+            </>
+          ) : (
+            <div className="p-4 text-center text-gray-500">
+              Select a wishlist to view its items.
             </div>
           )}
         </CardContent>
       </Card>
 
-      <Dialog open={isAddItemDialogOpen} onOpenChange={handleCloseAddItemDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Add Item to Wishlist</DialogTitle>
-            <DialogDescription>
-              Add a new item to your selected wishlist.
-            </DialogDescription>
-          </DialogHeader>
+      {/* Create Wishlist Dialog */}
+      <AlertDialog open={isCreatingWishlist} onOpenChange={setIsCreatingWishlist}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Create New Wishlist</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter the details for your new wishlist.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
               <Label htmlFor="name" className="text-right">
@@ -264,285 +286,109 @@ export function WishlistManager() {
               </Label>
               <Input
                 id="name"
-                value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
+                value={wishlistName}
+                onChange={(e) => setWishlistName(e.target.value)}
                 className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="brand" className="text-right">
-                Brand
-              </Label>
-              <Input
-                id="brand"
-                value={newItemBrand}
-                onChange={(e) => setNewItemBrand(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="image" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="image"
-                value={newItemImage}
-                onChange={(e) => setNewItemImage(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="price" className="text-right">
-                Price
-              </Label>
-              <Input
-                type="number"
-                id="price"
-                value={newItemPrice}
-                onChange={(e) => setNewItemPrice(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="currency" className="text-right">
-                Currency
-              </Label>
-              <Select value={newItemCurrency} onValueChange={(value) => setNewItemCurrency(value as Currency)} >
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="condition" className="text-right">
-                Condition
-              </Label>
-              <Select value={newItemCondition} onValueChange={(value) => setNewItemCondition(value as PlushieCondition)}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="New">New</SelectItem>
-                  <SelectItem value="Like New">Like New</SelectItem>
-                  <SelectItem value="Good">Good</SelectItem>
-                  <SelectItem value="Fair">Fair</SelectItem>
-                  <SelectItem value="Poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="url" className="text-right">
-                URL
-              </Label>
-              <Input
-                id="url"
-                value={newItemUrl}
-                onChange={(e) => setNewItemUrl(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">
-                Notes
-              </Label>
-              <Textarea
-                id="notes"
-                value={newItemNotes}
-                onChange={(e) => setNewItemNotes(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="priority" className="text-right">
-                Priority
-              </Label>
-              <Select value={newItemPriority} onValueChange={(value) => setNewItemPriority(value)}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <CardFooter>
-            <Button onClick={handleAddItem}>Add Item</Button>
-          </CardFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isCreateWishlistDialogOpen} onOpenChange={handleCloseCreateWishlistDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Create Wishlist</DialogTitle>
-            <DialogDescription>
-              Create a new wishlist to save your favorite items.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="wishlistName" className="text-right">
-                Wishlist Name
-              </Label>
-              <Input
-                id="wishlistName"
-                value={newWishlistName}
-                onChange={(e) => setNewWishlistName(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="wishlistDescription" className="text-right">
+              <Label htmlFor="description" className="text-right">
                 Description
               </Label>
               <Textarea
-                id="wishlistDescription"
-                value={newWishlistDescription}
-                onChange={(e) => setNewWishlistDescription(e.target.value)}
+                id="description"
+                value={wishlistDescription}
+                onChange={(e) => setWishlistDescription(e.target.value)}
                 className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="isPublic" className="text-right">
-                Public
+              <Label htmlFor="private" className="text-right">
+                Private
               </Label>
-              <Switch
-                id="isPublic"
-                checked={newWishlistIsPublic}
-                onCheckedChange={(checked) => setNewWishlistIsPublic(checked)}
-                className="col-span-3"
-              />
+              <div className="col-span-3 flex items-center">
+                <Switch
+                  id="private"
+                  checked={isPrivate}
+                  onCheckedChange={setIsPrivate}
+                />
+                <p className="text-sm text-gray-500 ml-2">Make this wishlist private</p>
+              </div>
             </div>
           </div>
-          <CardFooter>
-            <Button onClick={updateUserWishlistWithTitle}>Create Wishlist</Button>
-          </CardFooter>
-        </DialogContent>
-      </Dialog>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsCreatingWishlist(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleCreateWishlist}>
+              Create
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
-      <Dialog open={isUpdateWishlistDialogOpen} onOpenChange={handleCloseUpdateWishlistDialog}>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle>Update Wishlist</DialogTitle>
-            <DialogDescription>
-              Update your selected wishlist.
-            </DialogDescription>
-          </DialogHeader>
+      {/* Create Item Dialog */}
+      <AlertDialog open={isCreatingItem} onOpenChange={setIsCreatingItem}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Add New Item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Enter the details for the item you want to add.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="name" className="text-right">
+              <Label htmlFor="item-name" className="text-right">
                 Name
               </Label>
               <Input
-                id="name"
-                value={newItemName}
-                onChange={(e) => setNewItemName(e.target.value)}
+                id="item-name"
+                value={itemName}
+                onChange={(e) => setItemName(e.target.value)}
                 className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="brand" className="text-right">
-                Brand
+              <Label htmlFor="item-description" className="text-right">
+                Description
               </Label>
-              <Input
-                id="brand"
-                value={newItemBrand}
-                onChange={(e) => setNewItemBrand(e.target.value)}
+              <Textarea
+                id="item-description"
+                value={itemDescription}
+                onChange={(e) => setItemDescription(e.target.value)}
                 className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="image" className="text-right">
-                Image URL
-              </Label>
-              <Input
-                id="image"
-                value={newItemImage}
-                onChange={(e) => setNewItemImage(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="price" className="text-right">
+              <Label htmlFor="item-price" className="text-right">
                 Price
               </Label>
               <Input
+                id="item-price"
                 type="number"
-                id="price"
-                value={newItemPrice}
-                onChange={(e) => setNewItemPrice(e.target.value)}
+                value={itemPrice}
+                onChange={(e) => setItemPrice(e.target.value)}
                 className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="currency" className="text-right">
-                Currency
-              </Label>
-              <Select value={newItemCurrency} onValueChange={(value) => setNewItemCurrency(value as Currency)}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD</SelectItem>
-                  <SelectItem value="EUR">EUR</SelectItem>
-                  <SelectItem value="GBP">GBP</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="condition" className="text-right">
-                Condition
-              </Label>
-              <Select value={newItemCondition} onValueChange={(value) => setNewItemCondition(value as PlushieCondition)}>
-                <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="New">New</SelectItem>
-                  <SelectItem value="Like New">Like New</SelectItem>
-                  <SelectItem value="Good">Good</SelectItem>
-                  <SelectItem value="Fair">Fair</SelectItem>
-                  <SelectItem value="Poor">Poor</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="url" className="text-right">
-                URL
+              <Label htmlFor="item-image" className="text-right">
+                Image URL
               </Label>
               <Input
-                id="url"
-                value={newItemUrl}
-                onChange={(e) => setNewItemUrl(e.target.value)}
+                id="item-image"
+                value={itemImage}
+                onChange={(e) => setItemImage(e.target.value)}
                 className="col-span-3"
               />
             </div>
             <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="notes" className="text-right">
-                Notes
-              </Label>
-              <Textarea
-                id="notes"
-                value={newItemNotes}
-                onChange={(e) => setNewItemNotes(e.target.value)}
-                className="col-span-3"
-              />
-            </div>
-            <div className="grid grid-cols-4 items-center gap-4">
-              <Label htmlFor="priority" className="text-right">
+              <Label htmlFor="item-priority" className="text-right">
                 Priority
               </Label>
-              <Select value={newItemPriority} onValueChange={(value) => setNewItemPriority(value)}>
+              <Select value={itemPriority} onValueChange={(value) => setItemPriority(value)}>
                 <SelectTrigger className="col-span-3">
-                  <SelectValue placeholder="Select" />
+                  <SelectValue placeholder="Select priority" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="low">Low</SelectItem>
@@ -551,14 +397,48 @@ export function WishlistManager() {
                 </SelectContent>
               </Select>
             </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="item-currency" className="text-right">
+                Currency
+              </Label>
+              <Select value={itemCurrency} onValueChange={(value) => setItemCurrency(value)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select currency" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="GBP">GBP</SelectItem>
+                  <SelectItem value="JPY">JPY</SelectItem>
+                  <SelectItem value="CAD">CAD</SelectItem>
+                  <SelectItem value="AUD">AUD</SelectItem>
+                  <SelectItem value="CNY">CNY</SelectItem>
+                  <SelectItem value="INR">INR</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="item-brand" className="text-right">
+                Brand
+              </Label>
+              <Input
+                id="item-brand"
+                value={itemBrand}
+                onChange={(e) => setItemBrand(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
           </div>
-          <CardFooter>
-            <Button onClick={handleUpdateWishlist}>Update Wishlist</Button>
-          </CardFooter>
-        </DialogContent>
-      </Dialog>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setIsCreatingItem(false)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={handleCreateItem}>
+              Add Item
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
-
-export default WishlistManager;

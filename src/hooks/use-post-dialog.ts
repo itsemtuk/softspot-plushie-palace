@@ -1,5 +1,6 @@
+
 import { ExtendedPost, Comment } from "@/types/marketplace";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
 
 export const usePostDialog = (post: ExtendedPost | null) => {
@@ -10,7 +11,7 @@ export const usePostDialog = (post: ExtendedPost | null) => {
   const [isAuthor, setIsAuthor] = useState<boolean>(false);
   
   // Check if the current user is the author of the post
-  useState(() => {
+  useEffect(() => {
     if (!post) return;
     
     // Get current user ID from localStorage or auth context
@@ -37,14 +38,13 @@ export const usePostDialog = (post: ExtendedPost | null) => {
     loadComments();
   }, [post]);
   
-  // This is the fix for the error with the Type 'number | any[]'
   const handleLikeToggle = () => {
     if (isLiked) {
       // If already liked, decrease the count
-      setLikeCount(typeof likeCount === 'number' ? likeCount - 1 : 0);
+      setLikeCount(likeCount - 1);
     } else {
       // If not liked, increase the count
-      setLikeCount(typeof likeCount === 'number' ? likeCount + 1 : 1);
+      setLikeCount(likeCount + 1);
     }
     setIsLiked(!isLiked);
     
@@ -97,16 +97,34 @@ export const usePostDialog = (post: ExtendedPost | null) => {
     }
   };
   
-  // Fix this function as well
+  // Fix commenting functionality
   const handleCommentLikeToggle = (commentId: string) => {
-    setCommentList(
-      commentList.map(comment => {
+    setCommentList(prevComments => 
+      prevComments.map(comment => {
         if (comment.id === commentId) {
-          const currentLikes = typeof comment.likes === 'number' ? comment.likes : comment.likes?.length || 0;
+          // Create a proper likes array if it doesn't exist
+          const currentLikes = comment.likes || [];
+          const currentUserId = localStorage.getItem('currentUserId') || 'user-1';
+          
+          // Check if user has liked the comment
+          const userLikeIndex = currentLikes.findIndex(like => like.userId === currentUserId);
+          let updatedLikes = [...currentLikes];
+          let isNowLiked = comment.isLiked || false;
+          
+          if (userLikeIndex >= 0) {
+            // User already liked it, remove the like
+            updatedLikes.splice(userLikeIndex, 1);
+            isNowLiked = false;
+          } else {
+            // User hasn't liked it yet, add the like
+            updatedLikes.push({ userId: currentUserId });
+            isNowLiked = true;
+          }
+          
           return {
             ...comment,
-            likes: comment.isLiked ? currentLikes - 1 : currentLikes + 1,
-            isLiked: !comment.isLiked
+            likes: updatedLikes,
+            isLiked: isNowLiked
           };
         }
         return comment;
@@ -136,15 +154,28 @@ export const usePostDialog = (post: ExtendedPost | null) => {
     }
   };
   
-  // Handle post edit
-  const handleSaveEdit = (updatedPost: Partial<ExtendedPost>) => {
-    if (!post) return;
+  // Handle post edit - Update to return a Promise<boolean>
+  const handleSaveEdit = async (updatedPost: Partial<ExtendedPost>): Promise<boolean> => {
+    if (!post) return false;
     
-    // In a real app, this would be an API call
-    toast({
-      title: "Post updated",
-      description: "Your changes have been saved."
-    });
+    try {
+      // In a real app, this would be an API call
+      toast({
+        title: "Post updated",
+        description: "Your changes have been saved."
+      });
+      
+      return true;
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update post. Please try again."
+      });
+      
+      return false;
+    }
   };
   
   // Handle finding similar posts
@@ -159,8 +190,8 @@ export const usePostDialog = (post: ExtendedPost | null) => {
   };
   
   // Handle post deletion
-  const handleDeletePost = async () => {
-    if (!post || !isAuthor) return;
+  const handleDeletePost = async (): Promise<boolean> => {
+    if (!post || !isAuthor) return false;
     
     try {
       // In a real app, this would be an API call
