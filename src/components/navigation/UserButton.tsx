@@ -13,24 +13,33 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useClerkSync } from "@/hooks/useClerkSync";
 import { Link } from "react-router-dom";
+import { getUserStatus, setUserStatus } from "@/utils/storage/localStorageUtils";
 
 export const UserButton = () => {
   const { user } = useUser();
   const { signOut } = useClerk();
-  const [userStatus, setUserStatus] = useState<"online" | "offline" | "away" | "busy">("online");
+  const [userStatus, setUserStatusState] = useState<"online" | "offline" | "away" | "busy">("online");
   const { updateClerkProfile } = useClerkSync();
 
   useEffect(() => {
-    // Get status from Clerk metadata or set default
-    const status = user?.publicMetadata?.status as "online" | "offline" | "away" | "busy" || "online";
-    setUserStatus(status);
-
+    if (!user) return;
+    
+    // Get status from local storage first
+    const localStatus = getUserStatus();
+    setUserStatusState(localStatus);
+    
+    // Sync with Clerk metadata if different
+    if (user.publicMetadata?.status && 
+        user.publicMetadata?.status !== localStatus) {
+      setUserStatus(user.publicMetadata?.status as "online" | "offline" | "away" | "busy");
+    }
+    
     // Update status to online when component mounts
-    if (user && (!user.publicMetadata?.status || user.publicMetadata?.status !== "online")) {
+    if (!user.publicMetadata?.status || user.publicMetadata?.status !== localStatus) {
       updateClerkProfile({
         publicMetadata: {
           ...user.publicMetadata,
-          status: "online"
+          status: localStatus
         }
       });
     }
@@ -38,12 +47,18 @@ export const UserButton = () => {
     // Set status to offline when window is closed or navigated away
     const handleBeforeUnload = () => {
       if (user) {
-        updateClerkProfile({
-          publicMetadata: {
-            ...user.publicMetadata,
-            status: "offline"
-          }
-        });
+        setUserStatus("offline");
+        // Synchronously update clerk without waiting for promise
+        try {
+          updateClerkProfile({
+            publicMetadata: {
+              ...user.publicMetadata,
+              status: "offline"
+            }
+          });
+        } catch (error) {
+          console.error("Failed to update status on unload", error);
+        }
       }
     };
 
@@ -54,14 +69,22 @@ export const UserButton = () => {
   }, [user, updateClerkProfile]);
 
   const handleChangeStatus = async (newStatus: "online" | "offline" | "away" | "busy") => {
+    setUserStatusState(newStatus);
+    
+    // Update both local storage and clerk
     setUserStatus(newStatus);
+    
     if (user) {
-      await updateClerkProfile({
-        publicMetadata: {
-          ...user.publicMetadata,
-          status: newStatus
-        }
-      });
+      try {
+        await updateClerkProfile({
+          publicMetadata: {
+            ...user.publicMetadata,
+            status: newStatus
+          }
+        });
+      } catch (error) {
+        console.error("Failed to update status", error);
+      }
     }
   };
 
@@ -86,7 +109,7 @@ export const UserButton = () => {
             />
           </div>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        <DropdownMenuContent align="end" className="bg-white">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuItem asChild>
             <Link to="/profile" className="flex items-center cursor-pointer">

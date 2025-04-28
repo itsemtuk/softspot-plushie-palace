@@ -15,7 +15,7 @@ import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 
 const Profile = () => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -24,29 +24,54 @@ const Profile = () => {
   // Use the post dialog properly 
   const { openPostDialog } = usePostDialog();
 
+  // Only fetch posts when user is loaded
   useEffect(() => {
+    let isMounted = true;
+    
     const fetchUserPosts = async () => {
+      if (!user || !isLoaded) return;
+      
       setIsLoading(true);
       try {
-        if (user) {
-          const posts = await getAllUserPosts(user.id);
+        const posts = await getAllUserPosts(user.id);
+        if (isMounted) {
           setUserPosts(posts);
         }
       } catch (error) {
         console.error("Error fetching user posts:", error);
       } finally {
-        setIsLoading(false);
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
     };
 
-    fetchUserPosts();
-  }, [user]);
+    if (isLoaded && user) {
+      fetchUserPosts();
+    } else if (isLoaded && !user) {
+      // If user is not authenticated, redirect to sign-in
+      setIsLoading(false);
+    }
+    
+    return () => {
+      isMounted = false;
+    };
+  }, [user, isLoaded]);
 
   const handlePostClick = (post: ExtendedPost) => {
-    // Call the imported openPostDialog function
     openPostDialog(post);
   };
 
+  // Show loading state while checking authentication
+  if (!isLoaded) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  // Show loading state if we don't have a user yet
   if (!user) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -58,7 +83,7 @@ const Profile = () => {
   // Extract profile data from user metadata for consistency
   const profileData = {
     bio: user.unsafeMetadata?.bio as string,
-    interests: user.unsafeMetadata?.interests as string[],
+    interests: user.unsafeMetadata?.plushieInterests as string[] || [],
     isPrivate: user.unsafeMetadata?.isPrivate as boolean,
   };
 
