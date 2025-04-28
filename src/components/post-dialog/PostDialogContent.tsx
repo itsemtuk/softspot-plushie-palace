@@ -74,7 +74,7 @@ export function PostDialogContent({
         onCommentLikeToggle={onCommentLikeToggle}
         onCommentSubmit={onCommentSubmit}
         onFindSimilar={onFindSimilar}
-        onClose={null}  // Remove the close button in PostContent
+        onClose={isMobile ? null : onClose}  // Only show close button on desktop
         onSaveEdit={onSaveEdit}
         onDeletePost={onDeletePost}
       />

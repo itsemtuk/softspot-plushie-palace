@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Form } from "@/components/ui/form";
@@ -31,46 +30,78 @@ interface SellItemFormData {
 const SellItemPage = () => {
   const navigate = useNavigate();
   const [imageUrl, setImageUrl] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<SellItemFormData>();
 
   const onSubmit = (data: SellItemFormData) => {
-    // Add the image URL to the form data
-    const listingData = { ...data, image: imageUrl };
+    // Set submission state to prevent multiple clicks
+    setIsSubmitting(true);
     
-    // Log the data for debugging
-    console.log("Form submitted:", listingData);
+    // Check for required image
+    if (!imageUrl) {
+      toast({
+        title: "Image required",
+        description: "Please upload an image of your plushie.",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+      return;
+    }
     
-    // Store the listing in localStorage
-    const existingListings = localStorage.getItem('marketplaceListings');
-    const listings = existingListings ? JSON.parse(existingListings) : [];
-    
-    const newListing = {
-      ...listingData,
-      id: `listing-${Date.now()}`,
-      username: "Me", // In a real app, this would come from the authenticated user
-      likes: 0,
-      comments: 0,
-      timestamp: new Date().toISOString(),
-      forSale: true
-    };
-    
-    listings.unshift(newListing);
-    localStorage.setItem('marketplaceListings', JSON.stringify(listings));
-    
-    // Show success message
-    toast({
-      title: "Listing created!",
-      description: "Your item has been listed for sale.",
-    });
-    
-    // Redirect to marketplace
-    navigate('/marketplace');
+    try {
+      // Add the image URL to the form data
+      const listingData = { ...data, image: imageUrl };
+      
+      // Log the data for debugging
+      console.log("Form submitted:", listingData);
+      
+      // Store the listing in localStorage
+      const existingListings = localStorage.getItem('marketplaceListings');
+      const listings = existingListings ? JSON.parse(existingListings) : [];
+      
+      const newListing = {
+        ...listingData,
+        id: `listing-${Date.now()}`,
+        username: "Me", // In a real app, this would come from the authenticated user
+        likes: 0,
+        comments: 0,
+        timestamp: new Date().toISOString(),
+        forSale: true,
+        tags: []  // Add empty tags array to match MarketplacePlushie type
+      };
+      
+      listings.unshift(newListing);
+      localStorage.setItem('marketplaceListings', JSON.stringify(listings));
+      
+      // Show success message
+      toast({
+        title: "Listing created!",
+        description: "Your item has been listed for sale.",
+      });
+      
+      // Redirect to marketplace
+      navigate('/marketplace');
+    } catch (error) {
+      console.error("Error creating listing:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem creating your listing. Please try again.",
+        variant: "destructive"
+      });
+      setIsSubmitting(false);
+    }
   };
 
   // Handle the image upload result
   const handleImageSelect = (result: ImageUploadResult) => {
     if (result.success && result.url) {
       setImageUrl(result.url);
+    } else {
+      toast({
+        title: "Upload failed",
+        description: result.error || "Failed to upload image",
+        variant: "destructive"
+      });
     }
   };
   
@@ -264,8 +295,12 @@ const SellItemPage = () => {
                 <Button type="button" variant="outline" onClick={() => navigate('/marketplace')}>
                   Cancel
                 </Button>
-                <Button type="submit" className="bg-softspot-500 hover:bg-softspot-600">
-                  List Item for Sale
+                <Button 
+                  type="submit" 
+                  className="bg-softspot-500 hover:bg-softspot-600"
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Listing..." : "List Item for Sale"}
                 </Button>
               </div>
             </form>

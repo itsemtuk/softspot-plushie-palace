@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
-import PostCreationFlow from "@/components/post/PostCreationFlow";
 
 export function useCreatePost() {
   const [isSheetOpen, setIsSheetOpen] = useState(false);
