@@ -1,4 +1,3 @@
-
 export interface WishlistItem {
   id: string;
   name: string;
@@ -168,6 +167,8 @@ export interface MessageThread {
 export interface UpdatedMessageThread extends Omit<MessageThread, 'participants'> {
   participants: UserProfile[];
   updatedAt: string; // Explicitly added for UpdatedMessageThread
+  participantIds: string[]; // Required by DirectMessaging component
+  createdAt: string; // Required by DirectMessaging component
 }
 
 // Privacy settings

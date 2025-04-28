@@ -1,158 +1,94 @@
-
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
-import { ExtendedPost } from "@/types/marketplace";
-import { toast } from "@/components/ui/use-toast";
-import { getUserPosts } from "@/utils/postStorage";
 import { useUser } from "@clerk/clerk-react";
-import { Spinner } from "@/components/ui/spinner";
-import { ProfileStats } from "@/components/profile/ProfileStats";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent } from "@/components/ui/card";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Settings } from 'lucide-react';
+import { Navbar } from "@/components/Navbar";
+import { PostCard } from "@/components/post/PostCard";
+import { getAllUserPosts } from "@/utils/postStorage";
+import { ExtendedPost } from "@/types/marketplace";
 import NotificationsTab from "@/components/profile/NotificationsTab";
-import { WishlistManager } from "@/components/profile/WishlistManager";
-import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
-import UserProfileHeader from "@/components/UserProfileHeader";
-import { PostDialog } from "@/components/PostDialog";
-import { MobileNav } from "@/components/navigation/MobileNav";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 const Profile = () => {
-  const { user, isLoaded } = useUser();
-  const [activeTab, setActiveTab] = useState("posts");
-  const [posts, setPosts] = useState<ExtendedPost[]>([]);
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedPost, setSelectedPost] = useState<ExtendedPost | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const isMobile = useIsMobile();
-
-  const loadUserPosts = async () => {
-    if (!user) return;
-    
-    try {
-      setIsLoading(true);
-      const fetchedPosts = await getUserPosts(user.id);
-      console.log("Fetched user posts:", fetchedPosts);
-      setPosts(Array.isArray(fetchedPosts) ? fetchedPosts : []);
-    } catch (error) {
-      console.error('Error fetching user posts:', error);
-      toast({
-        variant: "destructive",
-        title: "Error loading posts",
-        description: "Failed to load your posts. Please try again later."
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   useEffect(() => {
-    if (user) {
-      loadUserPosts();
-    } else if (isLoaded && !user) {
-      setIsLoading(false);
-    }
-  }, [user, isLoaded]);
+    const fetchUserPosts = async () => {
+      setIsLoading(true);
+      try {
+        if (user) {
+          const posts = await getAllUserPosts(user.id);
+          setUserPosts(posts);
+        }
+      } catch (error) {
+        console.error("Error fetching user posts:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-  const handlePostClick = (post: ExtendedPost) => {
-    setSelectedPost(post);
-    setDialogOpen(true);
-  };
+    fetchUserPosts();
+  }, [user]);
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    // Reload posts to ensure any changes are reflected
-    loadUserPosts();
-  };
-
-  if (!isLoaded) {
-    return (
-      <div className="flex justify-center items-center min-h-screen">
-        <Spinner size="lg" />
-      </div>
-    );
+  if (!user) {
+    return <div>Loading...</div>;
   }
-
-  // Get user metadata
-  const profileData = user ? {
-    bio: user.unsafeMetadata?.bio as string,
-    interests: user.unsafeMetadata?.plushieInterests as string[],
-    isPrivate: user.unsafeMetadata?.isPrivate as boolean,
-  } : undefined;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {isMobile ? <MobileNav /> : <Navbar />}
-      
-      <UserProfileHeader
-        username={user?.username || undefined}
-        isOwnProfile={!!user}
-        profileData={profileData}
-      />
-      
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Remove the duplicated ProfileStats component since it's already in UserProfileHeader */}
-        
-        <div className="mt-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8 overflow-x-auto" aria-label="Tabs">
-              <button
-                onClick={() => setActiveTab("posts")}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "posts"
-                    ? "border-softspot-500 text-softspot-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                Posts
-              </button>
-              <button
-                onClick={() => setActiveTab("notifications")}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "notifications"
-                    ? "border-softspot-500 text-softspot-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                Notifications
-              </button>
-              <button
-                onClick={() => setActiveTab("wishlist")}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === "wishlist"
-                    ? "border-softspot-500 text-softspot-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                }`}
-              >
-                Wishlist
-              </button>
-            </nav>
-          </div>
-          
-          <div className="mt-6">
-            {activeTab === "posts" && (
-              isLoading ? (
-                <div className="py-12 flex justify-center">
-                  <Spinner size="lg" />
-                </div>
-              ) : (
-                <ProfilePostsGrid 
-                  posts={posts} 
-                  onPostClick={handlePostClick}
-                  isOwnProfile={true}
-                />
-              )
-            )}
-            
-            {activeTab === "notifications" && <NotificationsTab />}
-            {activeTab === "wishlist" && <WishlistManager />}
-          </div>
+      <Navbar />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-3xl font-bold">Your Profile</h1>
+          <Button onClick={() => navigate('/settings')}><Settings className="mr-2 h-4 w-4" /> Settings</Button>
         </div>
-      </div>
 
-      <PostDialog
-        isOpen={dialogOpen}
-        onClose={handleDialogClose}
-        post={selectedPost}
-      />
+        <Card className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <CardContent className="p-6">
+            <div className="flex items-center space-x-6">
+              <Avatar className="h-20 w-20">
+                <AvatarImage src={user.imageUrl} alt={user.username || "Avatar"} />
+                <AvatarFallback>{user.firstName?.[0]}{user.lastName?.[0]}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h2 className="text-2xl font-semibold">{user.firstName} {user.lastName}</h2>
+                <p className="text-gray-500">@{user.username}</p>
+                <p className="text-gray-600 mt-2">{user.emailAddresses[0].emailAddress}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Tabs defaultValue="posts" className="mt-8">
+          <TabsList>
+            <TabsTrigger value="posts">Posts</TabsTrigger>
+            <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          </TabsList>
+          <TabsContent value="posts" className="mt-4">
+            {isLoading ? (
+              <div className="text-center py-12">Loading posts...</div>
+            ) : userPosts.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {userPosts.map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">No posts yet.</div>
+            )}
+          </TabsContent>
+          <TabsContent value="notifications" className="mt-4">
+            <NotificationsTab />
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 };

@@ -1,260 +1,247 @@
-
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Tab } from "@headlessui/react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Bell, AlertTriangle, Heart, MessageSquare, ShoppingBag, CheckCircle2 } from "lucide-react";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Notification, useNotifications } from "@/contexts/NotificationsContext";
-import { formatTimeAgo } from "@/lib/utils";
-import { Toggle } from "@/components/ui/toggle";
-import { EmptyContentSection } from "@/components/profile/EmptyContentSection";
+import { Bell, Check, Trash2, ShoppingBag, Heart, MessageSquare } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUser } from "@clerk/clerk-react";
 
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
-
-interface NotificationItemProps {
-  notification: Notification;
-  onMarkRead: (id: string) => void;
-  onDelete: (id: string) => void;
-}
+type Notification = {
+  id: string;
+  type: "message" | "like" | "follow" | "comment" | "order" | "system";
+  content: string;
+  timestamp: string;
+  read: boolean;
+  userId?: string;
+  username?: string;
+  userAvatar?: string;
+  link?: string;
+};
 
 export function NotificationsTab() {
-  const { notifications, unreadCount, markAsRead, markAllAsRead, deleteNotification } = useNotifications();
-  const [selectedTab, setSelectedTab] = useState<string>("all");
-  const [filtered, setFiltered] = useState<Notification[]>([]);
-  
-  // Filter notifications based on selected tab
-  useEffect(() => {
-    if (selectedTab === "all") {
-      setFiltered(notifications);
-    } else if (selectedTab === "unread") {
-      setFiltered(notifications.filter(notification => !notification.read));
-    } else if (selectedTab === "important") {
-      setFiltered(notifications.filter(notification => notification.type === "warning" || notification.type === "error"));
-    }
-  }, [selectedTab, notifications]);
-
-  const handleClearAll = () => {
-    markAllAsRead();
-  };
-  
-  // Group notifications by date (today, yesterday, this week, earlier)
-  const groupedNotifications = filtered.reduce(
-    (groups: Record<string, Notification[]>, notification) => {
-      const date = new Date(notification.timestamp);
-      const now = new Date();
-      const yesterday = new Date(now);
-      yesterday.setDate(now.getDate() - 1);
-      const lastWeek = new Date(now);
-      lastWeek.setDate(now.getDate() - 7);
-      
-      let groupName;
-      if (date.toDateString() === now.toDateString()) {
-        groupName = "Today";
-      } else if (date.toDateString() === yesterday.toDateString()) {
-        groupName = "Yesterday";
-      } else if (date >= lastWeek) {
-        groupName = "This Week";
-      } else {
-        groupName = "Earlier";
-      }
-      
-      if (!groups[groupName]) {
-        groups[groupName] = [];
-      }
-      
-      groups[groupName].push(notification);
-      return groups;
+  const { user } = useUser();
+  const [notifications, setNotifications] = useState<Notification[]>([
+    {
+      id: "1",
+      type: "message",
+      content: "New message from PlushieLover123",
+      timestamp: "2024-03-15T10:30:00Z",
+      read: false,
+      userId: "user-2",
+      username: "PlushieLover123",
+      userAvatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2",
+      link: "/messages/user-2"
     },
-    {}
-  );
+    {
+      id: "2",
+      type: "like",
+      content: "Your post got a like from CuddleBear456",
+      timestamp: "2024-03-14T18:45:00Z",
+      read: true,
+      userId: "user-3",
+      username: "CuddleBear456",
+      userAvatar: "https://images.unsplash.com/photo-1552058544-f2b08422138a",
+      link: "/post/123"
+    },
+    {
+      id: "3",
+      type: "follow",
+      content: "SoftSpotFan followed you",
+      timestamp: "2024-03-14T09:12:00Z",
+      read: true,
+      userId: "user-4",
+      username: "SoftSpotFan",
+      userAvatar: "https://images.unsplash.com/photo-1500648767791-00d5a4ee9ba7",
+      link: "/profile/user-4"
+    },
+    {
+      id: "4",
+      type: "comment",
+      content: "New comment on your listing",
+      timestamp: "2024-03-13T22:00:00Z",
+      read: false,
+      userId: "user-5",
+      username: "FuzzyFriend",
+      userAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80",
+      link: "/marketplace/listing-1"
+    },
+    {
+      id: "5",
+      type: "order",
+      content: "Your plushie has been purchased!",
+      timestamp: "2024-03-12T14:55:00Z",
+      read: true,
+      link: "/marketplace/order-1"
+    },
+    {
+      id: "6",
+      type: "system",
+      content: "Welcome to SoftSpot! Check out the latest community guidelines.",
+      timestamp: "2024-03-10T08:00:00Z",
+      read: true,
+      link: "/guidelines"
+    },
+  ]);
 
-  // Provide an icon based on notification type
-  const getNotificationIcon = (type?: string) => {
-    switch (type) {
-      case "warning":
-        return <AlertTriangle className="h-5 w-5 text-amber-500" />;
-      case "error":
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
-      case "info":
-        return <Bell className="h-5 w-5 text-blue-500" />;
-      case "success":
-        return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-      default:
-        return <Bell className="h-5 w-5 text-gray-400" />;
-    }
+  const markAsRead = (id: string) => {
+    setNotifications(
+      notifications.map((notification) =>
+        notification.id === id ? { ...notification, read: true } : notification
+      )
+    );
   };
-  
+
+  const deleteNotification = (id: string) => {
+    setNotifications(notifications.filter((notification) => notification.id !== id));
+  };
+
+  const unreadNotifications = notifications.filter((notification) => !notification.read);
+
   return (
-    <div className="my-4">
-      <div className="flex justify-between items-center border-b pb-4 mb-4">
-        <h2 className="text-xl font-bold flex items-center gap-2">
-          <Bell className="h-5 w-5" /> 
-          Notifications
-          {unreadCount > 0 && (
-            <Badge variant="secondary" className="bg-softspot-100 text-softspot-800">
-              {unreadCount} new
-            </Badge>
-          )}
-        </h2>
-        
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              disabled={!unreadCount}
-            >
-              Mark all as read
-            </Button>
-          </AlertDialogTrigger>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Mark all as read?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will mark all unread notifications as read.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleClearAll}>Continue</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl font-semibold tracking-tight">Notifications</h2>
+        <Button variant="ghost" size="sm" onClick={() => setNotifications([])}>
+          <Trash2 className="mr-2 h-4 w-4" />
+          Clear All
+        </Button>
       </div>
 
-      <Tab.Group onChange={(index) => setSelectedTab(["all", "unread", "important"][index])}>
-        <Tab.List className="flex space-x-1 border-b mb-4">
+      <Tab.Group>
+        <Tab.List className="flex space-x-4 rounded-md bg-secondary p-1">
           <Tab
             className={({ selected }) =>
-              classNames(
-                "py-2 px-4 text-sm font-medium border-b-2",
-                selected
-                  ? "text-softspot-600 border-softspot-500"
-                  : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-              )
+              `inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground ${
+                selected ? "bg-muted text-foreground" : "text-muted-foreground"
+              }`
             }
           >
             All
           </Tab>
           <Tab
             className={({ selected }) =>
-              classNames(
-                "py-2 px-4 text-sm font-medium border-b-2",
-                selected
-                  ? "text-softspot-600 border-softspot-500"
-                  : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-              )
+              `inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-2 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground ${
+                selected ? "bg-muted text-foreground" : "text-muted-foreground"
+              }`
             }
           >
             Unread
-            {unreadCount > 0 && (
-              <Badge variant="secondary" className="ml-2 bg-softspot-100 text-softspot-800">
-                {unreadCount}
+            {unreadNotifications.length > 0 && (
+              <Badge variant="secondary" className="ml-2">
+                {unreadNotifications.length}
               </Badge>
             )}
           </Tab>
-          <Tab
-            className={({ selected }) =>
-              classNames(
-                "py-2 px-4 text-sm font-medium border-b-2",
-                selected
-                  ? "text-softspot-600 border-softspot-500"
-                  : "text-gray-500 border-transparent hover:text-gray-700 hover:border-gray-300"
-              )
-            }
-          >
-            Important
-          </Tab>
         </Tab.List>
-        
-        <Tab.Panels>
+        <Tab.Panels className="mt-2">
           <Tab.Panel>
-            {filtered.length === 0 ? (
-              <EmptyContentSection
-                title="No notifications"
-                description="You don't have any notifications yet."
-                buttonText="Go to Feed"
-                navigateTo="/feed"
-              />
+            {notifications.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No notifications yet.</p>
             ) : (
-              Object.entries(groupedNotifications).map(([date, notifications]) => (
-                <div key={date} className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">{date}</h3>
-                  <div className="space-y-3">
-                    {notifications.map((notification) => (
-                      <NotificationItem
-                        key={notification.id}
-                        notification={notification}
-                        onMarkRead={markAsRead}
-                        onDelete={deleteNotification}
-                      />
-                    ))}
+              <div className="divide-y divide-border rounded-md border">
+                {notifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className="flex items-center space-x-4 p-4"
+                  >
+                    <Avatar>
+                      <AvatarImage src={notification.userAvatar} />
+                      <AvatarFallback>{notification.username?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="text-sm">
+                        {notification.content}
+                        <a
+                          href={notification.link}
+                          className="ml-1 font-medium underline underline-offset-4 hover:text-primary"
+                        >
+                          Learn more
+                        </a>
+                      </p>
+                      <time
+                        dateTime={notification.timestamp}
+                        className="block text-xs text-muted-foreground"
+                      >
+                        {new Date(notification.timestamp).toLocaleDateString()}
+                      </time>
+                    </div>
+                    <div className="flex flex-shrink-0 space-x-2">
+                      {!notification.read && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => markAsRead(notification.id)}
+                        >
+                          <Check className="mr-2 h-4 w-4" />
+                          Mark as Read
+                        </Button>
+                      )}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteNotification(notification.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))
+                ))}
+              </div>
             )}
           </Tab.Panel>
-          
           <Tab.Panel>
-            {filtered.length === 0 ? (
-              <div className="text-center py-12">
-                <CheckCircle2 className="mx-auto h-12 w-12 text-gray-300" />
-                <h3 className="mt-2 text-lg font-medium text-gray-900">All caught up!</h3>
-                <p className="mt-1 text-sm text-gray-500">You have no unread notifications.</p>
-              </div>
+            {unreadNotifications.length === 0 ? (
+              <p className="text-sm text-muted-foreground">No unread notifications.</p>
             ) : (
-              Object.entries(groupedNotifications).map(([date, notifications]) => (
-                <div key={date} className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">{date}</h3>
-                  <div className="space-y-3">
-                    {notifications.map((notification) => (
-                      <NotificationItem
-                        key={notification.id}
-                        notification={notification}
-                        onMarkRead={markAsRead}
-                        onDelete={deleteNotification}
-                      />
-                    ))}
+              <div className="divide-y divide-border rounded-md border">
+                {unreadNotifications.map((notification) => (
+                  <div
+                    key={notification.id}
+                    className="flex items-center space-x-4 p-4"
+                  >
+                    <Avatar>
+                      <AvatarImage src={notification.userAvatar} />
+                      <AvatarFallback>{notification.username?.charAt(0)}</AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <p className="text-sm">
+                        {notification.content}
+                        <a
+                          href={notification.link}
+                          className="ml-1 font-medium underline underline-offset-4 hover:text-primary"
+                        >
+                          Learn more
+                        </a>
+                      </p>
+                      <time
+                        dateTime={notification.timestamp}
+                        className="block text-xs text-muted-foreground"
+                      >
+                        {new Date(notification.timestamp).toLocaleDateString()}
+                      </time>
+                    </div>
+                    <div className="flex flex-shrink-0 space-x-2">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => markAsRead(notification.id)}
+                      >
+                        <Check className="mr-2 h-4 w-4" />
+                        Mark as Read
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => deleteNotification(notification.id)}
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" />
+                        Delete
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              ))
-            )}
-          </Tab.Panel>
-          
-          <Tab.Panel>
-            {filtered.length === 0 ? (
-              <div className="text-center py-12">
-                <AlertTriangle className="mx-auto h-12 w-12 text-gray-300" />
-                <h3 className="mt-2 text-lg font-medium text-gray-900">No important notifications</h3>
-                <p className="mt-1 text-sm text-gray-500">You don't have any important notifications.</p>
+                ))}
               </div>
-            ) : (
-              Object.entries(groupedNotifications).map(([date, notifications]) => (
-                <div key={date} className="mb-6">
-                  <h3 className="text-sm font-medium text-gray-500 mb-2">{date}</h3>
-                  <div className="space-y-3">
-                    {notifications.map((notification) => (
-                      <NotificationItem
-                        key={notification.id}
-                        notification={notification}
-                        onMarkRead={markAsRead}
-                        onDelete={deleteNotification}
-                      />
-                    ))}
-                  </div>
-                </div>
-              ))
             )}
           </Tab.Panel>
         </Tab.Panels>
@@ -263,59 +250,4 @@ export function NotificationsTab() {
   );
 }
 
-// Notification item component
-function NotificationItem({ notification, onMarkRead, onDelete }: NotificationItemProps) {
-  // Get icon based on notification type or content
-  let icon;
-  if (notification.message.includes("liked")) {
-    icon = <Heart className="h-5 w-5 text-rose-500" />;
-  } else if (notification.message.includes("commented") || notification.message.includes("message")) {
-    icon = <MessageSquare className="h-5 w-5 text-blue-500" />;
-  } else if (notification.message.includes("purchased") || notification.message.includes("order")) {
-    icon = <ShoppingBag className="h-5 w-5 text-green-500" />;
-  } else if (notification.type === "warning" || notification.type === "error") {
-    icon = <AlertTriangle className="h-5 w-5 text-amber-500" />;
-  } else {
-    icon = <Bell className="h-5 w-5 text-gray-500" />;
-  }
-
-  return (
-    <Card className={notification.read ? "bg-white" : "bg-softspot-50"}>
-      <CardContent className="p-4 flex items-start gap-3">
-        <div className="p-2 bg-white rounded-full border">
-          {icon}
-        </div>
-        
-        <div className="flex-grow">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="font-medium text-sm">{notification.message}</p>
-              <p className="text-xs text-gray-500">{formatTimeAgo(notification.timestamp)}</p>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {!notification.read && (
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="text-xs px-2 h-7"
-                  onClick={() => onMarkRead(notification.id)}
-                >
-                  Mark read
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-xs px-2 h-7 text-red-500 hover:text-red-600 hover:bg-red-50"
-                onClick={() => onDelete(notification.id)}
-              >
-                Delete
-              </Button>
-            </div>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+export default NotificationsTab;
