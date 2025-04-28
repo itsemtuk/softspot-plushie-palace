@@ -15,7 +15,7 @@ export const FeedGrid = ({ posts, onPostClick }: FeedGridProps) => {
       {posts.map((post) => (
         <div 
           key={post.id}
-          className="relative group"
+          className="relative group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200"
         >
           <div 
             className="cursor-pointer"
@@ -44,7 +44,8 @@ export const FeedGrid = ({ posts, onPostClick }: FeedGridProps) => {
             </div>
           </div>
 
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          {/* Share button is now always visible with a semi-transparent background */}
+          <div className="absolute top-2 right-2 bg-white bg-opacity-75 rounded-full p-1 shadow-sm">
             <ShareMenu postId={post.id} title={post.title || ''} />
           </div>
         </div>
