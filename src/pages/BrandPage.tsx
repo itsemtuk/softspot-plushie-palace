@@ -12,8 +12,19 @@ import { CommunityPosts } from "@/components/brand/CommunityPosts";
 import { MarketplacePlushie, PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, MarketplaceFilters, Post } from "@/types/marketplace";
 import { feedPosts, marketplacePlushies } from "@/data/plushies";
 
+// Define Brand interface
+interface Brand {
+  id: string;
+  name: string;
+  description: string;
+  logo: string;
+  website: string;
+  instagram: string;
+  featured: boolean;
+}
+
 // Mock brand data
-const mockBrands = [
+const mockBrands: Brand[] = [
   {
     id: "jellycat",
     name: "Jellycat",
@@ -267,7 +278,7 @@ const mockBrandPlushies: MarketplacePlushie[] = [
 
 const BrandPage = () => {
   const { brandId } = useParams<{ brandId: string }>();
-  const [brand, setBrand] = useState<any>(null);
+  const [brand, setBrand] = useState<Brand | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [priceRange, setPriceRange] = useState([0, 150]);
   const [availableOnly, setAvailableOnly] = useState(false);
@@ -279,7 +290,7 @@ const BrandPage = () => {
 
   useEffect(() => {
     const foundBrand = mockBrands.find((b) => b.id === brandId);
-    setBrand(foundBrand);
+    setBrand(foundBrand || null);
   }, [brandId]);
 
   const filteredPlushies = mockBrandPlushies.filter((plushie) => {
@@ -325,7 +336,10 @@ const BrandPage = () => {
     setIsDetailsOpen(true);
   };
 
-  const brandPosts = (feedPosts as Post[]).filter(post => 
+  // Type assertion to ensure feedPosts is treated as Post[]
+  const typedFeedPosts = feedPosts as Post[];
+
+  const brandPosts = typedFeedPosts.filter(post => 
     post.tags?.includes(brandId || '')
   );
 
