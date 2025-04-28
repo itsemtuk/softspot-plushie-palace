@@ -1,7 +1,7 @@
 
 import { ExtendedPost } from "@/types/marketplace";
 import { supabase, isSupabaseConfigured } from '../supabase/client';
-import { getLocalPosts, savePosts } from '../storage/localStorageUtils';
+import { getLocalPosts, savePosts, getCurrentUserId } from '../storage/localStorageUtils';
 import { uploadImage, deleteImage } from '../storage/imageStorage';
 
 const POSTS_TABLE = 'posts';
@@ -14,10 +14,19 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
     // Fallback to local storage if Supabase is not configured
     try {
       const existingPosts = getLocalPosts();
-      const updatedPosts = existingPosts.map(p => p.id === post.id ? post : p);
+      
+      // Ensure the post has a userId
+      const postWithUser = {
+        ...post,
+        userId: post.userId || getCurrentUserId()
+      };
+      
+      // Update existing post or add as new post
+      const updatedPosts = existingPosts.map(p => p.id === post.id ? postWithUser : p);
       if (!updatedPosts.some(p => p.id === post.id)) {
-        updatedPosts.unshift(post);
+        updatedPosts.unshift(postWithUser);
       }
+      
       savePosts(updatedPosts);
       return { success: true };
     } catch (error) {
@@ -31,7 +40,7 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
       .from(POSTS_TABLE)
       .upsert({
         id: post.id,
-        userId: post.userId,
+        userId: post.userId || getCurrentUserId(),
         image: post.image,
         title: post.title,
         username: post.username,
@@ -66,6 +75,12 @@ export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, e
       post = { ...post, image: imageUrl };
     }
     
+    // Make sure timestamp is set
+    if (!post.timestamp) {
+      post = { ...post, timestamp: new Date().toISOString() };
+    }
+    
+    // Save the post
     return await savePost(post);
   } catch (error) {
     console.error('Error adding post:', error);
@@ -134,5 +149,28 @@ export const deletePost = async (postId: string): Promise<{ success: boolean, er
   } catch (error) {
     console.error('Error deleting post:', error);
     return { success: false, error };
+  }
+};
+
+/**
+ * Gets all posts, including user-specific posts
+ */
+export const getAllUserPosts = async (userId: string = getCurrentUserId()): Promise<ExtendedPost[]> => {
+  if (!isSupabaseConfigured()) {
+    return getLocalPosts().filter(post => post.userId === userId);
+  }
+  
+  try {
+    const { data, error } = await supabase!
+      .from(POSTS_TABLE)
+      .select('*')
+      .eq('userId', userId)
+      .order('timestamp', { ascending: false });
+      
+    if (error) throw error;
+    return data as ExtendedPost[];
+  } catch (error) {
+    console.error('Error retrieving user posts:', error);
+    return getLocalPosts().filter(post => post.userId === userId);
   }
 };

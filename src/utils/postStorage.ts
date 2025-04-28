@@ -10,7 +10,8 @@ export {
   savePost,
   addPost,
   updatePost,
-  deletePost
+  deletePost,
+  getAllUserPosts
 } from './posts/postManagement';
 
 export {
@@ -27,5 +28,9 @@ export {
 
 export {
   savePosts,
-  getLocalPosts
+  getLocalPosts,
+  saveMarketplaceListings,
+  getMarketplaceListings,
+  setCurrentUserId,
+  getCurrentUserId
 } from './storage/localStorageUtils';

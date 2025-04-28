@@ -5,23 +5,67 @@ import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
-import { PostCreationData } from "@/types/marketplace";
+import { PostCreationData, ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
+import { useUser } from "@clerk/clerk-react";
+import { addPost } from "@/utils/posts/postManagement";
 
 interface CreateButtonProps {
   onCreatePost?: () => void;
 }
 
 export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButtonProps = {}) => {
-  const { isSheetOpen, isPostCreationOpen, onOpenChange, onCreatePost, onClosePostCreation, setIsPostCreationOpen } = useCreatePost();
+  const { isSheetOpen, isPostCreationOpen, postToEdit, onOpenChange, onCreatePost, onClosePostCreation, setIsPostCreationOpen } = useCreatePost();
   const navigate = useNavigate();
+  const { user } = useUser();
 
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
-    toast({
-      title: "Post created successfully!",
-      description: "Your post is now visible in your profile and feed."
-    });
-    return Promise.resolve();
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "You need to be logged in to create posts"
+      });
+      return Promise.reject("Authentication required");
+    }
+    
+    try {
+      const username = user?.username || user?.firstName || "Anonymous";
+      
+      const newPost: ExtendedPost = {
+        id: `post-${Date.now()}`,
+        userId: user?.id || 'anonymous',
+        image: postData.image,
+        title: postData.title,
+        username: username,
+        likes: 0,
+        comments: 0,
+        description: postData.description || "",
+        tags: postData.tags || [],
+        timestamp: new Date().toISOString(),
+      };
+      
+      const result = await addPost(newPost);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create post");
+      }
+      
+      toast({
+        title: "Post created successfully!",
+        description: "Your post is now visible in your profile and feed."
+      });
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error creating post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create post. Please try again."
+      });
+      return Promise.reject(error);
+    }
   };
 
   return (
@@ -47,7 +91,7 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
                 if (externalOnCreatePost) {
                   externalOnCreatePost();
                 } else {
-                  setIsPostCreationOpen(true);
+                  onCreatePost();
                 }
               }}
             >
@@ -78,6 +122,7 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
         isOpen={isPostCreationOpen}
         onClose={onClosePostCreation}
         onPostCreated={handleCreatePost}
+        postToEdit={postToEdit}
       />
     </>
   );

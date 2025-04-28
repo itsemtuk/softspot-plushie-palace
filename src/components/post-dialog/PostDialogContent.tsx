@@ -5,6 +5,8 @@ import { ExtendedPost } from "@/types/marketplace";
 import { Comment } from "./PostCommentItem";
 import { Spinner } from "@/components/ui/spinner";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 interface PostDialogContentProps {
   post: ExtendedPost | null;
@@ -59,7 +61,17 @@ export function PostDialogContent({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 h-full">
+    <div className="relative grid grid-cols-1 md:grid-cols-2 h-full">
+      {/* Close button for desktop */}
+      <Button 
+        variant="ghost" 
+        size="icon" 
+        className="absolute right-2 top-2 z-10 md:flex" 
+        onClick={onClose}
+      >
+        <X className="h-4 w-4" />
+      </Button>
+
       {/* Left side - Image */}
       <PostImage imageUrl={post.image} altText={post.title} />
       
@@ -74,7 +86,7 @@ export function PostDialogContent({
         onCommentLikeToggle={onCommentLikeToggle}
         onCommentSubmit={onCommentSubmit}
         onFindSimilar={onFindSimilar}
-        onClose={onClose}  // Always pass onClose regardless of device
+        onClose={onClose}
         onSaveEdit={onSaveEdit}
         onDeletePost={onDeletePost}
       />

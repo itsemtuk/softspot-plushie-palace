@@ -58,16 +58,22 @@ interface PostCreationFormProps {
   onSubmit: (data: PostCreationData) => void;
   imageUrl: string;
   isSubmitting?: boolean;
+  initialValues?: {
+    title?: string;
+    description?: string;
+    location?: string;
+    tags?: string;
+  };
 }
 
-export const PostCreationForm = ({ onSubmit, imageUrl, isSubmitting = false }: PostCreationFormProps) => {
+export const PostCreationForm = ({ onSubmit, imageUrl, isSubmitting = false, initialValues }: PostCreationFormProps) => {
   const form = useForm<z.infer<typeof postSchema>>({
     resolver: zodResolver(postSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      location: "",
-      tags: "",
+      title: initialValues?.title || "",
+      description: initialValues?.description || "",
+      location: initialValues?.location || "",
+      tags: initialValues?.tags || "",
     },
   });
 
@@ -172,10 +178,10 @@ export const PostCreationForm = ({ onSubmit, imageUrl, isSubmitting = false }: P
           {isSubmitting ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Creating Post...
+              {initialValues ? 'Updating Post...' : 'Creating Post...'}
             </>
           ) : (
-            'Create Post'
+            initialValues ? 'Update Post' : 'Create Post'
           )}
         </Button>
       </form>

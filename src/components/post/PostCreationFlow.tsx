@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -11,23 +11,34 @@ import { Button } from "@/components/ui/button";
 import { ImageUploader } from "@/components/post/ImageUploader";
 import { ImageEditor } from "@/components/post/ImageEditor";
 import { PostCreationForm } from "@/components/post/PostCreationForm";
-import { PostCreationData, ImageUploadResult } from '@/types/marketplace';
+import { PostCreationData, ImageUploadResult, ExtendedPost } from '@/types/marketplace';
 import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft } from 'lucide-react';
+import { updatePost } from '@/utils/posts/postManagement';
 
 interface PostCreationFlowProps {
   isOpen: boolean;
   onClose: () => void;
   onPostCreated?: (post: PostCreationData) => Promise<void>;
+  postToEdit?: ExtendedPost | null;
 }
 
 type FlowStep = 'upload' | 'edit' | 'details';
 
-const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowProps) => {
+const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCreationFlowProps) => {
   const [currentStep, setCurrentStep] = useState<FlowStep>('upload');
   const [uploadedImage, setUploadedImage] = useState<string>('');
   const [editedImage, setEditedImage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  // Initialize form with post to edit if provided
+  useEffect(() => {
+    if (postToEdit && isOpen) {
+      setUploadedImage(postToEdit.image);
+      setEditedImage(postToEdit.image);
+      setCurrentStep('details');
+    }
+  }, [postToEdit, isOpen]);
   
   const handleImageSelect = (result: ImageUploadResult) => {
     if (result.success && result.url) {
@@ -57,25 +68,45 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
     setIsSubmitting(true);
     
     try {
-      // Call the callback function and await its completion
-      if (onPostCreated) {
-        await onPostCreated(finalPost);
+      if (postToEdit) {
+        // Handle editing existing post
+        const updatedPost: ExtendedPost = {
+          ...postToEdit,
+          title: data.title,
+          description: data.description || postToEdit.description,
+          image: editedImage || uploadedImage,
+          tags: data.tags || postToEdit.tags
+        };
+        
+        const result = await updatePost(updatedPost);
+        if (!result.success) {
+          throw new Error(result.error || "Failed to update post");
+        }
+        
+        toast({
+          title: "Post updated!",
+          description: "Your post has been successfully updated."
+        });
+      } else {
+        // Handle creating new post
+        if (onPostCreated) {
+          await onPostCreated(finalPost);
+        }
+        
+        toast({
+          title: "Post created!",
+          description: "Your post has been successfully created and saved."
+        });
       }
-      
-      // Show success message
-      toast({
-        title: "Post created!",
-        description: "Your post has been successfully created and saved."
-      });
       
       // Reset state and close dialog
       resetState();
       onClose();
     } catch (error) {
-      console.error('Error creating post:', error);
+      console.error('Error processing post:', error);
       toast({
         variant: "destructive",
-        title: "Post creation failed",
+        title: postToEdit ? "Post update failed" : "Post creation failed",
         description: "There was an error saving your post. Please try again."
       });
     } finally {
@@ -94,7 +125,12 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
     if (currentStep === 'edit') {
       setCurrentStep('upload');
     } else if (currentStep === 'details') {
-      setCurrentStep('edit');
+      if (postToEdit) {
+        // When editing, going back from details should close the dialog
+        onClose();
+      } else {
+        setCurrentStep('edit');
+      }
     }
   };
   
@@ -155,7 +191,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
               disabled={isSubmitting}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to editor
+              {postToEdit ? "Cancel edit" : "Back to editor"}
             </Button>
             <div className="aspect-square w-full max-w-[300px] mx-auto mb-4">
               <img 
@@ -168,6 +204,12 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
               onSubmit={handleCreatePost} 
               imageUrl={editedImage || uploadedImage} 
               isSubmitting={isSubmitting}
+              initialValues={postToEdit ? {
+                title: postToEdit.title,
+                description: postToEdit.description,
+                location: postToEdit.location,
+                tags: postToEdit.tags?.join(', ')
+              } : undefined}
             />
           </div>
         );
@@ -179,14 +221,17 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated }: PostCreationFlowPr
       <DialogContent className={`${getDialogSize()} max-h-[90vh] overflow-y-auto`}>
         <DialogHeader>
           <DialogTitle>
-            {currentStep === 'upload' && 'Upload Image'}
-            {currentStep === 'edit' && 'Edit Image'}
-            {currentStep === 'details' && 'Create Post'}
+            {postToEdit ? 'Edit Post' : (
+              currentStep === 'upload' ? 'Upload Image' :
+              currentStep === 'edit' ? 'Edit Image' : 'Create Post'
+            )}
           </DialogTitle>
           <DialogDescription>
-            {currentStep === 'upload' && 'Upload an image to share with the community'}
-            {currentStep === 'edit' && 'Crop or adjust your image before posting'}
-            {currentStep === 'details' && 'Add details to your post'}
+            {postToEdit ? 'Update your post details' : (
+              currentStep === 'upload' ? 'Upload an image to share with the community' :
+              currentStep === 'edit' ? 'Crop or adjust your image before posting' :
+              'Add details to your post'
+            )}
           </DialogDescription>
         </DialogHeader>
         

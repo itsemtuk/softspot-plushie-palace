@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Form } from "@/components/ui/form";
@@ -11,6 +12,8 @@ import { PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, Deli
 import { ImageUploader } from "@/components/post/ImageUploader";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import { saveMarketplaceListings, getMarketplaceListings, getCurrentUserId, setCurrentUserId } from "@/utils/storage/localStorageUtils";
 
 interface SellItemFormData {
   title: string;
@@ -29,9 +32,15 @@ interface SellItemFormData {
 
 const SellItemPage = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<SellItemFormData>();
+
+  // Store current user ID for syncing
+  if (user?.id) {
+    setCurrentUserId(user.id);
+  }
 
   const onSubmit = (data: SellItemFormData) => {
     // Set submission state to prevent multiple clicks
@@ -52,17 +61,18 @@ const SellItemPage = () => {
       // Add the image URL to the form data
       const listingData = { ...data, image: imageUrl };
       
-      // Log the data for debugging
-      console.log("Form submitted:", listingData);
+      // Get existing listings
+      const listings = getMarketplaceListings();
       
-      // Store the listing in localStorage
-      const existingListings = localStorage.getItem('marketplaceListings');
-      const listings = existingListings ? JSON.parse(existingListings) : [];
+      // Create new listing
+      const username = user?.username || user?.firstName || "Anonymous";
+      const userId = user?.id || getCurrentUserId();
       
       const newListing = {
         ...listingData,
         id: `listing-${Date.now()}`,
-        username: "Me", // In a real app, this would come from the authenticated user
+        userId: userId,
+        username: username,
         likes: 0,
         comments: 0,
         timestamp: new Date().toISOString(),
@@ -70,8 +80,9 @@ const SellItemPage = () => {
         tags: []  // Add empty tags array to match MarketplacePlushie type
       };
       
+      // Add the new listing and save
       listings.unshift(newListing);
-      localStorage.setItem('marketplaceListings', JSON.stringify(listings));
+      saveMarketplaceListings(listings);
       
       // Show success message
       toast({
