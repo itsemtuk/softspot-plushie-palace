@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from "@/components/Navbar";
@@ -15,6 +14,7 @@ import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
 import { MobileNav } from "@/components/navigation/MobileNav";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
+import { toast } from "@/components/ui/use-toast";
 
 const Marketplace = () => {
   const navigate = useNavigate();
@@ -32,34 +32,75 @@ const Marketplace = () => {
 
   // Get listings from localStorage
   useEffect(() => {
-    const fetchListings = () => {
+    const fetchListings = async () => {
       try {
         setIsLoading(true);
         setError(null);
         console.log("Fetching marketplace listings...");
-        const storedListings = getMarketplaceListings();
-        console.log("Fetched marketplace listings:", storedListings);
         
-        if (!storedListings) {
-          console.log("No listings found, creating empty array");
-          setListings([]);
-        } else {
-          setListings(storedListings);
-        }
+        // Add a small delay to ensure the component is fully mounted
+        setTimeout(() => {
+          try {
+            const storedListings = getMarketplaceListings();
+            console.log("Fetched marketplace listings:", storedListings);
+            
+            if (!storedListings || storedListings.length === 0) {
+              console.log("No listings found, creating empty array");
+              setListings([]);
+              
+              // Create some sample listings if none exist
+              const sampleListings: MarketplacePlushie[] = [
+                {
+                  id: "sample-1",
+                  title: "Sample Teddy Bear",
+                  description: "A cute sample teddy bear for demonstration.",
+                  price: 25,
+                  image: "https://placehold.co/400x400?text=Sample+Plushie",
+                  username: "demouser",
+                  createdAt: new Date().toISOString(),
+                  material: "Cotton",
+                  filling: "Polyester",
+                  species: "Bear",
+                  brand: "SoftSpot",
+                  forSale: true,
+                  color: "Brown",
+                  likes: 5,
+                  comments: 2
+                }
+              ];
+              
+              setListings(sampleListings);
+            } else {
+              setListings(storedListings);
+            }
+            setIsLoading(false);
+          } catch (innerError) {
+            console.error("Error in delayed fetch:", innerError);
+            setError("Failed to load marketplace listings. Please try again.");
+            setIsLoading(false);
+            
+            toast({
+              variant: "destructive",
+              title: "Error loading listings",
+              description: "Could not load marketplace listings. Please try again later."
+            });
+          }
+        }, 500);
+        
       } catch (error) {
         console.error("Error fetching marketplace listings:", error);
         setError("Failed to load marketplace listings. Please try again.");
-      } finally {
         setIsLoading(false);
+        
+        toast({
+          variant: "destructive",
+          title: "Error loading listings",
+          description: "Could not load marketplace listings. Please try again later."
+        });
       }
     };
     
     fetchListings();
-    
-    // Set up interval to check for new listings every 30 seconds
-    const intervalId = setInterval(fetchListings, 30000);
-    
-    return () => clearInterval(intervalId);
   }, []);
 
   const filteredPlushies = listings.filter((plushie: MarketplacePlushie) => {
@@ -133,21 +174,6 @@ const Marketplace = () => {
     setPriceRange([0, 150]);
     setAvailableOnly(false);
   };
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50">
-        {isMobile ? <MobileNav /> : <Navbar />}
-        <div className="container mx-auto px-4 py-8">
-          <div className="bg-white p-8 rounded-lg shadow-sm">
-            <h2 className="text-xl font-medium text-red-500 mb-4">Error Loading Marketplace</h2>
-            <p className="text-gray-700 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-16">
@@ -225,6 +251,17 @@ const Marketplace = () => {
                 <div className="text-center py-12">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-500 mx-auto"></div>
                   <p className="mt-4 text-gray-600">Loading marketplace listings...</p>
+                </div>
+              ) : error ? (
+                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                  <h3 className="text-xl font-medium text-red-600">Error loading listings</h3>
+                  <p className="text-gray-500 mt-2">{error}</p>
+                  <Button 
+                    onClick={() => window.location.reload()} 
+                    className="mt-4 bg-softspot-500 hover:bg-softspot-600"
+                  >
+                    Retry
+                  </Button>
                 </div>
               ) : filteredPlushies.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

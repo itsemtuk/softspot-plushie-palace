@@ -63,7 +63,7 @@ const Profile = () => {
               <div>
                 <h2 className="text-2xl font-semibold">{user.firstName} {user.lastName}</h2>
                 <p className="text-gray-500">@{user.username}</p>
-                <p className="text-gray-600 mt-2">{user.emailAddresses[0].emailAddress}</p>
+                {/* Removed email display for privacy */}
               </div>
             </div>
           </CardContent>

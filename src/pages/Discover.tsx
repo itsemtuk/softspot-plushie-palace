@@ -137,7 +137,7 @@ const Discover = () => {
             filteredListings.map((listing) => (
               <Card 
                 key={listing.id} 
-                className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer"
+                className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
                 onClick={() => handlePlushieClick(listing)}
               >
                 <div className="relative">
