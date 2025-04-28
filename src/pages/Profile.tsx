@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import { Tabs } from "@/components/ui/tabs";
 import { ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { getUserPosts } from "@/utils/postStorage";
@@ -13,6 +12,8 @@ import { WishlistManager } from "@/components/profile/WishlistManager";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import { PostDialog } from "@/components/PostDialog";
+import { MobileNav } from "@/components/navigation/MobileNav";
+import { useMobile } from "@/hooks/use-mobile";
 
 const Profile = () => {
   const { user, isLoaded } = useUser();
@@ -21,6 +22,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<ExtendedPost | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const isMobile = useMobile();
 
   const loadUserPosts = async () => {
     if (!user) return;
@@ -28,6 +30,7 @@ const Profile = () => {
     try {
       setIsLoading(true);
       const fetchedPosts = await getUserPosts(user.id);
+      console.log("Fetched user posts:", fetchedPosts);
       setPosts(fetchedPosts);
     } catch (error) {
       console.error('Error fetching user posts:', error);
@@ -77,7 +80,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {isMobile ? <MobileNav /> : <Navbar />}
       
       <UserProfileHeader
         username={user?.username || undefined}

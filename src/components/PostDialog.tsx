@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   Dialog,
@@ -140,7 +139,8 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
       // Create a proper updated post object that matches the ExtendedPost type
       const updatedPost: ExtendedPost = {
         ...post,
-        comments: updatedComments
+        comments: updatedComments,
+        commentsCount: updatedComments.length // Fix the type error by ensuring this is a number
       };
       
       // This is optional and can fail silently
