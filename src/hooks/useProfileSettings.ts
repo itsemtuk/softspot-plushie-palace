@@ -37,6 +37,7 @@ export const useProfileSettings = () => {
   const loadUserData = useCallback(() => {
     if (isLoaded && user) {
       try {
+        console.log("Loading user data:", user);
         const existingInterests = user?.unsafeMetadata?.plushieInterests as string[] || [];
         
         const existingTypeIDs = plushieTypes
@@ -48,6 +49,14 @@ export const useProfileSettings = () => {
           .map(brand => brand.id);
         
         form.reset({
+          username: user?.username || "",
+          bio: user?.unsafeMetadata?.bio as string || "",
+          profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
+          plushieTypes: existingTypeIDs,
+          plushieBrands: existingBrandIDs,
+        });
+        
+        console.log("Form reset with data:", {
           username: user?.username || "",
           bio: user?.unsafeMetadata?.bio as string || "",
           profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
@@ -71,6 +80,8 @@ export const useProfileSettings = () => {
         throw new Error("User not found");
       }
       
+      console.log("Submitting profile data:", data);
+      
       const selectedTypes = plushieTypes
         .filter(type => data.plushieTypes?.includes(type.id))
         .map(type => type.label);
@@ -81,6 +92,7 @@ export const useProfileSettings = () => {
       
       const plushieInterests = [...selectedTypes, ...selectedBrands];
       
+      // Update the user profile
       await user.update({
         username: data.username,
         unsafeMetadata: {
@@ -92,12 +104,18 @@ export const useProfileSettings = () => {
         },
       });
 
+      console.log("Profile updated successfully");
+      
       toast({
         title: "Profile updated",
         description: "Your profile information has been updated successfully.",
       });
 
+      // Force reload user data to ensure changes are reflected
       await user.reload();
+      
+      // Reload form data after update
+      loadUserData();
     } catch (error) {
       console.error("Error updating profile:", error);
       toast({
