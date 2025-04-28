@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import {
   Card,
@@ -11,12 +12,6 @@ import { Switch } from "@/components/ui/switch";
 import { UserPrivacySettings, PrivacySetting } from "@/types/marketplace";
 
 const PrivacySettings = () => {
-  const [profileVisibility, setProfileVisibility] = useState<PrivacySetting>("public");
-  const [allowMessages, setAllowMessages] = useState(true);
-  const [showActivity, setShowActivity] = useState(true);
-  const [allowTagging, setAllowTagging] = useState(true);
-  
-  // Fix the type errors by ensuring all state is correctly typed
   const [privacySettings, setPrivacySettings] = useState<UserPrivacySettings>({
     profileVisibility: "public" as PrivacySetting,
     allowMessages: true,
