@@ -1,196 +1,57 @@
+// Add missing types or correct existing types
 
-export interface ImageUploadResult {
+export type ImageUploadResult = {
   url?: string;
   success: boolean;
   error?: string;
-}
+};
 
-export interface ImageEditorOptions {
+export type ImageEditorOptions = {
   maxWidth?: number;
   maxHeight?: number;
   quality?: number;
-}
+};
 
-export interface PostCreationData {
+export type PostCreationData = {
   image: string;
   title: string;
   description?: string;
   location?: string;
   tags?: string[];
-}
+};
 
-export interface PlushieItem {
+// Use string literals for the enum values to make them more flexible
+export type PlushieCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor' | string;
+export type PlushieMaterial = 'Plush' | 'Cotton' | 'Polyester' | 'Fur' | string;
+export type PlushieFilling = 'Cotton' | 'Polyester' | 'Memory Foam' | string;
+export type PlushieSpecies = 'Bear' | 'Rabbit' | 'Cat' | 'Dog' | 'Mythical' | string;
+
+export type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'CHF' | 'CNY' | string;
+
+export type PrivacySetting = 'public' | 'private' | 'friends' | string;
+
+export type Wishlist = {
   id: string;
-  image: string;
   title: string;
-  username: string;
-  likes: number;
-  comments: number;
+  description?: string;
+  items: WishlistItem[];
+  isPublic: boolean;
+  createdAt: string;
+  updatedAt?: string; // Adding updatedAt as an optional field
+};
+
+export type WishlistItem = {
+  id: string;
+  name: string;
+  brand?: string;
+  image?: string;
   price?: number;
-  forSale?: boolean;
-  timestamp?: string;
-  tags: string[];
-}
-
-// Message types for DMs and notifications
-export interface DirectMessage {
-  id: string;
-  senderId: string;
-  recipientId?: string;
-  content: string;
-  timestamp: Date;
-  read: boolean;
-}
-
-export interface MessageThread {
-  id: string;
-  participants: UserProfile[];
-  lastMessage: DirectMessage;
-  unreadCount: number;
-}
-
-export interface UserProfile {
-  id: string;
-  username: string;
-  profileImageUrl: string;
-  bio: string;
-  followers: number;
-  following: number;
-  age?: number;
-  isPrivate?: boolean;
-}
-
-export interface Notification {
-  id: string;
-  userId: string;
-  type: string;
-  content: string;
-  timestamp: Date;
-  read: boolean;
-  relatedUserId?: string;
-  relatedItemId?: string;
-  relatedItemType?: string;
-}
-
-// Types required for marketplace components
-export interface MarketplacePlushie {
-  id: string;
-  title: string;
-  description: string;
-  price: number;
-  image: string;
-  seller: UserProfile;
-  condition: PlushieCondition;
-  brand: string;
-  tags: string[];
-  timestamp: string;
-  likes: number;
-  comments: number;
+  currency?: Currency;
+  condition?: PlushieCondition;
+  url?: string;
+  notes?: string;
+  priority: 'low' | 'medium' | 'high';
   material?: PlushieMaterial;
   filling?: PlushieFilling;
   species?: PlushieSpecies;
-  color?: string;
-  forSale?: boolean;
-  username?: string;
-}
-
-export interface MarketplaceFilters {
-  search: string;
-  minPrice: number;
-  maxPrice: number;
-  brands: string[];
-  conditions: PlushieCondition[];
-  sortBy: 'newest' | 'price-low' | 'price-high' | 'popularity';
-  species: string[];
-  color?: string[];
-  material?: PlushieMaterial[];
-  filling?: PlushieFilling[];
-  brand?: string;
-}
-
-export enum PlushieCondition {
-  New = 'New',
-  LikeNew = 'Like New',
-  Good = 'Good',
-  Fair = 'Fair',
-  Poor = 'Poor'
-}
-
-export enum PlushieMaterial {
-  Cotton = 'Cotton',
-  Polyester = 'Polyester',
-  Plush = 'Plush',
-  Velour = 'Velour',
-  Minky = 'Minky'
-}
-
-export enum PlushieFilling {
-  PolyesterFiber = 'Polyester Fiber',
-  Cotton = 'Cotton',
-  Beans = 'Beans',
-  Memory = 'Memory Foam'
-}
-
-export enum PlushieSpecies {
-  Bear = 'Bear',
-  Cat = 'Cat',
-  Dog = 'Dog',
-  Unicorn = 'Unicorn',
-  Dragon = 'Dragon',
-  Rabbit = 'Rabbit'
-}
-
-export interface PlushieBrand {
-  id: string;
-  name: string;
-  logo: string;
-  description: string;
-}
-
-export interface Post {
-  id: string;
-  image: string;
-  title: string;
-  username: string;
-  likes: number;
-  comments: number;
-  timestamp: string;
-  tags: string[];
-}
-
-export interface Wishlist {
-  id: string;
-  userId: string;
-  name: string;
-  isPublic: boolean;
-  createdAt: Date | string;
-  items: MarketplacePlushie[];
-  description?: string;
-}
-
-export interface Currency {
-  code: string;
-  name: string;
-  symbol: string;
-  rate: number;
-}
-
-export interface UserPrivacySettings {
-  id: string;
-  userId: string;
-  profileVisibility: PrivacySetting;
-  messagePermissions: PrivacySetting;
-  wishlistVisibility: PrivacySetting;
-  activityVisibility: PrivacySetting;
-  profile?: string;
-  posts?: string;
-  wishlist?: string;
-  marketplace?: string;
-  messages?: string;
-}
-
-export enum PrivacySetting {
-  Public = 'public',
-  FriendsOnly = 'friends-only',
-  Private = 'private'
-}
+};
