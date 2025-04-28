@@ -137,6 +137,7 @@ const Profile = () => {
                 <ProfilePostsGrid 
                   posts={posts} 
                   onPostClick={handlePostClick}
+                  isOwnProfile={true}
                 />
               )
             )}
@@ -154,6 +155,6 @@ const Profile = () => {
       />
     </div>
   );
-};
+}
 
 export default Profile;

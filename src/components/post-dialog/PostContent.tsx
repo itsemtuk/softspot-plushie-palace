@@ -1,24 +1,19 @@
 
-import { Separator } from "@/components/ui/separator";
-import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Tag } from "lucide-react";
-import { PostActions } from "./PostActions";
-import { PostCommentList } from "./PostCommentList";
-import { PostCommentForm } from "./PostCommentForm";
-import { Comment } from "./PostCommentItem";
-import { PostMenu } from "./PostMenu";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { formatTimeAgo } from "@/lib/utils";
+import { PostActions } from "./PostActions";
+import { PostMenu } from "./PostMenu";
+import { PostCommentForm } from "./PostCommentForm";
+import { PostCommentList } from "./PostCommentList";
+import { ExtendedPost, Comment as MarketplaceComment } from "@/types/marketplace";
+import { Comment } from "./PostCommentItem";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Check, X } from "lucide-react";
 
 interface PostContentProps {
-  post: {
-    id: string;
-    title: string;
-    username: string;
-    description?: string;
-    tags?: string[];
-  };
+  post: ExtendedPost;
   isAuthor: boolean;
   isLiked: boolean;
   likeCount: number;
@@ -28,7 +23,7 @@ interface PostContentProps {
   onCommentSubmit: (comment: string) => void;
   onFindSimilar: () => void;
   onClose: () => void;
-  onSaveEdit: (title: string, description: string) => void;
+  onSaveEdit: (editedPost: ExtendedPost) => Promise<boolean>;
 }
 
 export function PostContent({
@@ -42,97 +37,146 @@ export function PostContent({
   onCommentSubmit,
   onFindSimilar,
   onClose,
-  onSaveEdit,
+  onSaveEdit
 }: PostContentProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [editTitle, setEditTitle] = useState(post.title);
-  const [editDescription, setEditDescription] = useState(post.description || "");
-
-  const handleSave = () => {
-    onSaveEdit(editTitle, editDescription);
+  const [editedTitle, setEditedTitle] = useState(post.title);
+  const [editedDescription, setEditedDescription] = useState(post.description || "");
+  const [isSaving, setIsSaving] = useState(false);
+  
+  const handleStartEdit = () => {
+    setEditedTitle(post.title);
+    setEditedDescription(post.description || "");
+    setIsEditing(true);
+  };
+  
+  const handleCancelEdit = () => {
     setIsEditing(false);
   };
-
+  
+  const handleSaveEdit = async () => {
+    setIsSaving(true);
+    
+    const editedPost = {
+      ...post,
+      title: editedTitle,
+      description: editedDescription
+    };
+    
+    const success = await onSaveEdit(editedPost);
+    
+    if (success) {
+      setIsEditing(false);
+    }
+    
+    setIsSaving(false);
+  };
+  
   return (
-    <div className="p-6 flex flex-col h-full max-h-[80vh] overflow-y-auto">
-      <DialogHeader className="flex flex-row items-start justify-between">
-        {isEditing ? (
-          <div className="flex-1 space-y-4">
-            <Input
-              value={editTitle}
-              onChange={(e) => setEditTitle(e.target.value)}
-              className="text-xl font-semibold"
-              placeholder="Post title"
+    <div className="p-4 flex flex-col h-full overflow-y-auto">
+      <div className="flex items-center justify-between mb-2">
+        <div className="flex items-center">
+          <div className="h-8 w-8 rounded-full bg-gray-200 mr-2"></div>
+          <span className="font-medium">@{post.username}</span>
+        </div>
+        
+        <div className="flex items-center">
+          {isAuthor && !isEditing && (
+            <PostMenu 
+              onEdit={handleStartEdit} 
+              onDelete={() => {
+                // Handle delete
+                onClose();
+              }} 
             />
-            <Input
-              value={editDescription}
-              onChange={(e) => setEditDescription(e.target.value)}
-              placeholder="Add a description..."
+          )}
+          
+          <button 
+            onClick={onClose}
+            className="ml-2 p-1 hover:bg-gray-100 rounded-full"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+      
+      {isEditing ? (
+        <div className="space-y-4">
+          <div>
+            <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+            <Input 
+              id="title"
+              value={editedTitle} 
+              onChange={(e) => setEditedTitle(e.target.value)}
+              className="w-full"
             />
-            <div className="flex gap-2">
-              <Button onClick={handleSave}>Save</Button>
-              <Button variant="outline" onClick={() => setIsEditing(false)}>
-                Cancel
-              </Button>
-            </div>
           </div>
-        ) : (
-          <>
-            <div>
-              <DialogTitle className="text-xl">{post.title}</DialogTitle>
-              <div className="text-sm text-gray-500 flex items-center mt-2">
-                <span>@{post.username}</span>
-              </div>
-            </div>
-            <PostMenu
-              postId={post.id}
-              isAuthor={isAuthor}
-              onEdit={() => setIsEditing(true)}
-              onClose={onClose}
+          
+          <div>
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+            <Textarea 
+              id="description"
+              value={editedDescription} 
+              onChange={(e) => setEditedDescription(e.target.value)}
+              className="w-full resize-none"
+              rows={4}
             />
-          </>
-        )}
-      </DialogHeader>
-
-      {!isEditing && (
+          </div>
+          
+          <div className="flex justify-end space-x-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={handleCancelEdit}
+              disabled={isSaving}
+            >
+              Cancel
+            </Button>
+            <Button 
+              size="sm"
+              onClick={handleSaveEdit}
+              disabled={!editedTitle.trim() || isSaving}
+              className="bg-softspot-500 hover:bg-softspot-600"
+            >
+              {isSaving ? 'Saving...' : (
+                <>
+                  <Check className="h-4 w-4 mr-1" /> Save
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      ) : (
         <>
+          <h1 className="text-xl font-bold">{post.title}</h1>
+          
           {post.description && (
-            <div className="my-4">
-              <p className="text-gray-700">{post.description}</p>
-            </div>
+            <p className="mt-2 text-gray-600">{post.description}</p>
           )}
-
-          {post.tags && post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 my-4">
-              {post.tags.map(tag => (
-                <div key={tag} className="bg-softspot-100 text-softspot-700 px-2 py-1 rounded-full text-xs flex items-center">
-                  <Tag className="h-3 w-3 mr-1" />
-                  {tag}
-                </div>
-              ))}
-            </div>
+          
+          {post.location && (
+            <p className="text-sm text-gray-500 mt-1">📍 {post.location}</p>
           )}
-
-          <PostActions 
-            likes={likeCount}
-            comments={commentList.length}
-            isLiked={isLiked}
-            onLikeToggle={onLikeToggle}
-            onFindSimilar={onFindSimilar}
-          />
-
-          <Separator className="my-2" />
-
-          <PostCommentList 
-            comments={commentList}
-            onCommentLikeToggle={onCommentLikeToggle}
-          />
-
-          <div className="border-t pt-4 mt-auto">
-            <PostCommentForm onSubmit={onCommentSubmit} />
+          
+          <div className="text-xs text-gray-400 mt-1">
+            {formatTimeAgo(post.timestamp)}
           </div>
         </>
       )}
+      
+      <PostActions 
+        likes={likeCount} 
+        comments={typeof post.comments === 'number' ? post.comments : post.comments.length} 
+        isLiked={isLiked} 
+        onLikeToggle={onLikeToggle} 
+        onFindSimilar={onFindSimilar}
+      />
+      
+      <div className="mt-auto">
+        <PostCommentList comments={commentList} onCommentLikeToggle={onCommentLikeToggle} />
+        <PostCommentForm onSubmit={onCommentSubmit} />
+      </div>
     </div>
   );
 }

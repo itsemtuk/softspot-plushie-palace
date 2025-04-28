@@ -17,7 +17,7 @@ interface PostDialogContentProps {
   onCommentSubmit: (comment: string) => void;
   onFindSimilar: () => void;
   onClose: () => void;
-  onSaveEdit: (title: string, description: string) => void;
+  onSaveEdit: (editedPost: ExtendedPost) => Promise<boolean>;
 }
 
 export function PostDialogContent({

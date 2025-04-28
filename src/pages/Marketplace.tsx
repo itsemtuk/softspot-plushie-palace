@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from "@/components/Navbar";
 import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
@@ -7,12 +8,14 @@ import { PlushieCard } from "@/components/PlushieCard";
 import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { MarketplacePlushie, MarketplaceFilters } from "@/types/marketplace";
 import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
 import { MobileNav } from "@/components/navigation/MobileNav";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Marketplace = () => {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [priceRange, setPriceRange] = useState([0, 150]);
   const [availableOnly, setAvailableOnly] = useState(false);
@@ -63,6 +66,14 @@ const Marketplace = () => {
     // Brand filter
     if (filters.brand && filters.brand.length > 0) {
       if (!filters.brand.includes(plushie.brand)) {
+        return false;
+      }
+    }
+
+    // Color filter (if it exists)
+    if (filters.color && filters.color.length > 0) {
+      // Simple color matching, can be enhanced for better color detection
+      if (!filters.color.some(color => plushie.color.toLowerCase().includes(color.toLowerCase()))) {
         return false;
       }
     }
@@ -142,7 +153,7 @@ const Marketplace = () => {
                   <h3 className="text-xl font-medium text-gray-700">No plushies found</h3>
                   <p className="text-gray-500 mt-2">Try adjusting your filters or add a new listing</p>
                   <Button 
-                    onClick={() => isMobile ? null : navigate('/sell')} 
+                    onClick={() => navigate('/sell')} 
                     className="mt-4 bg-softspot-500 hover:bg-softspot-600"
                   >
                     List a Plushie for Sale

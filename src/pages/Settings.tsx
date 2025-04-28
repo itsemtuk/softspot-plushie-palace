@@ -1,57 +1,40 @@
 
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
-import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft } from "lucide-react";
-import PrivacySettings from "@/components/settings/PrivacySettings";
 import ProfileInformation from "@/components/settings/ProfileInformation";
 import AccountSettings from "@/components/settings/AccountSettings";
+import { PrivacySettings } from "@/components/settings/PrivacySettings";
+import { MobileNav } from "@/components/navigation/MobileNav";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Settings = () => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const tabFromUrl = searchParams.get("tab");
-  const [activeTab, setActiveTab] = useState(
-    tabFromUrl === "privacy" ? "privacy" : 
-    tabFromUrl === "preferences" ? "preferences" : "profile"
-  );
-
+  const [activeTab, setActiveTab] = useState("profile");
+  const isMobile = useIsMobile();
+  
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {isMobile ? <MobileNav /> : <Navbar />}
       
-      <div className="max-w-4xl mx-auto pt-8 pb-24 px-4">
-        <div className="flex items-center mb-6">
-          <Button 
-            variant="ghost" 
-            className="mr-2"
-            onClick={() => navigate(-1)}
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Back
-          </Button>
-          <h1 className="text-2xl font-bold">Settings</h1>
-        </div>
-
-        <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="preferences">Preferences</TabsTrigger>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <h1 className="text-2xl font-bold mb-6">Settings</h1>
+        
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+          <TabsList className="bg-white border">
+            <TabsTrigger value="profile">Profile Information</TabsTrigger>
+            <TabsTrigger value="account">Account</TabsTrigger>
             <TabsTrigger value="privacy">Privacy</TabsTrigger>
           </TabsList>
           
-          <TabsContent value="profile">
+          <TabsContent value="profile" className="space-y-6">
             <ProfileInformation />
+          </TabsContent>
+          
+          <TabsContent value="account" className="space-y-6">
             <AccountSettings />
           </TabsContent>
           
-          <TabsContent value="preferences">
-            <ProfileInformation />
-          </TabsContent>
-
-          <TabsContent value="privacy">
+          <TabsContent value="privacy" className="space-y-6">
             <PrivacySettings />
           </TabsContent>
         </Tabs>

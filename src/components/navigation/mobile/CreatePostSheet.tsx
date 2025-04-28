@@ -16,42 +16,58 @@ export function CreatePostSheet() {
           <PlusSquare className="h-5 w-5 text-white" />
         </Button>
       </SheetTrigger>
-      <SheetContent side="bottom" className="h-[40vh]">
+      <SheetContent side="bottom" className="h-[45vh]">
         <SheetHeader>
           <SheetTitle>Create New</SheetTitle>
           <SheetDescription>Choose what you'd like to do</SheetDescription>
         </SheetHeader>
-        <div className="grid grid-cols-3 gap-4 mt-4">
+        <div className="grid grid-cols-3 gap-4 mt-6">
           <Button 
             variant="outline" 
-            className="flex flex-col items-center gap-2 h-auto py-4"
+            className="flex flex-col items-center justify-center gap-2 h-auto py-6"
             onClick={onCreatePost}
           >
-            <PlusSquare className="h-6 w-6" />
+            <PlusSquare className="h-8 w-8" />
             <span>Post</span>
           </Button>
           <Button 
             variant="outline" 
-            className="flex flex-col items-center gap-2 h-auto py-4"
+            className="flex flex-col items-center justify-center gap-2 h-auto py-6"
             onClick={() => {
               onOpenChange(false);
               navigate('/sell');
             }}
           >
-            <ShoppingBag className="h-6 w-6" />
+            <ShoppingBag className="h-8 w-8" />
             <span>Sell</span>
           </Button>
           <Button 
             variant="outline" 
-            className="flex flex-col items-center gap-2 h-auto py-4"
+            className="flex flex-col items-center justify-center gap-2 h-auto py-6"
             onClick={() => {
               onOpenChange(false);
               navigate('/messages');
             }}
           >
-            <MessageSquare className="h-6 w-6" />
+            <MessageSquare className="h-8 w-8" />
             <span>Trade</span>
           </Button>
+        </div>
+        
+        {/* Additional content for explaining features */}
+        <div className="mt-8 space-y-4">
+          <div className="bg-gray-50 p-3 rounded-md">
+            <h4 className="font-medium">Create a Post</h4>
+            <p className="text-sm text-gray-600">Share your plushie collection with the community</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <h4 className="font-medium">Sell a Plushie</h4>
+            <p className="text-sm text-gray-600">List your plushies for sale in the marketplace</p>
+          </div>
+          <div className="bg-gray-50 p-3 rounded-md">
+            <h4 className="font-medium">Trade with Others</h4>
+            <p className="text-sm text-gray-600">Start a conversation about trading plushies</p>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

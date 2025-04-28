@@ -1,9 +1,56 @@
+
 export type PlushieCondition = "New" | "Like New" | "Good" | "Fair" | "Poor";
 export type PlushieMaterial = "Plush" | "Cotton" | "Polyester" | "Fur" | "Other";
 export type PlushieFilling = "Cotton" | "Polyester" | "Memory Foam" | "Beans" | "Other";
 export type PlushieSpecies = "Bear" | "Rabbit" | "Cat" | "Dog" | "Mythical" | "Other";
 export type DeliveryMethod = "Shipping" | "Collection" | "Both";
 export type PrivacySetting = "public" | "followers" | "private";
+export type Currency = "USD" | "EUR" | "GBP" | "CAD" | "AUD" | "JPY";
+
+export interface PlushieBrand {
+  id: string;
+  name: string;
+  logo: string;
+  description: string;
+  website?: string;
+  founded?: string;
+  headquarters?: string;
+}
+
+export interface DirectMessage {
+  id: string;
+  senderId: string;
+  recipientId: string;
+  content: string;
+  timestamp: string;
+  isRead: boolean;
+}
+
+export interface MessageThread {
+  id: string;
+  participants: string[];
+  lastMessage: DirectMessage;
+  unreadCount: number;
+}
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  avatar: string;
+  bio?: string;
+  isOnline?: boolean;
+  lastActive?: string;
+  isFollowing?: boolean;
+  followerCount?: number;
+  followingCount?: number;
+}
+
+export interface ImageEditorOptions {
+  maxWidth?: number;
+  maxHeight?: number;
+  quality?: number;
+  format?: 'jpeg' | 'png';
+}
 
 export interface ImageUploadResult {
   success: boolean;
@@ -30,6 +77,7 @@ export interface MarketplacePlushie {
   comments: number;
   timestamp: string;
   forSale: boolean;
+  tags?: string[];
 }
 
 export interface MarketplaceFilters {
@@ -37,6 +85,19 @@ export interface MarketplaceFilters {
   filling?: PlushieFilling[];
   species?: PlushieSpecies[];
   brand?: string[];
+  color?: string[];
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'like' | 'comment' | 'follow' | 'mention' | 'tag' | 'message' | 'system';
+  relatedPostId?: string;
+  relatedUserId?: string;
+  message: string;
+  isRead: boolean;
+  timestamp: string;
+  content?: string;
 }
 
 export interface Post {
@@ -46,7 +107,7 @@ export interface Post {
   title: string;
   username: string;
   likes: number;
-  comments: number;
+  comments: number | Comment[];
   timestamp: string;
   tags?: string[];
 }
@@ -54,6 +115,8 @@ export interface Post {
 export interface ExtendedPost extends Post {
   description?: string;
   location?: string;
+  likes: number | Array<{userId: string, username: string}>;
+  comments: number | Comment[];
 }
 
 export interface PostCreationData {
@@ -93,6 +156,7 @@ export interface WishlistItem {
   imageUrl: string;
   price: number;
   condition: PlushieCondition;
+  brand?: string;
 }
 
 export interface Wishlist {
@@ -101,7 +165,8 @@ export interface Wishlist {
   items?: WishlistItem[];
   description?: string;
   acceptedConditions: PlushieCondition[];
-  isPublic?: boolean; // Add this field
+  isPublic?: boolean;
   userId?: string;
   username?: string;
+  createdAt?: string;
 }

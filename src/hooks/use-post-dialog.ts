@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Comment, ExtendedPost } from "@/types/marketplace";
 import { updatePost } from "@/utils/posts/postManagement";
@@ -45,7 +46,7 @@ export function usePostDialog(post: ExtendedPost | null) {
           : [...post.likes, { userId: "user-1", username: "Me" }]
         : isLiked ? 0 : 1;
       
-      const editedPost = {
+      const editedPost: ExtendedPost = {
         ...post,
         likes: updatedLikes
       };
@@ -90,7 +91,7 @@ export function usePostDialog(post: ExtendedPost | null) {
     
     try {
       // Update the post with new comments
-      const editedPost = {
+      const editedPost: ExtendedPost = {
         ...post,
         comments: updatedComments
       };
@@ -126,7 +127,7 @@ export function usePostDialog(post: ExtendedPost | null) {
     
     try {
       // Update the post with new comment
-      const editedPost = {
+      const editedPost: ExtendedPost = {
         ...post,
         comments: updatedComments
       };
@@ -144,8 +145,8 @@ export function usePostDialog(post: ExtendedPost | null) {
     }
   };
 
-  const handleSaveEdit = async (editedPost: ExtendedPost) => {
-    if (!post) return;
+  const handleSaveEdit = async (editedPost: ExtendedPost): Promise<boolean> => {
+    if (!post) return false;
     
     try {
       await updatePost(editedPost);
