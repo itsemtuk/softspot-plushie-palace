@@ -6,6 +6,8 @@ import { plushieTypes, plushieBrands } from "@/components/onboarding/onboardingD
 import ProfilePictureUpload from "@/components/onboarding/ProfilePictureUpload";
 import PlushieTypeSelector from "@/components/onboarding/PlushieTypeSelector";
 import PlushieBrandSelector from "@/components/onboarding/PlushieBrandSelector";
+import BioInput from "@/components/settings/BioInput";
+import UsernameInput from "@/components/settings/UsernameInput";
 import { useProfileSettings } from "@/hooks/useProfileSettings";
 
 const ProfileInformation = () => {
@@ -17,6 +19,8 @@ const ProfileInformation = () => {
       
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <UsernameInput form={form} />
+
           <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
             <div className="w-full md:w-1/3">
               <ProfilePictureUpload form={form} />
@@ -26,6 +30,8 @@ const ProfileInformation = () => {
               <PlushieBrandSelector plushieBrands={plushieBrands} form={form} />
             </div>
           </div>
+
+          <BioInput form={form} />
 
           <div className="pt-4 flex justify-end">
             <Button type="submit" disabled={isLoading} className="bg-softspot-500">
