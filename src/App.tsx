@@ -1,4 +1,3 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ClerkProvider, SignIn, SignUp } from "@clerk/clerk-react";
 import Index from "./pages/Index";
@@ -18,6 +17,7 @@ import Discover from "./pages/Discover";
 import Footer from "./components/Footer";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
+import SellItemPage from "./pages/SellItemPage";
 
 // Use a fixed publishable key for development
 const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
@@ -68,6 +68,11 @@ function AppContent() {
         <Route path="/marketplace" element={
           <OnboardingRoute>
             <Marketplace />
+          </OnboardingRoute>
+        } />
+        <Route path="/marketplace/sell" element={
+          <OnboardingRoute>
+            <SellItemPage />
           </OnboardingRoute>
         } />
         <Route path="/brand/:brandId" element={
