@@ -1,120 +1,62 @@
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ClerkProvider } from "@clerk/clerk-react";
-import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Onboarding, { OnboardingRoute } from "./pages/Onboarding";
-import Settings from "./pages/Settings";
-import Profile from "./pages/Profile";
-import Feed from "./pages/Feed";
-import Marketplace from "./pages/Marketplace";
-import BrandPage from "./pages/BrandPage";
-import MessagingPage from "./pages/MessagingPage";
-import WishlistPage from "./pages/WishlistPage";
-import { Toaster } from "@/components/ui/toaster";
+import { BrowserRouter as Router } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Discover from "./pages/Discover";
-import Footer from "./components/Footer";
-import SellItemPage from "./pages/SellItemPage";
-import About from "./pages/About";
-import PostPage from "./pages/PostPage";
-import SignIn from "./pages/SignIn";
-import SignUp from "./pages/SignUp";
-import NotificationsPage from "./pages/NotificationsPage";
-import { NotificationsProvider } from "@/contexts/NotificationsContext";
-import { PostDialogProvider } from "@/hooks/use-post-dialog";
+import { Toaster } from '@/components/ui/toaster';
+import { ClerkProvider } from '@clerk/clerk-react';
+import Index from '@/pages/Index';
+import SignIn from '@/pages/SignIn';
+import SignUp from '@/pages/SignUp';
+import Feed from '@/pages/Feed';
+import Marketplace from '@/pages/Marketplace';
+import Profile from '@/pages/Profile';
+import PostPage from '@/pages/PostPage';
+import Settings from '@/pages/Settings';
+import Onboarding from '@/pages/Onboarding';
+import MessagingPage from '@/pages/MessagingPage';
+import NotFound from '@/pages/NotFound';
+import SellItemPage from './pages/SellItemPage';
+import WishlistPage from './pages/WishlistPage';
+import { NotificationsProvider } from '@/contexts/NotificationsContext';
+import About from './pages/About';
+import NotificationsPage from './pages/NotificationsPage';
+import BrandPage from './pages/BrandPage';
+import Discover from './pages/Discover';
+import { CloudSyncStatus } from './components/CloudSyncStatus';
 
-// Use a fixed publishable key for development
-const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
-const queryClient = new QueryClient();
-
-function AppContent() {
-  return (
-    <>
-      <Routes>
-        <Route path="/" element={<Index />} />
-        <Route path="/sign-in/*" element={<SignIn />} />
-        <Route path="/sign-up/*" element={<SignUp />} />
-        <Route path="/onboarding" element={<Onboarding />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/post/:postId" element={<PostPage />} />
-        <Route path="/404" element={<NotFound />} />
-        
-        {/* Protected routes that require onboarding completion */}
-        <Route path="/settings" element={
-          <OnboardingRoute>
-            <Settings />
-          </OnboardingRoute>
-        } />
-        <Route path="/profile" element={
-          <OnboardingRoute>
-            <Profile />
-          </OnboardingRoute>
-        } />
-        <Route path="/notifications" element={
-          <OnboardingRoute>
-            <NotificationsPage />
-          </OnboardingRoute>
-        } />
-        <Route path="/feed" element={
-          <OnboardingRoute>
-            <Feed />
-          </OnboardingRoute>
-        } />
-        <Route path="/discover" element={
-          <OnboardingRoute>
-            <Discover />
-          </OnboardingRoute>
-        } />
-        <Route path="/marketplace" element={
-          <OnboardingRoute>
-            <Marketplace />
-          </OnboardingRoute>
-        } />
-        <Route path="/marketplace/sell" element={
-          <OnboardingRoute>
-            <SellItemPage />
-          </OnboardingRoute>
-        } />
-        <Route path="/brand/:brandId" element={
-          <OnboardingRoute>
-            <BrandPage />
-          </OnboardingRoute>
-        } />
-        <Route path="/messages" element={
-          <OnboardingRoute>
-            <MessagingPage />
-          </OnboardingRoute>
-        } />
-        <Route path="/wishlist" element={
-          <OnboardingRoute>
-            <WishlistPage />
-          </OnboardingRoute>
-        } />
-        <Route path="*" element={<NotFound />} />
-      </Routes>
-      
-      <Footer />
-    </>
-  );
-}
+// Get Clerk publishable key
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <QueryClientProvider client={queryClient}>
-        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-          <NotificationsProvider>
-            <PostDialogProvider>
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-              <Toaster />
-            </PostDialogProvider>
-          </NotificationsProvider>
-        </ClerkProvider>
-      </QueryClientProvider>
+      <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+        <NotificationsProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/sign-in/*" element={<SignIn />} />
+              <Route path="/sign-up/*" element={<SignUp />} />
+              <Route path="/feed" element={<Feed />} />
+              <Route path="/marketplace/*" element={<Marketplace />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/posts/:postId" element={<PostPage />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="/onboarding" element={<Onboarding />} />
+              <Route path="/messages" element={<MessagingPage />} />
+              <Route path="/sell" element={<SellItemPage />} />
+              <Route path="/wishlist" element={<WishlistPage />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+              <Route path="/brand/:brandId" element={<BrandPage />} />
+              <Route path="/discover" element={<Discover />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <CloudSyncStatus />
+            <Toaster />
+          </Router>
+        </NotificationsProvider>
+      </ClerkProvider>
     </ThemeProvider>
   );
 }

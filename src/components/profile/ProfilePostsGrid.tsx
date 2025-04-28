@@ -1,18 +1,20 @@
 
 import { Button } from "@/components/ui/button";
 import { ExtendedPost } from "@/types/marketplace";
-import { PlusSquare, ShoppingBag } from "lucide-react";
+import { PlusSquare, ShoppingBag, Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface ProfilePostsGridProps {
   posts: ExtendedPost[];
   onPostClick: (post: ExtendedPost) => void;
+  onDeletePost?: (postId: string) => Promise<void>;
   isOwnProfile?: boolean;
 }
 
-export function ProfilePostsGrid({ posts, onPostClick, isOwnProfile = true }: ProfilePostsGridProps) {
+export function ProfilePostsGrid({ posts, onPostClick, onDeletePost, isOwnProfile = true }: ProfilePostsGridProps) {
   const navigate = useNavigate();
   const { setIsPostCreationOpen } = useCreatePost();
   const isMobile = useIsMobile();
@@ -82,14 +84,47 @@ export function ProfilePostsGrid({ posts, onPostClick, isOwnProfile = true }: Pr
         {posts.map((post) => (
           <div
             key={post.id}
-            className="aspect-square cursor-pointer overflow-hidden"
-            onClick={() => onPostClick(post)}
+            className="aspect-square cursor-pointer overflow-hidden relative group"
           >
             <img
               src={post.image}
               alt={post.title}
               className="h-full w-full object-cover transition-transform hover:scale-105"
+              onClick={() => onPostClick(post)}
             />
+            
+            {/* Delete button - only show for own profile if onDeletePost is provided */}
+            {isOwnProfile && onDeletePost && (
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="icon"
+                    className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Post</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete this post? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction 
+                      onClick={() => onDeletePost(post.id)}
+                      className="bg-red-600 hover:bg-red-700"
+                    >
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            )}
           </div>
         ))}
       </div>
