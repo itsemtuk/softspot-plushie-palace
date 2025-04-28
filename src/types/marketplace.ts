@@ -56,6 +56,7 @@ export interface WishlistItem {
   createdAt: string;
   price?: number;
   title?: string;
+  brand?: string;
 }
 
 export interface Wishlist {
@@ -65,6 +66,7 @@ export interface Wishlist {
   items: WishlistItem[];
   createdAt: string;
   title?: string;
+  description?: string;
 }
 
 export interface PostCreationData {
@@ -150,12 +152,14 @@ export interface Currency {
 }
 
 export interface MarketplaceFilters {
-  condition: PlushieCondition[];
-  material: PlushieMaterial[];
-  species: PlushieSpecies[];
-  brands: string[];
-  priceRange: [number, number];
-  sortBy: "newest" | "price-low" | "price-high" | "popular";
+  condition?: PlushieCondition[];
+  material?: PlushieMaterial[];
+  filling?: PlushieFilling[];
+  species?: PlushieSpecies[];
+  brands?: string[];
+  color?: string[];
+  priceRange?: [number, number];
+  sortBy?: "newest" | "price-low" | "price-high" | "popular";
 }
 
 export interface PlushieBrand {
@@ -168,6 +172,8 @@ export interface PlushieBrand {
   location: string;
   followersCount: number;
   isFollowing: boolean;
+  verified?: boolean;
+  status?: "online" | "offline" | "away" | "busy";
 }
 
 export type PrivacySetting = "public" | "followers" | "private";

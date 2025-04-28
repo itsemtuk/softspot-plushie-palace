@@ -4,6 +4,8 @@ import { ExtendedPost, MarketplacePlushie } from "@/types/marketplace";
 // Constants for storage keys
 const POSTS_STORAGE_KEY = 'userPosts';
 const MARKETPLACE_STORAGE_KEY = 'marketplaceListings';
+const CURRENT_USER_KEY = 'currentUserId';
+const USER_STATUS_KEY = 'userStatus';
 
 /**
  * Saves posts to local storage
@@ -48,7 +50,7 @@ export const getLocalPosts = (): ExtendedPost[] => {
 export const saveMarketplaceListings = (listings: MarketplacePlushie[]): void => {
   try {
     // Ensure userId is attached to each listing for sync purposes
-    const userId = localStorage.getItem('currentUserId') || 'anonymous';
+    const userId = localStorage.getItem(CURRENT_USER_KEY) || 'anonymous';
     const listingsWithUser = listings.map(listing => ({
       ...listing,
       userId: listing.userId || userId,
@@ -91,14 +93,31 @@ export const getMarketplaceListings = (): MarketplacePlushie[] => {
  * Sets the current user ID in local storage for syncing
  */
 export const setCurrentUserId = (userId: string): void => {
-  localStorage.setItem('currentUserId', userId);
+  localStorage.setItem(CURRENT_USER_KEY, userId);
   // Also store in sessionStorage for cross-tab syncing
-  sessionStorage.setItem('currentUserId', userId);
+  sessionStorage.setItem(CURRENT_USER_KEY, userId);
 };
 
 /**
  * Gets the current user ID from local storage
  */
 export const getCurrentUserId = (): string => {
-  return localStorage.getItem('currentUserId') || sessionStorage.getItem('currentUserId') || 'anonymous';
+  return localStorage.getItem(CURRENT_USER_KEY) || sessionStorage.getItem(CURRENT_USER_KEY) || 'anonymous';
+};
+
+/**
+ * Sets the current user status in local storage
+ */
+export const setUserStatus = (status: "online" | "offline" | "away" | "busy"): void => {
+  localStorage.setItem(USER_STATUS_KEY, status);
+  sessionStorage.setItem(USER_STATUS_KEY, status);
+};
+
+/**
+ * Gets the current user status from local storage
+ */
+export const getUserStatus = (): "online" | "offline" | "away" | "busy" => {
+  return (localStorage.getItem(USER_STATUS_KEY) || 
+          sessionStorage.getItem(USER_STATUS_KEY) || 
+          'online') as "online" | "offline" | "away" | "busy";
 };

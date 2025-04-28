@@ -14,6 +14,7 @@ import { MarketplacePlushie, MarketplaceFilters } from "@/types/marketplace";
 import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
 import { MobileNav } from "@/components/navigation/MobileNav";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
 
 const Marketplace = () => {
   const navigate = useNavigate();
@@ -25,13 +26,29 @@ const Marketplace = () => {
   const [selectedPlushie, setSelectedPlushie] = useState<MarketplacePlushie | null>(null);
   const [listings, setListings] = useState<MarketplacePlushie[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
 
   // Get listings from localStorage
   useEffect(() => {
-    const stored = localStorage.getItem('marketplaceListings');
-    const storedListings = stored ? JSON.parse(stored) : [];
-    setListings(storedListings);
+    const fetchListings = () => {
+      try {
+        const storedListings = getMarketplaceListings();
+        console.log("Fetched marketplace listings:", storedListings);
+        setListings(storedListings);
+        setIsLoading(false);
+      } catch (error) {
+        console.error("Error fetching marketplace listings:", error);
+        setIsLoading(false);
+      }
+    };
+    
+    fetchListings();
+    
+    // Set up interval to check for new listings every 30 seconds
+    const intervalId = setInterval(fetchListings, 30000);
+    
+    return () => clearInterval(intervalId);
   }, []);
 
   const filteredPlushies = listings.filter((plushie: MarketplacePlushie) => {
@@ -41,7 +58,10 @@ const Marketplace = () => {
       plushie.description.toLowerCase().includes(searchTerm) ||
       plushie.username.toLowerCase().includes(searchTerm);
 
-    const isInPriceRange = plushie.price >= priceRange[0] && plushie.price <= priceRange[1];
+    const isInPriceRange = 
+      plushie.price !== undefined && 
+      plushie.price >= priceRange[0] && 
+      plushie.price <= priceRange[1];
     const isAvailable = !availableOnly || plushie.forSale;
 
     // Material filter
@@ -66,13 +86,13 @@ const Marketplace = () => {
     }
       
     // Brand filter
-    if (filters.brand && filters.brand.length > 0) {
-      if (!filters.brand.includes(plushie.brand)) {
+    if (filters.brands && filters.brands.length > 0) {
+      if (!filters.brands.includes(plushie.brand)) {
         return false;
       }
     }
 
-    // Color filter (if it exists)
+    // Color filter
     if (filters.color && filters.color.length > 0) {
       // Simple color matching, can be enhanced for better color detection
       if (!filters.color.some(color => plushie.color.toLowerCase().includes(color.toLowerCase()))) {
@@ -80,10 +100,11 @@ const Marketplace = () => {
       }
     }
 
-    return matchesSearch && isInPriceRange && isAvailable;
+    return matchesSearch && (isInPriceRange || !plushie.price) && isAvailable;
   });
 
   const handleFilterUpdate = (newFilters: MarketplaceFilters) => {
+    console.log("Updating filters:", newFilters);
     setFilters(newFilters);
     if (isMobile) {
       setIsFilterOpen(false);
@@ -173,7 +194,12 @@ const Marketplace = () => {
 
             {/* Plushie Grid */}
             <div className="col-span-1 md:col-span-3">
-              {filteredPlushies.length > 0 ? (
+              {isLoading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-500 mx-auto"></div>
+                  <p className="mt-4 text-gray-600">Loading marketplace listings...</p>
+                </div>
+              ) : filteredPlushies.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredPlushies.map((plushie) => (
                     <div 

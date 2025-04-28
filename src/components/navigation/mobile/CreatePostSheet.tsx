@@ -7,17 +7,59 @@ import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
+import { addPost } from "@/utils/postStorage";
+import { useUser } from "@clerk/clerk-react";
 
 export function CreatePostSheet() {
   const { isSheetOpen, isPostCreationOpen, onOpenChange, onClosePostCreation, setIsPostCreationOpen } = useCreatePost();
   const navigate = useNavigate();
+  const { user } = useUser();
 
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
-    toast({
-      title: "Post created successfully!",
-      description: "Your post is now visible in your profile and feed."
-    });
-    return Promise.resolve();
+    try {
+      if (!user) {
+        throw new Error("You must be signed in to create a post");
+      }
+      
+      const username = user?.username || user?.firstName || "Anonymous";
+      
+      const newPost = {
+        id: `post-${Date.now()}`,
+        userId: user.id,
+        image: postData.image,
+        title: postData.title,
+        username: username,
+        likes: 0,
+        comments: 0,
+        description: postData.description || "",
+        tags: postData.tags || [],
+        timestamp: new Date().toISOString(),
+      };
+      
+      const result = await addPost(newPost);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create post");
+      }
+      
+      toast({
+        title: "Post created successfully!",
+        description: "Your post is now visible in your profile and feed."
+      });
+      
+      // Navigate to feed after successful post
+      navigate('/feed');
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error creating post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error creating post",
+        description: error instanceof Error ? error.message : "An unexpected error occurred"
+      });
+      return Promise.reject(error);
+    }
   };
 
   return (

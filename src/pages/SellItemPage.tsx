@@ -8,12 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
-import { PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, DeliveryMethod, ImageUploadResult } from "@/types/marketplace";
+import { PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, DeliveryMethod, ImageUploadResult, MarketplacePlushie } from "@/types/marketplace";
 import { ImageUploader } from "@/components/post/ImageUploader";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { saveMarketplaceListings, getMarketplaceListings, getCurrentUserId, setCurrentUserId } from "@/utils/storage/localStorageUtils";
+import { MobileNav } from "@/components/navigation/MobileNav";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SellItemFormData {
   title: string;
@@ -35,6 +37,7 @@ const SellItemPage = () => {
   const { user } = useUser();
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const isMobile = useIsMobile();
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<SellItemFormData>();
 
   // Store current user ID for syncing
@@ -68,7 +71,7 @@ const SellItemPage = () => {
       const username = user?.username || user?.firstName || "Anonymous";
       const userId = user?.id || getCurrentUserId();
       
-      const newListing = {
+      const newListing: MarketplacePlushie = {
         ...listingData,
         id: `listing-${Date.now()}`,
         userId: userId,
@@ -77,8 +80,10 @@ const SellItemPage = () => {
         comments: 0,
         timestamp: new Date().toISOString(),
         forSale: true,
-        tags: []  // Add empty tags array to match MarketplacePlushie type
+        tags: [] 
       };
+      
+      console.log("Creating new listing:", newListing);
       
       // Add the new listing and save
       listings.unshift(newListing);
@@ -123,7 +128,7 @@ const SellItemPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {isMobile ? <MobileNav /> : <Navbar />}
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Sell Your Plushie</h1>
@@ -202,7 +207,7 @@ const SellItemPage = () => {
 
                 <div>
                   <Label htmlFor="condition">Condition</Label>
-                  <Select onValueChange={(value) => handleSelectChange("condition", value)}>
+                  <Select onValueChange={(value) => handleSelectChange("condition", value as PlushieCondition)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select condition" />
                     </SelectTrigger>
@@ -218,7 +223,7 @@ const SellItemPage = () => {
 
                 <div>
                   <Label htmlFor="material">Material</Label>
-                  <Select onValueChange={(value) => handleSelectChange("material", value)}>
+                  <Select onValueChange={(value) => handleSelectChange("material", value as PlushieMaterial)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select material" />
                     </SelectTrigger>
@@ -234,7 +239,7 @@ const SellItemPage = () => {
 
                 <div>
                   <Label htmlFor="filling">Filling</Label>
-                  <Select onValueChange={(value) => handleSelectChange("filling", value)}>
+                  <Select onValueChange={(value) => handleSelectChange("filling", value as PlushieFilling)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select filling" />
                     </SelectTrigger>
@@ -250,7 +255,7 @@ const SellItemPage = () => {
 
                 <div>
                   <Label htmlFor="species">Species</Label>
-                  <Select onValueChange={(value) => handleSelectChange("species", value)}>
+                  <Select onValueChange={(value) => handleSelectChange("species", value as PlushieSpecies)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select species" />
                     </SelectTrigger>
@@ -267,7 +272,7 @@ const SellItemPage = () => {
 
                 <div>
                   <Label htmlFor="deliveryMethod">Delivery Method</Label>
-                  <Select onValueChange={(value) => handleSelectChange("deliveryMethod", value)}>
+                  <Select onValueChange={(value) => handleSelectChange("deliveryMethod", value as DeliveryMethod)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select delivery method" />
                     </SelectTrigger>
