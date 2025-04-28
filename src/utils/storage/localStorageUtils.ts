@@ -1,4 +1,3 @@
-
 import { ExtendedPost, MarketplacePlushie } from "@/types/marketplace";
 
 // Constants for storage keys
@@ -12,12 +11,31 @@ const USER_STATUS_KEY = 'userStatus';
  */
 export const savePosts = (posts: ExtendedPost[]): void => {
   try {
-    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
+    // Before saving, remove duplicates by ID
+    const uniquePosts = removeDuplicatePosts(posts);
+    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(uniquePosts));
     // Also store in sessionStorage for cross-tab syncing
-    sessionStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
+    sessionStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(uniquePosts));
   } catch (error) {
     console.error('Error saving posts to local storage:', error);
   }
+};
+
+/**
+ * Removes duplicate posts by ID, keeping the most recent version
+ */
+const removeDuplicatePosts = (posts: ExtendedPost[]): ExtendedPost[] => {
+  const postMap = new Map<string, ExtendedPost>();
+  
+  // Keep only the latest version of each post by ID
+  posts.forEach(post => {
+    if (!postMap.has(post.id) || 
+        new Date(post.timestamp || 0) > new Date(postMap.get(post.id)!.timestamp || 0)) {
+      postMap.set(post.id, post);
+    }
+  });
+  
+  return Array.from(postMap.values());
 };
 
 /**
@@ -32,8 +50,11 @@ export const getLocalPosts = (): ExtendedPost[] => {
     const storedPosts = sessionPosts || localPosts;
     const posts = storedPosts ? JSON.parse(storedPosts) : [];
     
+    // Remove duplicates before returning
+    const uniquePosts = removeDuplicatePosts(posts);
+    
     // Sort posts by timestamp (newest first)
-    return posts.sort((a: ExtendedPost, b: ExtendedPost) => {
+    return uniquePosts.sort((a: ExtendedPost, b: ExtendedPost) => {
       const dateA = new Date(a.timestamp || 0).getTime();
       const dateB = new Date(b.timestamp || 0).getTime();
       return dateB - dateA; // Descending order (newest first)
@@ -57,12 +78,32 @@ export const saveMarketplaceListings = (listings: MarketplacePlushie[]): void =>
       timestamp: listing.timestamp || new Date().toISOString()
     }));
     
-    localStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(listingsWithUser));
+    // Remove any duplicates by ID
+    const uniqueListings = removeDuplicateListings(listingsWithUser);
+    
+    localStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(uniqueListings));
     // Also store in sessionStorage for cross-tab syncing
-    sessionStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(listingsWithUser));
+    sessionStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(uniqueListings));
   } catch (error) {
     console.error('Error saving marketplace listings to local storage:', error);
   }
+};
+
+/**
+ * Removes duplicate listings by ID, keeping the most recent version
+ */
+const removeDuplicateListings = (listings: MarketplacePlushie[]): MarketplacePlushie[] => {
+  const listingMap = new Map<string, MarketplacePlushie>();
+  
+  // Keep only the latest version of each listing by ID
+  listings.forEach(listing => {
+    if (!listingMap.has(listing.id) || 
+        new Date(listing.timestamp || 0) > new Date(listingMap.get(listing.id)!.timestamp || 0)) {
+      listingMap.set(listing.id, listing);
+    }
+  });
+  
+  return Array.from(listingMap.values());
 };
 
 /**
@@ -75,10 +116,30 @@ export const getMarketplaceListings = (): MarketplacePlushie[] => {
     const localListings = localStorage.getItem(MARKETPLACE_STORAGE_KEY);
     
     const storedListings = sessionListings || localListings;
-    const listings = storedListings ? JSON.parse(storedListings) : [];
+    
+    if (!storedListings) {
+      console.log("No marketplace listings found in storage");
+      return [];
+    }
+    
+    let listings;
+    try {
+      listings = JSON.parse(storedListings);
+    } catch (parseError) {
+      console.error("Error parsing marketplace listings:", parseError);
+      return [];
+    }
+    
+    if (!Array.isArray(listings)) {
+      console.error("Marketplace listings is not an array:", listings);
+      return [];
+    }
+    
+    // Remove duplicates before returning
+    const uniqueListings = removeDuplicateListings(listings);
     
     // Sort listings by timestamp (newest first)
-    return listings.sort((a: MarketplacePlushie, b: MarketplacePlushie) => {
+    return uniqueListings.sort((a: MarketplacePlushie, b: MarketplacePlushie) => {
       const dateA = new Date(a.timestamp || 0).getTime();
       const dateB = new Date(b.timestamp || 0).getTime();
       return dateB - dateA;
@@ -120,4 +181,19 @@ export const getUserStatus = (): "online" | "offline" | "away" | "busy" => {
   return (localStorage.getItem(USER_STATUS_KEY) || 
           sessionStorage.getItem(USER_STATUS_KEY) || 
           'online') as "online" | "offline" | "away" | "busy";
+};
+
+/**
+ * Cleans up duplicate posts and listings from storage
+ */
+export const cleanupStorage = (): void => {
+  // Get all posts and save them back (which will remove duplicates)
+  const posts = getLocalPosts();
+  savePosts(posts);
+  
+  // Get all listings and save them back (which will remove duplicates)
+  const listings = getMarketplaceListings();
+  saveMarketplaceListings(listings);
+  
+  console.log("Storage cleanup completed");
 };

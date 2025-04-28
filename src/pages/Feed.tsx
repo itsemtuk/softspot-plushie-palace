@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { PostDialog } from "@/components/PostDialog";
@@ -9,6 +10,7 @@ import { FeedHeader } from "@/components/feed/FeedHeader";
 import { EmptyFeed } from "@/components/feed/EmptyFeed";
 import { FeedGrid } from "@/components/feed/FeedGrid";
 import { getPosts, addPost } from "@/utils/postStorage";
+import { cleanupStorage } from "@/utils/storage/localStorageUtils";
 
 const Feed = () => {
   const { user } = useUser();
@@ -34,9 +36,25 @@ const Feed = () => {
     setIsRefreshing(true);
     
     try {
+      // Clean up storage to remove duplicates
+      cleanupStorage();
+      
       // Get posts from storage (Supabase or localStorage)
       const fetchedPosts = await getPosts();
-      setPosts(fetchedPosts);
+      
+      // Filter out any obvious duplicates again (by ID)
+      const uniquePostMap = new Map<string, ExtendedPost>();
+      fetchedPosts.forEach(post => {
+        if (!uniquePostMap.has(post.id) || 
+            (post.timestamp && uniquePostMap.get(post.id)!.timestamp && 
+             new Date(post.timestamp) > new Date(uniquePostMap.get(post.id)!.timestamp!))) {
+          uniquePostMap.set(post.id, post);
+        }
+      });
+      
+      const uniquePosts = Array.from(uniquePostMap.values());
+      
+      setPosts(uniquePosts);
     } catch (error) {
       console.error('Error loading posts:', error);
       toast({
@@ -144,7 +162,6 @@ const Feed = () => {
           <EmptyFeed onCreatePost={() => setIsPostCreationOpen(true)} />
         )}
 
-        {/* Remove the onPostUpdate prop since it doesn't exist in PostDialog */}
         <PostDialog 
           isOpen={dialogOpen} 
           onClose={() => setDialogOpen(false)} 

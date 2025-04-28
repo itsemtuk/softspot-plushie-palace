@@ -23,7 +23,7 @@ export function PostMenu({ onEdit, onDelete }: PostMenuProps) {
         <Button 
           variant="ghost" 
           size="icon" 
-          className={`text-gray-500 hover:text-gray-800 ${isMobile ? 'absolute top-2 right-2' : ''}`}
+          className={`text-gray-500 hover:text-gray-800 ${isMobile ? 'absolute top-2 right-14' : ''}`}
         >
           <MoreHorizontal className="h-5 w-5" />
         </Button>

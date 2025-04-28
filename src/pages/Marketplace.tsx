@@ -6,11 +6,11 @@ import { FilterPanel } from "@/components/marketplace/FilterPanel";
 import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
 import { MarketplacePlushie } from "@/types/marketplace";
 import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
-import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
+import { getMarketplaceListings, saveMarketplaceListings } from "@/utils/storage/localStorageUtils";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Heart, MessageSquare, Bookmark } from "lucide-react";
+import { Heart, MessageSquare, Bookmark, RefreshCw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileNav } from "@/components/navigation/MobileNav";
@@ -24,20 +24,21 @@ const Marketplace = () => {
   const [selectedPlushie, setSelectedPlushie] = useState<MarketplacePlushie | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useUser();
   const isMobile = useIsMobile();
 
-  useEffect(() => {
-    // Load marketplace listings from local storage or API
+  const loadMarketplaceData = () => {
     setIsLoading(true);
     setError(null);
     
     try {
+      console.log("Loading marketplace listings...");
       const storedPlushies = getMarketplaceListings();
-      console.log("Loaded marketplace listings:", storedPlushies);
+      console.log(`Loaded ${storedPlushies?.length || 0} marketplace listings`);
       
       if (!storedPlushies || storedPlushies.length === 0) {
         // Create some default items if there are none
@@ -87,6 +88,8 @@ const Marketplace = () => {
             location: "Los Angeles"
           }
         ];
+        console.log("Creating default items");
+        saveMarketplaceListings(defaultItems);
         setPlushies(defaultItems);
         setFilteredPlushies(defaultItems);
       } else {
@@ -110,6 +113,7 @@ const Marketplace = () => {
       });
     } finally {
       setIsLoading(false);
+      setIsRefreshing(false);
     }
 
     // Load user's wishlist
@@ -121,7 +125,16 @@ const Marketplace = () => {
         console.error("Error parsing wishlist:", error);
       }
     }
+  };
+
+  useEffect(() => {
+    loadMarketplaceData();
   }, []);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    loadMarketplaceData();
+  };
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
@@ -180,7 +193,7 @@ const Marketplace = () => {
           <div className="flex flex-col items-center justify-center py-12">
             <h2 className="text-xl font-semibold text-red-600 mb-2">Error</h2>
             <p className="text-gray-600 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+            <Button onClick={handleRefresh}>Refresh Page</Button>
           </div>
         </div>
       </div>
@@ -189,19 +202,29 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Keep using the appropriate navigation based on device */}
       {isMobile ? <MobileNav /> : <Navbar />}
       
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col space-y-4">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Marketplace</h1>
-            <Button 
-              onClick={handleSellPlushie}
-              className="bg-softspot-500 hover:bg-softspot-600 text-white"
-            >
-              Sell a Plushie
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                className="rounded-full"
+              >
+                <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              </Button>
+              <Button 
+                onClick={handleSellPlushie}
+                className="bg-softspot-500 hover:bg-softspot-600 text-white"
+              >
+                Sell a Plushie
+              </Button>
+            </div>
           </div>
 
           <MarketplaceNav 
@@ -210,7 +233,6 @@ const Marketplace = () => {
           />
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Filter panel with empty filters object if needed */}
             <FilterPanel 
               filters={{}} 
               onFilterChange={() => {}} 
