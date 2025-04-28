@@ -18,6 +18,7 @@ import Footer from "./components/Footer";
 import { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import SellItemPage from "./pages/SellItemPage";
+import About from "./pages/About";
 
 // Use a fixed publishable key for development
 const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
@@ -43,6 +44,7 @@ function AppContent() {
         <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
         <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/about" element={<About />} />
         
         {/* Protected routes that require onboarding completion */}
         <Route path="/settings" element={
