@@ -33,9 +33,22 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
     if (post) {
       setLikeCount(post.likes);
       setIsLiked(false); // Reset like state for each post
-      setCommentList([]);
+      
+      // Reset comment list when post changes to prevent duplication
+      setCommentList(post.comments ? 
+        Array.isArray(post.comments) ? 
+          post.comments.map((comment: any) => ({
+            id: comment.id || `comment-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+            username: comment.username || 'Anonymous',
+            text: comment.text || comment.content || '',
+            timestamp: comment.timestamp || new Date().toISOString(),
+            isLiked: comment.isLiked || false,
+            likes: comment.likes || 0,
+          })) 
+        : []
+      : []);
     }
-  }, [post]);
+  }, [post?.id]); // Only reset when the post ID changes, not on every post prop change
 
   const { user } = useUser();
   // Only consider the user as author if both user and post exist and usernames match
@@ -76,6 +89,12 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
   const handleLikeToggle = () => {
     setIsLiked(!isLiked);
     setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+    
+    // Attempt to update the backend (optional, can fail silently)
+    if (post) {
+      togglePostLike(post.id)
+        .catch(err => console.error('Failed to toggle like:', err));
+    }
   };
 
   const handleCommentLikeToggle = (commentId: string) => {
@@ -89,15 +108,40 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
   };
 
   const handleCommentSubmit = (comment: string) => {
+    if (!comment.trim() || !user) return;
+    
     const newComment: Comment = {
-      id: `comment-${Date.now()}`,
+      id: `comment-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
       username: user?.username || 'Anonymous',
       text: comment,
       timestamp: new Date().toISOString(),
       isLiked: false,
       likes: 0,
     };
+    
+    // Add comment to local state
     setCommentList(prev => [...prev, newComment]);
+    
+    // Update post with new comment (optional)
+    if (post) {
+      const updatedComments = [...(Array.isArray(post.comments) ? post.comments : []), { 
+        id: newComment.id,
+        username: newComment.username,
+        text: newComment.text,
+        timestamp: newComment.timestamp,
+        isLiked: false,
+        likes: 0
+      }];
+      
+      const updatedPost = {
+        ...post,
+        comments: updatedComments
+      };
+      
+      // This is optional and can fail silently
+      updatePost(updatedPost)
+        .catch(err => console.error('Failed to save comment:', err));
+    }
   };
 
   const handleFindSimilar = () => {
