@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { Comment as MarketplaceComment } from "@/types/marketplace";
 
-export interface Comment extends MarketplaceComment {
+export interface Comment {
+  id: string;
+  userId: string;
+  username: string;
   text: string;
   timestamp: string;
   isLiked: boolean;
@@ -40,7 +43,7 @@ export function PostCommentItem({ comment, onLikeToggle }: PostCommentItemProps)
           onClick={() => onLikeToggle(comment.id)}
         >
           <Heart className={`h-3 w-3 ${isLiked ? "fill-rose-500" : ""}`} />
-          <span>{likes}</span>
+          <span>{typeof likes === 'number' ? likes : likes.length}</span>
         </Button>
       </div>
     </div>

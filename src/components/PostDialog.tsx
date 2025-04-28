@@ -2,7 +2,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
-import { ExtendedPost, Comment } from "@/types/marketplace";
+import { ExtendedPost, Comment as MarketplaceComment } from "@/types/marketplace";
 import { Comment as PostCommentItemComment } from "./post-dialog/PostCommentItem";
 
 interface PostDialogProps {
@@ -12,13 +12,13 @@ interface PostDialogProps {
   isLoading?: boolean;
 }
 
-function convertToPostCommentItemComment(comment: Comment): PostCommentItemComment {
+function convertToPostCommentItemComment(comment: MarketplaceComment): PostCommentItemComment {
   return {
     ...comment,
     text: comment.content,
     timestamp: comment.createdAt,
-    isLiked: comment.likes ? comment.likes.some(like => like.userId === "user-1") : false,
-    likes: comment.likes ? comment.likes.length : 0
+    isLiked: Array.isArray(comment.likes) ? comment.likes.some(like => like.userId === "user-1") : false,
+    likes: Array.isArray(comment.likes) ? comment.likes.length : 0
   };
 }
 

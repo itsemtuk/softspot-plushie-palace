@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "@/components/ui/use-toast";
@@ -143,8 +142,7 @@ export function usePostDialog(post: ExtendedPost | null) {
     
     try {
       await updatePost(post.id, {
-        content: updatedContent,
-        updatedAt: new Date().toISOString()
+        content: updatedContent
       });
       
       toast({

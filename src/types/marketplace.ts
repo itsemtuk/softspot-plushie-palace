@@ -1,4 +1,3 @@
-
 export interface PostCreationData {
   image: string;
   title: string;
@@ -90,6 +89,9 @@ export interface Post {
   description?: string;
   tags?: string[];
   timestamp: string;
+  username?: string;
+  likes?: number | { userId: string; username: string }[];
+  comments?: number | Comment[];
 }
 
 export interface PlushieBrand {
@@ -137,20 +139,29 @@ export interface WishlistItem {
   maxPrice: number;
   condition: PlushieCondition[];
   notifications: boolean;
-  name?: string; // Added for compatibility
+  name?: string;
 }
 
 export interface Wishlist {
   userId: string;
   items: WishlistItem[];
-  id?: string; // Added for compatibility
-  title?: string; // Added for compatibility
+  id?: string;
+  title?: string;
+  description?: string;
 }
 
 export interface UserPrivacySettings {
   profileVisibility: PrivacySetting;
   messagePrivacy: PrivacySetting;
   activityVisibility: PrivacySetting;
+  allowMessages?: boolean;
+  showActivity?: boolean;
+  allowTagging?: boolean;
+  profile?: PrivacySetting;
+  posts?: PrivacySetting; 
+  wishlist?: PrivacySetting;
+  marketplace?: PrivacySetting;
+  messages?: PrivacySetting;
 }
 
 export type PrivacySetting = 'public' | 'friends' | 'private';
@@ -162,5 +173,5 @@ export interface Notification {
   content: string;
   read: boolean;
   timestamp: string;
-  relatedUserId?: string; // Added for NotificationsButton component
+  relatedUserId?: string;
 }

@@ -1,101 +1,74 @@
-
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Notification } from '@/types/marketplace';
+import { formatTimeAgo } from '@/lib/utils';
 
-// Sample notifications data
+// Create sample notifications for demonstration
 const initialNotifications: Notification[] = [
   {
-    id: "notif-1",
-    userId: "user-1",
-    type: "follow",
-    content: "Sarah started following you",
-    timestamp: new Date(Date.now() - 30 * 60000), // 30 minutes ago
+    id: '1',
+    userId: 'user-1',
+    type: 'like',
+    content: 'Someone liked your post',
     read: false,
-    relatedUserId: "user-2"
+    timestamp: new Date().toISOString(),
+    relatedUserId: 'user-2'
   },
   {
-    id: "notif-2",
-    userId: "user-1",
-    type: "like",
-    content: "Mike liked your post",
-    timestamp: new Date(Date.now() - 2 * 3600000), // 2 hours ago
+    id: '2',
+    userId: 'user-1',
+    type: 'comment',
+    content: 'Someone commented on your post',
     read: false,
-    relatedUserId: "user-3",
-    relatedItemId: "post-1",
-    relatedItemType: "post"
+    timestamp: new Date().toISOString(),
+    relatedUserId: 'user-3'
   },
   {
-    id: "notif-3",
-    userId: "user-1",
-    type: "comment",
-    content: "Emma commented on your post: 'This is so cute!'",
-    timestamp: new Date(Date.now() - 1 * 86400000), // 1 day ago
+    id: '3',
+    userId: 'user-1',
+    type: 'follow',
+    content: 'Someone started following you',
     read: true,
-    relatedUserId: "user-4",
-    relatedItemId: "post-2",
-    relatedItemType: "post"
+    timestamp: new Date().toISOString(),
+    relatedUserId: 'user-4'
   }
 ];
 
-// Define the context type
-interface NotificationsContextType {
+interface NotificationsContextProps {
   notifications: Notification[];
   unreadCount: number;
   markAsRead: (id: string) => void;
-  markAllAsRead: () => void;
-  deleteNotification: (id: string) => void;
 }
 
-// Create the context with a default value
-const NotificationsContext = createContext<NotificationsContextType>({
-  notifications: [],
-  unreadCount: 0,
-  markAsRead: () => {},
-  markAllAsRead: () => {},
-  deleteNotification: () => {}
-});
+const NotificationsContext = createContext<NotificationsContextProps | undefined>(undefined);
 
-export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+interface NotificationsProviderProps {
+  children: ReactNode;
+}
+
+export const NotificationsProvider: React.FC<NotificationsProviderProps> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>(initialNotifications);
-  
-  // Calculate unread count
-  const unreadCount = notifications.filter(n => !n.read).length;
-  
-  // Mark a notification as read
+
+  const unreadCount = notifications.filter(notification => !notification.read).length;
+
   const markAsRead = (id: string) => {
-    setNotifications(prev => 
-      prev.map(n => n.id === id ? { ...n, read: true } : n)
+    setNotifications(
+      notifications.map(notification =>
+        notification.id === id ? { ...notification, read: true } : notification
+      )
     );
   };
-  
-  // Mark all notifications as read
-  const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-  };
-  
-  // Delete a notification
-  const deleteNotification = (id: string) => {
-    setNotifications(prev => prev.filter(n => n.id !== id));
-  };
-
-  // In a real app, we would fetch notifications from an API here
-  useEffect(() => {
-    // Fetch notifications logic would go here
-    // For now we're using the initialNotifications
-  }, []);
 
   return (
-    <NotificationsContext.Provider value={{
-      notifications,
-      unreadCount,
-      markAsRead,
-      markAllAsRead,
-      deleteNotification
-    }}>
+    <NotificationsContext.Provider value={{ notifications, unreadCount, markAsRead }}>
       {children}
     </NotificationsContext.Provider>
   );
 };
 
-// Create a custom hook to use the notifications context
-export const useNotifications = () => useContext(NotificationsContext);
+export const useNotifications = (): NotificationsContextProps => {
+  const context = useContext(NotificationsContext);
+  if (!context) {
+    throw new Error("useNotifications must be used within a NotificationsProvider");
+  }
+  return context;
+};
