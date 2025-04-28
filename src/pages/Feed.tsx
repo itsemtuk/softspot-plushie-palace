@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { PostDialog } from "@/components/PostDialog";
@@ -138,16 +137,11 @@ const Feed = () => {
           <EmptyFeed onCreatePost={() => setIsPostCreationOpen(true)} />
         )}
 
+        {/* Remove the onPostUpdate prop since it doesn't exist in PostDialog */}
         <PostDialog 
           isOpen={dialogOpen} 
           onClose={() => setDialogOpen(false)} 
-          post={selectedPost} 
-          onPostUpdate={(updatedPost) => {
-            // Update post in local state when it changes
-            setPosts(prevPosts => 
-              prevPosts.map(p => p.id === updatedPost.id ? updatedPost : p)
-            );
-          }}
+          post={selectedPost}
         />
 
         <PostCreationFlow

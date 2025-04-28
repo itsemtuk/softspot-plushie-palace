@@ -55,12 +55,15 @@ export function Navbar() {
 
   const unreadCount = notifications.filter(n => !n.read).length;
 
-  const handleCreatePost = (postData: PostCreationData) => {
+  // Updated to return a Promise
+  const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
     console.log("New post created:", postData);
     toast({
       title: "Post created successfully!",
       description: "Your post is now visible in your profile and feed."
     });
+    // Return a resolved promise to satisfy the TypeScript requirement
+    return Promise.resolve();
   };
 
   if (isMobile) {

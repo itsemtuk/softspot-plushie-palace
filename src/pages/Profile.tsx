@@ -47,7 +47,8 @@ const Profile = () => {
     }
   }, [user]);
 
-  const handleCreatePost = (postData: PostCreationData) => {
+  // Updated to return a Promise
+  const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
     const username = user?.username || user?.firstName || "Anonymous";
     
     // Create new post with user data
@@ -80,6 +81,9 @@ const Profile = () => {
     
     // Close the dialog
     setIsPostDialogOpen(false);
+    
+    // Return a resolved promise to satisfy the TypeScript requirement
+    return Promise.resolve();
   };
 
   // Display user's plushie interests (from metadata or default)
