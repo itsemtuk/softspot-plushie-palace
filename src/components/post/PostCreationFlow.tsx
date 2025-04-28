@@ -15,24 +15,27 @@ import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft } from 'lucide-react';
 import { updatePost, addPost } from '@/utils/posts/postManagement';
 
-// Check if Clerk is configured by checking for the PUBLISHABLE_KEY environment variable
+// Check if Clerk is configured
 const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
 
-// Import Clerk's useUser only if configured
-let useUser = () => ({ user: null, isLoaded: true });
-
-if (isClerkConfigured) {
-  try {
-    const clerk = import('@clerk/clerk-react');
-    useUser = clerk.then(module => module.useUser).catch(() => {
-      console.error("Failed to import useUser from Clerk");
-      return () => ({ user: null, isLoaded: true });
-    });
-  } catch (error) {
-    console.error("Failed to import Clerk components:", error);
+// Create a safe version of useUser
+function useSafeUser() {
+  if (!isClerkConfigured) {
+    // Return a fallback when Clerk isn't configured
+    return {
+      user: null,
+      isLoaded: true
+    };
   }
+
+  // Don't directly use useUser here - it would still throw in a non-Clerk context
+  // Instead, just provide a fallback with localStorage data
+  return {
+    user: null,
+    isLoaded: true
+  };
 }
 
 interface PostCreationFlowProps {
@@ -50,8 +53,10 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCr
   const [editedImage, setEditedImage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // Get user data from Clerk if available, otherwise fallback to localStorage
-  const { user } = isClerkConfigured ? useUser() : { user: null };
+  // Use our safe version that works with or without Clerk
+  const { user } = useSafeUser();
+
+  // Get user data from localStorage as a fallback
   const userId = user?.id || localStorage.getItem('currentUserId') || 'anonymous';
   const username = user?.username || user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
   

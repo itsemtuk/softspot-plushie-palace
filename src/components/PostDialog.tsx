@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
@@ -13,9 +12,18 @@ interface PostDialogProps {
   isLoading?: boolean;
 }
 
+// This function isn't used, but we'll keep it for future reference
 function convertToPostCommentItemComment(comment: MarketplaceComment): Comment {
   // Ensure we have a valid comment object
-  if (!comment) return null as unknown as Comment;
+  if (!comment) return {
+    id: '',
+    userId: '',
+    username: 'Anonymous',
+    text: '',
+    timestamp: new Date().toISOString(),
+    isLiked: false,
+    likes: 0
+  };
   
   return {
     id: comment.id || "",
@@ -76,35 +84,37 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
   };
 
   // Convert commentList to unified format expected by components
-  const formattedComments: Comment[] = commentList
-    .filter(comment => !!comment) // Filter out any null or undefined comments
-    .map(comment => {
-      // Check if the comment already has the expected format
-      if ('text' in comment || 'content' in comment) {
-        // If it has either text or content, convert to the consistent Comment format
+  const formattedComments: Comment[] = Array.isArray(commentList) ? 
+    commentList
+      .filter(comment => !!comment) // Filter out any null or undefined comments
+      .map(comment => {
+        if (!comment) {
+          return {
+            id: `comment-${Date.now()}-${Math.random()}`,
+            userId: '',
+            username: 'Anonymous',
+            text: '',
+            isLiked: false,
+            likes: 0
+          };
+        }
+        
+        // Create a consistent comment structure
         return {
-          id: comment.id,
-          userId: comment.userId,
+          id: comment.id || `comment-${Date.now()}-${Math.random()}`,
+          userId: comment.userId || "",
           username: comment.username || "Anonymous",
-          text: 'text' in comment ? comment.text : comment.content,
-          timestamp: 'timestamp' in comment ? comment.timestamp : comment.createdAt,
-          isLiked: 'isLiked' in comment ? comment.isLiked : false,
-          likes: 'likes' in comment ? (
-            Array.isArray(comment.likes) ? comment.likes : comment.likes
-          ) : 0
+          text: ('text' in comment) ? comment.text : 
+                ('content' in comment) ? comment.content : "",
+          timestamp: ('timestamp' in comment) ? comment.timestamp : 
+                    ('createdAt' in comment) ? comment.createdAt : new Date().toISOString(),
+          isLiked: ('isLiked' in comment) ? Boolean(comment.isLiked) : false,
+          likes: ('likes' in comment) 
+            ? (Array.isArray(comment.likes) ? comment.likes.length : 
+              (typeof comment.likes === 'number' ? comment.likes : 0))
+            : 0
         };
-      }
-      // Fallback to empty comment if we can't parse it
-      return {
-        id: comment.id || `comment-${Date.now()}`,
-        userId: comment.userId || "unknown",
-        username: comment.username || "Anonymous",
-        text: "",
-        timestamp: new Date().toISOString(),
-        isLiked: false,
-        likes: 0
-      };
-    });
+      }) : [];
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCloseDialog()}>

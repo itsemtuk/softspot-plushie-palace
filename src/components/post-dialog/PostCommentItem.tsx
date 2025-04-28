@@ -14,26 +14,22 @@ export interface Comment {
   timestamp?: string;     // From PostCommentItem Comment
   createdAt?: string;     // From MarketplaceComment
   isLiked?: boolean;
-  likes: number | any[];  // Support both number and array of likes
+  likes: number | { userId: string; }[];  // Support both number and array of likes
 }
 
 interface PostCommentItemProps {
-  comment: Comment | MarketplaceComment;
+  comment: Comment;
   onLikeToggle: (commentId: string) => void;
 }
 
 export function PostCommentItem({ comment, onLikeToggle }: PostCommentItemProps) {
   // Handle compatibility between Comment types
-  const content = "text" in comment && comment.text ? comment.text : 
-                 "content" in comment ? comment.content : "";
-  const timestamp = "timestamp" in comment && comment.timestamp ? comment.timestamp : 
-                   "createdAt" in comment ? comment.createdAt : new Date().toISOString();
-  const likes = "likes" in comment ? (
-    Array.isArray(comment.likes) 
-      ? comment.likes.length 
-      : (typeof comment.likes === 'number' ? comment.likes : 0)
-  ) : 0;
-  const isLiked = "isLiked" in comment ? comment.isLiked : false;
+  const content = comment.text || comment.content || "";
+  const timestamp = comment.timestamp || comment.createdAt || new Date().toISOString();
+  const likes = Array.isArray(comment.likes) 
+    ? comment.likes.length 
+    : (typeof comment.likes === 'number' ? comment.likes : 0);
+  const isLiked = Boolean(comment.isLiked);
 
   return (
     <div className="bg-gray-50 p-3 rounded-md">
@@ -50,7 +46,7 @@ export function PostCommentItem({ comment, onLikeToggle }: PostCommentItemProps)
           onClick={() => onLikeToggle(comment.id)}
         >
           <Heart className={`h-3 w-3 ${isLiked ? "fill-rose-500" : ""}`} />
-          <span>{typeof likes === 'number' ? likes : likes.length}</span>
+          <span>{likes}</span>
         </Button>
       </div>
     </div>
