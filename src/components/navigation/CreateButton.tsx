@@ -7,7 +7,6 @@ import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData, ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
-import { useUser } from "@clerk/clerk-react";
 import { addPost } from "@/utils/posts/postManagement";
 
 interface CreateButtonProps {
@@ -25,10 +24,12 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
   } = useCreatePost();
   
   const navigate = useNavigate();
-  const { user, isSignedIn } = useUser();
+  const isSignedIn = !!localStorage.getItem('currentUserId');
+  const userId = localStorage.getItem('currentUserId') || 'anonymous';
+  const username = localStorage.getItem('currentUsername') || 'Anonymous';
 
   const handlePostCreation = async (postData: PostCreationData): Promise<void> => {
-    if (!user) {
+    if (!isSignedIn) {
       toast({
         variant: "destructive",
         title: "Authentication required",
@@ -38,12 +39,10 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
     }
     
     try {
-      const username = user?.username || user?.firstName || "Anonymous";
-      
       // Fix the post creation to include all required properties
       const newPost: ExtendedPost = {
         id: `post-${Date.now()}`,
-        userId: user?.id || 'anonymous',
+        userId: userId,
         image: postData.image,
         title: postData.title,
         username: username,

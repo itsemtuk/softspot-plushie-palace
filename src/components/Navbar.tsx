@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
@@ -14,6 +13,7 @@ import { SearchBar } from "@/components/navigation/SearchBar";
 import { CreateButton } from "@/components/navigation/CreateButton";
 import { NotificationsButton } from "@/components/navigation/NotificationsButton";
 import { UserMenu } from "@/components/navigation/UserMenu";
+import { AuthWrapper } from "./auth/AuthWrapper";
 
 export function Navbar() {
   const isMobile = useIsMobile();
@@ -48,20 +48,18 @@ export function Navbar() {
             <SearchBar />
             <CreateButton onCreatePost={() => setIsPostCreationOpen(true)} />
             
-            <SignedIn>
-              <div className="flex items-center space-x-2">
-                <NotificationsButton />
-                <UserMenu />
-              </div>
-            </SignedIn>
-            
-            <SignedOut>
+            <AuthWrapper requiresAuth={true} fallback={
               <Link to="/sign-in">
                 <Button className="bg-softspot-400 hover:bg-softspot-500 text-white">
                   Sign In
                 </Button>
               </Link>
-            </SignedOut>
+            }>
+              <div className="flex items-center space-x-2">
+                <NotificationsButton />
+                <UserMenu />
+              </div>
+            </AuthWrapper>
           </div>
         </div>
       </div>

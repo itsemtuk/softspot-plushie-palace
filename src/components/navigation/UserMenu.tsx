@@ -3,13 +3,12 @@ import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageSquare, PlusCircle } from "lucide-react";
 import { UserButton } from "./UserButton";
-import { useUser } from "@clerk/clerk-react";
 import { NotificationsButton } from "./NotificationsButton";
 import { toast } from "@/components/ui/use-toast";
 
 export const UserMenu = () => {
-  const { user, isSignedIn } = useUser();
   const navigate = useNavigate();
+  const isSignedIn = !!localStorage.getItem('currentUserId');
   
   const handleAuthRequiredAction = (action: string, path: string) => {
     if (!isSignedIn) {

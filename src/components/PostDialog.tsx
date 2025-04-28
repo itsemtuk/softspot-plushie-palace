@@ -1,8 +1,9 @@
+
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
 import { ExtendedPost, Comment as MarketplaceComment } from "@/types/marketplace";
-import { Comment } from "./post-dialog/PostCommentItem";
+import { Comment as PostCommentItemComment } from "./post-dialog/PostCommentItem";
 import { useEffect, useRef } from "react";
 
 interface PostDialogProps {
@@ -12,9 +13,9 @@ interface PostDialogProps {
   isLoading?: boolean;
 }
 
-function convertToPostCommentItemComment(comment: MarketplaceComment): Comment {
+function convertToPostCommentItemComment(comment: MarketplaceComment): PostCommentItemComment {
   // Ensure we have a valid comment object
-  if (!comment) return null as any;
+  if (!comment) return null as unknown as PostCommentItemComment;
   
   return {
     id: comment.id || "",
@@ -22,7 +23,7 @@ function convertToPostCommentItemComment(comment: MarketplaceComment): Comment {
     timestamp: comment.createdAt || new Date().toISOString(),
     userId: comment.userId || "",
     username: comment.username || "Anonymous",
-    isLiked: Array.isArray(comment.likes) ? comment.likes.some(like => like.userId === "user-1") : false,
+    isLiked: Array.isArray(comment.likes) ? comment.likes.some(like => like.userId === localStorage.getItem('currentUserId')) : false,
     likes: Array.isArray(comment.likes) ? comment.likes.length : 0
   };
 }
@@ -74,13 +75,13 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
     if (onClose) onClose();
   };
 
-  // Convert commentList to format expected by PostCommentItem
-  const formattedComments: Comment[] = commentList
+  // Convert commentList to unified format expected by components
+  const formattedComments = commentList
     .filter(comment => !!comment) // Filter out any null or undefined comments
     .map(comment => {
-      // Check if the comment is already in the correct format
+      // Check if the comment is already in the PostCommentItemComment format
       if ('text' in comment) {
-        return comment as Comment;
+        return comment as PostCommentItemComment;
       }
       // Otherwise convert from MarketplaceComment format
       return convertToPostCommentItemComment(comment as MarketplaceComment);

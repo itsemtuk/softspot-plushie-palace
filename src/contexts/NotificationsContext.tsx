@@ -32,7 +32,8 @@ export const useNotifications = () => useContext(NotificationsContext);
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const { user, isLoaded } = useUser();
+  const userHook = useUser();
+  const { user, isLoaded } = userHook || { user: null, isLoaded: false };
 
   const unreadCount = notifications.filter(notification => !notification.read).length;
 

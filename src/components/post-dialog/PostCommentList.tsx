@@ -1,10 +1,11 @@
 
-import { PostCommentItem, Comment } from "./PostCommentItem";
+import { PostCommentItem, Comment as PostCommentItemComment } from "./PostCommentItem";
+import { Comment as MarketplaceComment } from "@/types/marketplace";
 
 interface PostCommentListProps {
-  comments: Comment[];
+  comments: (PostCommentItemComment | MarketplaceComment)[];
   onCommentLikeToggle: (commentId: string) => void;
-  currentUserId?: string; // Make this prop optional
+  currentUserId?: string;
 }
 
 export function PostCommentList({ comments, onCommentLikeToggle, currentUserId }: PostCommentListProps) {
