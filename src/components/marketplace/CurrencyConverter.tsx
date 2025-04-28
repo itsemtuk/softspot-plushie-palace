@@ -70,11 +70,13 @@ interface CurrencyConverterProps {
 
 const CurrencyConverter = ({ price, className }: CurrencyConverterProps) => {
   const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
-  const [convertedPrice, setConvertedPrice] = useState<number>(price);
+  const [convertedPrice, setConvertedPrice] = useState<number>(0);
   
   useEffect(() => {
+    // Ensure price is a number before conversion
+    const safePrice = typeof price === 'number' ? price : 0;
     const rate = exchangeRates[selectedCurrency];
-    setConvertedPrice(Number((price * rate).toFixed(2)));
+    setConvertedPrice(Number((safePrice * rate).toFixed(2)));
   }, [selectedCurrency, price]);
   
   return (
@@ -96,7 +98,7 @@ const CurrencyConverter = ({ price, className }: CurrencyConverterProps) => {
         </SelectContent>
       </Select>
       <span className="font-medium">
-        {price > 0 ? `${currencySymbols[selectedCurrency]}${convertedPrice}` : ''}
+        {convertedPrice > 0 ? `${currencySymbols[selectedCurrency]}${convertedPrice}` : ''}
       </span>
     </div>
   );

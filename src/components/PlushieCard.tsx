@@ -26,6 +26,9 @@ export function PlushieCard({
   forSale = false,
   variant = "feed"
 }: PlushieCardProps) {
+  // Ensure price is a number before using toFixed
+  const displayPrice = typeof price === 'number' ? price : 0;
+  
   return (
     <div 
       className={cn(
@@ -47,7 +50,7 @@ export function PlushieCard({
         {forSale && (
           <div className="absolute top-2 right-2 bg-softspot-500 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center">
             <DollarSign className="h-3 w-3 mr-1" />
-            {price?.toFixed(2)}
+            {displayPrice.toFixed(2)}
           </div>
         )}
       </div>

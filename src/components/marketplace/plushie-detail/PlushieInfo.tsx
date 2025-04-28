@@ -8,7 +8,7 @@ interface PlushieInfoProps {
 }
 
 export function PlushieInfo({ plushie }: PlushieInfoProps) {
-  // Ensure deliveryCost is a number
+  // Ensure deliveryCost is a number for toFixed()
   const deliveryCost = typeof plushie.deliveryCost === 'number' ? plushie.deliveryCost : 0;
   
   return (
@@ -22,7 +22,7 @@ export function PlushieInfo({ plushie }: PlushieInfoProps) {
       
       <div className="flex flex-wrap gap-2 my-4">
         <h3 className="font-medium w-full mb-2">Tags</h3>
-        {["plushie", plushie.species, plushie.brand, plushie.condition.toLowerCase()].map(tag => (
+        {["plushie", plushie.species, plushie.brand, plushie.condition?.toLowerCase()].filter(Boolean).map(tag => (
           <div key={tag} className="bg-softspot-100 text-softspot-700 px-2 py-1 rounded-full text-xs flex items-center">
             <Tag className="h-3 w-3 mr-1" />
             {tag}

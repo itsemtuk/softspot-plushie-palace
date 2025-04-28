@@ -31,18 +31,15 @@ export const UserButton = () => {
     setUserStatusState(localStatus);
     
     // Sync with Clerk metadata if different
-    if (user.publicMetadata?.status && 
-        user.publicMetadata?.status !== localStatus) {
-      setUserStatus(user.publicMetadata?.status as "online" | "offline" | "away" | "busy");
+    const clerkStatus = user.unsafeMetadata?.status as string;
+    if (clerkStatus && clerkStatus !== localStatus) {
+      setUserStatus(clerkStatus as "online" | "offline" | "away" | "busy");
     }
     
     // Update status to online when component mounts
-    if (!user.publicMetadata?.status || user.publicMetadata?.status !== localStatus) {
+    if (!clerkStatus || clerkStatus !== localStatus) {
       updateClerkProfile({
-        publicMetadata: {
-          ...user.publicMetadata,
-          status: localStatus
-        }
+        status: localStatus
       });
     }
 
@@ -53,10 +50,7 @@ export const UserButton = () => {
         // Synchronously update clerk without waiting for promise
         try {
           updateClerkProfile({
-            publicMetadata: {
-              ...user.publicMetadata,
-              status: "offline"
-            }
+            status: "offline"
           });
         } catch (error) {
           console.error("Failed to update status on unload", error);
@@ -79,10 +73,7 @@ export const UserButton = () => {
     if (user) {
       try {
         await updateClerkProfile({
-          publicMetadata: {
-            ...user.publicMetadata,
-            status: newStatus
-          }
+          status: newStatus
         });
       } catch (error) {
         console.error("Failed to update status", error);

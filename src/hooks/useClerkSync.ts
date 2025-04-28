@@ -16,9 +16,7 @@ export function useClerkSync() {
       const clerkStatus = user.publicMetadata?.status as string || 'online';
       if (clerkStatus !== currentStatus) {
         updateClerkProfile({
-          publicMetadata: {
-            status: currentStatus
-          }
+          status: currentStatus
         });
       }
     }
@@ -29,39 +27,35 @@ export function useClerkSync() {
     imageUrl?: string;
     firstName?: string;
     lastName?: string;
-    publicMetadata?: Record<string, any>;
+    status?: string;
   }) => {
     if (!user) return;
 
     try {
-      // Clone the data object to avoid modifying the original
-      const updateData = { ...data };
-      
-      // Handle metadata separately to avoid API errors
-      if (updateData.publicMetadata) {
+      // Handle metadata separately using the correct API
+      if (data.status) {
+        // Use unsafeMetadata for status since publicMetadata is causing issues
         await user.update({
-          publicMetadata: updateData.publicMetadata
+          unsafeMetadata: {
+            ...user.unsafeMetadata,
+            status: data.status,
+            lastUpdated: new Date().toISOString(),
+          }
         });
-        delete updateData.publicMetadata;
+        
+        // Update in local storage
+        setUserStatus(data.status as "online" | "offline" | "away" | "busy");
       }
       
       // Update other user properties if any are provided
-      if (Object.keys(updateData).length > 0) {
-        await user.update({
-          ...updateData,
-          unsafeMetadata: {
-            ...user.unsafeMetadata,
-            lastUpdated: new Date().toISOString(),
-          },
-        });
+      const profileData = { ...data };
+      delete profileData.status; // Remove status as it's handled above
+      
+      if (Object.keys(profileData).length > 0) {
+        await user.update(profileData);
       }
       
       await user.reload();
-      
-      // If we're updating status, also update local storage
-      if (data.publicMetadata?.status) {
-        setUserStatus(data.publicMetadata.status as "online" | "offline" | "away" | "busy");
-      }
       
       return { success: true };
     } catch (error) {
@@ -75,9 +69,7 @@ export function useClerkSync() {
     setUserStatus(status);
     
     return updateClerkProfile({
-      publicMetadata: {
-        status
-      }
+      status
     });
   };
 
