@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { X, MoreHorizontal } from "lucide-react";
+import { X } from "lucide-react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PostActions } from "./PostActions";
@@ -12,6 +12,7 @@ import { PostMenu } from "./PostMenu";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PostContentProps {
   post: ExtendedPost;
@@ -47,6 +48,7 @@ export function PostContent({
   const [editedDescription, setEditedDescription] = useState(post.description || "");
   const [isSaving, setIsSaving] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const isMobile = useIsMobile();
 
   const handleStartEdit = () => {
     setEditedTitle(post.title || "");
@@ -80,7 +82,7 @@ export function PostContent({
   };
 
   return (
-    <div className="p-4 flex flex-col h-full max-h-[600px] overflow-y-auto">
+    <div className="p-4 flex flex-col h-full max-h-[80vh] overflow-y-auto">
       {/* Post header with author info and actions */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -96,7 +98,8 @@ export function PostContent({
           {isAuthor && !isEditing && (
             <PostMenu onEdit={handleStartEdit} onDelete={() => setShowDeleteConfirm(true)} />
           )}
-          {onClose && (
+          {/* Only show close button if we're not in a mobile view - mobile dialog already has a close button */}
+          {onClose && !isMobile && (
             <Button variant="ghost" size="icon" onClick={onClose} className="text-gray-500 hover:text-gray-800">
               <X className="h-5 w-5" />
             </Button>
@@ -132,6 +135,18 @@ export function PostContent({
         <>
           <h2 className="text-lg font-medium mb-2">{post.title}</h2>
           {post.description && <p className="text-gray-700 mb-4">{post.description}</p>}
+          
+          {/* Display tags if available */}
+          {post.tags && post.tags.length > 0 && (
+            <div className="flex flex-wrap gap-2 my-4">
+              {post.tags.map(tag => (
+                <div key={tag} className="bg-softspot-100 text-softspot-700 px-2 py-1 rounded-full text-xs flex items-center">
+                  <span className="mr-1">#</span>
+                  {tag}
+                </div>
+              ))}
+            </div>
+          )}
         </>
       )}
 
@@ -145,7 +160,7 @@ export function PostContent({
       />
 
       {/* Comments section */}
-      <div className="flex-grow overflow-y-auto mb-4">
+      <div className="flex-grow overflow-y-auto mb-4 relative">
         <PostCommentList 
           comments={commentList} 
           onCommentLikeToggle={onCommentLikeToggle} 
@@ -153,7 +168,7 @@ export function PostContent({
       </div>
 
       {/* Comment form */}
-      <div className="mt-auto pt-3 border-t">
+      <div className="mt-auto pt-3 border-t sticky bottom-0 bg-white">
         <PostCommentForm onSubmit={onCommentSubmit} />
       </div>
 

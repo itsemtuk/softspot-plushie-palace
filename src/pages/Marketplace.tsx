@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileNav } from "@/components/navigation/MobileNav";
 import { toast } from "@/components/ui/use-toast";
+import { Spinner } from "@/components/ui/spinner";
 
 const Marketplace = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -23,6 +25,7 @@ const Marketplace = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [wishlist, setWishlist] = useState<string[]>([]);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
   const { user } = useUser();
   const isMobile = useIsMobile();
@@ -30,23 +33,76 @@ const Marketplace = () => {
   useEffect(() => {
     // Load marketplace listings from local storage or API
     setIsLoading(true);
+    setError(null);
+    
     try {
       const storedPlushies = getMarketplaceListings();
       console.log("Loaded marketplace listings:", storedPlushies);
       
-      // Make sure we add any missing fields required by the UI
-      // The error was about 'createdAt' not existing on the MarketplacePlushie type
-      // Instead of modifying the type, ensure all listings have the required fields
-      const plushiesWithRequiredFields = storedPlushies.map((plushie: MarketplacePlushie) => ({
-        ...plushie,
-        // Only add timestamp if it doesn't exist
-        ...(plushie.timestamp ? {} : { timestamp: new Date().toISOString() })
-      }));
-      
-      setPlushies(plushiesWithRequiredFields);
-      setFilteredPlushies(plushiesWithRequiredFields);
+      if (!storedPlushies || storedPlushies.length === 0) {
+        // Create some default items if there are none
+        const defaultItems = [
+          {
+            id: "plushie-1",
+            userId: "default",
+            image: "https://images.unsplash.com/photo-1516067154453-6194ba34d121",
+            title: "Teddy Bear",
+            username: "plushielover",
+            likes: 42,
+            comments: 5,
+            price: 29.99,
+            forSale: true,
+            condition: "Like New",
+            description: "A cuddly teddy bear looking for a new home.",
+            color: "Brown",
+            material: "Plush",
+            brand: "TeddyCo",
+            size: "Medium",
+            filling: "Cotton",
+            tags: ["teddy", "bear", "brown"],
+            timestamp: new Date().toISOString(),
+            species: "Bear",
+            location: "New York"
+          },
+          {
+            id: "plushie-2",
+            userId: "default",
+            image: "https://images.unsplash.com/photo-1558006510-1e4d1bf38ada",
+            title: "Pink Unicorn",
+            username: "unicornlover",
+            likes: 78,
+            comments: 12,
+            price: 34.99,
+            forSale: true,
+            condition: "New",
+            description: "Magical unicorn plushie with rainbow-colored mane.",
+            color: "Pink",
+            material: "Plush",
+            brand: "MagicToys",
+            size: "Large",
+            filling: "Polyester",
+            tags: ["unicorn", "pink", "magical"],
+            timestamp: new Date().toISOString(),
+            species: "Mythical",
+            location: "Los Angeles"
+          }
+        ];
+        setPlushies(defaultItems);
+        setFilteredPlushies(defaultItems);
+      } else {
+        // Make sure we add any missing fields required by the UI
+        const plushiesWithRequiredFields = storedPlushies.map((plushie: MarketplacePlushie) => ({
+          ...plushie,
+          // Only add timestamp if it doesn't exist
+          ...(plushie.timestamp ? {} : { timestamp: new Date().toISOString() })
+        }));
+        
+        setPlushies(plushiesWithRequiredFields);
+        setFilteredPlushies(plushiesWithRequiredFields);
+      }
     } catch (error) {
       console.error("Error loading marketplace listings:", error);
+      setError("Failed to load marketplace listings. Please try refreshing the page.");
       toast({
         variant: "destructive",
         title: "Error",
@@ -115,6 +171,22 @@ const Marketplace = () => {
     navigate('/marketplace/sell');
   };
 
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        {isMobile ? <MobileNav /> : <Navbar />}
+        
+        <div className="container mx-auto px-4 py-8">
+          <div className="flex flex-col items-center justify-center py-12">
+            <h2 className="text-xl font-semibold text-red-600 mb-2">Error</h2>
+            <p className="text-gray-600 mb-4">{error}</p>
+            <Button onClick={() => window.location.reload()}>Refresh Page</Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Keep using the appropriate navigation based on device */}
@@ -138,7 +210,7 @@ const Marketplace = () => {
           />
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {/* Filter panel needs to have filters prop */}
+            {/* Filter panel with empty filters object if needed */}
             <FilterPanel 
               filters={{}} 
               onFilterChange={() => {}} 
@@ -147,7 +219,7 @@ const Marketplace = () => {
             <div className="md:col-span-3">
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-500"></div>
+                  <Spinner size="lg" />
                 </div>
               ) : filteredPlushies.length === 0 ? (
                 <div className="text-center py-20">
@@ -167,6 +239,10 @@ const Marketplace = () => {
                           src={plushie.image} 
                           alt={plushie.title}
                           className="object-cover w-full h-full"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "https://images.unsplash.com/photo-1516067154453-6194ba34d121";
+                          }}
                         />
                         {plushie.condition && (
                           <Badge className="absolute top-2 left-2 bg-softspot-500 hover:bg-softspot-600">
@@ -186,7 +262,7 @@ const Marketplace = () => {
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-medium truncate">{plushie.title}</h3>
-                        <p className="text-softspot-500 font-bold">${plushie.price.toFixed(2)}</p>
+                        <p className="text-softspot-500 font-bold">${plushie.price?.toFixed(2) || "Price unavailable"}</p>
                       </CardContent>
                       <CardFooter className="px-4 py-2 border-t flex justify-between text-sm text-gray-500">
                         <div className="flex items-center space-x-4">

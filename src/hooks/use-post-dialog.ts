@@ -1,49 +1,95 @@
 
 import { ExtendedPost, Comment } from "@/types/marketplace";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, createContext, useContext } from "react";
 import { toast } from "@/components/ui/use-toast";
 
-// Global variables to track dialog state across components
-// These variables are shared between all instances of the hook
-let globalSetCurrentPost: (post: ExtendedPost | null) => void = () => {};
-let globalSetDialogOpen: (open: boolean) => void = () => {};
+// Create a context for the post dialog
+type PostDialogContextType = {
+  openPostDialog: (post: ExtendedPost) => void;
+  currentPostData: ExtendedPost | null;
+  isDialogOpen: boolean;
+  setIsDialogOpen: (open: boolean) => void;
+};
+
+const PostDialogContext = createContext<PostDialogContextType | undefined>(undefined);
+
+// Provider component to be used in App.tsx
+export const PostDialogProvider = ({ children }: { children: React.ReactNode }) => {
+  const [currentPostData, setCurrentPostData] = useState<ExtendedPost | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+
+  const openPostDialog = useCallback((post: ExtendedPost) => {
+    console.log("Opening post dialog for post:", post.id);
+    setCurrentPostData(post);
+    setIsDialogOpen(true);
+  }, []);
+
+  return (
+    <PostDialogContext.Provider value={{ 
+      openPostDialog, 
+      currentPostData, 
+      isDialogOpen, 
+      setIsDialogOpen 
+    }}>
+      {children}
+    </PostDialogContext.Provider>
+  );
+};
 
 // Exported standalone function to open the dialog from anywhere
 export const openPostDialog = (post: ExtendedPost) => {
-  if (globalSetCurrentPost && globalSetDialogOpen) {
-    console.log("Opening post dialog for post:", post.id);
-    globalSetCurrentPost(post);
-    globalSetDialogOpen(true);
-  } else {
-    console.error("Post dialog controls not initialized");
-  }
+  // This function will be replaced by the context-based approach
+  console.warn("Using deprecated openPostDialog function. Please update to use the hook instead.");
+  const event = new CustomEvent('openPostDialog', { detail: post });
+  window.dispatchEvent(event);
 };
 
+// Add event listener in any component that needs to handle this event
+if (typeof window !== 'undefined') {
+  window.addEventListener('openPostDialog', ((e: CustomEvent) => {
+    console.log("Event listener caught openPostDialog event");
+    // The handler will be implemented by components that use usePostDialog
+  }) as EventListener);
+}
+
 export const usePostDialog = (post: ExtendedPost | null = null) => {
-  // State for the dialog visibility
-  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
+  const context = useContext(PostDialogContext);
+  
+  // State for the dialog and post data
   const [currentPostData, setCurrentPostData] = useState<ExtendedPost | null>(post);
+  const [isDialogOpen, setIsDialogOpen] = useState<boolean>(false);
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [likeCount, setLikeCount] = useState<number>(currentPostData?.likes || 0);
   const [commentList, setCommentList] = useState<Comment[]>([]);
   const [isAuthor, setIsAuthor] = useState<boolean>(false);
-  
-  // Set the global references for the openPostDialog function - this is crucial!
+
+  // If we're in a context, use that for dialog state
   useEffect(() => {
-    globalSetCurrentPost = setCurrentPostData;
-    globalSetDialogOpen = setIsDialogOpen;
-    
-    return () => {
-      // Optional cleanup if the component using this hook is unmounted
-      // and no other components are using it
-      if (globalSetCurrentPost === setCurrentPostData) {
-        globalSetCurrentPost = () => {};
-      }
-      if (globalSetDialogOpen === setIsDialogOpen) {
-        globalSetDialogOpen = () => {};
-      }
-    };
-  }, []);
+    if (context) {
+      // Event handler for global openPostDialog events
+      const handleOpenPostDialogEvent = (e: Event) => {
+        const customEvent = e as CustomEvent;
+        if (customEvent.detail) {
+          context.openPostDialog(customEvent.detail);
+        }
+      };
+
+      window.addEventListener('openPostDialog', handleOpenPostDialogEvent as EventListener);
+      
+      return () => {
+        window.removeEventListener('openPostDialog', handleOpenPostDialogEvent as EventListener);
+      };
+    }
+  }, [context]);
+
+  // Use the post from props or context
+  useEffect(() => {
+    if (post) {
+      setCurrentPostData(post);
+    } else if (context?.currentPostData) {
+      setCurrentPostData(context.currentPostData);
+    }
+  }, [post, context?.currentPostData]);
   
   // Check if the current user is the author of the post
   useEffect(() => {
@@ -254,6 +300,16 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
       return false;
     }
   };
+
+  // Use the context if available, otherwise use local state
+  const openCurrentPostDialog = useCallback((post: ExtendedPost) => {
+    if (context) {
+      context.openPostDialog(post);
+    } else {
+      setCurrentPostData(post);
+      setIsDialogOpen(true);
+    }
+  }, [context]);
   
   return {
     isLiked,
@@ -266,9 +322,9 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
     handleCommentSubmit,
     handleFindSimilar,
     handleDeletePost,
-    openPostDialog,
-    currentPostData,
-    isDialogOpen,
-    setIsDialogOpen,
+    openPostDialog: openCurrentPostDialog,
+    currentPostData: context?.currentPostData || currentPostData,
+    isDialogOpen: context?.isDialogOpen || isDialogOpen,
+    setIsDialogOpen: context?.setIsDialogOpen || setIsDialogOpen,
   };
 };

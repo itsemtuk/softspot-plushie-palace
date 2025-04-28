@@ -22,6 +22,19 @@ const PostPage = () => {
   const { isSignedIn } = useUser();
   const isMobile = useIsMobile();
   
+  // Prevent body scrolling when dialog is open on mobile
+  useEffect(() => {
+    if (isMobile && dialogOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [dialogOpen, isMobile]);
+  
   useEffect(() => {
     const loadPost = async () => {
       if (!postId) {

@@ -39,7 +39,14 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
     handleCommentSubmit,
     handleFindSimilar,
     handleDeletePost,
+    setIsDialogOpen
   } = usePostDialog(post);
+
+  // Close dialog and cleanup
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false);
+    if (onClose) onClose();
+  };
 
   // Convert commentList to format expected by PostCommentItem
   const formattedComments: PostCommentItemComment[] = commentList
@@ -47,7 +54,7 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
     .map(convertToPostCommentItemComment);
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleCloseDialog()}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden">
         <PostDialogContent
           post={post}
@@ -60,7 +67,7 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
           onCommentLikeToggle={handleCommentLikeToggle}
           onCommentSubmit={handleCommentSubmit}
           onFindSimilar={handleFindSimilar}
-          onClose={onClose}
+          onClose={handleCloseDialog}
           onSaveEdit={handleSaveEdit}
           onDeletePost={handleDeletePost}
         />

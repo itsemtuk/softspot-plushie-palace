@@ -12,12 +12,14 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { useClerkSync } from "@/hooks/useClerkSync";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getUserStatus, setUserStatus } from "@/utils/storage/localStorageUtils";
+import { toast } from "@/components/ui/use-toast";
 
 export const UserButton = () => {
   const { user } = useUser();
   const { signOut } = useClerk();
+  const navigate = useNavigate();
   const [userStatus, setUserStatusState] = useState<"online" | "offline" | "away" | "busy">("online");
   const { updateClerkProfile } = useClerkSync();
 
@@ -88,6 +90,10 @@ export const UserButton = () => {
     }
   };
 
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
   return (
     <div className="relative">
       <DropdownMenu>
@@ -109,13 +115,11 @@ export const UserButton = () => {
             />
           </div>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="bg-white">
+        <DropdownMenuContent align="end" className="bg-white z-50 shadow-lg">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuItem asChild>
-            <Link to="/profile" className="flex items-center cursor-pointer">
-              <User className="mr-2 h-4 w-4" />
-              <span>My Profile</span>
-            </Link>
+          <DropdownMenuItem onClick={handleProfileClick} className="flex items-center cursor-pointer">
+            <User className="mr-2 h-4 w-4" />
+            <span>My Profile</span>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           

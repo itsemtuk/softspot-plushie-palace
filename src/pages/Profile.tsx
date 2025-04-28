@@ -50,13 +50,13 @@ const Profile = () => {
       fetchUserPosts();
     } else if (isLoaded && !user) {
       // If user is not authenticated, redirect to sign-in
-      setIsLoading(false);
+      navigate('/sign-in');
     }
     
     return () => {
       isMounted = false;
     };
-  }, [user, isLoaded]);
+  }, [user, isLoaded, navigate]);
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);

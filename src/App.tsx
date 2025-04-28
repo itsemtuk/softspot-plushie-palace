@@ -22,6 +22,7 @@ import PostPage from "./pages/PostPage";
 import SignIn from "./pages/SignIn";
 import SignUp from "./pages/SignUp";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
+import { PostDialogProvider } from "@/hooks/use-post-dialog";
 
 // Use a fixed publishable key for development
 const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
@@ -99,10 +100,12 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
           <NotificationsProvider>
-            <BrowserRouter>
-              <AppContent />
-            </BrowserRouter>
-            <Toaster />
+            <PostDialogProvider>
+              <BrowserRouter>
+                <AppContent />
+              </BrowserRouter>
+              <Toaster />
+            </PostDialogProvider>
           </NotificationsProvider>
         </ClerkProvider>
       </QueryClientProvider>
