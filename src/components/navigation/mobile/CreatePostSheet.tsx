@@ -33,7 +33,10 @@ export function CreatePostSheet() {
           <Button 
             variant="outline" 
             className="flex flex-col items-center gap-2 h-auto py-4"
-            disabled
+            onClick={() => {
+              onOpenChange(false);
+              navigate('/sell');
+            }}
           >
             <ShoppingBag className="h-6 w-6" />
             <span>Sell</span>

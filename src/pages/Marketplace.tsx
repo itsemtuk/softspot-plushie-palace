@@ -1,4 +1,5 @@
-import { useState } from 'react';
+
+import { useState, useEffect } from 'react';
 import { Navbar } from "@/components/Navbar";
 import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
@@ -8,6 +9,8 @@ import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { MarketplacePlushie, MarketplaceFilters } from "@/types/marketplace";
 import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
+import { MobileNav } from "@/components/navigation/MobileNav";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Marketplace = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,14 +19,17 @@ const Marketplace = () => {
   const [filters, setFilters] = useState<MarketplaceFilters>({});
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [selectedPlushie, setSelectedPlushie] = useState<MarketplacePlushie | null>(null);
+  const [listings, setListings] = useState<MarketplacePlushie[]>([]);
+  const isMobile = useIsMobile();
 
-  // Get listings from localStorage instead of mock data
-  const getListings = () => {
+  // Get listings from localStorage
+  useEffect(() => {
     const stored = localStorage.getItem('marketplaceListings');
-    return stored ? JSON.parse(stored) : [];
-  };
+    const storedListings = stored ? JSON.parse(stored) : [];
+    setListings(storedListings);
+  }, []);
 
-  const filteredPlushies = getListings().filter((plushie: MarketplacePlushie) => {
+  const filteredPlushies = listings.filter((plushie: MarketplacePlushie) => {
     const searchTerm = searchQuery.toLowerCase();
     const matchesSearch =
       plushie.title.toLowerCase().includes(searchTerm) ||
@@ -75,7 +81,7 @@ const Marketplace = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {!isMobile ? <Navbar /> : <MobileNav />}
       <div className="relative h-[300px] bg-gradient-to-r from-softspot-100 to-softspot-200">
         <div className="absolute inset-0 bg-opacity-50 bg-white">
           <div className="container mx-auto px-4 h-full flex flex-col justify-center">
@@ -116,20 +122,33 @@ const Marketplace = () => {
 
             {/* Plushie Grid */}
             <div className="col-span-1 md:col-span-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredPlushies.map((plushie) => (
-                  <div 
-                    key={plushie.id} 
-                    className="cursor-pointer transform transition-transform hover:scale-[1.02]"
-                    onClick={() => handlePlushieClick(plushie)}
+              {filteredPlushies.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredPlushies.map((plushie) => (
+                    <div 
+                      key={plushie.id} 
+                      className="cursor-pointer transform transition-transform hover:scale-[1.02]"
+                      onClick={() => handlePlushieClick(plushie)}
+                    >
+                      <PlushieCard 
+                        {...plushie} 
+                        variant="marketplace"
+                      />
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 bg-white rounded-lg shadow-sm">
+                  <h3 className="text-xl font-medium text-gray-700">No plushies found</h3>
+                  <p className="text-gray-500 mt-2">Try adjusting your filters or add a new listing</p>
+                  <Button 
+                    onClick={() => isMobile ? null : navigate('/sell')} 
+                    className="mt-4 bg-softspot-500 hover:bg-softspot-600"
                   >
-                    <PlushieCard 
-                      {...plushie} 
-                      variant="marketplace"
-                    />
-                  </div>
-                ))}
-              </div>
+                    List a Plushie for Sale
+                  </Button>
+                </div>
+              )}
             </div>
           </div>
         </div>

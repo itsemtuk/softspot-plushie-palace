@@ -1,3 +1,4 @@
+
 import { type ClassValue, clsx } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -48,4 +49,12 @@ export function formatTimeAgo(date: Date | string): string {
     const years = Math.floor(secondsAgo / year);
     return `${years} ${years === 1 ? "year" : "years"} ago`;
   }
+}
+
+// Helper to safely convert string dates to Date objects
+export function safelyConvertToDate(date: string | Date): Date {
+  if (date instanceof Date) {
+    return date;
+  }
+  return new Date(date);
 }

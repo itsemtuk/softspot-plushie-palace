@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
@@ -8,52 +8,31 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Search, Filter, Heart, MessageSquare, Share, Bookmark } from "lucide-react";
-import { Post } from "@/types/marketplace";
+import { Post, ExtendedPost } from "@/types/marketplace";
 import { useIsMobile } from "@/hooks/use-mobile";
-
-// Mock data for posts
-const mockPosts: Post[] = [
-  {
-    id: "1",
-    userId: "user1",
-    image: "https://i.pravatar.cc/300?img=1",
-    title: "My new Jellycat bunny!",
-    username: "plushielover",
-    likes: 24,
-    comments: 5,
-    timestamp: "2 hours ago",
-    tags: ["jellycat", "bunny", "cute"]
-  },
-  {
-    id: "2",
-    userId: "user2",
-    image: "https://i.pravatar.cc/300?img=2",
-    title: "Vintage teddy collection",
-    username: "teddycollector",
-    likes: 42,
-    comments: 8,
-    timestamp: "5 hours ago",
-    tags: ["vintage", "collection", "teddy"]
-  },
-  {
-    id: "3",
-    userId: "user3",
-    image: "https://i.pravatar.cc/300?img=3",
-    title: "Look at this adorable Care Bear!",
-    username: "carebearfan",
-    likes: 67,
-    comments: 12,
-    timestamp: "1 day ago",
-    tags: ["carebear", "pink", "retro"]
-  }
-];
+import { MobileNav } from "@/components/navigation/MobileNav";
+import { formatTimeAgo } from "@/lib/utils";
 
 export default function Discover() {
   const [activeTab, setActiveTab] = useState("for-you");
   const [searchQuery, setSearchQuery] = useState("");
   const isMobile = useIsMobile();
+  const [posts, setPosts] = useState<ExtendedPost[]>([]);
 
-  const filteredPosts = mockPosts.filter(post => 
+  useEffect(() => {
+    // Get posts from localStorage
+    const getPosts = () => {
+      const stored = localStorage.getItem('posts');
+      return stored ? JSON.parse(stored) : [];
+    };
+    
+    const loadedPosts = getPosts();
+    if (loadedPosts.length > 0) {
+      setPosts(loadedPosts);
+    }
+  }, []);
+
+  const filteredPosts = posts.filter(post => 
     post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
     post.username.toLowerCase().includes(searchQuery.toLowerCase())
@@ -61,9 +40,7 @@ export default function Discover() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
-      {/* Add padding at the top for mobile */}
-      {isMobile && <div className="h-16" />}
+      {!isMobile ? <Navbar /> : <MobileNav />}
       
       <main className="max-w-4xl mx-auto px-4 py-4 sm:py-6">
         <div className="flex items-center justify-between mb-6">
@@ -93,23 +70,45 @@ export default function Discover() {
           </TabsList>
 
           <TabsContent value="for-you" className="space-y-4">
-            {filteredPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
+            {filteredPosts.length > 0 ? (
+              filteredPosts.map((post) => (
+                <PostCard key={post.id} post={post} />
+              ))
+            ) : (
+              <div className="text-center py-10 text-gray-500">
+                <p>No posts found. Follow more users or create your own posts!</p>
+                <Button className="mt-4 bg-softspot-500 hover:bg-softspot-600">
+                  Create a Post
+                </Button>
+              </div>
+            )}
           </TabsContent>
           
           <TabsContent value="following" className="space-y-4">
             <div className="text-center py-10 text-gray-500">
-              Follow more users to see their content here!
+              <p>Follow more users to see their content here!</p>
+              <Button className="mt-4 bg-softspot-500 hover:bg-softspot-600">
+                Discover Users
+              </Button>
             </div>
           </TabsContent>
           
           <TabsContent value="trending" className="space-y-4">
-            {filteredPosts
-              .sort((a, b) => b.likes - a.likes)
-              .map((post) => (
-                <PostCard key={post.id} post={post} />
-              ))}
+            {filteredPosts.length > 0 ? (
+              [...filteredPosts]
+                .sort((a, b) => (typeof a.likes === 'number' && typeof b.likes === 'number') ? 
+                  b.likes - a.likes : 0)
+                .map((post) => (
+                  <PostCard key={post.id} post={post} />
+                ))
+            ) : (
+              <div className="text-center py-10 text-gray-500">
+                <p>No trending posts available. Create content to get started!</p>
+                <Button className="mt-4 bg-softspot-500 hover:bg-softspot-600">
+                  Create a Post
+                </Button>
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </main>
@@ -120,7 +119,15 @@ export default function Discover() {
   );
 }
 
-function PostCard({ post }: { post: Post }) {
+interface PostCardProps {
+  post: ExtendedPost;
+}
+
+function PostCard({ post }: PostCardProps) {
+  // Handle both number and array types for likes and comments
+  const likeCount = typeof post.likes === 'number' ? post.likes : (Array.isArray(post.likes) ? post.likes.length : 0);
+  const commentCount = typeof post.comments === 'number' ? post.comments : (Array.isArray(post.comments) ? post.comments.length : 0);
+  
   return (
     <Card className="overflow-hidden">
       <CardHeader className="pb-2">
@@ -131,7 +138,7 @@ function PostCard({ post }: { post: Post }) {
           </Avatar>
           <div>
             <div className="font-medium">{post.username}</div>
-            <div className="text-sm text-gray-500">{post.timestamp}</div>
+            <div className="text-sm text-gray-500">{formatTimeAgo(post.timestamp)}</div>
           </div>
         </div>
       </CardHeader>
@@ -160,11 +167,11 @@ function PostCard({ post }: { post: Post }) {
         <div className="flex space-x-4">
           <Button variant="ghost" size="sm" className="flex items-center gap-1">
             <Heart className="h-4 w-4" />
-            <span>{post.likes}</span>
+            <span>{likeCount}</span>
           </Button>
           <Button variant="ghost" size="sm" className="flex items-center gap-1">
             <MessageSquare className="h-4 w-4" />
-            <span>{post.comments}</span>
+            <span>{commentCount}</span>
           </Button>
           <Button variant="ghost" size="sm" className="flex items-center">
             <Share className="h-4 w-4" />

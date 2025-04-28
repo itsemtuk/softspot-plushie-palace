@@ -1,171 +1,179 @@
 import { useState, useEffect } from "react";
-import { useUser } from "@clerk/clerk-react";
+import { Comment, ExtendedPost } from "@/types/marketplace";
+import { updatePost } from "@/utils/posts/postManagement";
 import { toast } from "@/components/ui/use-toast";
-import { ExtendedPost, Comment } from "@/types/marketplace";
-import { likePost, likeComment } from "@/utils/posts/postInteraction";
-import { updatePost, deletePost } from "@/utils/posts/postManagement";
 
 export function usePostDialog(post: ExtendedPost | null) {
-  const { user } = useUser();
   const [isLiked, setIsLiked] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
   const [commentList, setCommentList] = useState<Comment[]>([]);
   const [isAuthor, setIsAuthor] = useState(false);
-  
-  // Initialize state based on post data
+
   useEffect(() => {
     if (post) {
-      // Check if user has liked this post
-      const hasLiked = Array.isArray(post.likes) && post.likes.some(like => like.userId === user?.id) || false;
-      setIsLiked(hasLiked);
+      // Check if the current user has liked the post
+      const liked = Array.isArray(post.likes) 
+        ? post.likes.some(like => like.userId === "user-1") // Replace with actual user ID
+        : false;
+      setIsLiked(liked);
       
       // Set like count
-      setLikeCount(Array.isArray(post.likes) ? post.likes.length : 0);
+      const count = Array.isArray(post.likes) ? post.likes.length : (typeof post.likes === 'number' ? post.likes : 0);
+      setLikeCount(count);
       
       // Set comments
-      setCommentList(Array.isArray(post.comments) ? post.comments : []);
+      const comments = Array.isArray(post.comments) ? post.comments : [];
+      setCommentList(comments);
       
       // Check if current user is the author
-      setIsAuthor(post.userId === user?.id);
+      setIsAuthor(post.userId === "user-1"); // Replace with actual user ID
     }
-  }, [post, user]);
+  }, [post]);
 
   const handleLikeToggle = async () => {
-    if (!user || !post) {
-      toast({
-        title: "Authentication required",
-        description: "You need to be logged in to like posts.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!post) return;
+    
+    // Optimistic UI update
+    setIsLiked(!isLiked);
+    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
     
     try {
-      // Optimistic update
-      const newIsLiked = !isLiked;
-      setIsLiked(newIsLiked);
-      setLikeCount(prevCount => newIsLiked ? prevCount + 1 : Math.max(0, prevCount - 1));
+      // Update the post with new like status
+      const updatedLikes = Array.isArray(post.likes) 
+        ? isLiked 
+          ? post.likes.filter(like => like.userId !== "user-1") 
+          : [...post.likes, { userId: "user-1", username: "Me" }]
+        : isLiked ? 0 : 1;
       
-      // Persist like
-      await likePost(post.id, user.id, user.username as string);
+      const editedPost = {
+        ...post,
+        likes: updatedLikes
+      };
+      
+      await updatePost(editedPost);
     } catch (error) {
-      // Revert optimistic update on error
-      console.error("Error liking post:", error);
-      setIsLiked(!isLiked);
-      setLikeCount(prevCount => isLiked ? prevCount + 1 : Math.max(0, prevCount - 1));
+      // Revert UI on error
+      setIsLiked(isLiked);
+      setLikeCount(prev => isLiked ? prev + 1 : prev - 1);
       
       toast({
-        title: "Error",
-        description: "Failed to update like status. Please try again.",
         variant: "destructive",
+        title: "Error",
+        description: "Failed to update like status. Please try again."
       });
     }
   };
 
   const handleCommentLikeToggle = async (commentId: string) => {
-    if (!user || !post) {
-      toast({
-        title: "Authentication required",
-        description: "You need to be logged in to like comments.",
-        variant: "destructive",
-      });
-      return;
-    }
+    if (!post) return;
+    
+    // Find the comment
+    const updatedComments = commentList.map(comment => {
+      if (comment.id === commentId) {
+        const isCommentLiked = Array.isArray(comment.likes) 
+          ? comment.likes.some(like => like.userId === "user-1")
+          : false;
+        
+        const updatedLikes = Array.isArray(comment.likes)
+          ? isCommentLiked
+            ? comment.likes.filter(like => like.userId !== "user-1")
+            : [...comment.likes, { userId: "user-1", username: "Me" }]
+          : isCommentLiked ? [] : [{ userId: "user-1", username: "Me" }];
+        
+        return { ...comment, likes: updatedLikes };
+      }
+      return comment;
+    });
+    
+    // Update UI optimistically
+    setCommentList(updatedComments);
     
     try {
-      // Optimistically update UI
-      const updatedComments = commentList.map(comment => {
-        if (comment.id === commentId) {
-          const hasLiked = comment.likes?.some(like => like.userId === user.id) || false;
-          
-          // If already liked, remove like, otherwise add it
-          const updatedLikes = hasLiked 
-            ? (comment.likes?.filter(like => like.userId !== user.id) || [])
-            : [...(comment.likes || []), { userId: user.id, username: user.username as string }];
-          
-          return {
-            ...comment,
-            likes: updatedLikes
-          };
-        }
-        return comment;
-      });
-      
-      setCommentList(updatedComments);
-      
-      // Persist like to storage
-      await likeComment(post.id, commentId, user.id, user.username as string);
-    } catch (error) {
-      console.error("Error liking comment:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update comment like status. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleCommentSubmit = async (content: string) => {
-    if (!user || !post) return;
-    
-    try {
-      const newComment: Comment = {
-        id: `comment-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        userId: user.id,
-        username: user.username as string,
-        content,
-        createdAt: new Date().toISOString(),
-        likes: []
+      // Update the post with new comments
+      const editedPost = {
+        ...post,
+        comments: updatedComments
       };
       
-      // Update local state immediately for responsive UI
-      const updatedComments = [...commentList, newComment];
-      setCommentList(updatedComments);
-      
-      // Update the post with the new comment
-      await updatePost(post.id, {
-        comments: updatedComments
-      });
-      
+      await updatePost(editedPost);
     } catch (error) {
-      console.error("Error submitting comment:", error);
+      // Revert on error
+      setCommentList(commentList);
+      
       toast({
-        title: "Error",
-        description: "Failed to submit your comment. Please try again.",
         variant: "destructive",
+        title: "Error",
+        description: "Failed to update comment like. Please try again."
       });
     }
   };
 
-  const handleSaveEdit = async (updatedContent: string) => {
+  const handleCommentSubmit = async (text: string) => {
+    if (!post || !text.trim()) return;
+    
+    const newComment: Comment = {
+      id: `comment-${Date.now()}`,
+      userId: "user-1", // Replace with actual user ID
+      username: "Me", // Replace with actual username
+      content: text.trim(),
+      createdAt: new Date().toISOString(),
+      likes: []
+    };
+    
+    // Update UI optimistically
+    const updatedComments = [newComment, ...commentList];
+    setCommentList(updatedComments);
+    
+    try {
+      // Update the post with new comment
+      const editedPost = {
+        ...post,
+        comments: updatedComments
+      };
+      
+      await updatePost(editedPost);
+    } catch (error) {
+      // Revert on error
+      setCommentList(commentList);
+      
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to add comment. Please try again."
+      });
+    }
+  };
+
+  const handleSaveEdit = async (editedPost: ExtendedPost) => {
     if (!post) return;
     
     try {
-      await updatePost(post.id, {
-        content: updatedContent
-      });
+      await updatePost(editedPost);
       
       toast({
         title: "Post updated",
-        description: "Your post has been successfully updated.",
+        description: "Your post has been successfully updated."
       });
+      
+      return true;
     } catch (error) {
-      console.error("Error updating post:", error);
       toast({
-        title: "Error",
-        description: "Failed to update your post. Please try again.",
         variant: "destructive",
+        title: "Error",
+        description: "Failed to update post. Please try again."
       });
+      
+      return false;
     }
   };
 
   const handleFindSimilar = () => {
-    if (!post) return;
+    // This would typically navigate to a search page with similar items
+    console.log("Finding similar items to:", post?.title);
     
-    // Logic to find similar posts based on tags or content
     toast({
-      title: "Finding similar posts",
-      description: "This feature is coming soon!",
+      title: "Finding similar items",
+      description: "This feature is coming soon!"
     });
   };
 
