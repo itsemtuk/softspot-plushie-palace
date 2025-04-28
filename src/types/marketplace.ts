@@ -24,6 +24,7 @@ export type PlushieCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor' | s
 export type PlushieMaterial = 'Plush' | 'Cotton' | 'Polyester' | 'Fur' | string;
 export type PlushieFilling = 'Cotton' | 'Polyester' | 'Memory Foam' | string;
 export type PlushieSpecies = 'Bear' | 'Rabbit' | 'Cat' | 'Dog' | 'Mythical' | string;
+export type DeliveryMethod = 'Shipping' | 'Collection' | 'Both'; // Added "Both" as a valid option
 
 export type Currency = 'USD' | 'EUR' | 'GBP' | 'JPY' | 'CAD' | 'AUD' | 'CHF' | 'CNY' | string;
 
@@ -45,7 +46,7 @@ export type MarketplacePlushie = {
   filling: PlushieFilling;
   species: PlushieSpecies;
   brand: string;
-  deliveryMethod: 'Shipping' | 'Collection';
+  deliveryMethod: DeliveryMethod;
   deliveryCost: number;
   tags: string[];
 };
@@ -100,10 +101,13 @@ export type Notification = {
   relatedItemType?: string;
 };
 
+// Update Post type to include title and username directly
 export type Post = {
   id: string;
   userId: string;
   image: string;
+  title?: string; // Added title as optional
+  username?: string; // Added username as optional
   caption?: string;
   likes: number;
   comments: number;
@@ -132,10 +136,9 @@ export type UserPrivacySettings = {
   messages?: PrivacySetting;
 };
 
-// Update WishlistItem to include name instead of title
 export type WishlistItem = {
   id: string;
-  name: string; // Changed from title to match the error
+  name: string;
   brand?: string;
   image?: string;
   price?: number;
@@ -150,11 +153,10 @@ export type WishlistItem = {
   title?: string; // Added for backward compatibility
 };
 
-// Update Wishlist type to include userId
 export type Wishlist = {
   id: string;
-  userId: string; // Added to match the error
-  title: string;
+  userId: string;
+  title: string; // Keeping title as required
   description?: string;
   items: WishlistItem[];
   isPublic: boolean;

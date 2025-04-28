@@ -1,629 +1,564 @@
-
-import { useState } from 'react';
-import { CardTitle, CardHeader, Card, CardContent } from "@/components/ui/card";
+import React, { useState } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsContent as TabsContentMapped, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Wishlist, MarketplacePlushie } from "@/types/marketplace";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Link } from "react-router-dom";
-import { PlusCircle, Pencil, Trash2, Lock, Globe, Share2, ExternalLink } from "lucide-react";
-import { PlushieCard } from "@/components/PlushieCard";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { toast } from "@/components/ui/use-toast";
+import { WishlistItem, Wishlist, Currency, PlushieCondition } from '@/types/marketplace';
 
-// Mock data for wishlists
-const mockWishlists: Wishlist[] = [
-  {
-    id: "wishlist-1",
-    userId: "user-1",
-    name: "Dream Plushies",
-    description: "Plushies I really want to add to my collection",
-    isPublic: true,
-    items: [
-      {
-        id: "1",
-        image: "https://i.pravatar.cc/300?img=1",
-        title: "Mint Jellycat Bunny",
-        username: "plushielover",
-        likes: 24,
-        comments: 5,
-        price: 45.99,
-        forSale: true,
-        condition: "Like New",
-        description: "Adorable mint green bunny, super soft",
-        color: "Mint",
-        material: "Plush",
-        filling: "Cotton",
-        species: "Rabbit",
-        brand: "Jellycat",
-        deliveryMethod: 'Shipping',
-        deliveryCost: 5.00,
-        tags: ['bunny', 'jellycat', 'mint green']
-      },
-      {
-        id: "2",
-        image: "https://i.pravatar.cc/300?img=2",
-        title: "Limited Edition Teddy",
-        username: "teddycollector",
-        likes: 42,
-        comments: 8,
-        price: 89.99,
-        forSale: true,
-        condition: "New",
-        description: "Limited edition anniversary teddy bear",
-        color: "Brown",
-        material: "Cotton",
-        filling: "Polyester",
-        species: "Bear",
-        brand: "Build-A-Bear",
-        deliveryMethod: 'Collection',
-        deliveryCost: 0,
-        tags: ['teddy', 'limited edition', 'anniversary']
-      }
-    ],
-    createdAt: "2023-05-10T12:00:00Z",
-    updatedAt: "2023-06-15T15:30:00Z"
-  },
-  {
-    id: "wishlist-2",
-    userId: "user-1",
-    name: "Birthday List",
-    description: "Plushies I want for my birthday",
-    isPublic: false,
-    items: [
-      {
-        id: "3",
-        image: "https://i.pravatar.cc/300?img=3",
-        title: "Vintage Care Bear",
-        username: "vintagetoylover",
-        likes: 67,
-        comments: 12,
-        price: 120,
-        forSale: true,
-        condition: "Good",
-        description: "Original 80's Care Bear in good condition",
-        color: "Pink",
-        material: "Plush",
-        filling: "Cotton",
-        species: "Bear",
-        brand: "Care Bears",
-        deliveryMethod: 'Both',
-        deliveryCost: 7.50,
-        tags: ['care bear', 'vintage', '80s']
-      }
-    ],
-    createdAt: "2023-07-22T09:15:00Z",
-    updatedAt: "2023-07-25T17:40:00Z"
-  }
-];
+export function WishlistManager() {
+  const [wishlists, setWishlists] = useState<Wishlist[]>([]);
+  const [selectedWishlist, setSelectedWishlist] = useState<Wishlist | null>(null);
+  const [newItemName, setNewItemName] = useState('');
+  const [newItemBrand, setNewItemBrand] = useState('');
+  const [newItemImage, setNewItemImage] = useState('');
+  const [newItemPrice, setNewItemPrice] = useState('');
+  const [newItemCurrency, setNewItemCurrency] = useState<Currency>('USD');
+  const [newItemCondition, setNewItemCondition] = useState<PlushieCondition>('New');
+  const [newItemUrl, setNewItemUrl] = useState('');
+  const [newItemNotes, setNewItemNotes] = useState('');
+  const [newItemPriority, setNewItemPriority] = useState('medium');
+  const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
+  const [isCreateWishlistDialogOpen, setIsCreateWishlistDialogOpen] = useState(false);
+  const [newWishlistName, setNewWishlistName] = useState('');
+  const [newWishlistDescription, setNewWishlistDescription] = useState('');
+  const [newWishlistIsPublic, setNewWishlistIsPublic] = useState(false);
+  const [newWishlistId, setNewWishlistId] = useState(`wishlist-${Date.now()}`);
+  const [isUpdateWishlistDialogOpen, setIsUpdateWishlistDialogOpen] = useState(false);
 
-// Get featured plushie mocks from elsewhere
-const featuredPlushies: MarketplacePlushie[] = [
-  {
-    id: "4",
-    image: "https://i.pravatar.cc/300?img=4",
-    title: "Squishmallow Cat",
-    username: "squishfan",
-    likes: 89,
-    comments: 24,
-    price: 34.99,
-    forSale: true,
-    condition: "New",
-    description: "Super soft gray cat squishmallow",
-    color: "Gray",
-    material: "Plush",
-    filling: "Memory Foam",
-    species: "Cat",
-    brand: "Squishmallows",
-    deliveryMethod: 'Shipping',
-    deliveryCost: 3.00,
-    tags: ['squishmallow', 'cat', 'gray']
-  },
-  {
-    id: "5",
-    image: "https://i.pravatar.cc/300?img=5",
-    title: "Disney Winnie the Pooh",
-    username: "disneylover",
-    likes: 120,
-    comments: 30,
-    price: 65.00,
-    forSale: true,
-    condition: "Like New",
-    description: "Classic Winnie the Pooh plush from Disney",
-    color: "Yellow",
-    material: "Polyester",
-    filling: "Polyester",
-    species: "Bear",
-    brand: "Disney",
-    deliveryMethod: 'Collection',
-    deliveryCost: 0,
-    tags: ['winnie the pooh', 'disney', 'classic']
-  }
-];
+  const handleAddItem = () => {
+    const newItem: WishlistItem = {
+      id: `item-${Date.now()}`,
+      name: newItemName,
+      brand: newItemBrand || undefined,
+      image: newItemImage || undefined,
+      price: newItemPrice ? Number(newItemPrice) : undefined,
+      currency: newItemCurrency || undefined,
+      condition: newItemCondition || undefined,
+      url: newItemUrl || undefined,
+      notes: newItemNotes || undefined,
+      priority: newItemPriority as 'low' | 'medium' | 'high',
+    };
+    
+    if (selectedWishlist) {
+      const updatedWishlist = {
+        ...selectedWishlist,
+        items: [...selectedWishlist.items, newItem],
+      };
+      setWishlists(
+        wishlists.map((wishlist) =>
+          wishlist.id === selectedWishlist.id ? updatedWishlist : wishlist
+        )
+      );
+      setSelectedWishlist(updatedWishlist);
+      setIsAddItemDialogOpen(false);
+      toast({
+        title: "Item added",
+        description: "The item has been added to your wishlist.",
+      });
+    }
+  };
 
-const WishlistManager = () => {
-  const [activeTab, setActiveTab] = useState("my-wishlists");
-  const [wishlists, setWishlists] = useState<Wishlist[]>(mockWishlists);
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [editingWishlist, setEditingWishlist] = useState<Wishlist | null>(null);
-  const [wishlistName, setWishlistName] = useState("");
-  const [wishlistDescription, setWishlistDescription] = useState("");
-  const [isPublic, setIsPublic] = useState(true);
-  
   const handleCreateWishlist = () => {
-    if (!wishlistName.trim()) return;
+    const newWishlistItem: WishlistItem = {
+      id: `item-${Date.now()}`,
+      name: newItemName,
+      brand: newItemBrand || undefined,
+      image: newItemImage || undefined,
+      price: newItemPrice ? Number(newItemPrice) : undefined,
+      currency: newItemCurrency || undefined,
+      condition: newItemCondition || undefined,
+      url: newItemUrl || undefined,
+      notes: newItemNotes || undefined,
+      priority: newItemPriority as 'low' | 'medium' | 'high',
+    };
     
     const newWishlist: Wishlist = {
-      id: `wishlist-${Date.now()}`,
-      userId: "user-1", // Mock user ID
-      name: wishlistName,
-      description: wishlistDescription,
-      isPublic: isPublic,
-      items: [],
+      id: newWishlistId,
+      userId: 'current-user',
+      title: newWishlistName,
+      description: newWishlistDescription,
+      isPublic: newWishlistIsPublic,
+      items: [newWishlistItem],
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+    };
+    setWishlists([...wishlists, newWishlist]);
+    setSelectedWishlist(newWishlist);
+    setIsCreateWishlistDialogOpen(false);
+    toast({
+      title: "Wishlist created",
+      description: "Your new wishlist has been created.",
+    });
+  };
+
+  const handleUpdateWishlist = () => {
+    const updatedItem: WishlistItem = {
+      id: `item-${Date.now()}`,
+      name: newItemName,
+      brand: newItemBrand || undefined,
+      image: newItemImage || undefined,
+      price: newItemPrice ? Number(newItemPrice) : undefined,
+      currency: newItemCurrency || undefined,
+      condition: newItemCondition || undefined,
+      url: newItemUrl || undefined,
+      notes: newItemNotes || undefined,
+      priority: newItemPriority as 'low' | 'medium' | 'high',
+    };
+    
+    if (selectedWishlist) {
+      const updatedWishlist = {
+        ...selectedWishlist,
+        items: [...selectedWishlist.items, updatedItem],
+      };
+      setWishlists(
+        wishlists.map((wishlist) =>
+          wishlist.id === selectedWishlist.id ? updatedWishlist : wishlist
+        )
+      );
+      setSelectedWishlist(updatedWishlist);
+      setIsUpdateWishlistDialogOpen(false);
+      toast({
+        title: "Wishlist updated",
+        description: "Your wishlist has been updated.",
+      });
+    }
+  };
+
+  const handleWishlistSelect = (wishlist: Wishlist) => {
+    setSelectedWishlist(wishlist);
+  };
+
+  const handleOpenAddItemDialog = () => {
+    setIsAddItemDialogOpen(true);
+  };
+
+  const handleCloseAddItemDialog = () => {
+    setIsAddItemDialogOpen(false);
+  };
+
+  const handleOpenCreateWishlistDialog = () => {
+    setIsCreateWishlistDialogOpen(true);
+  };
+
+  const handleCloseCreateWishlistDialog = () => {
+    setIsCreateWishlistDialogOpen(false);
+  };
+
+  const handleOpenUpdateWishlistDialog = () => {
+    setIsUpdateWishlistDialogOpen(true);
+  };
+
+  const handleCloseUpdateWishlistDialog = () => {
+    setIsUpdateWishlistDialogOpen(false);
+  };
+
+  const updateUserWishlistWithTitle = async () => {
+    const newWishlist: Wishlist = {
+      id: newWishlistId,
+      userId: 'current-user', // Using the required userId field
+      title: newWishlistName, // Using title field
+      description: newWishlistDescription,
+      isPublic: newWishlistIsPublic,
+      items: [] as WishlistItem[],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     
     setWishlists([...wishlists, newWishlist]);
-    resetForm();
-    setIsCreateDialogOpen(false);
-    
+    setSelectedWishlist(newWishlist);
+    setIsCreateWishlistDialogOpen(false);
     toast({
-      title: "Wishlist created!",
-      description: `"${wishlistName}" has been created successfully.`
+      title: "Wishlist created",
+      description: "Your new wishlist has been created.",
     });
-  };
-  
-  const handleEditWishlist = () => {
-    if (!editingWishlist || !wishlistName.trim()) return;
-    
-    const updatedWishlists = wishlists.map(w => {
-      if (w.id === editingWishlist.id) {
-        return {
-          ...w,
-          name: wishlistName,
-          description: wishlistDescription,
-          isPublic: isPublic,
-          updatedAt: new Date().toISOString()
-        };
-      }
-      return w;
-    });
-    
-    setWishlists(updatedWishlists);
-    resetForm();
-    setIsEditDialogOpen(false);
-    
-    toast({
-      title: "Wishlist updated!",
-      description: `"${wishlistName}" has been updated successfully.`
-    });
-  };
-  
-  const handleDeleteWishlist = (id: string) => {
-    const updatedWishlists = wishlists.filter(w => w.id !== id);
-    setWishlists(updatedWishlists);
-    
-    toast({
-      title: "Wishlist deleted",
-      description: "The wishlist has been deleted successfully."
-    });
-  };
-  
-  const openEditDialog = (wishlist: Wishlist) => {
-    setEditingWishlist(wishlist);
-    setWishlistName(wishlist.name);
-    setWishlistDescription(wishlist.description || "");
-    setIsPublic(wishlist.isPublic);
-    setIsEditDialogOpen(true);
-  };
-  
-  const resetForm = () => {
-    setWishlistName("");
-    setWishlistDescription("");
-    setIsPublic(true);
-    setEditingWishlist(null);
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <h2 className="text-2xl font-bold">Your Collections</h2>
-        <Button 
-          className="bg-softspot-400 hover:bg-softspot-500 text-white"
-          onClick={() => setIsCreateDialogOpen(true)}
-        >
-          <PlusCircle className="mr-2 h-4 w-4" />
-          New Collection
-        </Button>
-      </div>
-      
-      <Tabs defaultValue="my-wishlists" value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="my-wishlists">My Wishlists</TabsTrigger>
-          <TabsTrigger value="discover">Discover</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="my-wishlists" className="mt-6">
-          {wishlists.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {wishlists.map((wishlist) => (
-                <Card key={wishlist.id} className="overflow-hidden">
-                  <CardHeader className="pb-2">
-                    <div className="flex justify-between items-start">
-                      <div className="flex-1 mr-4">
-                        <CardTitle className="flex items-center gap-2">
-                          {wishlist.name}
-                          {wishlist.isPublic ? (
-                            <Globe className="h-4 w-4 text-gray-400" />
-                          ) : (
-                            <Lock className="h-4 w-4 text-gray-400" />
-                          )}
-                        </CardTitle>
-                        <p className="text-sm text-gray-500 mt-1">
-                          {wishlist.items.length} items
-                        </p>
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          onClick={() => openEditDialog(wishlist)}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 text-destructive"
-                          onClick={() => handleDeleteWishlist(wishlist.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    {wishlist.description && (
-                      <p className="text-sm text-gray-600 mt-2">
-                        {wishlist.description}
-                      </p>
-                    )}
-                  </CardHeader>
-                  
-                  <CardContent className="p-0">
-                    <div className="relative">
-                      <ScrollArea className="h-64">
-                        <div className="grid grid-cols-2 gap-1 p-4">
-                          {wishlist.items.length > 0 ? (
-                            wishlist.items.map((item, index) => (
-                              <div 
-                                key={`${item.id}-${index}`}
-                                className="aspect-square overflow-hidden rounded-md bg-gray-100"
-                              >
-                                <img 
-                                  src={item.image} 
-                                  alt={item.title} 
-                                  className="w-full h-full object-cover transition-transform hover:scale-110"
-                                />
-                              </div>
-                            ))
-                          ) : (
-                            <div className="col-span-2 flex flex-col items-center justify-center h-40">
-                              <p className="text-gray-500 text-sm">No items yet</p>
-                              <Button 
-                                variant="link" 
-                                size="sm" 
-                                asChild
-                              >
-                                <Link to="/marketplace">
-                                  Add items from the marketplace
-                                </Link>
-                              </Button>
-                            </div>
-                          )}
-                        </div>
-                      </ScrollArea>
-                      
-                      <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-white to-transparent pointer-events-none"></div>
-                      
-                      <div className="absolute bottom-2 right-2">
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="bg-white shadow-sm"
-                          asChild
-                        >
-                          <Link to={`/wishlist/${wishlist.id}`}>
-                            <ExternalLink className="h-3.5 w-3.5 mr-1" />
-                            View
-                          </Link>
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          ) : (
-            <Card className="p-8 text-center">
-              <div className="max-w-sm mx-auto">
-                <h3 className="text-lg font-medium">No wishlists yet</h3>
-                <p className="text-gray-500 mt-2 mb-4">
-                  Create your first wishlist to start saving plushies you love or want to get in the future.
-                </p>
-                <Button 
-                  className="bg-softspot-400 hover:bg-softspot-500"
-                  onClick={() => setIsCreateDialogOpen(true)}
-                >
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Create Wishlist
-                </Button>
-              </div>
-            </Card>
-          )}
-        </TabsContent>
-        
-        <TabsContent value="discover" className="mt-6">
-          <div className="space-y-8">
-            <section>
-              <h3 className="text-xl font-bold mb-4">Featured Collections</h3>
-              
-              <Card className="bg-gradient-to-r from-softspot-50 to-softspot-100 overflow-hidden">
-                <CardContent className="p-6">
-                  <div className="flex flex-col md:flex-row gap-6">
-                    <div className="md:w-1/3">
-                      <h4 className="text-lg font-semibold">Care Bears Collection</h4>
-                      <div className="flex items-center gap-2 mt-2 mb-4">
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage src="https://i.pravatar.cc/150?img=12" alt="Mike" />
-                          <AvatarFallback>M</AvatarFallback>
-                        </Avatar>
-                        <span className="text-sm">mikeplush</span>
-                      </div>
-                      
-                      <p className="text-sm text-gray-600">
-                        A complete collection of vintage Care Bears from the 80s.
-                        All in excellent condition and rare to find.
-                      </p>
-                      
-                      <div className="mt-6">
-                        <Button 
-                          variant="default" 
-                          size="sm"
-                          className="bg-softspot-400 hover:bg-softspot-500"
-                        >
-                          <Share2 className="h-4 w-4 mr-2" />
-                          Follow Collection
-                        </Button>
-                      </div>
-                    </div>
-                    
-                    <div className="md:w-2/3 overflow-hidden">
-                      <ScrollArea orientation="horizontal" className="w-full">
-                        <div className="flex gap-4 pb-4">
-                          {[1, 2, 3, 4, 5].map((i) => (
-                            <div key={i} className="w-40 flex-none">
-                              <div className="aspect-square bg-white rounded-lg overflow-hidden">
-                                <img 
-                                  src={`https://i.pravatar.cc/300?img=${i+10}`} 
-                                  alt={`Care Bear ${i}`}
-                                  className="w-full h-full object-cover"
-                                />
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </section>
-            
-            <section>
-              <h3 className="text-xl font-bold mb-4">Plushies You Might Like</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {featuredPlushies.map((plushie) => (
-                  <PlushieCard 
-                    key={plushie.id}
-                    id={plushie.id}
-                    image={plushie.image}
-                    title={plushie.title}
-                    username={plushie.username}
-                    likes={plushie.likes}
-                    comments={plushie.comments}
-                    price={plushie.price}
-                    forSale={plushie.forSale}
-                    variant="marketplace"
-                  />
-                ))}
-              </div>
-            </section>
-            
-            <section>
-              <h3 className="text-xl font-bold mb-4">Popular Collections</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {["Jellycat Collection", "Vintage Steiff Bears"].map((name, i) => (
-                  <Card key={i} className="overflow-hidden">
-                    <CardHeader className="pb-2">
-                      <div className="flex justify-between items-center">
-                        <CardTitle>{name}</CardTitle>
-                        <Avatar className="h-6 w-6">
-                          <AvatarImage 
-                            src={`https://i.pravatar.cc/150?img=${20+i}`} 
-                            alt={`User ${i}`} 
-                          />
-                          <AvatarFallback>U</AvatarFallback>
-                        </Avatar>
-                      </div>
-                    </CardHeader>
-                    
-                    <CardContent className="p-0">
-                      <div className="grid grid-cols-3 gap-0.5">
-                        {[1, 2, 3].map((j) => (
-                          <div 
-                            key={j}
-                            className="aspect-square overflow-hidden bg-gray-100"
-                          >
-                            <img 
-                              src={`https://i.pravatar.cc/300?img=${j+i*3}`} 
-                              alt={`Item ${j}`}
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="p-4">
-                        <Button variant="link" size="sm" className="p-0">
-                          View Collection
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </section>
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Wishlists</CardTitle>
+          <CardDescription>Manage your wishlists and items.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="flex items-center space-x-4">
+            <Button onClick={handleOpenCreateWishlistDialog}>Create Wishlist</Button>
+            <Button onClick={handleOpenAddItemDialog} disabled={!selectedWishlist}>
+              Add Item
+            </Button>
+            <Button onClick={handleOpenUpdateWishlistDialog} disabled={!selectedWishlist}>
+              Update Wishlist
+            </Button>
           </div>
-        </TabsContent>
-      </Tabs>
-      
-      {/* Create Wishlist Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent>
+          <div className="grid gap-2">
+            <Label htmlFor="wishlist">Select Wishlist</Label>
+            <Select onValueChange={(value) => {
+              const selected = wishlists.find((wishlist) => wishlist.id === value);
+              if (selected) {
+                handleWishlistSelect(selected);
+              }
+            }}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select a wishlist" />
+              </SelectTrigger>
+              <SelectContent>
+                {wishlists.map((wishlist) => (
+                  <SelectItem key={wishlist.id} value={wishlist.id}>
+                    {wishlist.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          {selectedWishlist && (
+            <div className="space-y-2">
+              <h3 className="text-lg font-semibold">
+                {selectedWishlist.title} Items
+              </h3>
+              {selectedWishlist.items.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  No items in this wishlist.
+                </p>
+              ) : (
+                <ul className="list-disc pl-5">
+                  {selectedWishlist.items.map((item) => (
+                    <li key={item.id}>{item.name}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Dialog open={isAddItemDialogOpen} onOpenChange={handleCloseAddItemDialog}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Create New Collection</DialogTitle>
+            <DialogTitle>Add Item to Wishlist</DialogTitle>
             <DialogDescription>
-              Create a new wishlist to save plushies you love or want.
+              Add a new item to your selected wishlist.
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Collection Name</Label>
-              <Input 
-                id="name" 
-                placeholder="Enter collection name"
-                value={wishlistName}
-                onChange={(e) => setWishlistName(e.target.value)}
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                className="col-span-3"
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Description (optional)</Label>
-              <Textarea 
-                id="description" 
-                placeholder="Add a description for your collection"
-                value={wishlistDescription}
-                onChange={(e) => setWishlistDescription(e.target.value)}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="brand" className="text-right">
+                Brand
+              </Label>
+              <Input
+                id="brand"
+                value={newItemBrand}
+                onChange={(e) => setNewItemBrand(e.target.value)}
+                className="col-span-3"
               />
             </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="public">Public Collection</Label>
-                <p className="text-sm text-gray-500">
-                  Allow others to see this collection
-                </p>
-              </div>
-              <Switch 
-                id="public" 
-                checked={isPublic} 
-                onCheckedChange={setIsPublic} 
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="image" className="text-right">
+                Image URL
+              </Label>
+              <Input
+                id="image"
+                value={newItemImage}
+                onChange={(e) => setNewItemImage(e.target.value)}
+                className="col-span-3"
               />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="price" className="text-right">
+                Price
+              </Label>
+              <Input
+                type="number"
+                id="price"
+                value={newItemPrice}
+                onChange={(e) => setNewItemPrice(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="currency" className="text-right">
+                Currency
+              </Label>
+              <Select value={newItemCurrency} onValueChange={(value) => setNewItemCurrency(value as Currency)} >
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="GBP">GBP</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="condition" className="text-right">
+                Condition
+              </Label>
+              <Select value={newItemCondition} onValueChange={(value) => setNewItemCondition(value as PlushieCondition)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="New">New</SelectItem>
+                  <SelectItem value="Like New">Like New</SelectItem>
+                  <SelectItem value="Good">Good</SelectItem>
+                  <SelectItem value="Fair">Fair</SelectItem>
+                  <SelectItem value="Poor">Poor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="url" className="text-right">
+                URL
+              </Label>
+              <Input
+                id="url"
+                value={newItemUrl}
+                onChange={(e) => setNewItemUrl(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="notes" className="text-right">
+                Notes
+              </Label>
+              <Textarea
+                id="notes"
+                value={newItemNotes}
+                onChange={(e) => setNewItemNotes(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="priority" className="text-right">
+                Priority
+              </Label>
+              <Select value={newItemPriority} onValueChange={(value) => setNewItemPriority(value)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button 
-              className="bg-softspot-400 hover:bg-softspot-500"
-              onClick={handleCreateWishlist}
-              disabled={!wishlistName.trim()}
-            >
-              Create Collection
-            </Button>
-          </DialogFooter>
+          <CardFooter>
+            <Button onClick={handleAddItem}>Add Item</Button>
+          </CardFooter>
         </DialogContent>
       </Dialog>
-      
-      {/* Edit Wishlist Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent>
+
+      <Dialog open={isCreateWishlistDialogOpen} onOpenChange={handleCloseCreateWishlistDialog}>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Edit Collection</DialogTitle>
+            <DialogTitle>Create Wishlist</DialogTitle>
             <DialogDescription>
-              Update your collection details.
+              Create a new wishlist to save your favorite items.
             </DialogDescription>
           </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="edit-name">Collection Name</Label>
-              <Input 
-                id="edit-name" 
-                placeholder="Enter collection name"
-                value={wishlistName}
-                onChange={(e) => setWishlistName(e.target.value)}
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="wishlistName" className="text-right">
+                Wishlist Name
+              </Label>
+              <Input
+                id="wishlistName"
+                value={newWishlistName}
+                onChange={(e) => setNewWishlistName(e.target.value)}
+                className="col-span-3"
               />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="edit-description">Description (optional)</Label>
-              <Textarea 
-                id="edit-description" 
-                placeholder="Add a description for your collection"
-                value={wishlistDescription}
-                onChange={(e) => setWishlistDescription(e.target.value)}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="wishlistDescription" className="text-right">
+                Description
+              </Label>
+              <Textarea
+                id="wishlistDescription"
+                value={newWishlistDescription}
+                onChange={(e) => setNewWishlistDescription(e.target.value)}
+                className="col-span-3"
               />
             </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="edit-public">Public Collection</Label>
-                <p className="text-sm text-gray-500">
-                  Allow others to see this collection
-                </p>
-              </div>
-              <Switch 
-                id="edit-public" 
-                checked={isPublic} 
-                onCheckedChange={setIsPublic} 
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="isPublic" className="text-right">
+                Public
+              </Label>
+              <Switch
+                id="isPublic"
+                checked={newWishlistIsPublic}
+                onCheckedChange={(checked) => setNewWishlistIsPublic(checked)}
+                className="col-span-3"
               />
             </div>
           </div>
-          
-          <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={() => {
-                setIsEditDialogOpen(false);
-                resetForm();
-              }}
-            >
-              Cancel
-            </Button>
-            <Button 
-              className="bg-softspot-400 hover:bg-softspot-500"
-              onClick={handleEditWishlist}
-              disabled={!wishlistName.trim()}
-            >
-              Save Changes
-            </Button>
-          </DialogFooter>
+          <CardFooter>
+            <Button onClick={updateUserWishlistWithTitle}>Create Wishlist</Button>
+          </CardFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isUpdateWishlistDialogOpen} onOpenChange={handleCloseUpdateWishlistDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Update Wishlist</DialogTitle>
+            <DialogDescription>
+              Update your selected wishlist.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="name" className="text-right">
+                Name
+              </Label>
+              <Input
+                id="name"
+                value={newItemName}
+                onChange={(e) => setNewItemName(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="brand" className="text-right">
+                Brand
+              </Label>
+              <Input
+                id="brand"
+                value={newItemBrand}
+                onChange={(e) => setNewItemBrand(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="image" className="text-right">
+                Image URL
+              </Label>
+              <Input
+                id="image"
+                value={newItemImage}
+                onChange={(e) => setNewItemImage(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="price" className="text-right">
+                Price
+              </Label>
+              <Input
+                type="number"
+                id="price"
+                value={newItemPrice}
+                onChange={(e) => setNewItemPrice(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="currency" className="text-right">
+                Currency
+              </Label>
+              <Select value={newItemCurrency} onValueChange={(value) => setNewItemCurrency(value as Currency)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="USD">USD</SelectItem>
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="GBP">GBP</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="condition" className="text-right">
+                Condition
+              </Label>
+              <Select value={newItemCondition} onValueChange={(value) => setNewItemCondition(value as PlushieCondition)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="New">New</SelectItem>
+                  <SelectItem value="Like New">Like New</SelectItem>
+                  <SelectItem value="Good">Good</SelectItem>
+                  <SelectItem value="Fair">Fair</SelectItem>
+                  <SelectItem value="Poor">Poor</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="url" className="text-right">
+                URL
+              </Label>
+              <Input
+                id="url"
+                value={newItemUrl}
+                onChange={(e) => setNewItemUrl(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="notes" className="text-right">
+                Notes
+              </Label>
+              <Textarea
+                id="notes"
+                value={newItemNotes}
+                onChange={(e) => setNewItemNotes(e.target.value)}
+                className="col-span-3"
+              />
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="priority" className="text-right">
+                Priority
+              </Label>
+              <Select value={newItemPriority} onValueChange={(value) => setNewItemPriority(value)}>
+                <SelectTrigger className="col-span-3">
+                  <SelectValue placeholder="Select" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="low">Low</SelectItem>
+                  <SelectItem value="medium">Medium</SelectItem>
+                  <SelectItem value="high">High</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <CardFooter>
+            <Button onClick={handleUpdateWishlist}>Update Wishlist</Button>
+          </CardFooter>
         </DialogContent>
       </Dialog>
     </div>
   );
-};
+}
 
 export default WishlistManager;

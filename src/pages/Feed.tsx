@@ -7,21 +7,14 @@ import { Input } from "@/components/ui/input";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { PostDialog } from "@/components/PostDialog";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
-import { PostCreationData } from "@/types/marketplace";
+import { PostCreationData, Post } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/clerk-react";
 
 // Extended post type with additional fields
-interface ExtendedPost {
-  id: string;
-  image: string;
-  title: string;
-  username: string;
-  likes: number;
-  comments: number;
+interface ExtendedPost extends Post {
   description?: string;
   tags?: string[];
-  timestamp?: string;
 }
 
 const Feed = () => {
@@ -42,8 +35,8 @@ const Feed = () => {
   }, []);
   
   const filteredPosts = posts.filter(post => 
-    post.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    post.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
+    (post.username?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
     post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
   
@@ -62,9 +55,10 @@ const Feed = () => {
     // Create new post with user data
     const newPost: ExtendedPost = {
       id: `post-${Date.now()}`,
+      userId: user?.id || 'anonymous',
       image: postData.image,
       title: postData.title,
-      username: username as string,
+      username: username,
       likes: 0,
       comments: 0,
       description: postData.description,
@@ -130,7 +124,7 @@ const Feed = () => {
                 <AspectRatio ratio={1} className="bg-gray-100">
                   <img
                     src={post.image}
-                    alt={post.title}
+                    alt={post.title || "Post"}
                     className="object-cover w-full h-full"
                   />
                 </AspectRatio>
