@@ -1,4 +1,3 @@
-
 export type ImageUploadResult = {
   url?: string;
   success: boolean;
@@ -106,8 +105,8 @@ export type Post = {
   id: string;
   userId: string;
   image: string;
-  title?: string; // Added title as optional
-  username?: string; // Added username as optional
+  title: string; // Make title required
+  username: string; // Make username required
   caption?: string;
   likes: number;
   comments: number;
@@ -122,6 +121,8 @@ export type PlushieBrand = {
   logo?: string;
   description?: string;
   featured: boolean;
+  website?: string;
+  instagram?: string;
 };
 
 export type UserPrivacySettings = {
