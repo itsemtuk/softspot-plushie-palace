@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
@@ -78,7 +77,14 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
   // Convert commentList to format expected by PostCommentItem
   const formattedComments: PostCommentItemComment[] = commentList
     .filter(comment => !!comment) // Filter out any null or undefined comments
-    .map(convertToPostCommentItemComment);
+    .map(comment => {
+      // Check if the comment is already in the correct format
+      if ('text' in comment) {
+        return comment as PostCommentItemComment;
+      }
+      // Otherwise convert from MarketplaceComment format
+      return convertToPostCommentItemComment(comment);
+    });
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleCloseDialog()}>

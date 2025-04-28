@@ -27,39 +27,49 @@ import { CloudSyncStatus } from './components/CloudSyncStatus';
 // Get Clerk publishable key
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-// Use a placeholder key for development when not provided
-const clerkPublishableKey = PUBLISHABLE_KEY || "pk_test_placeholder-key-for-dev-only";
-
 function App() {
+  // Skip using Clerk if no valid publishable key is provided
+  const isClerkConfigured = PUBLISHABLE_KEY && PUBLISHABLE_KEY.startsWith('pk_');
+  
+  // App content with all routes
+  const appContent = (
+    <NotificationsProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          <Route path="/sign-in/*" element={<SignIn />} />
+          <Route path="/sign-up/*" element={<SignUp />} />
+          <Route path="/feed" element={<Feed />} />
+          <Route path="/marketplace/*" element={<Marketplace />} />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/posts/:postId" element={<PostPage />} />
+          <Route path="/settings" element={<Settings />} />
+          <Route path="/onboarding" element={<Onboarding />} />
+          <Route path="/messages" element={<MessagingPage />} />
+          <Route path="/sell" element={<SellItemPage />} />
+          <Route path="/wishlist" element={<WishlistPage />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/brand/:brandId" element={<BrandPage />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+        <CloudSyncStatus />
+        <Toaster />
+      </Router>
+    </NotificationsProvider>
+  );
+
   return (
     <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <ClerkProvider publishableKey={clerkPublishableKey}>
-        <NotificationsProvider>
-          <Router>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/sign-in/*" element={<SignIn />} />
-              <Route path="/sign-up/*" element={<SignUp />} />
-              <Route path="/feed" element={<Feed />} />
-              <Route path="/marketplace/*" element={<Marketplace />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/posts/:postId" element={<PostPage />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/onboarding" element={<Onboarding />} />
-              <Route path="/messages" element={<MessagingPage />} />
-              <Route path="/sell" element={<SellItemPage />} />
-              <Route path="/wishlist" element={<WishlistPage />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-              <Route path="/brand/:brandId" element={<BrandPage />} />
-              <Route path="/discover" element={<Discover />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-            <CloudSyncStatus />
-            <Toaster />
-          </Router>
-        </NotificationsProvider>
-      </ClerkProvider>
+      {isClerkConfigured ? (
+        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+          {appContent}
+        </ClerkProvider>
+      ) : (
+        // Fallback without Clerk when no valid key is provided
+        appContent
+      )}
     </ThemeProvider>
   );
 }
