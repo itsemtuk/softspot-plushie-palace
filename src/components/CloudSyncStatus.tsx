@@ -11,27 +11,34 @@ const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY &&
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
 
 // Create a safe version of useUser that works with or without Clerk
-const useUser = () => {
-  // If Clerk is not configured, return a default value
+function useSafeUser() {
   if (!isClerkConfigured) {
+    // If Clerk is not configured, return a default value
     return { isSignedIn: !!localStorage.getItem('currentUserId') };
   }
   
-  // Try to import and use Clerk's useUser
   try {
-    // This is just to satisfy TypeScript - we're not actually using the real useUser here
-    // since it would throw an error if used outside ClerkProvider
-    return { isSignedIn: !!localStorage.getItem('currentUserId') };
+    // Safely import and use Clerk's useUser
+    // This dynamic import pattern works better with build systems
+    const { useUser } = require('@clerk/clerk-react');
+    if (typeof useUser === 'function') {
+      return useUser();
+    } else {
+      console.warn("Clerk's useUser is not available, using fallback");
+      return { isSignedIn: !!localStorage.getItem('currentUserId') };
+    }
   } catch (error) {
     console.error("Failed to use Clerk's useUser:", error);
     return { isSignedIn: !!localStorage.getItem('currentUserId') };
   }
-};
+}
 
 export function CloudSyncStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isCloudEnabled, setIsCloudEnabled] = useState(isSupabaseConfigured());
-  const { isSignedIn } = useUser();
+  
+  // Use our safe version of useUser instead of direct Clerk import
+  const { isSignedIn } = useSafeUser();
   
   // Monitor online status
   useEffect(() => {
