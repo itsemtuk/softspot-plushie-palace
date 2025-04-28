@@ -9,6 +9,9 @@ interface PlushieDetailsProps {
 }
 
 export function PlushieDetails({ plushie }: PlushieDetailsProps) {
+  // Ensure price is a number
+  const price = typeof plushie.price === 'number' ? plushie.price : 0;
+  
   return (
     <>
       <DialogHeader>
@@ -19,7 +22,7 @@ export function PlushieDetails({ plushie }: PlushieDetailsProps) {
             {plushie.condition}
           </Badge>
         </div>
-        <p className="text-2xl font-bold text-softspot-500 mt-2">£{plushie.price.toFixed(2)}</p>
+        <p className="text-2xl font-bold text-softspot-500 mt-2">£{price.toFixed(2)}</p>
       </DialogHeader>
       
       <div className="grid grid-cols-2 gap-4 mt-6">

@@ -8,6 +8,9 @@ interface PlushieInfoProps {
 }
 
 export function PlushieInfo({ plushie }: PlushieInfoProps) {
+  // Ensure deliveryCost is a number
+  const deliveryCost = typeof plushie.deliveryCost === 'number' ? plushie.deliveryCost : 0;
+  
   return (
     <>
       <Separator className="my-4" />
@@ -31,7 +34,7 @@ export function PlushieInfo({ plushie }: PlushieInfoProps) {
         <h3 className="font-medium mb-2">Delivery Information</h3>
         <div className="flex items-center gap-2 text-sm">
           <TruckIcon className="h-4 w-4 text-gray-400" />
-          <span>Delivery Cost: £{plushie.deliveryCost.toFixed(2)}</span>
+          <span>Delivery Cost: £{deliveryCost.toFixed(2)}</span>
         </div>
         <div className="flex items-center gap-2 text-sm mt-1">
           <GlobeIcon className="h-4 w-4 text-gray-400" />

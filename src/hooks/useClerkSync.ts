@@ -17,7 +17,6 @@ export function useClerkSync() {
       if (clerkStatus !== currentStatus) {
         updateClerkProfile({
           publicMetadata: {
-            ...user.publicMetadata,
             status: currentStatus
           }
         });
@@ -35,13 +34,27 @@ export function useClerkSync() {
     if (!user) return;
 
     try {
-      await user.update({
-        ...data,
-        unsafeMetadata: {
-          ...user.unsafeMetadata,
-          lastUpdated: new Date().toISOString(),
-        },
-      });
+      // Clone the data object to avoid modifying the original
+      const updateData = { ...data };
+      
+      // Handle metadata separately to avoid API errors
+      if (updateData.publicMetadata) {
+        await user.update({
+          publicMetadata: updateData.publicMetadata
+        });
+        delete updateData.publicMetadata;
+      }
+      
+      // Update other user properties if any are provided
+      if (Object.keys(updateData).length > 0) {
+        await user.update({
+          ...updateData,
+          unsafeMetadata: {
+            ...user.unsafeMetadata,
+            lastUpdated: new Date().toISOString(),
+          },
+        });
+      }
       
       await user.reload();
       
@@ -63,7 +76,6 @@ export function useClerkSync() {
     
     return updateClerkProfile({
       publicMetadata: {
-        ...user?.publicMetadata,
         status
       }
     });

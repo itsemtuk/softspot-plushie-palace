@@ -96,6 +96,10 @@ const Marketplace = () => {
         // Make sure we add any missing fields required by the UI
         const plushiesWithRequiredFields = storedPlushies.map((plushie: MarketplacePlushie) => ({
           ...plushie,
+          // Ensure price is a number
+          price: typeof plushie.price === 'number' ? plushie.price : 0,
+          // Ensure deliveryCost is a number
+          deliveryCost: typeof plushie.deliveryCost === 'number' ? plushie.deliveryCost : 0,
           // Only add timestamp if it doesn't exist
           ...(plushie.timestamp ? {} : { timestamp: new Date().toISOString() })
         }));
@@ -284,7 +288,9 @@ const Marketplace = () => {
                       </div>
                       <CardContent className="p-4">
                         <h3 className="font-medium truncate">{plushie.title}</h3>
-                        <p className="text-softspot-500 font-bold">${plushie.price?.toFixed(2) || "Price unavailable"}</p>
+                        <p className="text-softspot-500 font-bold">
+                          ${typeof plushie.price === 'number' ? plushie.price.toFixed(2) : '0.00'}
+                        </p>
                       </CardContent>
                       <CardFooter className="px-4 py-2 border-t flex justify-between text-sm text-gray-500">
                         <div className="flex items-center space-x-4">
