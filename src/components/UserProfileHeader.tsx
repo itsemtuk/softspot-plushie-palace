@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useUser } from "@clerk/clerk-react";
 import { Badge } from "@/components/ui/badge";
@@ -17,11 +16,11 @@ interface UserProfileHeaderProps {
   };
 }
 
-const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ 
+export default function UserProfileHeader({ 
   username, 
   isOwnProfile, 
   profileData 
-}) => {
+}: UserProfileHeaderProps) {
   const { user } = useUser();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(null);
@@ -219,6 +218,4 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
       </div>
     </div>
   );
-};
-
-export default UserProfileHeader;
+}

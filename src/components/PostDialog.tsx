@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Dialog,
@@ -99,7 +100,7 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
     const newComment: Comment = {
       id: `comment-${Date.now()}`,
       username: user?.username || 'Anonymous',
-      content: comment,
+      text: comment,
       timestamp: new Date().toISOString(),
       isLiked: false,
       likes: 0,
