@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   Dialog,
@@ -140,7 +141,7 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
       const updatedPost: ExtendedPost = {
         ...post,
         comments: updatedComments,
-        commentsCount: updatedComments.length // Fix the type error by ensuring this is a number
+        commentsCount: updatedComments.length // Ensure this is a number
       };
       
       // This is optional and can fail silently

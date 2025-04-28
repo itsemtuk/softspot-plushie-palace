@@ -13,7 +13,7 @@ import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import { PostDialog } from "@/components/PostDialog";
 import { MobileNav } from "@/components/navigation/MobileNav";
-import { useMobile } from "@/hooks/use-mobile";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Profile = () => {
   const { user, isLoaded } = useUser();
@@ -22,7 +22,7 @@ const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedPost, setSelectedPost] = useState<ExtendedPost | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
 
   const loadUserPosts = async () => {
     if (!user) return;
