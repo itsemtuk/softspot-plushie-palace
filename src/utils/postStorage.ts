@@ -15,7 +15,9 @@ export {
 
 export {
   togglePostLike,
-  sharePost
+  sharePost,
+  likePost,
+  likeComment
 } from './posts/postInteraction';
 
 export {
@@ -27,4 +29,3 @@ export {
   savePosts,
   getLocalPosts
 } from './storage/localStorageUtils';
-

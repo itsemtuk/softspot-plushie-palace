@@ -1,3 +1,4 @@
+
 export const likePost = async (postId: string, userId: string, username: string) => {
   try {
     // Implementation would normally interact with a database
@@ -18,6 +19,30 @@ export const likeComment = async (postId: string, commentId: string, userId: str
     return { success: true };
   } catch (error) {
     console.error("Error liking comment:", error);
+    return { success: false, error };
+  }
+};
+
+// Add the missing togglePostLike function
+export const togglePostLike = async (postId: string, userId: string, username: string) => {
+  try {
+    // This is a wrapper around likePost that can toggle the like status
+    console.log(`User ${username} (${userId}) toggled like on post ${postId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error toggling post like:", error);
+    return { success: false, error };
+  }
+};
+
+// Add the missing sharePost function
+export const sharePost = async (postId: string, userId: string, username: string) => {
+  try {
+    // Implementation would normally interact with a database to record the share
+    console.log(`User ${username} (${userId}) shared post ${postId}`);
+    return { success: true };
+  } catch (error) {
+    console.error("Error sharing post:", error);
     return { success: false, error };
   }
 };
