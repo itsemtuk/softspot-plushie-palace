@@ -1,14 +1,14 @@
 
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import { Tab, Tabs } from "@/components/ui/tabs";
+import { Tabs } from "@/components/ui/tabs";
 import { ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { getUserPosts } from "@/utils/postStorage";
 import { useUser } from "@clerk/clerk-react";
 import { Spinner } from "@/components/ui/spinner";
 import { ProfileStats } from "@/components/profile/ProfileStats";
-import { NotificationsTab } from "@/components/profile/NotificationsTab";
+import NotificationsTab from "@/components/profile/NotificationsTab";
 import { WishlistManager } from "@/components/profile/WishlistManager";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import UserProfileHeader from "@/components/UserProfileHeader";
@@ -88,22 +88,41 @@ const Profile = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <ProfileStats postsCount={posts.length} />
         
-        <Tabs className="mt-6">
-          <Tab 
-            isActive={activeTab === "posts"}
-            onClick={() => setActiveTab("posts")}
-            label="Posts"
-          />
-          <Tab 
-            isActive={activeTab === "notifications"}
-            onClick={() => setActiveTab("notifications")}
-            label="Notifications"
-          />
-          <Tab 
-            isActive={activeTab === "wishlist"}
-            onClick={() => setActiveTab("wishlist")}
-            label="Wishlist"
-          />
+        <div className="mt-6">
+          <div className="border-b border-gray-200">
+            <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+              <button
+                onClick={() => setActiveTab("posts")}
+                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "posts"
+                    ? "border-softspot-500 text-softspot-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Posts
+              </button>
+              <button
+                onClick={() => setActiveTab("notifications")}
+                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "notifications"
+                    ? "border-softspot-500 text-softspot-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Notifications
+              </button>
+              <button
+                onClick={() => setActiveTab("wishlist")}
+                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === "wishlist"
+                    ? "border-softspot-500 text-softspot-600"
+                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                }`}
+              >
+                Wishlist
+              </button>
+            </nav>
+          </div>
           
           <div className="mt-6">
             {activeTab === "posts" && (
@@ -122,7 +141,7 @@ const Profile = () => {
             {activeTab === "notifications" && <NotificationsTab />}
             {activeTab === "wishlist" && <WishlistManager />}
           </div>
-        </Tabs>
+        </div>
       </div>
 
       <PostDialog
