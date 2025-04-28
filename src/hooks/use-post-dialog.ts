@@ -17,14 +17,14 @@ export function usePostDialog(post: ExtendedPost | null) {
   useEffect(() => {
     if (post) {
       // Check if user has liked this post
-      const hasLiked = post.likes?.some(like => like.userId === user?.id) || false;
+      const hasLiked = Array.isArray(post.likes) && post.likes.some(like => like.userId === user?.id) || false;
       setIsLiked(hasLiked);
       
       // Set like count
-      setLikeCount(post.likes?.length || 0);
+      setLikeCount(Array.isArray(post.likes) ? post.likes.length : 0);
       
       // Set comments
-      setCommentList(post.comments || []);
+      setCommentList(Array.isArray(post.comments) ? post.comments : []);
       
       // Check if current user is the author
       setIsAuthor(post.userId === user?.id);
