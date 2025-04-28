@@ -72,6 +72,7 @@ const Feed = () => {
     
     const username = user?.username || user?.firstName || "Anonymous";
     
+    // Fix the post creation to include all required properties
     const newPost: ExtendedPost = {
       id: `post-${Date.now()}`,
       userId: user?.id || 'anonymous',
@@ -83,6 +84,12 @@ const Feed = () => {
       description: postData.description || "",
       tags: postData.tags || [],
       timestamp: new Date().toISOString(),
+      price: 0, // Default price
+      forSale: false, // Not for sale by default
+      condition: "New", // Default condition
+      color: "", // Default color
+      material: "", // Default material
+      location: postData.location // Include location
     };
     
     try {

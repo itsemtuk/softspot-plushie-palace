@@ -1,3 +1,4 @@
+
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
@@ -39,6 +40,7 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
     try {
       const username = user?.username || user?.firstName || "Anonymous";
       
+      // Fix the post creation to include all required properties
       const newPost: ExtendedPost = {
         id: `post-${Date.now()}`,
         userId: user?.id || 'anonymous',
@@ -50,6 +52,12 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
         description: postData.description || "",
         tags: postData.tags || [],
         timestamp: new Date().toISOString(),
+        price: 0, // Default price
+        forSale: false, // Not for sale by default
+        condition: "New", // Default condition
+        color: "", // Default color
+        material: "", // Default material
+        location: postData.location // Include location
       };
       
       const result = await addPost(newPost);

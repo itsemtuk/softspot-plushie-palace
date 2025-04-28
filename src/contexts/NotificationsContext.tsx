@@ -1,10 +1,11 @@
+
 import React, { createContext, useContext, useState } from "react";
 
 export interface Notification {
   id: string;
   message: string;
   timestamp: string;
-  read: boolean;  // Changed from isRead to read to match usage
+  read: boolean;
   type?: "info" | "success" | "warning" | "error";
 }
 
@@ -13,6 +14,8 @@ interface NotificationsContextProps {
   unreadCount: number;
   addNotification: (notification: Omit<Notification, 'id' | 'read'>) => void;
   markAsRead: (id: string) => void;
+  markAllAsRead: () => void; // Added method
+  deleteNotification: (id: string) => void; // Added method
 }
 
 const NotificationsContext = createContext<NotificationsContextProps>({
@@ -20,6 +23,8 @@ const NotificationsContext = createContext<NotificationsContextProps>({
   unreadCount: 0,
   addNotification: () => {},
   markAsRead: () => {},
+  markAllAsRead: () => {}, // Added to default context
+  deleteNotification: () => {}, // Added to default context
 });
 
 export const useNotifications = () => useContext(NotificationsContext);
@@ -46,9 +51,30 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       )
     );
   };
+  
+  // Add markAllAsRead function
+  const markAllAsRead = () => {
+    setNotifications(prevNotifications => 
+      prevNotifications.map(notification => ({ ...notification, read: true }))
+    );
+  };
+  
+  // Add deleteNotification function
+  const deleteNotification = (id: string) => {
+    setNotifications(prevNotifications => 
+      prevNotifications.filter(notification => notification.id !== id)
+    );
+  };
 
   return (
-    <NotificationsContext.Provider value={{ notifications, unreadCount, addNotification, markAsRead }}>
+    <NotificationsContext.Provider value={{ 
+      notifications, 
+      unreadCount, 
+      addNotification, 
+      markAsRead,
+      markAllAsRead, 
+      deleteNotification 
+    }}>
       {children}
     </NotificationsContext.Provider>
   );

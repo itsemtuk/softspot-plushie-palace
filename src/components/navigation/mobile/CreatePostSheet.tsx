@@ -5,7 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
-import { PostCreationData } from "@/types/marketplace";
+import { PostCreationData, ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { addPost } from "@/utils/postStorage";
 import { useUser } from "@clerk/clerk-react";
@@ -23,7 +23,8 @@ export function CreatePostSheet() {
       
       const username = user?.username || user?.firstName || "Anonymous";
       
-      const newPost = {
+      // Fix the post creation to include all required properties
+      const newPost: ExtendedPost = {
         id: `post-${Date.now()}`,
         userId: user.id,
         image: postData.image,
@@ -34,6 +35,12 @@ export function CreatePostSheet() {
         description: postData.description || "",
         tags: postData.tags || [],
         timestamp: new Date().toISOString(),
+        price: 0, // Default price
+        forSale: false, // Not for sale by default  
+        condition: "New", // Default condition
+        color: "", // Default color
+        material: "", // Default material
+        location: postData.location // Include location
       };
       
       const result = await addPost(newPost);
