@@ -9,6 +9,11 @@ import { PostCreationData, ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { addPost } from "@/utils/posts/postManagement";
 
+// Check if Clerk is configured
+const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
+
 interface CreateButtonProps {
   onCreatePost?: () => void;
 }

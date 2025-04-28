@@ -8,25 +8,46 @@ import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData, ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { addPost } from "@/utils/postStorage";
-import { useUser } from "@clerk/clerk-react";
+
+// Check if Clerk is configured
+const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
+
+// Import Clerk's useUser conditionally
+let useUser = () => ({ user: null, isLoaded: true });
+
+if (isClerkConfigured) {
+  try {
+    const clerk = import('@clerk/clerk-react');
+    useUser = clerk.then(module => module.useUser).catch(() => {
+      console.error("Failed to import useUser from Clerk");
+      return () => ({ user: null, isLoaded: true });
+    });
+  } catch (error) {
+    console.error("Failed to import Clerk components:", error);
+  }
+}
 
 export function CreatePostSheet() {
   const { isSheetOpen, isPostCreationOpen, onOpenChange, onClosePostCreation, setIsPostCreationOpen } = useCreatePost();
   const navigate = useNavigate();
-  const { user } = useUser();
+  
+  // Get user data from Clerk if available, otherwise fallback to localStorage
+  const { user } = isClerkConfigured ? useUser() : { user: null };
+  const userId = user?.id || localStorage.getItem('currentUserId') || 'anonymous';
+  const username = user?.username || user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
 
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
     try {
-      if (!user) {
+      if (!userId || userId === 'anonymous') {
         throw new Error("You must be signed in to create a post");
       }
-      
-      const username = user?.username || user?.firstName || "Anonymous";
       
       // Fix the post creation to include all required properties
       const newPost: ExtendedPost = {
         id: `post-${Date.now()}`,
-        userId: user.id,
+        userId: userId,
         image: postData.image,
         title: postData.title,
         username: username,

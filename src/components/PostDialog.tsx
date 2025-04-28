@@ -76,7 +76,7 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
   };
 
   // Convert commentList to unified format expected by components
-  const formattedComments = commentList
+  const formattedComments: PostCommentItemComment[] = commentList
     .filter(comment => !!comment) // Filter out any null or undefined comments
     .map(comment => {
       // Check if the comment is already in the PostCommentItemComment format

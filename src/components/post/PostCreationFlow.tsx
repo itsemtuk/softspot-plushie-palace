@@ -15,7 +15,26 @@ import { PostCreationData, ImageUploadResult, ExtendedPost } from '@/types/marke
 import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft } from 'lucide-react';
 import { updatePost, addPost } from '@/utils/posts/postManagement';
-import { useUser } from '@clerk/clerk-react';
+
+// Check if Clerk is configured by checking for the PUBLISHABLE_KEY environment variable
+const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
+  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
+
+// Import Clerk's useUser only if configured
+let useUser = () => ({ user: null, isLoaded: true });
+
+if (isClerkConfigured) {
+  try {
+    const clerk = import('@clerk/clerk-react');
+    useUser = clerk.then(module => module.useUser).catch(() => {
+      console.error("Failed to import useUser from Clerk");
+      return () => ({ user: null, isLoaded: true });
+    });
+  } catch (error) {
+    console.error("Failed to import Clerk components:", error);
+  }
+}
 
 interface PostCreationFlowProps {
   isOpen: boolean;
@@ -31,7 +50,11 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCr
   const [uploadedImage, setUploadedImage] = useState<string>('');
   const [editedImage, setEditedImage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useUser();
+  
+  // Get user data from Clerk if available, otherwise fallback to localStorage
+  const { user } = isClerkConfigured ? useUser() : { user: null };
+  const userId = user?.id || localStorage.getItem('currentUserId') || 'anonymous';
+  const username = user?.username || user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
   
   // Initialize form with post to edit if provided
   useEffect(() => {
@@ -96,10 +119,10 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCr
         // Handle creating new post
         const newPost: ExtendedPost = {
           id: `post-${Date.now()}`,
-          userId: user?.id || 'anonymous',
+          userId: userId,
           image: finalPost.image,
           title: finalPost.title,
-          username: user?.username || user?.firstName || "Anonymous",
+          username: username,
           likes: 0,
           comments: 0,
           description: finalPost.description || "",
