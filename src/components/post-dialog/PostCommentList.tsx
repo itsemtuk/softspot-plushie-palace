@@ -1,8 +1,8 @@
 
-import { PostCommentItem, Comment as PostCommentItemComment } from "./PostCommentItem";
+import { PostCommentItem, Comment } from "./PostCommentItem";
 
 interface PostCommentListProps {
-  comments: PostCommentItemComment[];
+  comments: Comment[];
   onCommentLikeToggle: (commentId: string) => void;
   currentUserId?: string;
 }

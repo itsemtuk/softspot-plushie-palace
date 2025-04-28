@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
 import { ExtendedPost, Comment as MarketplaceComment } from "@/types/marketplace";
-import { Comment as PostCommentItemComment } from "./post-dialog/PostCommentItem";
+import { Comment } from "./post-dialog/PostCommentItem";
 import { useEffect, useRef } from "react";
 
 interface PostDialogProps {
@@ -13,18 +13,18 @@ interface PostDialogProps {
   isLoading?: boolean;
 }
 
-function convertToPostCommentItemComment(comment: MarketplaceComment): PostCommentItemComment {
+function convertToPostCommentItemComment(comment: MarketplaceComment): Comment {
   // Ensure we have a valid comment object
-  if (!comment) return null as unknown as PostCommentItemComment;
+  if (!comment) return null as unknown as Comment;
   
   return {
     id: comment.id || "",
-    text: comment.content || "",
-    timestamp: comment.createdAt || new Date().toISOString(),
     userId: comment.userId || "",
     username: comment.username || "Anonymous",
+    text: comment.content || "",
+    timestamp: comment.createdAt || new Date().toISOString(),
     isLiked: Array.isArray(comment.likes) ? comment.likes.some(like => like.userId === localStorage.getItem('currentUserId')) : false,
-    likes: Array.isArray(comment.likes) ? comment.likes.length : 0
+    likes: Array.isArray(comment.likes) ? comment.likes : 0
   };
 }
 
@@ -76,15 +76,34 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
   };
 
   // Convert commentList to unified format expected by components
-  const formattedComments: PostCommentItemComment[] = commentList
+  const formattedComments: Comment[] = commentList
     .filter(comment => !!comment) // Filter out any null or undefined comments
     .map(comment => {
-      // Check if the comment is already in the PostCommentItemComment format
-      if ('text' in comment) {
-        return comment as PostCommentItemComment;
+      // Check if the comment already has the expected format
+      if ('text' in comment || 'content' in comment) {
+        // If it has either text or content, convert to the consistent Comment format
+        return {
+          id: comment.id,
+          userId: comment.userId,
+          username: comment.username || "Anonymous",
+          text: 'text' in comment ? comment.text : comment.content,
+          timestamp: 'timestamp' in comment ? comment.timestamp : comment.createdAt,
+          isLiked: 'isLiked' in comment ? comment.isLiked : false,
+          likes: 'likes' in comment ? (
+            Array.isArray(comment.likes) ? comment.likes : comment.likes
+          ) : 0
+        };
       }
-      // Otherwise convert from MarketplaceComment format
-      return convertToPostCommentItemComment(comment as MarketplaceComment);
+      // Fallback to empty comment if we can't parse it
+      return {
+        id: comment.id || `comment-${Date.now()}`,
+        userId: comment.userId || "unknown",
+        username: comment.username || "Anonymous",
+        text: "",
+        timestamp: new Date().toISOString(),
+        isLiked: false,
+        likes: 0
+      };
     });
 
   return (

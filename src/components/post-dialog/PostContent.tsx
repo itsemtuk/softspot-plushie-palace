@@ -5,10 +5,11 @@ import { PostCommentForm } from "./PostCommentForm";
 import { PostCommentList } from "./PostCommentList";
 import { PostMenu } from "./PostMenu";
 import { Button } from "@/components/ui/button";
-import { ExtendedPost, Comment } from "@/types/marketplace";
+import { ExtendedPost } from "@/types/marketplace";
 import { X } from "lucide-react";
 import { MapPin } from "lucide-react";
 import { EditPostForm } from "./EditPostForm";
+import { Comment } from "./PostCommentItem";
 
 interface PostContentProps {
   post: ExtendedPost;

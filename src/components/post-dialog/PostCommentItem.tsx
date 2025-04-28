@@ -4,14 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { Comment as MarketplaceComment } from "@/types/marketplace";
 
+// Use a consistent Comment interface that works with both types
 export interface Comment {
   id: string;
   userId: string;
   username: string;
-  text: string;
-  timestamp: string;
-  isLiked: boolean;
-  likes: number;
+  text?: string;          // From PostCommentItem Comment
+  content?: string;       // From MarketplaceComment
+  timestamp?: string;     // From PostCommentItem Comment
+  createdAt?: string;     // From MarketplaceComment
+  isLiked?: boolean;
+  likes: number | any[];  // Support both number and array of likes
 }
 
 interface PostCommentItemProps {
@@ -21,11 +24,15 @@ interface PostCommentItemProps {
 
 export function PostCommentItem({ comment, onLikeToggle }: PostCommentItemProps) {
   // Handle compatibility between Comment types
-  const content = "text" in comment ? comment.text : comment.content;
-  const timestamp = "timestamp" in comment ? comment.timestamp : comment.createdAt;
-  const likes = "likes" in comment && Array.isArray(comment.likes) 
-    ? comment.likes.length 
-    : ("likes" in comment ? comment.likes : 0);
+  const content = "text" in comment && comment.text ? comment.text : 
+                 "content" in comment ? comment.content : "";
+  const timestamp = "timestamp" in comment && comment.timestamp ? comment.timestamp : 
+                   "createdAt" in comment ? comment.createdAt : new Date().toISOString();
+  const likes = "likes" in comment ? (
+    Array.isArray(comment.likes) 
+      ? comment.likes.length 
+      : (typeof comment.likes === 'number' ? comment.likes : 0)
+  ) : 0;
   const isLiked = "isLiked" in comment ? comment.isLiked : false;
 
   return (

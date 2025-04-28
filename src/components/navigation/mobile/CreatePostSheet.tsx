@@ -1,4 +1,3 @@
-
 import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
@@ -14,18 +13,21 @@ const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY &&
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
 
-// Import Clerk's useUser conditionally
-let useUser = () => ({ user: null, isLoaded: true });
+// Create a fallback useUser function
+const fallbackUseUser = () => ({ user: null, isLoaded: true });
 
+// Declare useUser here to avoid type errors
+let useUser = fallbackUseUser;
+
+// Only try to import Clerk's useUser if Clerk is configured
 if (isClerkConfigured) {
   try {
-    const clerk = import('@clerk/clerk-react');
-    useUser = clerk.then(module => module.useUser).catch(() => {
-      console.error("Failed to import useUser from Clerk");
-      return () => ({ user: null, isLoaded: true });
-    });
+    const { useUser: clerkUseUser } = await import('@clerk/clerk-react');
+    useUser = clerkUseUser;
   } catch (error) {
-    console.error("Failed to import Clerk components:", error);
+    console.error("Failed to import useUser from Clerk", error);
+    // Fallback to the default
+    useUser = fallbackUseUser;
   }
 }
 
@@ -33,10 +35,19 @@ export function CreatePostSheet() {
   const { isSheetOpen, isPostCreationOpen, onOpenChange, onClosePostCreation, setIsPostCreationOpen } = useCreatePost();
   const navigate = useNavigate();
   
-  // Get user data from Clerk if available, otherwise fallback to localStorage
-  const { user } = isClerkConfigured ? useUser() : { user: null };
-  const userId = user?.id || localStorage.getItem('currentUserId') || 'anonymous';
-  const username = user?.username || user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
+  // Get user data safely
+  let userData = { user: null, isLoaded: true };
+  try {
+    if (isClerkConfigured) {
+      userData = useUser();
+    }
+  } catch (error) {
+    console.error("Error using Clerk's useUser:", error);
+  }
+  
+  // Safely extract user data with fallbacks
+  const userId = userData?.user?.id || localStorage.getItem('currentUserId') || 'anonymous';
+  const username = userData?.user?.username || userData?.user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
 
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
     try {
