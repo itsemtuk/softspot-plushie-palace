@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { PostDialog } from "@/components/PostDialog";
@@ -81,7 +80,7 @@ const Feed = () => {
     (post.username?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false) ||
     post.tags?.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   );
-  
+
   const handleCreatePost = async (postData: PostCreationData) => {
     if (!user) {
       toast({

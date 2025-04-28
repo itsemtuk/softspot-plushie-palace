@@ -53,12 +53,24 @@ export function PostDialog({ isOpen, onClose, post, isLoading = false }: PostDia
         if (dialogContentRef.current) {
           dialogContentRef.current.scrollTop = 0;
         }
+        
+        // Fix for mobile: prevent body scroll when dialog is open
+        document.body.style.overflow = 'hidden';
       }, 50);
+    } else {
+      // Re-enable scrolling when dialog closes
+      document.body.style.overflow = 'auto';
     }
+    
+    // Cleanup on unmount
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
   }, [isOpen, post?.id]);
 
   // Close dialog and cleanup
   const handleCloseDialog = () => {
+    document.body.style.overflow = 'auto';
     setIsDialogOpen(false);
     if (onClose) onClose();
   };

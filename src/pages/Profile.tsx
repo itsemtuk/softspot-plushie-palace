@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { getAllUserPosts } from "@/utils/postStorage";
+import { getAllUserPosts, deletePost } from "@/utils/postStorage";
 import { ExtendedPost } from "@/types/marketplace";
 import NotificationsTab from "@/components/profile/NotificationsTab";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -13,6 +13,7 @@ import UserProfileHeader from "@/components/UserProfileHeader";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
+import { toast } from "@/components/ui/use-toast";
 
 const Profile = () => {
   const { user, isLoaded } = useUser();
@@ -60,6 +61,31 @@ const Profile = () => {
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);
+  };
+  
+  // Handle post deletion
+  const handleDeletePost = async (postId: string) => {
+    try {
+      const result = await deletePost(postId);
+      
+      if (result.success) {
+        // Remove from local state
+        setUserPosts(prev => prev.filter(post => post.id !== postId));
+        toast({
+          title: "Post deleted",
+          description: "Your post has been successfully deleted.",
+        });
+      } else {
+        throw new Error(result.error || "Failed to delete post");
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete the post. Please try again.",
+      });
+    }
   };
 
   // Show loading state while checking authentication
@@ -114,6 +140,7 @@ const Profile = () => {
               <ProfilePostsGrid 
                 posts={userPosts} 
                 onPostClick={handlePostClick} 
+                onDeletePost={handleDeletePost}
                 isOwnProfile={true} 
               />
             )}
