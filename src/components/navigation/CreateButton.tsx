@@ -3,16 +3,18 @@ import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTr
 import { Button } from "@/components/ui/button";
 import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useCreatePost } from "@/hooks/use-create-post";
 
 interface CreateButtonProps {
   onCreatePost: () => void;
 }
 
-export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
+export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButtonProps) => {
+  const { isSheetOpen, onOpenChange } = useCreatePost();
   const navigate = useNavigate();
 
   return (
-    <Sheet>
+    <Sheet open={isSheetOpen} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
         <Button variant="default" className="flex items-center gap-2 bg-softspot-500 hover:bg-softspot-600">
           <PlusSquare className="h-4 w-4" />
@@ -28,7 +30,10 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
           <Button 
             variant="outline" 
             className="flex items-center gap-2 justify-start"
-            onClick={onCreatePost}
+            onClick={() => {
+              onOpenChange(false);
+              externalOnCreatePost();
+            }}
           >
             <PlusSquare className="h-4 w-4" />
             Create Post

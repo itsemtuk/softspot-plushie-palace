@@ -1,16 +1,16 @@
 
-import { useState } from "react";
 import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useCreatePost } from "@/hooks/use-create-post";
 
 export function CreatePostSheet() {
-  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const { isSheetOpen, onOpenChange, onCreatePost } = useCreatePost();
   const navigate = useNavigate();
 
   return (
-    <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+    <Sheet open={isSheetOpen} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
         <Button size="icon" className="rounded-full bg-softspot-500 hover:bg-softspot-600">
           <PlusSquare className="h-5 w-5 text-white" />
@@ -25,10 +25,7 @@ export function CreatePostSheet() {
           <Button 
             variant="outline" 
             className="flex flex-col items-center gap-2 h-auto py-4"
-            onClick={() => {
-              setIsSheetOpen(false);
-              navigate('/create-post');
-            }}
+            onClick={onCreatePost}
           >
             <PlusSquare className="h-6 w-6" />
             <span>Post</span>
@@ -45,7 +42,7 @@ export function CreatePostSheet() {
             variant="outline" 
             className="flex flex-col items-center gap-2 h-auto py-4"
             onClick={() => {
-              setIsSheetOpen(false);
+              onOpenChange(false);
               navigate('/messages');
             }}
           >
