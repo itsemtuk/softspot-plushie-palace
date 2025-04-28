@@ -8,7 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { Comment } from "./post-dialog/PostCommentItem";
 import { PostContent } from "./post-dialog/PostContent";
-import { togglePostLike } from "@/utils/postStorage";
+import { togglePostLike, updatePost } from "@/utils/postStorage";
+import { useUser } from "@clerk/clerk-react";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -43,90 +44,41 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
       setCommentList([]);
     }
   }, [post]);
-  
-  if (!post) return null;
 
-  const handleLikeToggle = async () => {
-    if (isSubmitting) return; // Prevent multiple clicks while processing
-    
-    setIsSubmitting(true);
-    
-    // Optimistically update UI
-    if (isLiked) {
-      // Unlike post
-      setLikeCount(prev => Math.max(0, prev - 1));
-      setIsLiked(false);
-      toast({
-        title: "Post unliked",
-        description: "You have removed your like from this post."
-      });
-    } else {
-      // Like post
-      setLikeCount(prev => prev + 1);
-      setIsLiked(true);
-      
-      try {
-        // Update in Supabase or local storage
-        const result = await togglePostLike(post.id);
-        
-        if (!result.success) {
-          // Revert UI if update failed
-          setLikeCount(prev => Math.max(0, prev - 1));
-          setIsLiked(false);
-          throw new Error("Failed to like post");
-        }
-      } catch (error) {
-        console.error('Error toggling like:', error);
+  const { user } = useUser();
+  const isAuthor = user?.username === post?.username;
+
+  const handleSaveEdit = async (newTitle: string, newDescription: string) => {
+    if (!post) return;
+
+    try {
+      const updatedPost = {
+        ...post,
+        title: newTitle,
+        description: newDescription,
+      };
+
+      const result = await updatePost(updatedPost);
+
+      if (result.success) {
         toast({
-          variant: "destructive",
-          title: "Failed to like post",
-          description: "Please check your connection and try again."
+          title: "Post updated",
+          description: "Your changes have been saved successfully.",
         });
+      } else {
+        throw new Error(result.error || "Failed to update post");
       }
+    } catch (error) {
+      console.error('Error updating post:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update post. Please try again.",
+      });
     }
-    
-    setIsSubmitting(false);
   };
 
-  const handleCommentLikeToggle = (commentId: string) => {
-    setCommentList(prevComments => prevComments.map(comment => {
-      if (comment.id === commentId) {
-        return {
-          ...comment,
-          likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1,
-          isLiked: !comment.isLiked
-        };
-      }
-      return comment;
-    }));
-  };
-
-  const handleCommentSubmit = (newComment: string) => {
-    // Add the new comment
-    const currentUsername = localStorage.getItem('currentUsername') || "You"; // Fallback to "You" if not set
-    
-    const newCommentObj: Comment = {
-      id: `c${Date.now()}`,
-      username: currentUsername,
-      text: newComment,
-      timestamp: "Just now",
-      likes: 0,
-      isLiked: false
-    };
-    
-    setCommentList(prev => [...prev, newCommentObj]);
-    toast({
-      title: "Comment posted",
-      description: "Your comment has been added to the post.",
-    });
-    
-    // In a real app, we would save this comment to Supabase here
-  };
-
-  const handleFindSimilar = () => {
-    // In a real app, navigate to a filtered marketplace view with similar plushies
-    navigate("/marketplace?similar=" + encodeURIComponent(post.title));
-  };
+  if (!post) return null;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
@@ -142,6 +94,7 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
           {/* Right side - Content */}
           <PostContent 
             post={post}
+            isAuthor={isAuthor}
             isLiked={isLiked}
             likeCount={likeCount}
             commentList={commentList}
@@ -149,6 +102,8 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
             onCommentLikeToggle={handleCommentLikeToggle}
             onCommentSubmit={handleCommentSubmit}
             onFindSimilar={handleFindSimilar}
+            onClose={onClose}
+            onSaveEdit={handleSaveEdit}
           />
         </div>
       </DialogContent>
