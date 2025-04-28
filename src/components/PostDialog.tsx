@@ -10,6 +10,7 @@ import { Comment } from "./post-dialog/PostCommentItem";
 import { PostContent } from "./post-dialog/PostContent";
 import { togglePostLike, updatePost } from "@/utils/postStorage";
 import { useUser } from "@clerk/clerk-react";
+import { ExtendedPost } from "@/types/marketplace";
 
 interface PostDialogProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ interface PostDialogProps {
     comments: number;
     description?: string;
     tags?: string[];
+    userId?: string;
+    timestamp?: string;
   } | null;
 }
 
@@ -38,9 +41,6 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
     if (post) {
       setLikeCount(post.likes);
       setIsLiked(false); // Reset like state for each post
-      
-      // In a real app, we would fetch comments for this post from Supabase here
-      // and check if the current user has liked this post
       setCommentList([]);
     }
   }, [post]);
@@ -52,10 +52,12 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
     if (!post) return;
 
     try {
-      const updatedPost = {
+      const updatedPost: ExtendedPost = {
         ...post,
         title: newTitle,
         description: newDescription,
+        userId: post.userId || user?.id || 'anonymous',
+        timestamp: post.timestamp || new Date().toISOString(),
       };
 
       const result = await updatePost(updatedPost);
@@ -76,6 +78,37 @@ export function PostDialog({ isOpen, onClose, post }: PostDialogProps) {
         description: "Failed to update post. Please try again.",
       });
     }
+  };
+
+  const handleLikeToggle = () => {
+    setIsLiked(!isLiked);
+    setLikeCount(prev => isLiked ? prev - 1 : prev + 1);
+  };
+
+  const handleCommentLikeToggle = (commentId: string) => {
+    setCommentList(comments => 
+      comments.map(comment => 
+        comment.id === commentId 
+          ? { ...comment, isLiked: !comment.isLiked }
+          : comment
+      )
+    );
+  };
+
+  const handleCommentSubmit = (comment: string) => {
+    const newComment: Comment = {
+      id: `comment-${Date.now()}`,
+      username: user?.username || 'Anonymous',
+      content: comment,
+      timestamp: new Date().toISOString(),
+      isLiked: false,
+      likes: 0,
+    };
+    setCommentList(prev => [...prev, newComment]);
+  };
+
+  const handleFindSimilar = () => {
+    navigate('/feed');
   };
 
   if (!post) return null;
