@@ -1,6 +1,6 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ClerkProvider, SignIn, SignUp } from "@clerk/clerk-react";
+import { ClerkProvider } from "@clerk/clerk-react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Onboarding, { OnboardingRoute } from "./pages/Onboarding";
@@ -21,6 +21,8 @@ import { useLocation } from "react-router-dom";
 import SellItemPage from "./pages/SellItemPage";
 import About from "./pages/About";
 import PostPage from "./pages/PostPage";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
 
 // Use a fixed publishable key for development
 const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
@@ -30,12 +32,6 @@ function AppContent() {
   const location = useLocation();
   const [showFooter, setShowFooter] = useState(true);
   
-  // Hide footer on auth pages
-  useEffect(() => {
-    const authPaths = ['/sign-in', '/sign-up'];
-    setShowFooter(!authPaths.some(path => location.pathname.startsWith(path)));
-  }, [location]);
-
   // Public routes that don't require onboarding completion
   const publicRoutes = ['/sign-in', '/sign-up', '/onboarding', '/', '/post'];
 
@@ -43,8 +39,8 @@ function AppContent() {
     <>
       <Routes>
         <Route path="/" element={<Index />} />
-        <Route path="/sign-in/*" element={<SignIn routing="path" path="/sign-in" />} />
-        <Route path="/sign-up/*" element={<SignUp routing="path" path="/sign-up" />} />
+        <Route path="/sign-in/*" element={<SignIn />} />
+        <Route path="/sign-up/*" element={<SignUp />} />
         <Route path="/onboarding" element={<Onboarding />} />
         <Route path="/about" element={<About />} />
         <Route path="/post/:postId" element={<PostPage />} />
@@ -98,7 +94,7 @@ function AppContent() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       
-      {showFooter && <Footer />}
+      <Footer />
     </>
   );
 }

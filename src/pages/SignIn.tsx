@@ -12,10 +12,10 @@ const SignIn = () => {
   }, []);
   
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-background">
       <Navbar />
       <div className="max-w-md mx-auto pt-16 pb-24 px-4">
-        <Card className="border-gray-200 shadow-lg">
+        <Card className="border-softspot-200 shadow-lg">
           <CardHeader className="space-y-4">
             <div className="flex items-center justify-center">
               <span className="text-2xl font-bold text-softspot-600">SoftSpot</span>
@@ -62,16 +62,16 @@ const SignIn = () => {
         </Card>
         
         <div className="mt-8 space-y-4">
-          <div className="bg-white p-5 rounded-lg shadow-md">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Join our community</h3>
-            <p className="text-sm text-gray-600">
+          <div className="bg-card p-5 rounded-lg shadow-md">
+            <h3 className="text-lg font-medium text-foreground mb-2">Join our community</h3>
+            <p className="text-sm text-muted-foreground">
               Connect with plushie enthusiasts, trade collectibles, and show off your collection.
             </p>
           </div>
           
-          <div className="bg-white p-5 rounded-lg shadow-md">
-            <h3 className="text-lg font-medium text-gray-900 mb-2">Find rare plushies</h3>
-            <p className="text-sm text-gray-600">
+          <div className="bg-card p-5 rounded-lg shadow-md">
+            <h3 className="text-lg font-medium text-foreground mb-2">Find rare plushies</h3>
+            <p className="text-sm text-muted-foreground">
               Browse our marketplace for limited edition and hard-to-find plushies from collectors worldwide.
             </p>
           </div>
