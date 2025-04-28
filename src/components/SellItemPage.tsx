@@ -7,11 +7,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
-import { PlushieCondition, PlushieMaterial, PlushieFilling, PlushieSpecies, DeliveryMethod, ImageUploadResult } from "@/types/marketplace";
+import { 
+  PlushieCondition, 
+  PlushieMaterial, 
+  PlushieFilling, 
+  PlushieSpecies, 
+  DeliveryMethod, 
+  ImageUploadResult,
+  MarketplacePlushie
+} from "@/types/marketplace";
 import { ImageUploader } from "@/components/post/ImageUploader";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import CurrencyConverter from "@/components/marketplace/CurrencyConverter";
+import { saveMarketplaceListings, getMarketplaceListings, getCurrentUserId } from "@/utils/storage/localStorageUtils";
+import { useUser } from "@clerk/clerk-react";
 
 interface SellItemFormData {
   title: string;
@@ -32,6 +42,7 @@ const SellItemPage = () => {
   const navigate = useNavigate();
   const [imageUrl, setImageUrl] = useState<string>("");
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<SellItemFormData>();
+  const { user } = useUser();
 
   const onSubmit = (data: SellItemFormData) => {
     // Add the image URL to the form data
@@ -40,22 +51,27 @@ const SellItemPage = () => {
     // Log the data for debugging
     console.log("Form submitted:", listingData);
     
-    // Store the listing in localStorage
-    const existingListings = localStorage.getItem('marketplaceListings');
-    const listings = existingListings ? JSON.parse(existingListings) : [];
+    // Get existing listings
+    const existingListings = getMarketplaceListings();
     
-    const newListing = {
+    const newListing: MarketplacePlushie = {
       ...listingData,
       id: `listing-${Date.now()}`,
-      username: "Me", // In a real app, this would come from the authenticated user
+      userId: user?.id || getCurrentUserId(),
+      username: user?.username || user?.firstName || "Anonymous",
       likes: 0,
       comments: 0,
       timestamp: new Date().toISOString(),
-      forSale: true
+      forSale: true,
+      tags: [],
+      price: listingData.price,
     };
     
-    listings.unshift(newListing);
-    localStorage.setItem('marketplaceListings', JSON.stringify(listings));
+    // Add new listing to the beginning of the array
+    existingListings.unshift(newListing);
+    
+    // Save listings
+    saveMarketplaceListings(existingListings);
     
     // Show success message
     toast({
@@ -88,6 +104,7 @@ const SellItemPage = () => {
           
           <div className="bg-white rounded-lg shadow-sm p-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              {/* Image upload section */}
               <div className="mb-6">
                 <Label htmlFor="image">Plushie Image</Label>
                 <ImageUploader
@@ -109,7 +126,9 @@ const SellItemPage = () => {
                 )}
               </div>
 
+              {/* Form fields */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Basic info */}
                 <div>
                   <Label htmlFor="title">Title</Label>
                   <Input
@@ -136,6 +155,7 @@ const SellItemPage = () => {
                   {errors.price && <p className="text-red-500 text-sm mt-1">Valid price is required</p>}
                 </div>
 
+                {/* Additional fields */}
                 <div>
                   <Label htmlFor="brand">Brand</Label>
                   <Select onValueChange={(value) => handleSelectChange("brand", value)}>

@@ -1,5 +1,5 @@
 
-import { ExtendedPost } from "@/types/marketplace";
+import { ExtendedPost, MarketplacePlushie } from "@/types/marketplace";
 
 // Constants for storage keys
 const POSTS_STORAGE_KEY = 'userPosts';
@@ -11,6 +11,8 @@ const MARKETPLACE_STORAGE_KEY = 'marketplaceListings';
 export const savePosts = (posts: ExtendedPost[]): void => {
   try {
     localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
+    // Also store in sessionStorage for cross-tab syncing
+    sessionStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
   } catch (error) {
     console.error('Error saving posts to local storage:', error);
   }
@@ -21,7 +23,11 @@ export const savePosts = (posts: ExtendedPost[]): void => {
  */
 export const getLocalPosts = (): ExtendedPost[] => {
   try {
-    const storedPosts = localStorage.getItem(POSTS_STORAGE_KEY);
+    // First check if there are newer posts in sessionStorage (from other tabs)
+    const sessionPosts = sessionStorage.getItem(POSTS_STORAGE_KEY);
+    const localPosts = localStorage.getItem(POSTS_STORAGE_KEY);
+    
+    const storedPosts = sessionPosts || localPosts;
     const posts = storedPosts ? JSON.parse(storedPosts) : [];
     
     // Sort posts by timestamp (newest first)
@@ -39,16 +45,19 @@ export const getLocalPosts = (): ExtendedPost[] => {
 /**
  * Saves marketplace listings to local storage
  */
-export const saveMarketplaceListings = (listings: any[]): void => {
+export const saveMarketplaceListings = (listings: MarketplacePlushie[]): void => {
   try {
     // Ensure userId is attached to each listing for sync purposes
     const userId = localStorage.getItem('currentUserId') || 'anonymous';
     const listingsWithUser = listings.map(listing => ({
       ...listing,
-      userId: listing.userId || userId
+      userId: listing.userId || userId,
+      timestamp: listing.timestamp || new Date().toISOString()
     }));
     
     localStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(listingsWithUser));
+    // Also store in sessionStorage for cross-tab syncing
+    sessionStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(listingsWithUser));
   } catch (error) {
     console.error('Error saving marketplace listings to local storage:', error);
   }
@@ -57,13 +66,17 @@ export const saveMarketplaceListings = (listings: any[]): void => {
 /**
  * Retrieves marketplace listings from local storage
  */
-export const getMarketplaceListings = (): any[] => {
+export const getMarketplaceListings = (): MarketplacePlushie[] => {
   try {
-    const storedListings = localStorage.getItem(MARKETPLACE_STORAGE_KEY);
+    // First check if there are newer listings in sessionStorage (from other tabs)
+    const sessionListings = sessionStorage.getItem(MARKETPLACE_STORAGE_KEY);
+    const localListings = localStorage.getItem(MARKETPLACE_STORAGE_KEY);
+    
+    const storedListings = sessionListings || localListings;
     const listings = storedListings ? JSON.parse(storedListings) : [];
     
     // Sort listings by timestamp (newest first)
-    return listings.sort((a: any, b: any) => {
+    return listings.sort((a: MarketplacePlushie, b: MarketplacePlushie) => {
       const dateA = new Date(a.timestamp || 0).getTime();
       const dateB = new Date(b.timestamp || 0).getTime();
       return dateB - dateA;
@@ -79,11 +92,13 @@ export const getMarketplaceListings = (): any[] => {
  */
 export const setCurrentUserId = (userId: string): void => {
   localStorage.setItem('currentUserId', userId);
+  // Also store in sessionStorage for cross-tab syncing
+  sessionStorage.setItem('currentUserId', userId);
 };
 
 /**
  * Gets the current user ID from local storage
  */
 export const getCurrentUserId = (): string => {
-  return localStorage.getItem('currentUserId') || 'anonymous';
+  return localStorage.getItem('currentUserId') || sessionStorage.getItem('currentUserId') || 'anonymous';
 };

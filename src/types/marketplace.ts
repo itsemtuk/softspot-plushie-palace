@@ -1,3 +1,4 @@
+
 export interface UserProfile {
   id: string;
   username: string;
@@ -7,6 +8,15 @@ export interface UserProfile {
   isFollowing: boolean;
   avatar: string;
   status?: "online" | "offline" | "away" | "busy";
+}
+
+export interface Comment {
+  id: string;
+  userId: string;
+  username: string;
+  content: string;
+  createdAt: string;
+  likes: Array<{ userId: string; username: string }> | number;
 }
 
 export interface Notification {
@@ -29,14 +39,23 @@ export interface DirectMessage {
   isRead: boolean;
 }
 
+export interface MessageThread {
+  id: string;
+  participants: UserProfile[];
+  lastMessage: DirectMessage;
+  updatedAt: string;
+  unreadCount: number;
+}
+
 export interface WishlistItem {
   id: string;
   userId: string;
-  title: string;
+  name: string;
   description?: string;
   imageUrl: string;
   createdAt: string;
   price?: number;
+  title?: string;
 }
 
 export interface Wishlist {
@@ -45,6 +64,7 @@ export interface Wishlist {
   name: string;
   items: WishlistItem[];
   createdAt: string;
+  title?: string;
 }
 
 export interface PostCreationData {
@@ -61,8 +81,19 @@ export interface ExtendedPost {
   image: string;
   title: string;
   username: string;
-  likes: number;
-  comments: number;
+  likes: number | Array<{ userId: string; username: string }>;
+  comments: number | Comment[];
+  description?: string;
+  tags?: string[];
+  timestamp: string;
+  location?: string;
+}
+
+export interface Post {
+  id: string;
+  userId: string;
+  image: string;
+  title: string;
   description?: string;
   tags?: string[];
   timestamp: string;
@@ -95,10 +126,56 @@ export interface MarketplacePlushie {
   timestamp: string;
   forSale: boolean;
   tags: string[];
+  price?: number;
 }
 
 export interface ImageUploadResult {
   success: boolean;
   url?: string;
   error?: string;
+}
+
+export interface ImageEditorOptions {
+  maxWidth?: number;
+  maxHeight?: number;
+  quality?: number;
+  aspectRatio?: number;
+}
+
+export interface Currency {
+  code: string;
+  name: string;
+  symbol: string;
+  rate: number;
+}
+
+export interface MarketplaceFilters {
+  condition: PlushieCondition[];
+  material: PlushieMaterial[];
+  species: PlushieSpecies[];
+  brands: string[];
+  priceRange: [number, number];
+  sortBy: "newest" | "price-low" | "price-high" | "popular";
+}
+
+export interface PlushieBrand {
+  id: string;
+  name: string;
+  logo: string;
+  description: string;
+  website: string;
+  founded: string;
+  location: string;
+  followersCount: number;
+  isFollowing: boolean;
+}
+
+export type PrivacySetting = "public" | "followers" | "private";
+
+export interface UserPrivacySettings {
+  profileVisibility: PrivacySetting;
+  messagePermission: PrivacySetting;
+  activityStatus: boolean;
+  showWishlist: boolean;
+  allowTagging: boolean;
 }

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import {
   Dialog,
@@ -14,7 +13,8 @@ import { PostCreationForm } from "@/components/post/PostCreationForm";
 import { PostCreationData, ImageUploadResult, ExtendedPost } from '@/types/marketplace';
 import { toast } from '@/components/ui/use-toast';
 import { ArrowLeft } from 'lucide-react';
-import { updatePost } from '@/utils/posts/postManagement';
+import { updatePost, addPost } from '@/utils/posts/postManagement';
+import { useUser } from '@clerk/clerk-react';
 
 interface PostCreationFlowProps {
   isOpen: boolean;
@@ -30,6 +30,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCr
   const [uploadedImage, setUploadedImage] = useState<string>('');
   const [editedImage, setEditedImage] = useState<string>('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useUser();
   
   // Initialize form with post to edit if provided
   useEffect(() => {
@@ -37,6 +38,8 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCr
       setUploadedImage(postToEdit.image);
       setEditedImage(postToEdit.image);
       setCurrentStep('details');
+    } else if (isOpen && !postToEdit) {
+      setCurrentStep('upload');
     }
   }, [postToEdit, isOpen]);
   
@@ -89,6 +92,25 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCr
         });
       } else {
         // Handle creating new post
+        const newPost: ExtendedPost = {
+          id: `post-${Date.now()}`,
+          userId: user?.id || 'anonymous',
+          image: finalPost.image,
+          title: finalPost.title,
+          username: user?.username || user?.firstName || "Anonymous",
+          likes: 0,
+          comments: 0,
+          description: finalPost.description || "",
+          tags: finalPost.tags || [],
+          timestamp: new Date().toISOString(),
+          location: finalPost.location
+        };
+        
+        const result = await addPost(newPost);
+        if (!result.success) {
+          throw new Error(result.error || "Failed to create post");
+        }
+        
         if (onPostCreated) {
           await onPostCreated(finalPost);
         }

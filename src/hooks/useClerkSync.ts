@@ -10,6 +10,7 @@ export function useClerkSync() {
     imageUrl?: string;
     firstName?: string;
     lastName?: string;
+    publicMetadata?: Record<string, any>;
   }) => {
     if (!user) return;
 
