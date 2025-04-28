@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { 
   DropdownMenu,
@@ -24,7 +23,12 @@ import {
   PawPrint
 } from "lucide-react";
 
-export function MarketplaceNav() {
+interface MarketplaceNavProps {
+  selectedCategory: string;
+  onCategoryChange: (category: string) => void;
+}
+
+export function MarketplaceNav({ selectedCategory, onCategoryChange }: MarketplaceNavProps) {
   const brands = [
     { id: "build-a-bear", name: "Build-A-Bear Workshop" },
     { id: "squishmallows", name: "Squishmallows" },
@@ -42,6 +46,9 @@ export function MarketplaceNav() {
     { id: "unicorn", name: "Unicorns" },
   ];
 
+  // Helper to determine if a category button should have active styling
+  const isActive = (category: string) => selectedCategory === category;
+
   return (
     <div className="bg-white border-b">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,12 +56,14 @@ export function MarketplaceNav() {
           <NavigationMenu>
             <NavigationMenuList>
               <NavigationMenuItem>
-                <Link to="/marketplace">
-                  <Button variant="ghost" className="flex items-center gap-2 h-12 px-4">
-                    <Store className="w-4 h-4" />
-                    <span>Shop All</span>
-                  </Button>
-                </Link>
+                <Button 
+                  variant={isActive("all") ? "default" : "ghost"} 
+                  className={`flex items-center gap-2 h-12 px-4 ${isActive("all") ? "bg-softspot-500 text-white" : ""}`}
+                  onClick={() => onCategoryChange("all")}
+                >
+                  <Store className="w-4 h-4" />
+                  <span>Shop All</span>
+                </Button>
               </NavigationMenuItem>
               
               <NavigationMenuItem>
@@ -117,13 +126,14 @@ export function MarketplaceNav() {
                 <NavigationMenuContent>
                   <div className="grid grid-cols-2 w-[400px] gap-2 p-4">
                     {species.map(animal => (
-                      <Link 
+                      <Button 
                         key={animal.id}
-                        to={`/marketplace?species=${animal.id}`} 
-                        className="block p-2 hover:bg-gray-50 rounded-md"
+                        variant="ghost"
+                        className="justify-start"
+                        onClick={() => onCategoryChange(animal.id)}
                       >
                         {animal.name}
-                      </Link>
+                      </Button>
                     ))}
                     <Link to="/animals" className="block p-2 hover:bg-gray-50 rounded-md col-span-2 text-softspot-500 font-medium">
                       View all animals →
@@ -154,11 +164,14 @@ export function MarketplaceNav() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-screen max-w-xs">
-              <DropdownMenuItem asChild>
-                <Link to="/marketplace" className="flex items-center gap-2 cursor-pointer">
+              <DropdownMenuItem 
+                className={isActive("all") ? "bg-softspot-100" : ""}
+                onClick={() => onCategoryChange("all")}
+              >
+                <div className="flex items-center gap-2 cursor-pointer">
                   <Store className="w-4 h-4" />
                   <span>Shop All</span>
-                </Link>
+                </div>
               </DropdownMenuItem>
               
               <DropdownMenuSeparator />
@@ -184,8 +197,12 @@ export function MarketplaceNav() {
               <DropdownMenuSeparator />
               <div className="px-2 py-1 text-xs text-gray-500">Animals</div>
               {species.map(animal => (
-                <DropdownMenuItem key={animal.id} asChild>
-                  <Link to={`/marketplace?species=${animal.id}`}>{animal.name}</Link>
+                <DropdownMenuItem 
+                  key={animal.id} 
+                  className={isActive(animal.id) ? "bg-softspot-100" : ""}
+                  onClick={() => onCategoryChange(animal.id)}
+                >
+                  {animal.name}
                 </DropdownMenuItem>
               ))}
               
