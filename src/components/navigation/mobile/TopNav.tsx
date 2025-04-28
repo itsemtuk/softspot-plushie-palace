@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { MessageSquare, Bell } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { SignedIn } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/navigation/Logo";

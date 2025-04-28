@@ -8,8 +8,16 @@ interface PlushieInfoProps {
 }
 
 export function PlushieInfo({ plushie }: PlushieInfoProps) {
-  // Ensure deliveryCost is a number for toFixed()
-  const deliveryCost = typeof plushie.deliveryCost === 'number' ? plushie.deliveryCost : 0;
+  // Ensure deliveryCost is a valid number for toFixed()
+  let deliveryCost = 0;
+  if (plushie.deliveryCost !== undefined && plushie.deliveryCost !== null) {
+    // Parse as number if it's a string, or use directly if it's a number
+    deliveryCost = typeof plushie.deliveryCost === 'string' 
+      ? parseFloat(plushie.deliveryCost) || 0 
+      : typeof plushie.deliveryCost === 'number' 
+        ? plushie.deliveryCost 
+        : 0;
+  }
   
   return (
     <>

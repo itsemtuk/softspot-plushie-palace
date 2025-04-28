@@ -13,7 +13,7 @@ export function useClerkSync() {
       const currentStatus = getUserStatus();
       
       // Set status in Clerk if it differs
-      const clerkStatus = user.publicMetadata?.status as string || 'online';
+      const clerkStatus = user.unsafeMetadata?.status as string || 'online';
       if (clerkStatus !== currentStatus) {
         updateClerkProfile({
           status: currentStatus

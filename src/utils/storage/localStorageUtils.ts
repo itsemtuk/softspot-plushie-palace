@@ -1,3 +1,4 @@
+
 import { ExtendedPost, MarketplacePlushie } from "@/types/marketplace";
 
 // Constants for storage keys
@@ -5,6 +6,7 @@ const POSTS_STORAGE_KEY = 'userPosts';
 const MARKETPLACE_STORAGE_KEY = 'marketplaceListings';
 const CURRENT_USER_KEY = 'currentUserId';
 const USER_STATUS_KEY = 'userStatus';
+const SYNC_TIMESTAMP_KEY = 'lastSyncTimestamp';
 
 /**
  * Saves posts to local storage
@@ -16,9 +18,27 @@ export const savePosts = (posts: ExtendedPost[]): void => {
     localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(uniquePosts));
     // Also store in sessionStorage for cross-tab syncing
     sessionStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(uniquePosts));
+    // Update sync timestamp
+    updateSyncTimestamp();
   } catch (error) {
     console.error('Error saving posts to local storage:', error);
   }
+};
+
+/**
+ * Updates the last sync timestamp
+ */
+export const updateSyncTimestamp = (): void => {
+  const timestamp = new Date().toISOString();
+  localStorage.setItem(SYNC_TIMESTAMP_KEY, timestamp);
+  sessionStorage.setItem(SYNC_TIMESTAMP_KEY, timestamp);
+};
+
+/**
+ * Gets the last sync timestamp
+ */
+export const getLastSyncTimestamp = (): string | null => {
+  return localStorage.getItem(SYNC_TIMESTAMP_KEY) || sessionStorage.getItem(SYNC_TIMESTAMP_KEY);
 };
 
 /**
@@ -157,6 +177,8 @@ export const setCurrentUserId = (userId: string): void => {
   localStorage.setItem(CURRENT_USER_KEY, userId);
   // Also store in sessionStorage for cross-tab syncing
   sessionStorage.setItem(CURRENT_USER_KEY, userId);
+  // Update sync timestamp when user changes
+  updateSyncTimestamp();
 };
 
 /**

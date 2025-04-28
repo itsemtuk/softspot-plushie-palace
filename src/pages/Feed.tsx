@@ -11,6 +11,7 @@ import { EmptyFeed } from "@/components/feed/EmptyFeed";
 import { FeedGrid } from "@/components/feed/FeedGrid";
 import { getPosts, addPost } from "@/utils/postStorage";
 import { cleanupStorage } from "@/utils/storage/localStorageUtils";
+import { isSupabaseConfigured } from "@/utils/supabase/client";
 
 const Feed = () => {
   const { user } = useUser();
@@ -21,6 +22,7 @@ const Feed = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [isCloudSyncEnabled] = useState(isSupabaseConfigured());
   
   // Store current username in localStorage for comments
   useEffect(() => {
@@ -60,7 +62,9 @@ const Feed = () => {
       toast({
         variant: "destructive",
         title: "Error loading posts",
-        description: "Could not connect to the server. Please try again later."
+        description: isCloudSyncEnabled 
+          ? "Could not connect to the cloud server. Please try again later."
+          : "Posts are currently stored locally on this device. Login to sync to the cloud."
       });
     } finally {
       setIsLoading(false);
@@ -123,7 +127,9 @@ const Feed = () => {
         
         toast({
           title: "Post created successfully!",
-          description: "Your post is now visible in your profile and feed."
+          description: isCloudSyncEnabled 
+            ? "Your post has been saved to the cloud and is now visible in your profile and feed."
+            : "Your post has been saved locally. Sign in to sync to the cloud."
         });
       } else {
         throw new Error(result.error || "Failed to save post");
