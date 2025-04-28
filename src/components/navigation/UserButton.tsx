@@ -1,7 +1,7 @@
 
 import { UserButton as ClerkUserButton, useUser, useClerk } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, User } from "lucide-react";
 import { ActivityStatus } from "../ui/activity-status";
 import { 
   DropdownMenu, 
@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger 
 } from "@/components/ui/dropdown-menu";
 import { useClerkSync } from "@/hooks/useClerkSync";
+import { Link } from "react-router-dom";
 
 export const UserButton = () => {
   const { user } = useUser();
@@ -87,6 +88,12 @@ export const UserButton = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
+          <DropdownMenuItem asChild>
+            <Link to="/profile" className="flex items-center cursor-pointer">
+              <User className="mr-2 h-4 w-4" />
+              <span>My Profile</span>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           
           <DropdownMenuLabel className="text-xs text-gray-500">Status</DropdownMenuLabel>

@@ -6,19 +6,21 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Settings } from 'lucide-react';
 import { Navbar } from "@/components/Navbar";
 import { PostCard } from "@/components/post/PostCard";
 import { getAllUserPosts } from "@/utils/postStorage";
 import { ExtendedPost } from "@/types/marketplace";
 import NotificationsTab from "@/components/profile/NotificationsTab";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { MobileNav } from "@/components/navigation/MobileNav";
 
 const Profile = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const fetchUserPosts = async () => {
@@ -44,7 +46,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {isMobile ? <MobileNav /> : <Navbar />}
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Your Profile</h1>

@@ -33,12 +33,14 @@ const Marketplace = () => {
   useEffect(() => {
     const fetchListings = () => {
       try {
+        setIsLoading(true);
+        console.log("Fetching marketplace listings...");
         const storedListings = getMarketplaceListings();
         console.log("Fetched marketplace listings:", storedListings);
-        setListings(storedListings);
-        setIsLoading(false);
+        setListings(storedListings || []);
       } catch (error) {
         console.error("Error fetching marketplace listings:", error);
+      } finally {
         setIsLoading(false);
       }
     };
@@ -112,6 +114,7 @@ const Marketplace = () => {
   };
 
   const handlePlushieClick = (plushie: MarketplacePlushie) => {
+    console.log("Plushie clicked:", plushie);
     setSelectedPlushie(plushie);
     setIsDetailsOpen(true);
   };
