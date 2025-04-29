@@ -15,6 +15,15 @@ function isUserSignedIn() {
   return !!localStorage.getItem('currentUserId');
 }
 
+// Add type declaration for Clerk's frontend API
+declare global {
+  interface Window {
+    __clerk_frontend_api?: {
+      sessions?: { userId: string }[];
+    }
+  }
+}
+
 export function CloudSyncStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isCloudEnabled, setIsCloudEnabled] = useState(isSupabaseConfigured());
@@ -58,12 +67,11 @@ export function CloudSyncStatus() {
     
     // Initial check for Clerk user if Clerk is configured
     if (isClerkConfigured) {
-      import('@clerk/clerk-react').then(clerk => {
+      import('@clerk/clerk-react').then(() => {
         // Only try to get user if we're inside a ClerkProvider
         try {
           // This is a safe way to check if we're in a ClerkProvider without using hooks
-          const userSession = window.__clerk_frontend_api?.sessions?.[0];
-          if (userSession) {
+          if (window.__clerk_frontend_api && window.__clerk_frontend_api.sessions && window.__clerk_frontend_api.sessions.length > 0) {
             setIsSignedIn(true);
           }
         } catch (error) {
