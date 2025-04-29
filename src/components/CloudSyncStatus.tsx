@@ -65,12 +65,8 @@ export function CloudSyncStatus() {
     // Update sign-in status if localStorage changes
     window.addEventListener("storage", checkSignInStatus);
     
-    // Initial check for Clerk user if Clerk is configured
-    if (isClerkConfigured) {
-      // Don't try to use Clerk hooks or methods directly here
-      // Just check localStorage which should be set during sign-in
-      setIsSignedIn(isUserSignedIn());
-    }
+    // Initial check for user status
+    checkSignInStatus();
     
     return () => {
       window.removeEventListener("online", handleOnline);
@@ -79,8 +75,13 @@ export function CloudSyncStatus() {
     };
   }, [isCloudEnabled, isSignedIn]);
   
-  // Show sync status on initial load
+  // Don't show any notification on mobile if there's issues
+  const isMobileDevice = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+  
+  // Show sync status on initial load only if not on mobile
   useEffect(() => {
+    if (isMobileDevice) return;
+    
     if (isCloudEnabled && isSignedIn) {
       toast({
         title: "Cloud Sync Enabled",
@@ -100,7 +101,7 @@ export function CloudSyncStatus() {
         ),
       });
     }
-  }, [isCloudEnabled, isSignedIn]);
+  }, [isCloudEnabled, isSignedIn, isMobileDevice]);
   
   // Return null as this is just a notification controller with no UI
   return null;

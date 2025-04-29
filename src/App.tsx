@@ -23,6 +23,14 @@ import BrandPage from './pages/BrandPage';
 import Discover from './pages/Discover';
 import { CloudSyncStatus } from './components/CloudSyncStatus';
 import { PostDialogProvider } from './hooks/use-post-dialog';
+import { Suspense, lazy } from 'react';
+
+// Lazy load pages to improve performance
+const LazyFeed = lazy(() => import('@/pages/Feed'));
+const LazyMarketplace = lazy(() => import('@/pages/Marketplace'));
+const LazyProfile = lazy(() => import('@/pages/Profile'));
+const LazySettings = lazy(() => import('@/pages/Settings'));
+const LazyMessaging = lazy(() => import('@/pages/MessagingPage'));
 
 function App() {
   // Check if Clerk has a valid publishable key
@@ -36,13 +44,48 @@ function App() {
       <Route path="/" element={<Index />} />
       <Route path="/sign-in/*" element={<SignIn />} />
       <Route path="/sign-up/*" element={<SignUp />} />
-      <Route path="/feed" element={<Feed />} />
-      <Route path="/marketplace/*" element={<Marketplace />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route 
+        path="/feed" 
+        element={
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <LazyFeed />
+          </Suspense>
+        } 
+      />
+      <Route 
+        path="/marketplace/*" 
+        element={
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <LazyMarketplace />
+          </Suspense>
+        } 
+      />
+      <Route 
+        path="/profile" 
+        element={
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <LazyProfile />
+          </Suspense>
+        } 
+      />
       <Route path="/posts/:postId" element={<PostPage />} />
-      <Route path="/settings" element={<Settings />} />
+      <Route 
+        path="/settings" 
+        element={
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <LazySettings />
+          </Suspense>
+        } 
+      />
       <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/messages" element={<MessagingPage />} />
+      <Route 
+        path="/messages" 
+        element={
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <LazyMessaging />
+          </Suspense>
+        } 
+      />
       <Route path="/sell" element={<SellItemPage />} />
       <Route path="/wishlist" element={<WishlistPage />} />
       <Route path="/about" element={<About />} />
