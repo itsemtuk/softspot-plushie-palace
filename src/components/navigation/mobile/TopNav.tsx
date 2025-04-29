@@ -4,7 +4,6 @@ import { MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/navigation/Logo";
 import { MobileNotifications } from "./MobileNotifications";
-import { AuthWrapper } from "@/components/auth/AuthWrapper";
 
 export function TopNav() {
   const isSignedIn = !!localStorage.getItem('currentUserId');
