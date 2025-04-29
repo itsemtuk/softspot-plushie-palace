@@ -23,7 +23,7 @@ export function BottomNav() {
     checkUserStatus();
     
     // Check for status changes periodically
-    const intervalId = setInterval(checkUserStatus, 10000);
+    const intervalId = setInterval(checkUserStatus, 2000);
     
     // Update on localStorage changes
     const handleStorageChange = () => {

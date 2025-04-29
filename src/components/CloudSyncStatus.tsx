@@ -1,27 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { isSupabaseConfigured } from "@/utils/supabase/client";
-import { Wifi, WifiOff, CloudOff, Cloud } from "lucide-react";
-import { Button } from "./ui/button";
 import { toast } from "./ui/use-toast";
-
-// Check if Clerk is configured
-const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
 
 // Simple function to check if user is signed in without requiring Clerk
 function isUserSignedIn() {
   return !!localStorage.getItem('currentUserId');
-}
-
-// Add type declaration for Clerk's frontend API
-declare global {
-  interface Window {
-    __clerk_frontend_api?: {
-      sessions?: { userId: string }[];
-    }
-  }
 }
 
 export function CloudSyncStatus() {
@@ -94,11 +78,6 @@ export function CloudSyncStatus() {
         title: "Local Storage Only",
         description: "Your data is only stored on this device. Enable Supabase integration for cloud sync.",
         duration: 5000,
-        action: (
-          <Button size="sm" variant="outline" onClick={() => window.open('https://docs.lovable.dev/integrations/supabase/', '_blank')}>
-            Learn How
-          </Button>
-        ),
       });
     }
   }, [isCloudEnabled, isSignedIn, isMobileDevice]);
