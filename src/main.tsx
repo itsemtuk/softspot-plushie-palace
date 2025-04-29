@@ -17,6 +17,9 @@ if (isClerkConfigured) {
   // Dynamic import to avoid errors when Clerk is not available
   import('@clerk/clerk-react')
     .then(({ ClerkProvider }) => {
+      // When successful, store a flag in localStorage to indicate user is using Clerk
+      localStorage.setItem('usingClerk', 'true');
+      
       root.render(
         <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
           <App />
@@ -25,10 +28,12 @@ if (isClerkConfigured) {
     })
     .catch((error) => {
       console.error("Failed to load Clerk:", error);
+      localStorage.removeItem('usingClerk');
       // Render without Clerk if import fails
       root.render(<App />);
     });
 } else {
+  localStorage.removeItem('usingClerk');
   // Render without Clerk if not configured
   root.render(<App />);
 }

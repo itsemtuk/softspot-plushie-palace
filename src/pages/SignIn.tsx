@@ -11,6 +11,19 @@ const SignIn = () => {
     window.scrollTo(0, 0);
   }, []);
   
+  // Function to handle after sign in
+  const handleAfterSignIn = (userData: any) => {
+    // Store user data in localStorage for components that don't have access to Clerk context
+    if (userData && userData.id) {
+      localStorage.setItem('currentUserId', userData.id);
+      localStorage.setItem('currentUsername', userData.username || userData.firstName || 'User');
+      localStorage.setItem('userStatus', 'online');
+      if (userData.imageUrl) {
+        localStorage.setItem('userAvatarUrl', userData.imageUrl);
+      }
+    }
+  };
+  
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -47,6 +60,8 @@ const SignIn = () => {
               }}
               redirectUrl="/feed"
               signUpUrl="/sign-up"
+              afterSignInUrl="/feed"
+              afterSignUpUrl="/onboarding"
             />
           </CardContent>
           

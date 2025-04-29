@@ -3,31 +3,40 @@ import { Link } from "react-router-dom";
 import { Home, Search, PlusSquare, ShoppingBag, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreatePostSheet } from "./CreatePostSheet";
-import { useUser } from "@clerk/clerk-react";
 import { UserStatusBadge } from "@/components/messaging/UserStatusBadge";
 import { useState, useEffect } from "react";
 import { getUserStatus } from "@/utils/storage/localStorageUtils";
 
 export function BottomNav() {
-  const { user } = useUser();
   const [userStatus, setUserStatus] = useState<"online" | "offline" | "away" | "busy">("online");
+  const [isSignedIn, setIsSignedIn] = useState(false);
   
-  // Get status from local storage or Clerk metadata
+  // Get status from local storage
   useEffect(() => {
-    const status = getUserStatus();
-    // Use status from local storage or default to online
-    setUserStatus(status);
+    const checkUserStatus = () => {
+      const status = getUserStatus();
+      setUserStatus(status);
+      setIsSignedIn(!!localStorage.getItem('currentUserId'));
+    };
+    
+    // Initial check
+    checkUserStatus();
     
     // Check for status changes periodically
-    const intervalId = setInterval(() => {
-      const currentStatus = getUserStatus();
-      if (currentStatus !== userStatus) {
-        setUserStatus(currentStatus);
-      }
-    }, 10000);
+    const intervalId = setInterval(checkUserStatus, 10000);
     
-    return () => clearInterval(intervalId);
-  }, [user]);
+    // Update on localStorage changes
+    const handleStorageChange = () => {
+      checkUserStatus();
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => {
+      clearInterval(intervalId);
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-softspot-100 pb-safe">
@@ -52,7 +61,7 @@ export function BottomNav() {
           <Button variant="ghost" size="icon">
             <User className="h-5 w-5" />
           </Button>
-          {user && (
+          {isSignedIn && (
             <UserStatusBadge 
               status={userStatus}
               className="absolute -bottom-1 -right-1"

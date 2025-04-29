@@ -1,8 +1,14 @@
 
 import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
+import { useEffect } from 'react';
 
 const SignUp = () => {
+  // Force scroll to top when page loads
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+  
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar />
@@ -23,6 +29,8 @@ const SignUp = () => {
             }}
             redirectUrl="/onboarding"
             signInUrl="/sign-in"
+            afterSignInUrl="/feed"
+            afterSignUpUrl="/onboarding"
           />
           <div className="mt-6 text-center text-sm text-gray-500">
             <p>By signing up, you agree to our Terms of Service and Privacy Policy.</p>

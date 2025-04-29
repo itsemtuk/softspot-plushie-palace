@@ -67,20 +67,9 @@ export function CloudSyncStatus() {
     
     // Initial check for Clerk user if Clerk is configured
     if (isClerkConfigured) {
-      import('@clerk/clerk-react').then(() => {
-        // Only try to get user if we're inside a ClerkProvider
-        try {
-          // This is a safe way to check if we're in a ClerkProvider without using hooks
-          if (window.__clerk_frontend_api && window.__clerk_frontend_api.sessions && window.__clerk_frontend_api.sessions.length > 0) {
-            setIsSignedIn(true);
-          }
-        } catch (error) {
-          // Silently fail - we'll fall back to localStorage check
-          console.log("Not using Clerk or not in ClerkProvider");
-        }
-      }).catch(err => {
-        console.error("Failed to import Clerk:", err);
-      });
+      // Don't try to use Clerk hooks or methods directly here
+      // Just check localStorage which should be set during sign-in
+      setIsSignedIn(isUserSignedIn());
     }
     
     return () => {

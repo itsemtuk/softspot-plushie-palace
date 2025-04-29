@@ -20,49 +20,57 @@ const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY &&
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
 
-// Import Clerk components only if Clerk is configured
-let ClerkUserButton: React.ComponentType<any> | null = null;
-let useUser: () => any = () => ({ user: null, isLoaded: true });
-let useClerk: () => any = () => ({ signOut: async () => {} });
-let useClerkSync: () => any = () => ({ 
-  updateClerkProfile: async () => ({ success: true }),
-  updateUserStatus: async () => ({ success: true })
-});
-
-if (isClerkConfigured) {
-  // Try-catch to handle potential import errors
-  try {
-    const clerk = await import('@clerk/clerk-react');
-    ClerkUserButton = clerk.UserButton;
-    useUser = clerk.useUser;
-    useClerk = clerk.useClerk;
-    
-    const clerkSync = await import('@/hooks/useClerkSync');
-    useClerkSync = clerkSync.useClerkSync;
-  } catch (error) {
-    console.error("Failed to import Clerk components:", error);
-  }
-}
-
 export const UserButton = () => {
   const navigate = useNavigate();
   const [userStatus, setUserStatusState] = useState<"online" | "offline" | "away" | "busy">("online");
-  
-  // Use Clerk hooks if available, otherwise use fallbacks
-  const clerkUser = isClerkConfigured ? useUser() : { user: null, isLoaded: true };
-  const clerkAuth = isClerkConfigured ? useClerk() : { signOut: async () => {} };
-  const clerkSync = isClerkConfigured ? useClerkSync() : { 
-    updateClerkProfile: async () => ({ success: true }),
-    updateUserStatus: async () => ({ success: true })
-  };
-  
-  const user = clerkUser.user;
-  const { signOut } = clerkAuth;
-  const { updateClerkProfile } = clerkSync;
+  const [isClerkLoaded, setIsClerkLoaded] = useState(false);
+  const [user, setUser] = useState(null);
+  const [signOut, setSignOut] = useState<(() => Promise<void>) | null>(null);
+  const [updateClerkProfile, setUpdateClerkProfile] = useState<((data: any) => Promise<any>) | null>(null);
   
   const username = localStorage.getItem('currentUsername') || "Anonymous";
   const avatarUrl = localStorage.getItem('userAvatarUrl') || "";
 
+  // Load Clerk components dynamically if configured
+  useEffect(() => {
+    if (isClerkConfigured) {
+      // Import Clerk components
+      Promise.all([
+        import('@clerk/clerk-react'),
+        import('@/hooks/useClerkSync')
+      ]).then(([clerk, clerkSync]) => {
+        // Setup necessary functions
+        const { useUser, useClerk } = clerk;
+        const { useClerkSync } = clerkSync;
+        
+        // Create a temporary component to get hooks values
+        const TempComponent = () => {
+          const userValue = useUser();
+          const clerkValue = useClerk();
+          const syncValue = useClerkSync();
+          
+          // Store values in refs or state
+          setUser(userValue.user);
+          setSignOut(() => clerkValue.signOut);
+          setUpdateClerkProfile(() => syncValue.updateClerkProfile);
+          
+          return null;
+        };
+        
+        // Mark as loaded so the TempComponent can be rendered
+        setIsClerkLoaded(true);
+        
+        // Cleanup function
+        return () => {
+          setIsClerkLoaded(false);
+        };
+      }).catch(error => {
+        console.error("Failed to load Clerk components:", error);
+      });
+    }
+  }, []);
+  
+  // This effect runs after Clerk is loaded and handles user status
   useEffect(() => {
     if (!user) return;
     
@@ -71,7 +79,7 @@ export const UserButton = () => {
     setUserStatusState(localStatus);
     
     // Sync with Clerk metadata if different and if Clerk is available
-    if (isClerkConfigured && user) {
+    if (isClerkConfigured && user && updateClerkProfile) {
       const clerkStatus = user.unsafeMetadata?.status as string;
       if (clerkStatus && clerkStatus !== localStatus) {
         setUserStatus(clerkStatus as "online" | "offline" | "away" | "busy");
@@ -89,7 +97,7 @@ export const UserButton = () => {
     const handleBeforeUnload = () => {
       setUserStatus("offline");
       // Synchronously update clerk without waiting for promise
-      if (isClerkConfigured && user) {
+      if (isClerkConfigured && user && updateClerkProfile) {
         try {
           updateClerkProfile({
             status: "offline"
@@ -113,7 +121,7 @@ export const UserButton = () => {
     setUserStatus(newStatus);
     
     // Update Clerk if available
-    if (isClerkConfigured && user) {
+    if (isClerkConfigured && user && updateClerkProfile) {
       try {
         await updateClerkProfile({
           status: newStatus
@@ -131,7 +139,7 @@ export const UserButton = () => {
   const handleSignOut = async () => {
     try {
       // First, sign out from Clerk if available
-      if (isClerkConfigured) {
+      if (isClerkConfigured && signOut) {
         await signOut();
       }
       
@@ -157,8 +165,8 @@ export const UserButton = () => {
     }
   };
 
-  // Show a regular avatar with dropdown menu if Clerk is not available
-  const renderFallbackUserButton = () => {
+  // Regular avatar with dropdown menu
+  const renderUserButton = () => {
     const userInitial = username ? username.charAt(0).toUpperCase() : "A";
     
     return (
@@ -177,29 +185,21 @@ export const UserButton = () => {
     );
   };
 
+  // Render ClerkUserButton helper component if Clerk is loaded
+  const ClerkButtonComponent = isClerkLoaded ? () => {
+    // This is intentionally empty as it's only used to access Clerk hooks
+    return null;
+  } : null;
+
   return (
     <div className="relative">
+      {/* Hidden component to access Clerk hooks */}
+      {isClerkLoaded && ClerkButtonComponent && <ClerkButtonComponent />}
+      
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
           <div className="relative">
-            {isClerkConfigured && ClerkUserButton ? (
-              <ClerkUserButton 
-                appearance={{
-                  elements: {
-                    userButtonAvatarBox: "w-9 h-9",
-                    userButtonPopoverCard: "hidden" // Hide Clerk's default popover
-                  }
-                }}
-              />
-            ) : (
-              renderFallbackUserButton()
-            )}
-            <ActivityStatus 
-              status={userStatus}
-              className="absolute -bottom-1 -right-1"
-              size="sm"
-              pulseAnimation={userStatus === "online"}
-            />
+            {renderUserButton()}
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-white z-50 shadow-lg">
