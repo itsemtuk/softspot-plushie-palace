@@ -10,35 +10,15 @@ const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY &&
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
 
-// Create a safe version of useUser that works with or without Clerk
-function useSafeUser() {
-  if (!isClerkConfigured) {
-    // If Clerk is not configured, return a default value
-    return { isSignedIn: !!localStorage.getItem('currentUserId') };
-  }
-  
-  try {
-    // Safely import and use Clerk's useUser
-    // This dynamic import pattern works better with build systems
-    const { useUser } = require('@clerk/clerk-react');
-    if (typeof useUser === 'function') {
-      return useUser();
-    } else {
-      console.warn("Clerk's useUser is not available, using fallback");
-      return { isSignedIn: !!localStorage.getItem('currentUserId') };
-    }
-  } catch (error) {
-    console.error("Failed to use Clerk's useUser:", error);
-    return { isSignedIn: !!localStorage.getItem('currentUserId') };
-  }
+// Simple function to check if user is signed in without requiring Clerk
+function isUserSignedIn() {
+  return !!localStorage.getItem('currentUserId');
 }
 
 export function CloudSyncStatus() {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [isCloudEnabled, setIsCloudEnabled] = useState(isSupabaseConfigured());
-  
-  // Use our safe version of useUser instead of direct Clerk import
-  const { isSignedIn } = useSafeUser();
+  const [isSignedIn, setIsSignedIn] = useState(isUserSignedIn());
   
   // Monitor online status
   useEffect(() => {
@@ -65,12 +45,40 @@ export function CloudSyncStatus() {
       }
     };
     
+    // Check sign-in status
+    const checkSignInStatus = () => {
+      setIsSignedIn(isUserSignedIn());
+    };
+    
     window.addEventListener("online", handleOnline);
     window.addEventListener("offline", handleOffline);
+    
+    // Update sign-in status if localStorage changes
+    window.addEventListener("storage", checkSignInStatus);
+    
+    // Initial check for Clerk user if Clerk is configured
+    if (isClerkConfigured) {
+      import('@clerk/clerk-react').then(clerk => {
+        // Only try to get user if we're inside a ClerkProvider
+        try {
+          // This is a safe way to check if we're in a ClerkProvider without using hooks
+          const userSession = window.__clerk_frontend_api?.sessions?.[0];
+          if (userSession) {
+            setIsSignedIn(true);
+          }
+        } catch (error) {
+          // Silently fail - we'll fall back to localStorage check
+          console.log("Not using Clerk or not in ClerkProvider");
+        }
+      }).catch(err => {
+        console.error("Failed to import Clerk:", err);
+      });
+    }
     
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("storage", checkSignInStatus);
     };
   }, [isCloudEnabled, isSignedIn]);
   
