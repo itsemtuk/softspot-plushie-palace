@@ -13,9 +13,10 @@ export function TopNav() {
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-softspot-100">
       <div className="flex items-center justify-between px-4 h-16">
-        <Link to="/" className="flex items-center">
+        <div className="flex items-center">
+          {/* Fixed: Removed the Link wrapper around Logo since Logo likely already has a link */}
           <Logo />
-        </Link>
+        </div>
         
         <div className="flex items-center gap-2">
           {isSignedIn && (

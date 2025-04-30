@@ -1,13 +1,13 @@
 
 import { Link } from "react-router-dom";
 
-export const Logo = () => {
+export function Logo() {
   return (
-    <Link to="/" className="flex items-center">
-      <span className="text-2xl font-extrabold text-softspot-500 mr-2">SoftSpot</span>
-      <div className="h-8 w-8 rounded-full bg-softspot-200 flex items-center justify-center animate-float">
-        <span className="text-lg">🧸</span>
+    <Link to="/" className="flex items-center space-x-2">
+      <span className="font-bold text-xl text-softspot-600">SoftSpot</span>
+      <div className="h-6 w-6 rounded-full bg-softspot-200 flex items-center justify-center">
+        <span className="text-sm">🧸</span>
       </div>
     </Link>
   );
-};
+}
