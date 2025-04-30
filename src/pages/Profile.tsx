@@ -117,7 +117,7 @@ const Profile = () => {
     <div className="min-h-screen bg-gray-50 pb-8">
       {isMobile ? <MobileNav /> : <Navbar />}
       
-      {/* Use the UserProfileHeader component for consistent design */}
+      {/* Use the refactored UserProfileHeader component */}
       <UserProfileHeader
         username={user.username || undefined}
         isOwnProfile={true}
