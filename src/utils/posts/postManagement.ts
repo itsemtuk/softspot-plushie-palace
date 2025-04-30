@@ -22,10 +22,8 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
       };
       
       // Update existing post or add as new post
-      const updatedPosts = existingPosts.map(p => p.id === post.id ? postWithUser : p);
-      if (!updatedPosts.some(p => p.id === post.id)) {
-        updatedPosts.unshift(postWithUser);
-      }
+      const updatedPosts = existingPosts.filter(p => p.id !== post.id); // Remove existing post with same ID
+      updatedPosts.unshift(postWithUser); // Add at the beginning of the array
       
       savePosts(updatedPosts);
       updateSyncTimestamp(); // Update timestamp to prevent duplication
@@ -50,7 +48,7 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
         description: post.description || '',
         tags: post.tags || [],
         timestamp: post.timestamp || new Date().toISOString(), // Ensure timestamp exists
-      });
+      }, { onConflict: 'id' }); // Specify conflict handling
       
     if (error) throw error;
     updateSyncTimestamp(); // Update timestamp after successful cloud save

@@ -51,7 +51,7 @@ export const SearchBar = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <Input
               type="text"
-              placeholder="Search plushies..."
+              placeholder="Search plushies, posts, users..."
               className="pl-9 pr-12 w-full"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -79,7 +79,21 @@ export const SearchBar = () => {
                 className="block p-2 hover:bg-gray-100 rounded-md"
                 onClick={() => setIsOpen(false)}
               >
-                Search for "{searchQuery}"
+                Search for products: "{searchQuery}"
+              </Link>
+              <Link 
+                to={`/feed?q=${encodeURIComponent(searchQuery)}`} 
+                className="block p-2 hover:bg-gray-100 rounded-md"
+                onClick={() => setIsOpen(false)}
+              >
+                Search for posts: "{searchQuery}"
+              </Link>
+              <Link 
+                to="#" 
+                className="block p-2 hover:bg-gray-100 rounded-md"
+                onClick={() => {setIsOpen(false)}}
+              >
+                Search for users: "{searchQuery}"
               </Link>
             </div>
           ) : (
@@ -146,6 +160,40 @@ export const SearchBar = () => {
                     <div>
                       <p className="text-sm font-medium">Rainbow Bunny</p>
                       <p className="text-xs text-gray-500">$19.50</p>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+              
+              <div>
+                <h3 className="text-sm font-medium mb-2">Popular Users</h3>
+                <div className="space-y-2">
+                  <Link 
+                    to="/profile"
+                    className="flex items-center p-2 hover:bg-gray-100 rounded-md"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage src="https://i.pravatar.cc/150?img=10" alt="User" />
+                      <AvatarFallback>JD</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">Jane Doe</p>
+                      <p className="text-xs text-gray-500">@janeplushie</p>
+                    </div>
+                  </Link>
+                  <Link 
+                    to="/profile"
+                    className="flex items-center p-2 hover:bg-gray-100 rounded-md"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    <Avatar className="h-8 w-8 mr-2">
+                      <AvatarImage src="https://i.pravatar.cc/150?img=11" alt="User" />
+                      <AvatarFallback>JD</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">John Smith</p>
+                      <p className="text-xs text-gray-500">@teddymaster</p>
                     </div>
                   </Link>
                 </div>

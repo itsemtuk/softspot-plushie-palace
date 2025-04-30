@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from "@clerk/clerk-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit2, UserPlus, UserMinus, UserCheck, Heart } from "lucide-react";
+import { Edit2, UserPlus, UserMinus, UserCheck } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { getAllUserPosts } from "@/utils/posts/postManagement";
@@ -177,6 +177,9 @@ export default function UserProfileHeader({
     (user?.unsafeMetadata?.plushieInterests as string[]) || 
     ["Teddy Bears", "Unicorns", "Vintage"];
   
+  // Get display name, ensuring we don't use email address
+  const displayName = user?.firstName || username || "Plushie Lover";
+  
   return (
     <div className="bg-gradient-to-b from-softspot-100 to-white py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -196,7 +199,7 @@ export default function UserProfileHeader({
           
           <div className="text-center md:text-left flex-grow">
             <h1 className="text-2xl font-bold text-gray-900">
-              {user?.firstName || username || "Plushie Lover"}
+              {displayName}
               {isPrivate && (
                 <span className="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-1 rounded-full">
                   Private
