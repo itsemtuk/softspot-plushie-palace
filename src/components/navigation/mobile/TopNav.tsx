@@ -1,12 +1,14 @@
 
-import { Link } from "react-router-dom";
-import { MessageSquare } from "lucide-react";
+import { Link, useLocation } from "react-router-dom";
+import { MessageSquare, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/navigation/Logo";
 import { MobileNotifications } from "./MobileNotifications";
 
 export function TopNav() {
   const isSignedIn = !!localStorage.getItem('currentUserId');
+  const location = useLocation();
+  const isHomepage = location.pathname === '/';
   
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-softspot-100">
@@ -25,6 +27,14 @@ export function TopNav() {
               </Link>
               <MobileNotifications />
             </>
+          )}
+          
+          {!isSignedIn && isHomepage && (
+            <Link to="/sign-in">
+              <Button variant="ghost" size="icon">
+                <LogIn className="h-5 w-5" />
+              </Button>
+            </Link>
           )}
         </div>
       </div>

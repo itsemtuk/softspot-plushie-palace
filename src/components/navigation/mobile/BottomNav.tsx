@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Home, Search, PlusSquare, ShoppingBag, User } from "lucide-react";
+import { Home, Search, ShoppingBag, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CreatePostSheet } from "./CreatePostSheet";
 import { UserStatusBadge } from "@/components/messaging/UserStatusBadge";
