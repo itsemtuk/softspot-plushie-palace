@@ -7,6 +7,23 @@ const MARKETPLACE_STORAGE_KEY = 'marketplaceListings';
 const CURRENT_USER_KEY = 'currentUserId';
 const USER_STATUS_KEY = 'userStatus';
 const SYNC_TIMESTAMP_KEY = 'lastSyncTimestamp';
+const CACHE_VERSION_KEY = 'cacheVersion';
+
+// Set a cache version to allow for future cache invalidation if needed
+const CURRENT_CACHE_VERSION = '1.0';
+
+/**
+ * Initializes cache version if not set
+ */
+const initCacheVersion = () => {
+  const version = localStorage.getItem(CACHE_VERSION_KEY);
+  if (version !== CURRENT_CACHE_VERSION) {
+    localStorage.setItem(CACHE_VERSION_KEY, CURRENT_CACHE_VERSION);
+  }
+};
+
+// Initialize cache version on script load
+initCacheVersion();
 
 /**
  * Saves posts to local storage
@@ -218,4 +235,26 @@ export const cleanupStorage = (): void => {
   saveMarketplaceListings(listings);
   
   console.log("Storage cleanup completed");
+};
+
+/**
+ * Clears the cache for a specific user or all users
+ */
+export const clearUserCache = (userId?: string): void => {
+  if (userId) {
+    // Clear cache for specific user only
+    const posts = getLocalPosts().filter(post => post.userId !== userId);
+    savePosts(posts);
+    
+    const listings = getMarketplaceListings().filter(listing => listing.userId !== userId);
+    saveMarketplaceListings(listings);
+  } else {
+    // Clear all cache
+    localStorage.removeItem(POSTS_STORAGE_KEY);
+    localStorage.removeItem(MARKETPLACE_STORAGE_KEY);
+    sessionStorage.removeItem(POSTS_STORAGE_KEY);
+    sessionStorage.removeItem(MARKETPLACE_STORAGE_KEY);
+  }
+  
+  updateSyncTimestamp();
 };

@@ -1,34 +1,36 @@
+
 import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
-import { PostCreationData, ExtendedPost } from "@/types/marketplace";
+import { PostCreationData, ExtendedPost } from '@/types/marketplace';
 import { toast } from "@/components/ui/use-toast";
-import { addPost } from "@/utils/postStorage";
+import { addPost } from "@/utils/posts/postManagement";
+import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
 
 // Check if Clerk is configured
 const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
   import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
 
-// Create a fallback useUser function
-const fallbackUseUser = () => ({ user: null, isLoaded: true });
-
-// Declare useUser here to avoid type errors
-let useUser = fallbackUseUser;
-
-// Only try to import Clerk's useUser if Clerk is configured
-if (isClerkConfigured) {
-  try {
-    const { useUser: clerkUseUser } = await import('@clerk/clerk-react');
-    useUser = clerkUseUser;
-  } catch (error) {
-    console.error("Failed to import useUser from Clerk", error);
-    // Fallback to the default
-    useUser = fallbackUseUser;
+// Create a safe version of useUser
+function useSafeUser() {
+  if (!isClerkConfigured) {
+    // Return a fallback when Clerk isn't configured
+    return {
+      user: null,
+      isLoaded: true
+    };
   }
+
+  // Don't directly use useUser here - it would still throw in a non-Clerk context
+  // Instead, just provide a fallback with localStorage data
+  return {
+    user: null,
+    isLoaded: true
+  };
 }
 
 export function CreatePostSheet() {
@@ -39,6 +41,7 @@ export function CreatePostSheet() {
   let userData = { user: null, isLoaded: true };
   try {
     if (isClerkConfigured) {
+      const { useUser } = require('@clerk/clerk-react');
       userData = useUser();
     }
   } catch (error) {
@@ -86,8 +89,14 @@ export function CreatePostSheet() {
         description: "Your post is now visible in your profile and feed."
       });
       
-      // Navigate to feed after successful post
-      navigate('/feed');
+      // Close dialogs first
+      onClosePostCreation();
+      onOpenChange(false);
+      
+      // Navigate to feed after successful post with a slight delay to ensure dialogs close
+      setTimeout(() => {
+        navigate('/feed');
+      }, 100);
       
       return Promise.resolve();
     } catch (error) {
@@ -131,7 +140,7 @@ export function CreatePostSheet() {
               className="flex flex-col items-center justify-center gap-2 h-auto py-6"
               onClick={() => {
                 onOpenChange(false);
-                navigate('/marketplace/sell');
+                navigate('/sell');
               }}
             >
               <ShoppingBag className="h-8 w-8" />

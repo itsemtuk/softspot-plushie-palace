@@ -1,6 +1,7 @@
+
 import { ExtendedPost } from "@/types/marketplace";
 import { supabase, isSupabaseConfigured } from '../supabase/client';
-import { getLocalPosts, savePosts, getCurrentUserId } from '../storage/localStorageUtils';
+import { getLocalPosts, savePosts, getCurrentUserId, updateSyncTimestamp } from '../storage/localStorageUtils';
 import { uploadImage, deleteImage } from '../storage/imageStorage';
 
 const POSTS_TABLE = 'posts';
@@ -27,6 +28,7 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
       }
       
       savePosts(updatedPosts);
+      updateSyncTimestamp(); // Update timestamp to prevent duplication
       return { success: true };
     } catch (error) {
       console.error('Error saving post to localStorage:', error);
@@ -47,10 +49,11 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
         comments: post.comments,
         description: post.description || '',
         tags: post.tags || [],
-        timestamp: post.timestamp,
+        timestamp: post.timestamp || new Date().toISOString(), // Ensure timestamp exists
       });
       
     if (error) throw error;
+    updateSyncTimestamp(); // Update timestamp after successful cloud save
     return { success: true };
   } catch (error) {
     console.error('Error saving post to Supabase:', error);
@@ -61,7 +64,7 @@ export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, 
 /**
  * Adds a new post
  */
-export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, error?: any }> => {
+export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, error?: any, post?: ExtendedPost }> => {
   try {
     // Ensure we have a timestamp
     if (!post.timestamp) {
@@ -84,7 +87,7 @@ export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, e
       throw new Error(result.error || 'Failed to save post');
     }
     
-    return { success: true };
+    return { success: true, post };
   } catch (error) {
     console.error('Error adding post:', error);
     return { success: false, error };

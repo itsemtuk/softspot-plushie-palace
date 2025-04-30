@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { PlusCircle, Search, RefreshCw } from "lucide-react";
+import { PlusCircle, Search, RefreshCw, Users } from "lucide-react";
 
 interface FeedHeaderProps {
   searchQuery: string;
@@ -9,6 +9,7 @@ interface FeedHeaderProps {
   onCreatePost: () => void;
   onRefresh?: () => void;
   isRefreshing?: boolean;
+  onToggleUserSearch?: () => void;
 }
 
 export const FeedHeader = ({ 
@@ -16,7 +17,8 @@ export const FeedHeader = ({
   setSearchQuery, 
   onCreatePost,
   onRefresh,
-  isRefreshing = false
+  isRefreshing = false,
+  onToggleUserSearch
 }: FeedHeaderProps) => {
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
@@ -46,8 +48,18 @@ export const FeedHeader = ({
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
+        {onToggleUserSearch && (
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onToggleUserSearch}
+            title="Find users to follow"
+          >
+            <Users className="h-4 w-4" />
+          </Button>
+        )}
         <Button 
-          className="bg-softspot-400 hover:bg-softspot-500 text-white whitespace-nowrap"
+          className="bg-softspot-500 hover:bg-softspot-600 text-white whitespace-nowrap"
           onClick={onCreatePost}
         >
           <PlusCircle className="mr-2 h-4 w-4" />

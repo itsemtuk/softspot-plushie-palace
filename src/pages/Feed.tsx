@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { PostDialog } from "@/components/PostDialog";
@@ -9,8 +10,11 @@ import { FeedHeader } from "@/components/feed/FeedHeader";
 import { EmptyFeed } from "@/components/feed/EmptyFeed";
 import { FeedGrid } from "@/components/feed/FeedGrid";
 import { getPosts, addPost } from "@/utils/postStorage";
-import { cleanupStorage } from "@/utils/storage/localStorageUtils";
+import { cleanupStorage, getCurrentUserId, updateSyncTimestamp } from "@/utils/storage/localStorageUtils";
 import { isSupabaseConfigured } from "@/utils/supabase/client";
+import { UserSearch } from "@/components/user/UserSearch";
+import { MobileNav } from "@/components/navigation/MobileNav";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Feed = () => {
   const { user } = useUser();
@@ -22,12 +26,15 @@ const Feed = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isCloudSyncEnabled] = useState(isSupabaseConfigured());
+  const [showUserSearch, setShowUserSearch] = useState(false);
+  const isMobile = useIsMobile();
   
   // Store current username in localStorage for comments
   useEffect(() => {
     if (user) {
       const username = user.username || user.firstName || "Anonymous";
       localStorage.setItem('currentUsername', username);
+      localStorage.setItem('currentUserId', user.id);
     }
   }, [user]);
   
@@ -73,6 +80,13 @@ const Feed = () => {
   
   useEffect(() => {
     loadPosts();
+    
+    // Add an interval to check for updates every minute
+    const intervalId = setInterval(() => {
+      loadPosts();
+    }, 60000); // Check for updates every minute
+    
+    return () => clearInterval(intervalId);
   }, [user]);
   
   const filteredPosts = posts.filter(post => 
@@ -82,7 +96,9 @@ const Feed = () => {
   );
 
   const handleCreatePost = async (postData: PostCreationData) => {
-    if (!user) {
+    const userId = user?.id || localStorage.getItem('currentUserId');
+    
+    if (!userId) {
       toast({
         variant: "destructive",
         title: "Authentication required",
@@ -91,12 +107,12 @@ const Feed = () => {
       return;
     }
     
-    const username = user?.username || user?.firstName || "Anonymous";
+    const username = user?.username || user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
     
-    // Fix the post creation to include all required properties
+    // Create the new post with all required properties
     const newPost: ExtendedPost = {
       id: `post-${Date.now()}`,
-      userId: user?.id || 'anonymous',
+      userId: userId,
       image: postData.image,
       title: postData.title,
       username: username,
@@ -121,6 +137,9 @@ const Feed = () => {
         // Update the local state with the new post at the top
         setPosts(prevPosts => [newPost, ...prevPosts]);
         
+        // Update timestamp to prevent duplication
+        updateSyncTimestamp();
+        
         // Close the post creation dialog
         setIsPostCreationOpen(false);
         
@@ -141,7 +160,7 @@ const Feed = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar />
+      {isMobile ? <MobileNav /> : <Navbar />}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <FeedHeader 
           searchQuery={searchQuery}
@@ -149,7 +168,14 @@ const Feed = () => {
           onCreatePost={() => setIsPostCreationOpen(true)}
           onRefresh={loadPosts}
           isRefreshing={isRefreshing}
+          onToggleUserSearch={() => setShowUserSearch(!showUserSearch)}
         />
+        
+        {showUserSearch && (
+          <div className="mb-6 bg-white p-4 rounded-lg shadow-sm">
+            <UserSearch />
+          </div>
+        )}
         
         {isLoading ? (
           <div className="flex justify-center py-12">

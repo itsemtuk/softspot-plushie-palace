@@ -3,9 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from "@clerk/clerk-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Edit2, UserPlus, UserMinus, UserCheck } from "lucide-react";
+import { Edit2, UserPlus, UserMinus, UserCheck, Heart } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
+import { getAllUserPosts } from "@/utils/posts/postManagement";
+import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
 
 interface UserProfileHeaderProps {
   username?: string;
@@ -27,24 +29,44 @@ export default function UserProfileHeader({
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
   const [isPending, setIsPending] = useState(false);
-  const [followersCount, setFollowersCount] = useState(128); // Placeholder
+  const [followersCount, setFollowersCount] = useState(0);
+  const [followingCount, setFollowingCount] = useState(0);
   const [postsCount, setPostsCount] = useState(0);
   
   const isPrivate = profileData?.isPrivate ?? false;
   
-  // Get profile data once user is loaded
+  // Get profile data and counts when user is loaded
   useEffect(() => {
-    if (user && isOwnProfile) {
-      // Get the profile picture from metadata
-      const userProfilePicture = user.unsafeMetadata?.profilePicture as string;
-      setProfileImage(userProfilePicture || user.imageUrl);
-      
-      // Check if we're following this user
-      const following = user.unsafeMetadata?.following as string[] || [];
-      if (username && following.includes(username)) {
-        setIsFollowing(true);
+    const loadProfileData = async () => {
+      // Get the profile picture from metadata or default
+      if (user && isOwnProfile) {
+        const userProfilePicture = user.imageUrl || user.unsafeMetadata?.profilePicture as string;
+        setProfileImage(userProfilePicture || "https://i.pravatar.cc/300");
+        
+        // Check if we're following this user
+        const following = user.unsafeMetadata?.following as string[] || [];
+        if (username && following.includes(username)) {
+          setIsFollowing(true);
+        }
+        
+        setFollowingCount(following.length || 0);
+        setFollowersCount(user.unsafeMetadata?.followerCount as number || 0);
       }
-    }
+      
+      // Get post count - include both regular posts and marketplace listings
+      try {
+        const userId = user?.id || localStorage.getItem('currentUserId');
+        if (userId) {
+          const posts = await getAllUserPosts(userId);
+          const listings = getMarketplaceListings().filter(listing => listing.userId === userId);
+          setPostsCount(posts.length + listings.length);
+        }
+      } catch (error) {
+        console.error("Error loading post counts:", error);
+      }
+    };
+    
+    loadProfileData();
   }, [user, isOwnProfile, username]);
 
   const handleEditProfile = () => {
@@ -65,7 +87,7 @@ export default function UserProfileHeader({
           },
         }).then(() => {
           setIsFollowing(false);
-          setFollowersCount(prev => prev - 1);
+          setFollowersCount(prev => Math.max(0, prev - 1));
           toast({
             title: "Unfollowed",
             description: `You are no longer following ${username}`,
@@ -150,13 +172,10 @@ export default function UserProfileHeader({
     }
   };
 
-  // Placeholder plushie interests (from metadata or default)
-  const plushieInterests = profileData?.interests || ["Teddy Bears", "Unicorns", "Vintage"];
-  
-  // Get following count
-  const followingCount = user?.unsafeMetadata?.following 
-    ? (user.unsafeMetadata.following as string[]).length 
-    : 0;
+  // Get plushie interests from user metadata or defaults
+  const plushieInterests = profileData?.interests || 
+    (user?.unsafeMetadata?.plushieInterests as string[]) || 
+    ["Teddy Bears", "Unicorns", "Vintage"];
   
   return (
     <div className="bg-gradient-to-b from-softspot-100 to-white py-8">
@@ -186,7 +205,7 @@ export default function UserProfileHeader({
             </h1>
             <p className="text-gray-500">@{username || user?.username || "plushielover"}</p>
             <p className="mt-2 text-gray-700 max-w-2xl">
-              {profileData?.bio || user?.unsafeMetadata?.bio as string || "Passionate plushie collector for over 10 years. I love cute and cuddly friends of all kinds!"}
+              {profileData?.bio || user?.unsafeMetadata?.bio as string || "Passionate plushie collector"}
             </p>
             
             <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
