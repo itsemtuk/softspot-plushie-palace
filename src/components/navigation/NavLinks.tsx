@@ -19,7 +19,7 @@ export function NavLinks() {
           to={link.href}
           className={`text-sm font-medium transition-colors hover:text-softspot-800 ${
             location.pathname === link.href
-              ? "text-softspot-700"
+              ? "text-softspot-700 font-semibold"
               : "text-softspot-600"
           }`}
         >

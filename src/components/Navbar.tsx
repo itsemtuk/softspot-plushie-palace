@@ -11,13 +11,13 @@ import { Logo } from "@/components/navigation/Logo";
 import { NavLinks } from "@/components/navigation/NavLinks";
 import { SearchBar } from "@/components/navigation/SearchBar";
 import { CreateButton } from "@/components/navigation/CreateButton";
-import { NotificationsButton } from "@/components/navigation/NotificationsButton";
 import { UserMenu } from "@/components/navigation/UserMenu";
 import { AuthWrapper } from "./auth/AuthWrapper";
 
 export function Navbar() {
   const isMobile = useIsMobile();
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
+  const isSignedIn = !!localStorage.getItem('currentUserId');
 
   // Updated to return a Promise
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
@@ -46,20 +46,20 @@ export function Navbar() {
           <div className="hidden md:flex md:items-center md:space-x-4">
             <NavLinks />
             <SearchBar />
-            <CreateButton onCreatePost={() => setIsPostCreationOpen(true)} />
             
-            <AuthWrapper requiresAuth={true} fallback={
+            {isSignedIn && (
+              <CreateButton onCreatePost={() => setIsPostCreationOpen(true)} />
+            )}
+            
+            {isSignedIn ? (
+              <UserMenu />
+            ) : (
               <Link to="/sign-in">
                 <Button className="bg-softspot-400 hover:bg-softspot-500 text-white">
                   Sign In
                 </Button>
               </Link>
-            }>
-              <div className="flex items-center space-x-2">
-                <NotificationsButton />
-                <UserMenu />
-              </div>
-            </AuthWrapper>
+            )}
           </div>
         </div>
       </div>

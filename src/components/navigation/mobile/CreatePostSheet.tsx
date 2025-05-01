@@ -20,47 +20,17 @@ import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData, ExtendedPost } from '@/types/marketplace';
 import { toast } from "@/components/ui/use-toast";
 import { addPost } from "@/utils/posts/postManagement";
-import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
-
-// Check if Clerk is configured
-const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
-
-// Create a safe version of useUser
-function useSafeUser() {
-  let user = null;
-  let isLoaded = true;
-  
-  try {
-    // Only try to use Clerk if it's configured
-    if (isClerkConfigured) {
-      const { useUser } = require('@clerk/clerk-react');
-      const userData = useUser();
-      user = userData?.user || null;
-      isLoaded = userData?.isLoaded || true;
-    }
-  } catch (error) {
-    console.error("Error using Clerk's useUser:", error);
-  }
-  
-  return { user, isLoaded };
-}
 
 export function CreatePostSheet() {
   const { isSheetOpen, isPostCreationOpen, onOpenChange, onClosePostCreation, setIsPostCreationOpen } = useCreatePost();
   const navigate = useNavigate();
-  
-  // Get user data safely
-  const { user } = useSafeUser();
-  
-  // Safely extract user data with fallbacks
-  const userId = user?.id || localStorage.getItem('currentUserId') || 'anonymous';
-  const username = user?.username || user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
+  const isSignedIn = !!localStorage.getItem('currentUserId');
+  const userId = localStorage.getItem('currentUserId') || 'anonymous';
+  const username = localStorage.getItem('currentUsername') || "Anonymous";
 
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
     try {
-      if (!userId || userId === 'anonymous') {
+      if (!isSignedIn) {
         // Redirect to sign in if not authenticated
         toast({
           title: "Authentication required",
@@ -114,9 +84,7 @@ export function CreatePostSheet() {
       onOpenChange(false);
       
       // Navigate to feed after successful post with a slight delay to ensure dialogs close
-      setTimeout(() => {
-        navigate('/feed');
-      }, 100);
+      navigate('/feed');
       
       return Promise.resolve();
     } catch (error) {
@@ -127,6 +95,26 @@ export function CreatePostSheet() {
         description: error instanceof Error ? error.message : "An unexpected error occurred"
       });
       return Promise.reject(error);
+    }
+  };
+
+  const handleAction = (action: string, path: string) => {
+    onOpenChange(false);
+    
+    if (!isSignedIn) {
+      toast({
+        title: "Authentication required", 
+        description: `Please sign in to ${action}`,
+        variant: "destructive"
+      });
+      navigate('/sign-in');
+      return;
+    }
+
+    if (action === 'post') {
+      setIsPostCreationOpen(true);
+    } else {
+      navigate(path);
     }
   };
 
@@ -147,10 +135,7 @@ export function CreatePostSheet() {
             <Button 
               variant="outline" 
               className="flex flex-col items-center justify-center gap-2 h-auto py-6"
-              onClick={() => {
-                onOpenChange(false);
-                setIsPostCreationOpen(true);
-              }}
+              onClick={() => handleAction('post', '/feed')}
             >
               <PlusSquare className="h-8 w-8" />
               <span>Post</span>
@@ -158,10 +143,7 @@ export function CreatePostSheet() {
             <Button 
               variant="outline" 
               className="flex flex-col items-center justify-center gap-2 h-auto py-6"
-              onClick={() => {
-                onOpenChange(false);
-                navigate('/sell');
-              }}
+              onClick={() => handleAction('sell', '/sell')}
             >
               <ShoppingBag className="h-8 w-8" />
               <span>Sell</span>
@@ -169,10 +151,7 @@ export function CreatePostSheet() {
             <Button 
               variant="outline" 
               className="flex flex-col items-center justify-center gap-2 h-auto py-6"
-              onClick={() => {
-                onOpenChange(false);
-                navigate('/messages');
-              }}
+              onClick={() => handleAction('trade', '/messages')}
             >
               <MessageSquare className="h-8 w-8" />
               <span>Trade</span>
