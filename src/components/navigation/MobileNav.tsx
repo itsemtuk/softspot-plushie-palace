@@ -2,14 +2,36 @@
 import { TopNav } from "./mobile/TopNav";
 import { BottomNav } from "./mobile/BottomNav";
 import { useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 export function MobileNav() {
   const location = useLocation();
+  const [isSignedIn, setIsSignedIn] = useState(false);
   const isHomepage = location.pathname === '/';
-  const isSignedIn = !!localStorage.getItem('currentUserId');
+  const isAuthPage = location.pathname === '/sign-in' || location.pathname === '/sign-up';
   
-  // Hide bottom nav on homepage for non-authenticated users
-  const shouldShowBottomNav = !(isHomepage && !isSignedIn);
+  // Check auth status and update when location changes
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const currentUserId = localStorage.getItem('currentUserId');
+      setIsSignedIn(!!currentUserId);
+    };
+    
+    checkAuthStatus();
+    
+    // Set up storage event listener to detect auth changes in other tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'currentUserId') {
+        checkAuthStatus();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [location.pathname]);
+  
+  // Hide bottom nav on homepage for non-authenticated users and on auth pages
+  const shouldShowBottomNav = !(isAuthPage || (isHomepage && !isSignedIn));
 
   return (
     <>

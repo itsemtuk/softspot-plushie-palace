@@ -9,12 +9,12 @@ export function TopNav() {
   const isSignedIn = !!localStorage.getItem('currentUserId');
   const location = useLocation();
   const isHomepage = location.pathname === '/';
+  const isSignInPage = location.pathname === '/sign-in';
   
   return (
     <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-softspot-100">
       <div className="flex items-center justify-between px-4 h-16">
         <div className="flex items-center">
-          {/* Fixed: Removed the Link wrapper around Logo since Logo likely already has a link */}
           <Logo />
         </div>
         
@@ -30,7 +30,7 @@ export function TopNav() {
             </>
           )}
           
-          {!isSignedIn && isHomepage && (
+          {!isSignedIn && isHomepage && !isSignInPage && (
             <Link to="/sign-in">
               <Button variant="ghost" size="icon">
                 <LogIn className="h-5 w-5" />

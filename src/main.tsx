@@ -12,8 +12,20 @@ const isClerkConfigured = PUBLISHABLE_KEY &&
 // Create the root element
 const root = createRoot(document.getElementById("root")!);
 
+// Ensure storage is ready before rendering
+const prepareStorage = () => {
+  // Clear session storage on fresh load (not on hot reloads during dev)
+  if (!window.isStoragePrepared) {
+    sessionStorage.clear();
+    window.isStoragePrepared = true;
+  }
+};
+
+prepareStorage();
+
 // Initialize app without Clerk as fallback
 const renderApp = () => {
+  console.log("Rendering app without Clerk");
   root.render(<App />);
 };
 
@@ -30,6 +42,7 @@ if (isClerkConfigured) {
       
       // Store flag in localStorage to indicate user is using Clerk
       localStorage.setItem('usingClerk', 'true');
+      console.log("Rendering app with ClerkProvider");
       
       root.render(
         <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
@@ -47,4 +60,11 @@ if (isClerkConfigured) {
   localStorage.removeItem('usingClerk');
   // Render without Clerk if not configured
   renderApp();
+}
+
+// Add typings for window object
+declare global {
+  interface Window {
+    isStoragePrepared?: boolean;
+  }
 }

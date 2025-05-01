@@ -4,8 +4,11 @@ import { Navbar } from '@/components/Navbar';
 import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const SignIn = () => {
+  const isMobile = useIsMobile();
+  
   // Force scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -13,26 +16,36 @@ const SignIn = () => {
   
   // Function to handle after sign in
   const handleAfterSignIn = (userData: any) => {
-    // Store user data in localStorage for components that don't have access to Clerk context
-    if (userData && userData.id) {
-      localStorage.setItem('currentUserId', userData.id);
-      localStorage.setItem('currentUsername', userData.username || userData.firstName || 'User');
-      localStorage.setItem('userStatus', 'online');
-      if (userData.imageUrl) {
-        localStorage.setItem('userAvatarUrl', userData.imageUrl);
+    try {
+      // Store user data in localStorage for components that don't have access to Clerk context
+      if (userData && userData.id) {
+        localStorage.setItem('currentUserId', userData.id);
+        localStorage.setItem('currentUsername', userData.username || userData.firstName || 'User');
+        localStorage.setItem('userStatus', 'online');
+        if (userData.imageUrl) {
+          localStorage.setItem('userAvatarUrl', userData.imageUrl);
+        }
+        
+        // Clear any stale cache that might be causing issues
+        localStorage.setItem(SYNC_TIMESTAMP_KEY, new Date().toISOString());
       }
+      console.log('User signed in successfully:', userData?.id);
+    } catch (error) {
+      console.error('Error during sign in:', error);
     }
   };
+  
+  const cardStyles = isMobile ? "border-softspot-200 shadow-lg mx-4" : "border-softspot-200 shadow-lg";
   
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="max-w-md mx-auto pt-16 pb-24 px-4">
-        <Card className="border-softspot-200 shadow-lg">
+      <div className={`max-w-md mx-auto pt-16 pb-24 ${isMobile ? 'px-0' : 'px-4'}`}>
+        <Card className={cardStyles}>
           <CardHeader className="space-y-4">
             <div className="flex items-center justify-center">
               <span className="text-2xl font-bold text-softspot-600">SoftSpot</span>
-              <div className="h-8 w-8 rounded-full bg-softspot-200 flex items-center justify-center ml-2 animate-float">
+              <div className="h-8 w-8 rounded-full bg-softspot-200 flex items-center justify-center ml-2">
                 <span className="text-lg">🧸</span>
               </div>
             </div>
@@ -95,5 +108,8 @@ const SignIn = () => {
     </div>
   );
 };
+
+// Define this constant here to avoid dependency issues
+const SYNC_TIMESTAMP_KEY = 'lastSyncTimestamp';
 
 export default SignIn;
