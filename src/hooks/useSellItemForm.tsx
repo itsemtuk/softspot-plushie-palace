@@ -59,7 +59,7 @@ export const useSellItemForm = () => {
     setValue(field, value);
   };
 
-  const onSubmit = (data: SellItemFormData) => {
+  const onSubmit = async (data: SellItemFormData) => {
     // Set submission state to prevent multiple clicks
     setIsSubmitting(true);
     
@@ -109,10 +109,8 @@ export const useSellItemForm = () => {
         description: "Your item has been listed for sale.",
       });
       
-      // Redirect to marketplace - Fix the navigation by using a timeout
-      setTimeout(() => {
-        navigate('/marketplace');
-      }, 100);
+      // Directly navigate instead of using setTimeout
+      navigate('/marketplace');
     } catch (error) {
       console.error("Error creating listing:", error);
       toast({

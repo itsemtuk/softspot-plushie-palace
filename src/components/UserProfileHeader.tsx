@@ -136,6 +136,11 @@ export default function UserProfileHeader({
                      username || 
                      "Plushie Lover";
   
+  // Properly extract username without email
+  const displayUsername = username || 
+                        (user?.username && !user.username.includes('@') ? user.username : user?.firstName) || 
+                        "plushielover";
+  
   return (
     <div className="bg-gradient-to-b from-softspot-100 to-white py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -143,7 +148,7 @@ export default function UserProfileHeader({
           <ProfileAvatar profileImage={profileImage} />
           
           <ProfileInfo
-            username={username || (user?.username && !user.username.includes('@') ? user.username : null)}
+            username={displayUsername}
             displayName={displayName}
             bio={profileData?.bio || user?.unsafeMetadata?.bio as string}
             interests={plushieInterests}

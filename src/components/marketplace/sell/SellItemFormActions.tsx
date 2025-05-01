@@ -9,9 +9,13 @@ interface SellItemFormActionsProps {
 export const SellItemFormActions = ({ isSubmitting }: SellItemFormActionsProps) => {
   const navigate = useNavigate();
 
+  const handleCancel = () => {
+    navigate('/marketplace');
+  };
+
   return (
     <div className="flex justify-end space-x-4 pt-4">
-      <Button type="button" variant="outline" onClick={() => navigate('/marketplace')}>
+      <Button type="button" variant="outline" onClick={handleCancel}>
         Cancel
       </Button>
       <Button 
