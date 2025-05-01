@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Form } from "@/components/ui/form";
@@ -95,8 +94,10 @@ const SellItemPage = () => {
         description: "Your item has been listed for sale.",
       });
       
-      // Redirect to marketplace
-      navigate('/marketplace');
+      // Redirect to marketplace - Fix the navigation by using a timeout
+      setTimeout(() => {
+        navigate('/marketplace');
+      }, 100);
     } catch (error) {
       console.error("Error creating listing:", error);
       toast({
@@ -104,6 +105,7 @@ const SellItemPage = () => {
         description: "There was a problem creating your listing. Please try again.",
         variant: "destructive"
       });
+    } finally {
       setIsSubmitting(false);
     }
   };

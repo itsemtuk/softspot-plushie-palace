@@ -1,9 +1,10 @@
 
-import { Link, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { MessageSquare, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/navigation/Logo";
 import { MobileNotifications } from "./MobileNotifications";
+import { Link } from "react-router-dom";
 
 export function TopNav() {
   const isSignedIn = !!localStorage.getItem('currentUserId');
@@ -15,6 +16,7 @@ export function TopNav() {
     <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-softspot-100">
       <div className="flex items-center justify-between px-4 h-16">
         <div className="flex items-center">
+          {/* Use the Logo component without nesting it in another Link */}
           <Logo />
         </div>
         

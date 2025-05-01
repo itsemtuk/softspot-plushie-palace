@@ -1,8 +1,20 @@
 
-import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
+import { useState } from 'react';
+import {
+  PlusSquare,
+  ShoppingBag,
+  MessageSquare
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger
+} from "@/components/ui/sheet";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData, ExtendedPost } from '@/types/marketplace';
@@ -17,20 +29,22 @@ const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY &&
 
 // Create a safe version of useUser
 function useSafeUser() {
-  if (!isClerkConfigured) {
-    // Return a fallback when Clerk isn't configured
-    return {
-      user: null,
-      isLoaded: true
-    };
+  let user = null;
+  let isLoaded = true;
+  
+  try {
+    // Only try to use Clerk if it's configured
+    if (isClerkConfigured) {
+      const { useUser } = require('@clerk/clerk-react');
+      const userData = useUser();
+      user = userData?.user || null;
+      isLoaded = userData?.isLoaded || true;
+    }
+  } catch (error) {
+    console.error("Error using Clerk's useUser:", error);
   }
-
-  // Don't directly use useUser here - it would still throw in a non-Clerk context
-  // Instead, just provide a fallback with localStorage data
-  return {
-    user: null,
-    isLoaded: true
-  };
+  
+  return { user, isLoaded };
 }
 
 export function CreatePostSheet() {
@@ -38,24 +52,30 @@ export function CreatePostSheet() {
   const navigate = useNavigate();
   
   // Get user data safely
-  let userData = { user: null, isLoaded: true };
-  try {
-    if (isClerkConfigured) {
-      const { useUser } = require('@clerk/clerk-react');
-      userData = useUser();
-    }
-  } catch (error) {
-    console.error("Error using Clerk's useUser:", error);
-  }
+  const { user } = useSafeUser();
   
   // Safely extract user data with fallbacks
-  const userId = userData?.user?.id || localStorage.getItem('currentUserId') || 'anonymous';
-  const username = userData?.user?.username || userData?.user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
+  const userId = user?.id || localStorage.getItem('currentUserId') || 'anonymous';
+  const username = user?.username || user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
 
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
     try {
       if (!userId || userId === 'anonymous') {
-        throw new Error("You must be signed in to create a post");
+        // Redirect to sign in if not authenticated
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to create a post",
+          variant: "destructive"
+        });
+        
+        onClosePostCreation();
+        onOpenChange(false);
+        
+        setTimeout(() => {
+          navigate('/sign-in');
+        }, 100);
+        
+        return Promise.reject(new Error("Authentication required"));
       }
       
       // Fix the post creation to include all required properties

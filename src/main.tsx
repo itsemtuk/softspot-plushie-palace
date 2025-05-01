@@ -14,10 +14,29 @@ const root = createRoot(document.getElementById("root")!);
 
 // Ensure storage is ready before rendering
 const prepareStorage = () => {
-  // Clear session storage on fresh load (not on hot reloads during dev)
-  if (!window.isStoragePrepared) {
-    sessionStorage.clear();
+  // Check for stale data
+  try {
+    const lastSyncStr = localStorage.getItem('lastSyncTimestamp');
+    if (lastSyncStr) {
+      const lastSync = new Date(lastSyncStr);
+      const now = new Date();
+      const hoursSinceSync = (now.getTime() - lastSync.getTime()) / (1000 * 60 * 60);
+      
+      // Clear session storage on fresh load and if data is over 24 hours old
+      if (hoursSinceSync > 24) {
+        console.log("Clearing stale data older than 24 hours");
+        sessionStorage.clear();
+        localStorage.setItem('lastSyncTimestamp', new Date().toISOString());
+      }
+    } else {
+      // Set initial sync timestamp if none exists
+      localStorage.setItem('lastSyncTimestamp', new Date().toISOString());
+    }
+    
+    // Mark storage as prepared
     window.isStoragePrepared = true;
+  } catch (e) {
+    console.error("Error preparing storage:", e);
   }
 };
 

@@ -1,23 +1,31 @@
 
-import { Home, ShoppingBag } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
-export const NavLinks = () => {
+export function NavLinks() {
+  const location = useLocation();
+  
+  const links = [
+    { href: "/feed", label: "Feed" },
+    { href: "/discover", label: "Discover" },
+    { href: "/marketplace", label: "Marketplace" },
+    { href: "/wishlist", label: "Wishlist" }
+  ];
+
   return (
-    <>
-      <Link to="/feed" className="nav-link">
-        <Button variant="ghost" className="flex items-center gap-2">
-          <Home className="h-4 w-4" />
-          Feed
-        </Button>
-      </Link>
-      <Link to="/marketplace" className="nav-link">
-        <Button variant="ghost" className="flex items-center gap-2">
-          <ShoppingBag className="h-4 w-4" />
-          Shop
-        </Button>
-      </Link>
-    </>
+    <nav className="flex items-center space-x-4">
+      {links.map(link => (
+        <Link
+          key={link.href}
+          to={link.href}
+          className={`text-sm font-medium transition-colors hover:text-softspot-800 ${
+            location.pathname === link.href
+              ? "text-softspot-700"
+              : "text-softspot-600"
+          }`}
+        >
+          {link.label}
+        </Link>
+      ))}
+    </nav>
   );
-};
+}
