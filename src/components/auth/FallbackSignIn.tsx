@@ -49,6 +49,17 @@ export function FallbackSignIn() {
   const handleSocialLogin = (provider: string) => {
     setIsLoading(true);
     
+    // Check if we're using the mock implementation
+    const isClerkConfigured = !!localStorage.getItem('usingClerk');
+    
+    if (isClerkConfigured) {
+      // If using Clerk, show a toast explaining that this would normally use Clerk's OAuth
+      toast({
+        title: "OAuth Sign-in",
+        description: `In a production app, this would use Clerk's ${provider} OAuth. Using mock implementation for now.`
+      });
+    }
+    
     // Mock social sign-in
     setTimeout(() => {
       // Store demo user details
