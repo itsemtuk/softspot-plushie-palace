@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { toast } from '@/components/ui/use-toast';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { Apple, Facebook, Google } from 'lucide-react';
 
 export function FallbackSignUp() {
   const [email, setEmail] = useState('');
@@ -136,7 +135,7 @@ export function FallbackSignUp() {
             onClick={() => handleSocialSignUp('Google')}
             disabled={isLoading}
           >
-            <Google className="h-5 w-5" />
+            <span className="text-sm">Google</span>
           </Button>
           <Button 
             variant="outline"
@@ -144,7 +143,7 @@ export function FallbackSignUp() {
             onClick={() => handleSocialSignUp('Apple')}
             disabled={isLoading}
           >
-            <Apple className="h-5 w-5" />
+            <span className="text-sm">Apple</span>
           </Button>
           <Button 
             variant="outline"
@@ -152,7 +151,7 @@ export function FallbackSignUp() {
             onClick={() => handleSocialSignUp('Facebook')}
             disabled={isLoading}
           >
-            <Facebook className="h-5 w-5" />
+            <span className="text-sm">FB</span>
           </Button>
         </div>
       </CardContent>
