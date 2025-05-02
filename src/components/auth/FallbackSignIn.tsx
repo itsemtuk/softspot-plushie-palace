@@ -156,6 +156,10 @@ export function FallbackSignIn() {
             <Facebook className="h-5 w-5" />
           </Button>
         </div>
+
+        <div className="text-center text-xs text-gray-400 mt-2">
+          Icons by <a href="https://icons8.com" className="underline hover:text-gray-600" target="_blank" rel="noopener noreferrer">Icons8</a>
+        </div>
       </CardContent>
       
       <CardFooter className="flex flex-col items-center gap-4 border-t pt-6">
