@@ -1,29 +1,37 @@
 
-import { useState, useEffect, useCallback } from "react";
-import { useUser } from "@clerk/clerk-react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@/components/ui/use-toast";
-import { plushieTypes, plushieBrands } from "@/components/onboarding/onboardingData";
-import * as z from "zod";
-
-const profileFormSchema = z.object({
-  username: z.string().min(3, {
-    message: "Username must be at least 3 characters.",
-  }),
-  bio: z.string().max(160).optional(),
-  plushieTypes: z.array(z.string()).optional().default([]),
-  plushieBrands: z.array(z.string()).optional().default([]),
-  profilePicture: z.string().optional(),
-});
-
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+import { useFallbackProfileSettings } from "./useFallbackProfileSettings";
 
 export const useProfileSettings = () => {
+  const isClerkConfigured = !!localStorage.getItem('usingClerk');
+  
+  if (!isClerkConfigured) {
+    return useFallbackProfileSettings();
+  }
+  
+  // This will only be accessed if Clerk is configured
+  // We use dynamic imports to avoid Clerk errors when it's not configured
+  const { useState, useEffect, useCallback } = require("react");
+  const { useUser } = require("@clerk/clerk-react");
+  const { useForm } = require("react-hook-form");
+  const { zodResolver } = require("@hookform/resolvers/zod");
+  const { toast } = require("@/components/ui/use-toast");
+  const { plushieTypes, plushieBrands } = require("@/components/onboarding/onboardingData");
+  const z = require("zod");
+
+  const profileFormSchema = z.object({
+    username: z.string().min(3, {
+      message: "Username must be at least 3 characters.",
+    }),
+    bio: z.string().max(160).optional(),
+    plushieTypes: z.array(z.string()).optional().default([]),
+    plushieBrands: z.array(z.string()).optional().default([]),
+    profilePicture: z.string().optional(),
+  });
+
   const { user, isLoaded } = useUser();
   const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<ProfileFormValues>({
+  const form = useForm({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       username: "",
@@ -73,7 +81,7 @@ export const useProfileSettings = () => {
     loadUserData();
   }, [loadUserData]);
 
-  const onSubmit = async (data: ProfileFormValues) => {
+  const onSubmit = async (data) => {
     setIsLoading(true);
     try {
       if (!user) {

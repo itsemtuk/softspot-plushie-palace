@@ -23,12 +23,12 @@ import BrandPage from './pages/BrandPage';
 import Discover from './pages/Discover';
 import { CloudSyncStatus } from './components/CloudSyncStatus';
 import { PostDialogProvider } from './hooks/use-post-dialog';
+import { OnboardingRoute } from './components/auth/OnboardingRoute';
+import { AuthWrapper } from './components/auth/AuthWrapper';
 
 function App() {
   // Check if Clerk has a valid publishable key
-  const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
-    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
-    import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
+  const isClerkConfigured = !!localStorage.getItem('usingClerk');
 
   // Define routes once to avoid duplication
   const appRoutes = (
@@ -36,17 +36,47 @@ function App() {
       <Route path="/" element={<Index />} />
       <Route path="/sign-in/*" element={<SignIn />} />
       <Route path="/sign-up/*" element={<SignUp />} />
-      <Route path="/feed" element={<Feed />} />
+      
+      {/* Protected routes that require authentication */}
+      <Route path="/feed" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <Feed />
+        </AuthWrapper>
+      } />
       <Route path="/marketplace/*" element={<Marketplace />} />
-      <Route path="/profile" element={<Profile />} />
+      <Route path="/profile" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <Profile />
+        </AuthWrapper>
+      } />
       <Route path="/posts/:postId" element={<PostPage />} />
-      <Route path="/settings" element={<Settings />} />
+      <Route path="/settings" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <Settings />
+        </AuthWrapper>
+      } />
       <Route path="/onboarding" element={<Onboarding />} />
-      <Route path="/messages" element={<MessagingPage />} />
-      <Route path="/sell" element={<SellItemPage />} />
-      <Route path="/wishlist" element={<WishlistPage />} />
+      <Route path="/messages" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <MessagingPage />
+        </AuthWrapper>
+      } />
+      <Route path="/sell" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <SellItemPage />
+        </AuthWrapper>
+      } />
+      <Route path="/wishlist" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <WishlistPage />
+        </AuthWrapper>
+      } />
       <Route path="/about" element={<About />} />
-      <Route path="/notifications" element={<NotificationsPage />} />
+      <Route path="/notifications" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <NotificationsPage />
+        </AuthWrapper>
+      } />
       <Route path="/brand/:brandId" element={<BrandPage />} />
       <Route path="/discover" element={<Discover />} />
       <Route path="*" element={<NotFound />} />

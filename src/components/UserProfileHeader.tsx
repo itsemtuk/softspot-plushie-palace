@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { getAllUserPosts } from "@/utils/posts/postManagement";
@@ -25,7 +24,6 @@ export default function UserProfileHeader({
   isOwnProfile, 
   profileData 
 }: UserProfileHeaderProps) {
-  const { user } = useUser();
   const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState<string | null>(null);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -33,30 +31,41 @@ export default function UserProfileHeader({
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [postsCount, setPostsCount] = useState(0);
+  const isClerkConfigured = !!localStorage.getItem('usingClerk');
   
   const isPrivate = profileData?.isPrivate ?? false;
   
-  // Get profile data and counts when user is loaded
+  // Get profile data and counts
   useEffect(() => {
     const loadProfileData = async () => {
-      // Get the profile picture from metadata or default
-      if (user && isOwnProfile) {
-        const userProfilePicture = user.imageUrl || user.unsafeMetadata?.profilePicture as string;
+      // Get the profile picture
+      if (isOwnProfile) {
+        const userProfilePicture = localStorage.getItem('userAvatarUrl');
         setProfileImage(userProfilePicture || "https://i.pravatar.cc/300");
         
-        // Check if we're following this user
-        const following = user.unsafeMetadata?.following as string[] || [];
-        if (username && following.includes(username)) {
-          setIsFollowing(true);
+        // Get following data from localStorage
+        const userProfile = localStorage.getItem('userProfile');
+        if (userProfile) {
+          try {
+            const parsedProfile = JSON.parse(userProfile);
+            
+            if (parsedProfile.following) {
+              setFollowingCount(parsedProfile.following.length || 0);
+              if (username && parsedProfile.following.includes(username)) {
+                setIsFollowing(true);
+              }
+            }
+            
+            setFollowersCount(parsedProfile.followerCount || 0);
+          } catch (error) {
+            console.error("Error parsing user profile:", error);
+          }
         }
-        
-        setFollowingCount(following.length || 0);
-        setFollowersCount(user.unsafeMetadata?.followerCount as number || 0);
       }
       
       // Get post count - include both regular posts and marketplace listings
       try {
-        const userId = user?.id || localStorage.getItem('currentUserId');
+        const userId = localStorage.getItem('currentUserId');
         if (userId) {
           const posts = await getAllUserPosts(userId);
           const listings = getMarketplaceListings().filter(listing => listing.userId === userId);
@@ -68,7 +77,58 @@ export default function UserProfileHeader({
     };
     
     loadProfileData();
-  }, [user, isOwnProfile, username]);
+  }, [isOwnProfile, username]);
+
+  // If Clerk is configured, use its hooks dynamically
+  useEffect(() => {
+    if (!isClerkConfigured) return;
+    
+    // Use dynamic import for Clerk functionality
+    import('@clerk/clerk-react').then(({ useUser }) => {
+      const ClerkComponent = () => {
+        const { user } = useUser();
+        
+        useEffect(() => {
+          if (user && isOwnProfile) {
+            const userProfilePicture = user.imageUrl || user.unsafeMetadata?.profilePicture as string;
+            setProfileImage(userProfilePicture || "https://i.pravatar.cc/300");
+            
+            // Check if we're following this user
+            const following = user.unsafeMetadata?.following as string[] || [];
+            if (username && following.includes(username)) {
+              setIsFollowing(true);
+            }
+            
+            setFollowingCount(following.length || 0);
+            setFollowersCount(user.unsafeMetadata?.followerCount as number || 0);
+          }
+        }, [user]);
+        
+        return null;
+      };
+      
+      // Create a temporary element to mount the Clerk component
+      const div = document.createElement('div');
+      const root = document.getElementById('root');
+      if (root) {
+        root.appendChild(div);
+        
+        import('react-dom/client').then(({ createRoot }) => {
+          const clerkRoot = createRoot(div);
+          clerkRoot.render(<ClerkComponent />);
+          
+          return () => {
+            clerkRoot.unmount();
+            if (root.contains(div)) {
+              root.removeChild(div);
+            }
+          };
+        });
+      }
+    }).catch(error => {
+      console.error("Error loading Clerk:", error);
+    });
+  }, [isClerkConfigured, isOwnProfile, username]);
 
   const handleEditProfile = () => {
     navigate('/settings');
@@ -77,24 +137,22 @@ export default function UserProfileHeader({
   const handleFollow = () => {
     if (isFollowing) {
       // Unfollow
-      if (user) {
-        const following = user.unsafeMetadata?.following as string[] || [];
-        const updatedFollowing = following.filter(user => user !== username);
-        
-        user.update({
-          unsafeMetadata: {
-            ...user.unsafeMetadata,
-            following: updatedFollowing,
-          },
-        }).then(() => {
-          setIsFollowing(false);
-          setFollowersCount(prev => Math.max(0, prev - 1));
-          toast({
-            title: "Unfollowed",
-            description: `You are no longer following ${username}`,
-          });
-        });
-      }
+      const userProfile = localStorage.getItem('userProfile');
+      let parsedProfile = userProfile ? JSON.parse(userProfile) : {};
+      
+      const following = parsedProfile.following || [];
+      const updatedFollowing = following.filter((user: string) => user !== username);
+      
+      parsedProfile.following = updatedFollowing;
+      localStorage.setItem('userProfile', JSON.stringify(parsedProfile));
+      
+      setIsFollowing(false);
+      setFollowersCount(prev => Math.max(0, prev - 1));
+      
+      toast({
+        title: "Unfollowed",
+        description: `You are no longer following ${username}`,
+      });
     } else if (isPrivate) {
       // Send follow request for private account
       setIsPending(true);
@@ -104,42 +162,31 @@ export default function UserProfileHeader({
       });
     } else {
       // Follow public account
-      if (user) {
-        const following = user.unsafeMetadata?.following as string[] || [];
-        const updatedFollowing = [...following, username];
-        
-        user.update({
-          unsafeMetadata: {
-            ...user.unsafeMetadata,
-            following: updatedFollowing,
-          },
-        }).then(() => {
-          setIsFollowing(true);
-          setFollowersCount(prev => prev + 1);
-          toast({
-            title: "Following",
-            description: `You are now following ${username}`,
-          });
-        });
-      }
+      const userProfile = localStorage.getItem('userProfile');
+      let parsedProfile = userProfile ? JSON.parse(userProfile) : {};
+      
+      const following = parsedProfile.following || [];
+      const updatedFollowing = [...following, username];
+      
+      parsedProfile.following = updatedFollowing;
+      localStorage.setItem('userProfile', JSON.stringify(parsedProfile));
+      
+      setIsFollowing(true);
+      setFollowersCount(prev => prev + 1);
+      
+      toast({
+        title: "Following",
+        description: `You are now following ${username}`,
+      });
     }
   };
 
   // Get plushie interests from user metadata or defaults
-  const plushieInterests = profileData?.interests || 
-    (user?.unsafeMetadata?.plushieInterests as string[]) || 
-    ["Teddy Bears", "Unicorns", "Vintage"];
+  const plushieInterests = profileData?.interests || [];
   
-  // Get display name, ensuring we don't use email address
-  const displayName = user?.firstName || 
-                     (user?.username && !user.username.includes('@') ? user.username : null) || 
-                     username || 
-                     "Plushie Lover";
-  
-  // Properly extract username without email
-  const displayUsername = username || 
-                        (user?.username && !user.username.includes('@') ? user.username : user?.firstName) || 
-                        "plushielover";
+  // Get display name from localStorage, ensuring we don't use email address
+  const displayUsername = username || localStorage.getItem('currentUsername') || "plushielover";
+  const displayName = displayUsername.includes('@') ? displayUsername.split('@')[0] : displayUsername;
   
   return (
     <div className="bg-gradient-to-b from-softspot-100 to-white py-8">
@@ -150,7 +197,7 @@ export default function UserProfileHeader({
           <ProfileInfo
             username={displayUsername}
             displayName={displayName}
-            bio={profileData?.bio || user?.unsafeMetadata?.bio as string}
+            bio={profileData?.bio || ''}
             interests={plushieInterests}
             isPrivate={isPrivate}
           />

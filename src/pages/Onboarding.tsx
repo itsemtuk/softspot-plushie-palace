@@ -1,47 +1,117 @@
 
 import { useEffect, useState } from "react";
-import { useUser, useAuth } from "@clerk/clerk-react";
-import { useNavigate, Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Navbar } from "@/components/Navbar";
 import OnboardingForm from "@/components/OnboardingForm";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 
 const Onboarding = () => {
-  const { isLoaded, userId } = useAuth();
-  const { user } = useUser();
   const navigate = useNavigate();
   const [isReady, setIsReady] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const isClerkConfigured = !!localStorage.getItem('usingClerk');
+  const isLoggedIn = !!localStorage.getItem('currentUserId');
 
   useEffect(() => {
-    // Check if user is loaded and if they've already completed onboarding
-    if (isLoaded && user) {
-      const onboardingCompleted = user.unsafeMetadata.onboardingCompleted;
-      
-      // If we're coming from profile edit, set editing mode
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('edit') === 'true') {
-        setIsEditing(true);
-        setIsReady(true);
-        return;
-      }
-      
-      if (onboardingCompleted && !isEditing) {
-        // Only redirect to feed if this is actually onboarding, not profile editing
-        // and onboarding is already completed
-        navigate('/feed');
-      } else {
-        // Delay setting ready to ensure all components are loaded first
-        setTimeout(() => {
-          setIsReady(true);
-        }, 300);
-      }
-    } else if (isLoaded && !userId) {
-      // If not logged in, redirect to sign in
+    // Check if user is logged in
+    if (!isLoggedIn) {
       navigate('/sign-in');
+      return;
     }
-  }, [isLoaded, user, userId, navigate, isEditing]);
+    
+    // Check if onboarding is completed
+    const userProfile = localStorage.getItem('userProfile');
+    if (userProfile) {
+      try {
+        const parsedProfile = JSON.parse(userProfile);
+        const onboardingCompleted = parsedProfile.onboardingCompleted;
+        
+        // If we're coming from profile edit, set editing mode
+        const params = new URLSearchParams(window.location.search);
+        if (params.get('edit') === 'true') {
+          setIsEditing(true);
+          setIsReady(true);
+          return;
+        }
+        
+        if (onboardingCompleted && !isEditing) {
+          // Only redirect to feed if this is actually onboarding, not profile editing
+          navigate('/feed');
+        } else {
+          // Delay setting ready to ensure all components are loaded first
+          setTimeout(() => {
+            setIsReady(true);
+          }, 300);
+        }
+      } catch (error) {
+        console.error("Error parsing user profile:", error);
+        setIsReady(true);
+      }
+    } else {
+      setIsReady(true);
+    }
+    
+    // If Clerk is configured, handle that separately
+    if (isClerkConfigured) {
+      import('@clerk/clerk-react').then(({ useUser, useAuth }) => {
+        const ClerkComponent = () => {
+          const { isLoaded, userId } = useAuth();
+          const { user } = useUser();
+          
+          useEffect(() => {
+            if (isLoaded && user) {
+              const onboardingCompleted = user.unsafeMetadata.onboardingCompleted;
+              
+              // If we're coming from profile edit, set editing mode
+              const params = new URLSearchParams(window.location.search);
+              if (params.get('edit') === 'true') {
+                setIsEditing(true);
+                setIsReady(true);
+                return;
+              }
+              
+              if (onboardingCompleted && !isEditing) {
+                // Only redirect to feed if this is actually onboarding, not profile editing
+                navigate('/feed');
+              } else {
+                // Delay setting ready to ensure all components are loaded first
+                setTimeout(() => {
+                  setIsReady(true);
+                }, 300);
+              }
+            } else if (isLoaded && !userId) {
+              // If not logged in, redirect to sign in
+              navigate('/sign-in');
+            }
+          }, [isLoaded, user, userId]);
+          
+          return null;
+        };
+        
+        // Create a temporary element to mount the Clerk component
+        const div = document.createElement('div');
+        const root = document.getElementById('root');
+        if (root) {
+          root.appendChild(div);
+          
+          import('react-dom/client').then(({ createRoot }) => {
+            const clerkRoot = createRoot(div);
+            clerkRoot.render(<ClerkComponent />);
+            
+            return () => {
+              clerkRoot.unmount();
+              if (root.contains(div)) {
+                root.removeChild(div);
+              }
+            };
+          });
+        }
+      }).catch(error => {
+        console.error("Error loading Clerk:", error);
+      });
+    }
+  }, [navigate, isEditing, isLoggedIn, isClerkConfigured]);
 
   const handleBackToProfile = () => {
     navigate('/profile');
@@ -82,36 +152,6 @@ const Onboarding = () => {
       </div>
     </div>
   );
-};
-
-// Create OnboardingRoute component to restrict access
-// This component will check if onboarding is complete and redirect accordingly
-export const OnboardingRoute = ({ children }: { children: React.ReactNode }) => {
-  const { isLoaded, user } = useUser();
-  
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="animate-bounce">
-          <div className="h-16 w-16 rounded-full bg-softspot-200 flex items-center justify-center">
-            <span className="text-3xl">🧸</span>
-          </div>
-        </div>
-      </div>
-    );
-  }
-  
-  const onboardingCompleted = user?.unsafeMetadata.onboardingCompleted as boolean;
-  
-  if (!user) {
-    return <Navigate to="/sign-in" replace />;
-  }
-  
-  if (!onboardingCompleted && window.location.pathname !== '/onboarding') {
-    return <Navigate to="/onboarding" replace />;
-  }
-  
-  return <>{children}</>;
 };
 
 export default Onboarding;

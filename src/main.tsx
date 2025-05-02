@@ -1,7 +1,7 @@
-
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
+import { ClerkProvider } from '@clerk/clerk-react';
 
 // Check if Clerk is configured
 const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -42,43 +42,20 @@ const prepareStorage = () => {
 
 prepareStorage();
 
-// Initialize app without Clerk as fallback
-const renderApp = () => {
-  console.log("Rendering app without Clerk");
-  root.render(<App />);
-};
-
-// Try to use Clerk if configured, otherwise render normally
+// Render app with or without Clerk based on configuration
 if (isClerkConfigured) {
-  // Set a timeout to ensure app renders even if Clerk import fails
-  const timeoutId = setTimeout(renderApp, 3000);
-  
-  // Dynamic import to avoid errors when Clerk is not available
-  import('@clerk/clerk-react')
-    .then(({ ClerkProvider }) => {
-      // Clear timeout as we successfully loaded Clerk
-      clearTimeout(timeoutId);
-      
-      // Store flag in localStorage to indicate user is using Clerk
-      localStorage.setItem('usingClerk', 'true');
-      console.log("Rendering app with ClerkProvider");
-      
-      root.render(
-        <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-          <App />
-        </ClerkProvider>
-      );
-    })
-    .catch((error) => {
-      console.error("Failed to load Clerk:", error);
-      localStorage.removeItem('usingClerk');
-      // Render without Clerk if import fails
-      renderApp();
-    });
+  console.log("Rendering app with ClerkProvider");
+  root.render(
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <App />
+    </ClerkProvider>
+  );
+  // Store flag in localStorage to indicate user is using Clerk
+  localStorage.setItem('usingClerk', 'true');
 } else {
+  console.log("Clerk is not properly configured. Rendering app without Clerk.");
+  root.render(<App />);
   localStorage.removeItem('usingClerk');
-  // Render without Clerk if not configured
-  renderApp();
 }
 
 // Add typings for window object
