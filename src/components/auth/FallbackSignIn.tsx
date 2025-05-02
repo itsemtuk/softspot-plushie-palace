@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from '@/components/ui/use-toast';
 import { Link } from 'react-router-dom';
+import { Apple, Facebook, Google } from 'lucide-react';
 
 export function FallbackSignIn() {
   const [email, setEmail] = useState('');
@@ -45,6 +46,26 @@ export function FallbackSignIn() {
     }, 1000);
   };
 
+  const handleSocialLogin = (provider: string) => {
+    setIsLoading(true);
+    
+    // Mock social sign-in
+    setTimeout(() => {
+      // Store demo user details
+      localStorage.setItem('currentUserId', `${provider}-user-id`);
+      localStorage.setItem('currentUsername', `${provider}User`);
+      localStorage.setItem('userStatus', 'online');
+      
+      toast({
+        title: "Signed in successfully",
+        description: `Welcome to SoftSpot! You signed in with ${provider}.`
+      });
+      
+      navigate('/feed');
+      setIsLoading(false);
+    }, 1000);
+  };
+
   return (
     <Card className="border-softspot-200 shadow-lg">
       <CardHeader className="space-y-4">
@@ -60,7 +81,7 @@ export function FallbackSignIn() {
         </CardDescription>
       </CardHeader>
       
-      <CardContent>
+      <CardContent className="space-y-4">
         <form onSubmit={handleSignIn} className="space-y-4">
           <div className="space-y-2">
             <label htmlFor="email" className="text-sm font-medium">Email</label>
@@ -94,6 +115,42 @@ export function FallbackSignIn() {
             {isLoading ? "Signing in..." : "Sign in"}
           </Button>
         </form>
+        
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-gray-300" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-gray-500">Or continue with</span>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-3">
+          <Button 
+            variant="outline"
+            className="w-full"
+            onClick={() => handleSocialLogin('Google')}
+            disabled={isLoading}
+          >
+            <Google className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="outline"
+            className="w-full"
+            onClick={() => handleSocialLogin('Apple')}
+            disabled={isLoading}
+          >
+            <Apple className="h-5 w-5" />
+          </Button>
+          <Button 
+            variant="outline"
+            className="w-full"
+            onClick={() => handleSocialLogin('Facebook')}
+            disabled={isLoading}
+          >
+            <Facebook className="h-5 w-5" />
+          </Button>
+        </div>
       </CardContent>
       
       <CardFooter className="flex flex-col items-center gap-4 border-t pt-6">
