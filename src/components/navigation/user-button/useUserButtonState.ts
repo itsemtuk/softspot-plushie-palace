@@ -1,0 +1,183 @@
+
+import { useState, useEffect } from "react";
+import { getUserStatus, setUserStatus } from "@/utils/storage/localStorageUtils";
+import { isAuthenticated, clearAuthState, getCurrentUser } from "@/utils/auth/authState";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/components/ui/use-toast";
+
+export const useUserButtonState = () => {
+  const navigate = useNavigate();
+  const [userStatus, setUserStatusState] = useState<"online" | "offline" | "away" | "busy">("online");
+  const [isClerkLoaded, setIsClerkLoaded] = useState(false);
+  const [user, setUser] = useState(null);
+  const [signOut, setSignOut] = useState<(() => Promise<void>) | null>(null);
+  const [updateClerkProfile, setUpdateClerkProfile] = useState<((data: any) => Promise<any>) | null>(null);
+  
+  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+  
+  // Get user info from centralized auth state
+  const currentUser = getCurrentUser();
+  const username = currentUser?.username || "Anonymous";
+  const avatarUrl = localStorage.getItem('userAvatarUrl') || "";
+
+  // Load Clerk components dynamically if configured
+  useEffect(() => {
+    if (isClerkConfigured) {
+      // Import Clerk components
+      Promise.all([
+        import('@clerk/clerk-react'),
+        import('@/hooks/useClerkSync')
+      ]).then(([clerk, clerkSync]) => {
+        // Setup necessary functions
+        const { useUser, useClerk } = clerk;
+        const { useClerkSync } = clerkSync;
+        
+        // Create a temporary component to get hooks values
+        const TempComponent = () => {
+          const userValue = useUser();
+          const clerkValue = useClerk();
+          const syncValue = useClerkSync();
+          
+          // Store values in refs or state
+          setUser(userValue.user);
+          setSignOut(() => clerkValue.signOut);
+          setUpdateClerkProfile(() => syncValue.updateClerkProfile);
+          
+          return null;
+        };
+        
+        // Mark as loaded so the TempComponent can be rendered
+        setIsClerkLoaded(true);
+        
+        // Cleanup function
+        return () => {
+          setIsClerkLoaded(false);
+        };
+      }).catch(error => {
+        console.error("Failed to load Clerk components:", error);
+      });
+    }
+  }, []);
+  
+  // This effect runs after Clerk is loaded and handles user status
+  useEffect(() => {
+    if (!user) return;
+    
+    // Get status from local storage first
+    const localStatus = getUserStatus();
+    setUserStatusState(localStatus);
+    
+    // Sync with Clerk metadata if different and if Clerk is available
+    if (isClerkConfigured && user && updateClerkProfile) {
+      const clerkStatus = user.unsafeMetadata?.status as string;
+      if (clerkStatus && clerkStatus !== localStatus) {
+        setUserStatus(clerkStatus as "online" | "offline" | "away" | "busy");
+      }
+      
+      // Update status to online when component mounts
+      if (!clerkStatus || clerkStatus !== localStatus) {
+        updateClerkProfile({
+          status: localStatus
+        });
+      }
+    }
+
+    // Set status to offline when window is closed or navigated away
+    const handleBeforeUnload = () => {
+      setUserStatus("offline");
+      // Synchronously update clerk without waiting for promise
+      if (isClerkConfigured && user && updateClerkProfile) {
+        try {
+          updateClerkProfile({
+            status: "offline"
+          });
+        } catch (error) {
+          console.error("Failed to update status on unload", error);
+        }
+      }
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [user, updateClerkProfile]);
+
+  // Handle auth state changes from other tabs
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'authStatus' || event.key === 'currentUserId') {
+        // Force re-render on auth changes
+        setUserStatusState(prev => {
+          const newStatus = getUserStatus();
+          return newStatus !== prev ? newStatus : prev;
+        });
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
+  const handleChangeStatus = async (newStatus: "online" | "offline" | "away" | "busy") => {
+    setUserStatusState(newStatus);
+    
+    // Update local storage
+    setUserStatus(newStatus);
+    
+    // Update Clerk if available
+    if (isClerkConfigured && user && updateClerkProfile) {
+      try {
+        await updateClerkProfile({
+          status: newStatus
+        });
+      } catch (error) {
+        console.error("Failed to update status", error);
+      }
+    }
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+  };
+
+  const handleSignOut = async () => {
+    try {
+      // First, sign out from Clerk if available
+      if (isClerkConfigured && signOut) {
+        await signOut();
+      }
+      
+      // Clear auth state
+      clearAuthState();
+      
+      // Navigate to home page
+      navigate('/');
+      
+      toast({
+        title: "Signed out successfully",
+        description: "You have been signed out of your account."
+      });
+    } catch (error) {
+      console.error('Error signing out:', error);
+      toast({
+        variant: "destructive",
+        title: "Sign out failed",
+        description: "There was a problem signing out. Please try again."
+      });
+    }
+  };
+
+  return {
+    userStatus,
+    isClerkLoaded,
+    isClerkConfigured,
+    username,
+    avatarUrl,
+    handleChangeStatus,
+    handleProfileClick,
+    handleSignOut
+  };
+};
