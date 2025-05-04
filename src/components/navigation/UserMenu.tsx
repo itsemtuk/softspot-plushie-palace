@@ -6,6 +6,7 @@ import { MessageSquare, PlusCircle } from "lucide-react";
 import { UserButton } from "./UserButton";
 import { NotificationsButton } from "./NotificationsButton";
 import { toast } from "@/components/ui/use-toast";
+import { isAuthenticated } from "@/utils/auth/authState";
 
 export const UserMenu = () => {
   const navigate = useNavigate();
@@ -14,8 +15,7 @@ export const UserMenu = () => {
   // Check authentication status when component mounts or updates
   useEffect(() => {
     const checkAuthStatus = () => {
-      const currentUserId = localStorage.getItem('currentUserId');
-      setIsSignedIn(!!currentUserId);
+      setIsSignedIn(isAuthenticated());
     };
     
     // Check initial status
@@ -23,13 +23,20 @@ export const UserMenu = () => {
     
     // Set up storage event listener to detect auth changes in other tabs
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'currentUserId') {
+      if (event.key === 'authStatus' || event.key === 'currentUserId') {
         checkAuthStatus();
       }
     };
     
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    
+    // Also check auth status periodically to handle issues across tabs
+    const interval = setInterval(checkAuthStatus, 10000);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      clearInterval(interval);
+    };
   }, []);
   
   const handleAuthRequiredAction = (action: string, path: string) => {

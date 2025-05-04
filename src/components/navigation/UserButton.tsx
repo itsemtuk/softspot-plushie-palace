@@ -14,11 +14,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { getUserStatus, setUserStatus } from "@/utils/storage/localStorageUtils";
 import { toast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { isAuthenticated, clearAuthState, getCurrentUser } from "@/utils/auth/authState";
 
-// Check if Clerk is configured by checking for the PUBLISHABLE_KEY environment variable
-const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
+// Check if Clerk is configured
+const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
 
 export const UserButton = () => {
   const navigate = useNavigate();
@@ -28,7 +27,9 @@ export const UserButton = () => {
   const [signOut, setSignOut] = useState<(() => Promise<void>) | null>(null);
   const [updateClerkProfile, setUpdateClerkProfile] = useState<((data: any) => Promise<any>) | null>(null);
   
-  const username = localStorage.getItem('currentUsername') || "Anonymous";
+  // Get user info from centralized auth state
+  const currentUser = getCurrentUser();
+  const username = currentUser?.username || "Anonymous";
   const avatarUrl = localStorage.getItem('userAvatarUrl') || "";
 
   // Load Clerk components dynamically if configured
@@ -114,6 +115,24 @@ export const UserButton = () => {
     };
   }, [user, updateClerkProfile]);
 
+  // Handle auth state changes from other tabs
+  useEffect(() => {
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'authStatus' || event.key === 'currentUserId') {
+        // Force re-render on auth changes
+        setUserStatusState(prev => {
+          const newStatus = getUserStatus();
+          return newStatus !== prev ? newStatus : prev;
+        });
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   const handleChangeStatus = async (newStatus: "online" | "offline" | "away" | "busy") => {
     setUserStatusState(newStatus);
     
@@ -143,10 +162,8 @@ export const UserButton = () => {
         await signOut();
       }
       
-      // Clear local storage values
-      localStorage.removeItem('currentUserId');
-      localStorage.removeItem('currentUsername');
-      localStorage.setItem('userStatus', 'offline');
+      // Clear auth state
+      clearAuthState();
       
       // Navigate to home page
       navigate('/');

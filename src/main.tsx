@@ -18,7 +18,7 @@ const prepareStorage = () => {
   try {
     // Get current cache version - this helps manage breaking changes
     const cacheVersion = localStorage.getItem('cacheVersion') || '0';
-    const currentVersion = '1.0'; // Update when making breaking cache changes
+    const currentVersion = '1.0.1'; // Increment to force cache clear
     
     // Check for version mismatch or corrupted state
     if (cacheVersion !== currentVersion) {
@@ -36,7 +36,10 @@ const prepareStorage = () => {
     // Mark storage as prepared
     window.isStoragePrepared = true;
     
-    console.log("Storage prepared successfully");
+    // Store clerk configuration status
+    localStorage.setItem('usingClerk', isClerkConfigured ? 'true' : 'false');
+    
+    console.log("Storage prepared successfully, Clerk configured:", isClerkConfigured);
   } catch (e) {
     console.error("Error preparing storage:", e);
   }
@@ -52,12 +55,9 @@ if (isClerkConfigured) {
       <App />
     </ClerkProvider>
   );
-  // Store flag in localStorage to indicate user is using Clerk
-  localStorage.setItem('usingClerk', 'true');
 } else {
   console.log("Clerk is not properly configured. Rendering app without Clerk.");
   root.render(<App />);
-  localStorage.removeItem('usingClerk');
 }
 
 // Add typings for window object
