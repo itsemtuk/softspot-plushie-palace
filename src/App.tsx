@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -23,12 +22,30 @@ import BrandPage from './pages/BrandPage';
 import Discover from './pages/Discover';
 import { CloudSyncStatus } from './components/CloudSyncStatus';
 import { PostDialogProvider } from './hooks/use-post-dialog';
-import { OnboardingRoute } from './components/auth/OnboardingRoute';
 import { AuthWrapper } from './components/auth/AuthWrapper';
+import { useEffect } from 'react';
+import { initAuthState } from './utils/auth/authState';
 
 function App() {
   // Check if Clerk has a valid publishable key
-  const isClerkConfigured = !!localStorage.getItem('usingClerk');
+  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+  
+  // Initialize auth state on app load
+  useEffect(() => {
+    initAuthState();
+    
+    // Listen for storage events to keep authentication state in sync across tabs
+    const handleStorageChange = (event: StorageEvent) => {
+      if (event.key === 'authStatus' || event.key === 'currentUserId' || 
+          event.key === 'cacheVersion' || event.key === 'usingClerk') {
+        console.log('Auth state changed in another tab, syncing...');
+        initAuthState();
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
 
   // Define routes once to avoid duplication
   const appRoutes = (

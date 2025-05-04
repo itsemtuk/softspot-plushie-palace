@@ -6,16 +6,28 @@ import { MessageSquare, PlusCircle } from "lucide-react";
 import { UserButton } from "./UserButton";
 import { NotificationsButton } from "./NotificationsButton";
 import { toast } from "@/components/ui/use-toast";
-import { isAuthenticated } from "@/utils/auth/authState";
+import { isAuthenticated, getCurrentUser } from "@/utils/auth/authState";
+import { useUser } from '@clerk/clerk-react';
 
 export const UserMenu = () => {
   const navigate = useNavigate();
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+  const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = 
+    isClerkConfigured ? useUser() : { isLoaded: true, isSignedIn: false };
   
   // Check authentication status when component mounts or updates
   useEffect(() => {
     const checkAuthStatus = () => {
-      setIsSignedIn(isAuthenticated());
+      if (isClerkConfigured) {
+        // Wait for Clerk to load
+        if (isClerkLoaded) {
+          setIsSignedIn(isClerkSignedIn);
+        }
+      } else {
+        // Use local auth state
+        setIsSignedIn(isAuthenticated());
+      }
     };
     
     // Check initial status
@@ -37,7 +49,7 @@ export const UserMenu = () => {
       window.removeEventListener('storage', handleStorageChange);
       clearInterval(interval);
     };
-  }, []);
+  }, [isClerkConfigured, isClerkLoaded, isClerkSignedIn]);
   
   const handleAuthRequiredAction = (action: string, path: string) => {
     if (!isSignedIn) {
@@ -52,6 +64,15 @@ export const UserMenu = () => {
     navigate(path);
     return true;
   };
+
+  // Show loading state while Clerk is loading
+  if (isClerkConfigured && !isClerkLoaded) {
+    return (
+      <div className="flex items-center space-x-2">
+        <div className="h-10 w-24 bg-gray-200 animate-pulse rounded"></div>
+      </div>
+    );
+  }
 
   if (!isSignedIn) {
     return (

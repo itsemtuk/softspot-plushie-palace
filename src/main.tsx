@@ -18,7 +18,7 @@ const prepareStorage = () => {
   try {
     // Get current cache version - this helps manage breaking changes
     const cacheVersion = localStorage.getItem('cacheVersion') || '0';
-    const currentVersion = '1.0.1'; // Increment to force cache clear
+    const currentVersion = '1.0.2'; // Increment to force cache clear
     
     // Check for version mismatch or corrupted state
     if (cacheVersion !== currentVersion) {
@@ -36,10 +36,10 @@ const prepareStorage = () => {
     // Mark storage as prepared
     window.isStoragePrepared = true;
     
-    // Store clerk configuration status
+    // Store clerk configuration status - must be done after clearing storage
     localStorage.setItem('usingClerk', isClerkConfigured ? 'true' : 'false');
     
-    console.log("Storage prepared successfully, Clerk configured:", isClerkConfigured);
+    console.log("Storage prepared successfully, Clerk configured:", isClerkConfigured, "Key available:", !!PUBLISHABLE_KEY);
   } catch (e) {
     console.error("Error preparing storage:", e);
   }
@@ -51,12 +51,20 @@ prepareStorage();
 if (isClerkConfigured) {
   console.log("Rendering app with ClerkProvider");
   root.render(
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider 
+      publishableKey={PUBLISHABLE_KEY}
+      appearance={{
+        variables: {
+          colorPrimary: "#7e69ab",
+          colorText: "#333333",
+        }
+      }}
+    >
       <App />
     </ClerkProvider>
   );
 } else {
-  console.log("Clerk is not properly configured. Rendering app without Clerk.");
+  console.warn("Clerk is not properly configured. Rendering app without Clerk. Check your environment variables.");
   root.render(<App />);
 }
 

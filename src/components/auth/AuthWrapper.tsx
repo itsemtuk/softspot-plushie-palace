@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { isAuthenticated } from '@/utils/auth/authState';
+import { useUser } from '@clerk/clerk-react';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -8,24 +10,56 @@ interface AuthWrapperProps {
 
 /**
  * AuthWrapper is a utility component that conditionally renders content based on
- * authentication state without relying on Clerk components directly.
- * This avoids the ClerkProvider wrapping issues.
+ * authentication state, working with both Clerk and fallback authentication.
  */
 export const AuthWrapper: React.FC<AuthWrapperProps> = ({ 
   children, 
   fallback = null,
   requiresAuth = true
 }) => {
-  // Check if a user is logged in via localStorage
-  const isUserLoggedIn = !!localStorage.getItem('currentUserId');
+  const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
+  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
-  // If auth is required but user is not logged in, show fallback
-  if (requiresAuth && !isUserLoggedIn) {
+  // If Clerk is configured, use the Clerk hook to check auth state
+  const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = 
+    isClerkConfigured ? useUser() : { isLoaded: true, isSignedIn: false };
+  
+  useEffect(() => {
+    // For Clerk auth, wait for it to load
+    if (isClerkConfigured) {
+      if (isClerkLoaded) {
+        setIsUserAuthenticated(isClerkSignedIn);
+      }
+    } else {
+      // For fallback auth, check localStorage
+      setIsUserAuthenticated(isAuthenticated());
+    }
+    
+    // Listen for auth state changes
+    const handleStorageChange = () => {
+      if (!isClerkConfigured) {
+        setIsUserAuthenticated(isAuthenticated());
+      }
+    };
+    
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [isClerkConfigured, isClerkLoaded, isClerkSignedIn]);
+  
+  // Show loading state if Clerk is still loading
+  if (isClerkConfigured && !isClerkLoaded) {
+    return <div className="flex justify-center items-center h-24">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500"></div>
+    </div>;
+  }
+  
+  // If auth is required but user is not authenticated, show fallback
+  if (requiresAuth && !isUserAuthenticated) {
     return <>{fallback}</>;
   }
 
-  // If auth is not required but user is logged in, show fallback (for SignedOut equivalent)
-  if (!requiresAuth && isUserLoggedIn) {
+  // If auth is not required but user is authenticated, show fallback
+  if (!requiresAuth && isUserAuthenticated) {
     return <>{fallback}</>;
   }
   

@@ -1,15 +1,19 @@
 
-import { SignIn as ClerkSignIn } from '@clerk/clerk-react';
+import { SignIn as ClerkSignIn, useClerk } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { FallbackSignIn } from '@/components/auth/FallbackSignIn';
+import { toast } from '@/components/ui/use-toast';
+import { setAuthenticatedUser } from '@/utils/auth/authState';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
-  const isClerkConfigured = !!localStorage.getItem('usingClerk');
+  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+  const navigate = useNavigate();
+  const clerk = isClerkConfigured ? useClerk() : null;
   
   // Force scroll to top when page loads
   useEffect(() => {
@@ -19,19 +23,29 @@ const SignIn = () => {
   // Function to handle after sign in
   const handleAfterSignIn = (userData: any) => {
     try {
+      console.log('User signed in successfully:', userData?.id);
+      
       // Store user data in localStorage for components that don't have access to Clerk context
       if (userData && userData.id) {
-        localStorage.setItem('currentUserId', userData.id);
-        localStorage.setItem('currentUsername', userData.username || userData.firstName || 'User');
-        localStorage.setItem('userStatus', 'online');
+        setAuthenticatedUser({
+          userId: userData.id,
+          username: userData.username || userData.firstName || 'User',
+          status: 'online',
+          provider: 'clerk'
+        });
+        
         if (userData.imageUrl) {
           localStorage.setItem('userAvatarUrl', userData.imageUrl);
         }
         
-        // Clear any stale cache that might be causing issues
-        localStorage.setItem(SYNC_TIMESTAMP_KEY, new Date().toISOString());
+        // Navigate to feed page
+        navigate('/feed');
+        
+        toast({
+          title: "Signed in successfully",
+          description: "Welcome to SoftSpot!"
+        });
       }
-      console.log('User signed in successfully:', userData?.id);
     } catch (error) {
       console.error('Error during sign in:', error);
     }
@@ -74,7 +88,6 @@ const SignIn = () => {
                     colorText: "#333333",
                   }
                 }}
-                redirectUrl="/feed"
                 signUpUrl="/sign-up"
                 afterSignInUrl="/feed"
                 afterSignUpUrl="/onboarding"
@@ -114,8 +127,5 @@ const SignIn = () => {
     </div>
   );
 };
-
-// Define this constant here to avoid dependency issues
-const SYNC_TIMESTAMP_KEY = 'lastSyncTimestamp';
 
 export default SignIn;

@@ -13,7 +13,7 @@ const AUTH_VERSION_KEY = 'authVersion';
 const AUTH_PROVIDER_KEY = 'authProvider';
 
 // Current version of the auth storage schema
-const CURRENT_AUTH_VERSION = '1.0.0';
+const CURRENT_AUTH_VERSION = '1.0.1';
 
 /**
  * Initialize the authentication state
@@ -24,9 +24,28 @@ export const initAuthState = () => {
     const storedVersion = localStorage.getItem(AUTH_VERSION_KEY) || '0';
     
     if (storedVersion !== CURRENT_AUTH_VERSION) {
-      // Clear auth-related data if version mismatch
-      clearAuthState();
+      console.log(`Auth schema version mismatch: ${storedVersion} vs ${CURRENT_AUTH_VERSION}. Updating auth state.`);
+      
+      // Don't clear everything, just update the version
+      // We'll let Clerk handle authentication state for its users
       localStorage.setItem(AUTH_VERSION_KEY, CURRENT_AUTH_VERSION);
+      
+      // Only clear specific auth data if using fallback auth (not Clerk)
+      const isUsingClerk = localStorage.getItem('usingClerk') === 'true';
+      if (!isUsingClerk) {
+        // For fallback auth, check if we have auth data that might be stale
+        const lastLoginStr = localStorage.getItem('lastLoginTimestamp');
+        if (lastLoginStr) {
+          const lastLogin = parseInt(lastLoginStr, 10);
+          const hoursSinceLogin = (new Date().getTime() - lastLogin) / (1000 * 60 * 60);
+          
+          // If it's been more than 24 hours, clear the stored credentials
+          if (hoursSinceLogin > 24) {
+            console.log("Clearing stale auth data");
+            clearAuthState();
+          }
+        }
+      }
     }
     
     return isAuthenticated();
@@ -41,6 +60,8 @@ export const initAuthState = () => {
  */
 export const isAuthenticated = (): boolean => {
   try {
+    // For Clerk, we rely on its own auth state management
+    // For fallback auth, we check localStorage
     const authStatus = localStorage.getItem(AUTH_STATUS_KEY);
     const userId = localStorage.getItem(USER_ID_KEY);
     return authStatus === 'authenticated' && !!userId;
@@ -62,6 +83,7 @@ export const setAuthenticatedUser = (data: {
     localStorage.setItem(AUTH_STATUS_KEY, 'authenticated');
     localStorage.setItem(USER_ID_KEY, data.userId);
     localStorage.setItem(USERNAME_KEY, data.username);
+    localStorage.setItem('lastLoginTimestamp', new Date().getTime().toString());
     
     if (data.status) {
       localStorage.setItem(USER_STATUS_KEY, data.status);
@@ -79,10 +101,14 @@ export const setAuthenticatedUser = (data: {
     sessionStorage.setItem(USERNAME_KEY, data.username);
     
     // Dispatch storage event for other tabs
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: AUTH_STATUS_KEY,
-      newValue: 'authenticated'
-    }));
+    try {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: AUTH_STATUS_KEY,
+        newValue: 'authenticated'
+      }));
+    } catch (e) {
+      console.error("Error dispatching storage event:", e);
+    }
     
     console.log('User authenticated:', data.userId);
   } catch (error) {
@@ -99,6 +125,7 @@ export const clearAuthState = (): void => {
     localStorage.removeItem(USER_ID_KEY);
     localStorage.removeItem(USERNAME_KEY);
     localStorage.setItem(USER_STATUS_KEY, 'offline');
+    localStorage.removeItem('lastLoginTimestamp');
     
     // Also clear from session storage
     sessionStorage.removeItem(AUTH_STATUS_KEY);
@@ -106,10 +133,14 @@ export const clearAuthState = (): void => {
     sessionStorage.removeItem(USERNAME_KEY);
     
     // Dispatch storage event for other tabs
-    window.dispatchEvent(new StorageEvent('storage', {
-      key: AUTH_STATUS_KEY,
-      newValue: null
-    }));
+    try {
+      window.dispatchEvent(new StorageEvent('storage', {
+        key: AUTH_STATUS_KEY,
+        newValue: null
+      }));
+    } catch (e) {
+      console.error("Error dispatching storage event:", e);
+    }
     
     console.log('Auth state cleared');
   } catch (error) {
