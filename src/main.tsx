@@ -1,3 +1,4 @@
+
 import { createRoot } from 'react-dom/client';
 import App from './App.tsx';
 import './index.css';
@@ -12,29 +13,30 @@ const isClerkConfigured = PUBLISHABLE_KEY &&
 // Create the root element
 const root = createRoot(document.getElementById("root")!);
 
-// Ensure storage is ready before rendering
+// Reset cache and prepare storage
 const prepareStorage = () => {
-  // Check for stale data
   try {
-    const lastSyncStr = localStorage.getItem('lastSyncTimestamp');
-    if (lastSyncStr) {
-      const lastSync = new Date(lastSyncStr);
-      const now = new Date();
-      const hoursSinceSync = (now.getTime() - lastSync.getTime()) / (1000 * 60 * 60);
-      
-      // Clear session storage on fresh load and if data is over 24 hours old
-      if (hoursSinceSync > 24) {
-        console.log("Clearing stale data older than 24 hours");
-        sessionStorage.clear();
-        localStorage.setItem('lastSyncTimestamp', new Date().toISOString());
-      }
-    } else {
-      // Set initial sync timestamp if none exists
-      localStorage.setItem('lastSyncTimestamp', new Date().toISOString());
+    // Get current cache version - this helps manage breaking changes
+    const cacheVersion = localStorage.getItem('cacheVersion') || '0';
+    const currentVersion = '1.0'; // Update when making breaking cache changes
+    
+    // Check for version mismatch or corrupted state
+    if (cacheVersion !== currentVersion) {
+      console.log(`Cache version mismatch: ${cacheVersion} vs ${currentVersion}. Clearing cache.`);
+      // Clear storage to prevent stale data issues
+      localStorage.clear();
+      sessionStorage.clear();
+      // Set the new cache version
+      localStorage.setItem('cacheVersion', currentVersion);
     }
+    
+    // Set timestamp for cache invalidation
+    localStorage.setItem('lastSyncTimestamp', new Date().toISOString());
     
     // Mark storage as prepared
     window.isStoragePrepared = true;
+    
+    console.log("Storage prepared successfully");
   } catch (e) {
     console.error("Error preparing storage:", e);
   }

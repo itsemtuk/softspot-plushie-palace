@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,30 @@ export function FallbackSignIn() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+
+  // Clear any stale auth state on mount
+  useEffect(() => {
+    if (isClerkConfigured) {
+      // For Clerk integration, we don't want stale local data
+      // interfering with Clerk's state management
+      const currentTimestamp = new Date().getTime();
+      const lastLoginStr = localStorage.getItem('lastLoginTimestamp');
+      
+      if (lastLoginStr) {
+        const lastLogin = parseInt(lastLoginStr, 10);
+        const hoursSinceLogin = (currentTimestamp - lastLogin) / (1000 * 60 * 60);
+        
+        // If it's been more than 24 hours, clear the stored credentials
+        if (hoursSinceLogin > 24) {
+          console.log("Clearing stale auth data");
+          localStorage.removeItem('currentUserId');
+          localStorage.removeItem('currentUsername');
+          localStorage.removeItem('userStatus');
+        }
+      }
+    }
+  }, [isClerkConfigured]);
 
   const handleSignIn = (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,12 +53,22 @@ export function FallbackSignIn() {
       return;
     }
     
+    if (isClerkConfigured) {
+      // If using Clerk, show a toast explaining that this would
+      // normally use Clerk's authentication
+      toast({
+        title: "Clerk Authentication",
+        description: "In a production app, this would use Clerk's authentication. Using mock implementation for now."
+      });
+    }
+    
     // Mock sign-in - in a real app this would verify with a backend
     setTimeout(() => {
       // Store demo user details
       localStorage.setItem('currentUserId', 'demo-user-id');
       localStorage.setItem('currentUsername', email.split('@')[0]);
       localStorage.setItem('userStatus', 'online');
+      localStorage.setItem('lastLoginTimestamp', new Date().getTime().toString());
       
       toast({
         title: "Signed in successfully",
@@ -50,8 +84,6 @@ export function FallbackSignIn() {
     setIsLoading(true);
     
     // Check if we're using the mock implementation
-    const isClerkConfigured = !!localStorage.getItem('usingClerk');
-    
     if (isClerkConfigured) {
       // If using Clerk, show a toast explaining that this would normally use Clerk's OAuth
       toast({
@@ -66,6 +98,7 @@ export function FallbackSignIn() {
       localStorage.setItem('currentUserId', `${provider}-user-id`);
       localStorage.setItem('currentUsername', `${provider}User`);
       localStorage.setItem('userStatus', 'online');
+      localStorage.setItem('lastLoginTimestamp', new Date().getTime().toString());
       
       toast({
         title: "Signed in successfully",
