@@ -60,7 +60,8 @@ if (isClerkConfigured) {
         },
         elements: {
           socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-          socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50",
+          socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-12 h-12 flex items-center justify-center", // Increased size
+          socialButtonsProviderIcon: "w-6 h-6", // Increased icon size
           formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
           footerActionLink: "text-softspot-500 hover:text-softspot-600",
           card: "shadow-none",

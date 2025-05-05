@@ -48,8 +48,8 @@ const SignIn = () => {
                     formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
                     footerActionLink: "text-softspot-500 hover:text-softspot-600",
                     socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-                    socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50",
-                    socialButtonsProviderIcon: "w-5 h-5"
+                    socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-12 h-12 flex items-center justify-center m-1", // Increased size
+                    socialButtonsProviderIcon: "w-6 h-6" // Increased icon size
                   },
                   variables: {
                     colorPrimary: "#7e69ab",
@@ -60,7 +60,6 @@ const SignIn = () => {
                     socialButtonsPlacement: "bottom"
                   }
                 }}
-                signUpUrl="/sign-up"
               />
             </CardContent>
             

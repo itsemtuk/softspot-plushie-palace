@@ -27,8 +27,8 @@ const SignUp = () => {
                   card: "shadow-none p-0",
                   footer: "text-softspot-500",
                   socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-                  socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50",
-                  socialButtonsProviderIcon: "w-5 h-5",
+                  socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-12 h-12 flex items-center justify-center m-1", // Increased size
+                  socialButtonsProviderIcon: "w-6 h-6", // Increased icon size
                   formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
                   formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300"
                 },
@@ -41,7 +41,6 @@ const SignUp = () => {
                   socialButtonsPlacement: "bottom"
                 }
               }}
-              signInUrl="/sign-in"
             />
             
             <div className="mt-6 text-center text-sm text-gray-500">

@@ -20,6 +20,8 @@ export const ClerkButtonComponent = () => {
     // that don't have direct access to Clerk context
     useEffect(() => {
       if (userValue?.user && userValue.isSignedIn) {
+        console.log("Clerk user signed in:", userValue.user);
+        
         // Store basic user info for components that can't access Clerk context
         localStorage.setItem('userAvatarUrl', userValue.user.imageUrl || '');
         localStorage.setItem('currentUserId', userValue.user.id);
@@ -41,6 +43,20 @@ export const ClerkButtonComponent = () => {
         window.dispatchEvent(new Event('clerk-auth-change'));
       }
     }, [userValue?.user, userValue?.isSignedIn]);
+    
+    // Debug Clerk state
+    useEffect(() => {
+      console.log("Clerk authentication state:", {
+        isLoaded: userValue?.isLoaded,
+        isSignedIn: userValue?.isSignedIn,
+        user: userValue?.user ? {
+          id: userValue.user.id,
+          firstName: userValue.user.firstName,
+          username: userValue.user.username,
+        } : null
+      });
+    }, [userValue?.isLoaded, userValue?.isSignedIn, userValue?.user]);
+    
   } catch (error) {
     // Silently handle the error when used outside ClerkProvider
     console.warn("ClerkButtonComponent: Error accessing Clerk hooks outside ClerkProvider", error);
