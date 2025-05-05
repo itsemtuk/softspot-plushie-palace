@@ -4,7 +4,6 @@ import { Navbar } from '@/components/Navbar';
 import { useEffect } from 'react';
 import { FallbackSignUp } from '@/components/auth/FallbackSignUp';
 import { useNavigate } from 'react-router-dom';
-import { toast } from '@/components/ui/use-toast';
 
 const SignUp = () => {
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
@@ -38,6 +37,7 @@ const SignUp = () => {
                   colorText: "#333333",
                 }
               }}
+              path="/sign-up"
               signInUrl="/sign-in"
               redirectUrl="/onboarding"
               afterSignInUrl="/feed"

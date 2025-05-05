@@ -59,8 +59,9 @@ if (isClerkConfigured) {
           colorText: "#333333",
         },
         elements: {
-          socialButtonsBlockButton: "border border-gray-300 text-gray-700",
-          socialButtonsIconButton: "border border-gray-300"
+          socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+          socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50",
+          formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600"
         }
       }}
     >

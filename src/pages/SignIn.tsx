@@ -1,4 +1,5 @@
-import { SignIn as ClerkSignIn, useClerk } from '@clerk/clerk-react';
+
+import { SignIn as ClerkSignIn } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -6,7 +7,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useIsMobile } from '@/hooks/use-mobile';
 import { FallbackSignIn } from '@/components/auth/FallbackSignIn';
 import { toast } from '@/components/ui/use-toast';
-import { setAuthenticatedUser } from '@/utils/auth/authState';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
@@ -18,17 +18,6 @@ const SignIn = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Handle successful sign-in events from Clerk
-  const handleClerkSignInComplete = () => {
-    toast({
-      title: "Signed in successfully",
-      description: "Welcome to SoftSpot!"
-    });
-    
-    // Navigate to feed page
-    navigate('/feed');
-  };
-  
   const cardStyles = isMobile ? "border-softspot-200 shadow-lg mx-4" : "border-softspot-200 shadow-lg";
   
   return (
@@ -68,10 +57,10 @@ const SignIn = () => {
                     colorText: "#333333",
                   }
                 }}
+                path="/sign-in"
                 signUpUrl="/sign-up"
                 redirectUrl="/feed"
                 afterSignInUrl="/feed"
-                afterSignUpUrl="/onboarding"
               />
             </CardContent>
             
