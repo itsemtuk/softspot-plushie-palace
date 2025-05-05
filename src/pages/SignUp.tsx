@@ -3,11 +3,9 @@ import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect } from 'react';
 import { FallbackSignUp } from '@/components/auth/FallbackSignUp';
-import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
-  const navigate = useNavigate();
   
   // Force scroll to top when page loads
   useEffect(() => {
@@ -30,18 +28,20 @@ const SignUp = () => {
                   footer: "text-softspot-500",
                   socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
                   socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50",
-                  formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600"
+                  socialButtonsProviderIcon: "w-5 h-5",
+                  formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
+                  formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300"
                 },
                 variables: {
                   colorPrimary: "#7e69ab",
                   colorText: "#333333",
+                },
+                layout: {
+                  socialButtonsVariant: "iconButton",
+                  socialButtonsPlacement: "bottom"
                 }
               }}
-              path="/sign-up"
               signInUrl="/sign-in"
-              redirectUrl="/onboarding"
-              afterSignInUrl="/feed"
-              afterSignUpUrl="/onboarding"
             />
             
             <div className="mt-6 text-center text-sm text-gray-500">

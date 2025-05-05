@@ -61,7 +61,15 @@ if (isClerkConfigured) {
         elements: {
           socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
           socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50",
-          formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600"
+          formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
+          footerActionLink: "text-softspot-500 hover:text-softspot-600",
+          card: "shadow-none",
+          identityPreview: "bg-softspot-50",
+          formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300"
+        },
+        layout: {
+          socialButtonsVariant: "iconButton",
+          socialButtonsPlacement: "bottom"
         }
       }}
     >

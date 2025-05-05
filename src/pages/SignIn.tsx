@@ -2,16 +2,14 @@
 import { SignIn as ClerkSignIn } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { FallbackSignIn } from '@/components/auth/FallbackSignIn';
-import { toast } from '@/components/ui/use-toast';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
-  const navigate = useNavigate();
   
   // Force scroll to top when page loads
   useEffect(() => {
@@ -50,17 +48,19 @@ const SignIn = () => {
                     formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
                     footerActionLink: "text-softspot-500 hover:text-softspot-600",
                     socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-                    socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50"
+                    socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50",
+                    socialButtonsProviderIcon: "w-5 h-5"
                   },
                   variables: {
                     colorPrimary: "#7e69ab",
                     colorText: "#333333",
+                  },
+                  layout: {
+                    socialButtonsVariant: "iconButton",
+                    socialButtonsPlacement: "bottom"
                   }
                 }}
-                path="/sign-in"
                 signUpUrl="/sign-up"
-                redirectUrl="/feed"
-                afterSignInUrl="/feed"
               />
             </CardContent>
             

@@ -2,6 +2,7 @@
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useEffect } from 'react';
 import { useClerkSync } from '@/hooks/useClerkSync';
+import { toast } from '@/components/ui/use-toast';
 
 export const ClerkButtonComponent = () => {
   // Safely access Clerk hooks
@@ -23,6 +24,18 @@ export const ClerkButtonComponent = () => {
         localStorage.setItem('userAvatarUrl', userValue.user.imageUrl || '');
         localStorage.setItem('currentUserId', userValue.user.id);
         localStorage.setItem('authStatus', 'authenticated');
+        localStorage.setItem('currentUsername', userValue.user.username || userValue.user.firstName || 'User');
+        
+        // Notify user of successful sign-in if this is a new session
+        const lastNotifiedSignIn = localStorage.getItem('lastNotifiedSignIn');
+        const currentTime = new Date().getTime();
+        if (!lastNotifiedSignIn || (currentTime - parseInt(lastNotifiedSignIn)) > 300000) { // 5 minutes
+          toast({
+            title: "Signed in successfully",
+            description: `Welcome back, ${userValue.user.firstName || userValue.user.username || 'User'}!`
+          });
+          localStorage.setItem('lastNotifiedSignIn', currentTime.toString());
+        }
         
         // Dispatch event to notify components of auth state change
         window.dispatchEvent(new Event('clerk-auth-change'));
