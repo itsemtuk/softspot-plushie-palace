@@ -1,4 +1,3 @@
-
 import { SignIn as ClerkSignIn, useClerk } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect } from 'react';
@@ -13,42 +12,21 @@ const SignIn = () => {
   const isMobile = useIsMobile();
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   const navigate = useNavigate();
-  const clerk = isClerkConfigured ? useClerk() : null;
   
   // Force scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
-  // Function to handle after sign in
-  const handleAfterSignIn = (userData: any) => {
-    try {
-      console.log('User signed in successfully:', userData?.id);
-      
-      // Store user data in localStorage for components that don't have access to Clerk context
-      if (userData && userData.id) {
-        setAuthenticatedUser({
-          userId: userData.id,
-          username: userData.username || userData.firstName || 'User',
-          status: 'online',
-          provider: 'clerk'
-        });
-        
-        if (userData.imageUrl) {
-          localStorage.setItem('userAvatarUrl', userData.imageUrl);
-        }
-        
-        // Navigate to feed page
-        navigate('/feed');
-        
-        toast({
-          title: "Signed in successfully",
-          description: "Welcome to SoftSpot!"
-        });
-      }
-    } catch (error) {
-      console.error('Error during sign in:', error);
-    }
+
+  // Handle successful sign-in events from Clerk
+  const handleClerkSignInComplete = () => {
+    toast({
+      title: "Signed in successfully",
+      description: "Welcome to SoftSpot!"
+    });
+    
+    // Navigate to feed page
+    navigate('/feed');
   };
   
   const cardStyles = isMobile ? "border-softspot-200 shadow-lg mx-4" : "border-softspot-200 shadow-lg";
@@ -81,7 +59,9 @@ const SignIn = () => {
                     footer: "text-softspot-500",
                     formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
                     formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
-                    footerActionLink: "text-softspot-500 hover:text-softspot-600"
+                    footerActionLink: "text-softspot-500 hover:text-softspot-600",
+                    socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+                    socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50"
                   },
                   variables: {
                     colorPrimary: "#7e69ab",
@@ -89,6 +69,7 @@ const SignIn = () => {
                   }
                 }}
                 signUpUrl="/sign-up"
+                redirectUrl="/feed"
                 afterSignInUrl="/feed"
                 afterSignUpUrl="/onboarding"
               />

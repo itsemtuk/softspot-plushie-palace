@@ -1,51 +1,19 @@
 
-import { SignUp as ClerkSignUp, useClerk } from '@clerk/clerk-react';
+import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect } from 'react';
 import { FallbackSignUp } from '@/components/auth/FallbackSignUp';
 import { useNavigate } from 'react-router-dom';
 import { toast } from '@/components/ui/use-toast';
-import { setAuthenticatedUser } from '@/utils/auth/authState';
 
 const SignUp = () => {
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   const navigate = useNavigate();
-  const clerk = isClerkConfigured ? useClerk() : null;
   
   // Force scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
-  // Function to handle after sign up
-  const handleAfterSignUp = (userData: any) => {
-    try {
-      console.log('User signed up successfully:', userData?.id);
-      
-      if (userData && userData.id) {
-        setAuthenticatedUser({
-          userId: userData.id,
-          username: userData.username || userData.firstName || 'User',
-          status: 'online',
-          provider: 'clerk'
-        });
-        
-        if (userData.imageUrl) {
-          localStorage.setItem('userAvatarUrl', userData.imageUrl);
-        }
-        
-        // Navigate to onboarding
-        navigate('/onboarding');
-        
-        toast({
-          title: "Account created successfully",
-          description: "Welcome to SoftSpot!"
-        });
-      }
-    } catch (error) {
-      console.error('Error during sign up:', error);
-    }
-  };
   
   return (
     <div className="min-h-screen bg-gray-50">
@@ -61,8 +29,8 @@ const SignUp = () => {
                   rootBox: "mx-auto w-full",
                   card: "shadow-none p-0",
                   footer: "text-softspot-500",
-                  socialButtonsBlockButton: "border border-gray-300 text-gray-700",
-                  socialButtonsIconButton: "border border-gray-300",
+                  socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+                  socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50",
                   formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600"
                 },
                 variables: {
@@ -71,6 +39,7 @@ const SignUp = () => {
                 }
               }}
               signInUrl="/sign-in"
+              redirectUrl="/onboarding"
               afterSignInUrl="/feed"
               afterSignUpUrl="/onboarding"
             />

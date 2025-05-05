@@ -18,7 +18,7 @@ const prepareStorage = () => {
   try {
     // Get current cache version - this helps manage breaking changes
     const cacheVersion = localStorage.getItem('cacheVersion') || '0';
-    const currentVersion = '1.0.2'; // Increment to force cache clear
+    const currentVersion = '1.0.3'; // Increment to force cache clear
     
     // Check for version mismatch or corrupted state
     if (cacheVersion !== currentVersion) {
@@ -57,6 +57,10 @@ if (isClerkConfigured) {
         variables: {
           colorPrimary: "#7e69ab",
           colorText: "#333333",
+        },
+        elements: {
+          socialButtonsBlockButton: "border border-gray-300 text-gray-700",
+          socialButtonsIconButton: "border border-gray-300"
         }
       }}
     >
