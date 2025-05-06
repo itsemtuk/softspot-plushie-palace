@@ -10,6 +10,11 @@ const isClerkConfigured = PUBLISHABLE_KEY &&
   PUBLISHABLE_KEY.startsWith('pk_') && 
   PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
 
+console.log("Clerk configuration status:", { 
+  publishableKeyExists: !!PUBLISHABLE_KEY,
+  isConfigured: isClerkConfigured 
+});
+
 // Create the root element
 const root = createRoot(document.getElementById("root")!);
 
@@ -60,11 +65,11 @@ if (isClerkConfigured) {
         },
         elements: {
           socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-          socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-12 h-12 flex items-center justify-center", // Increased size
-          socialButtonsProviderIcon: "w-6 h-6", // Increased icon size
+          socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
+          socialButtonsProviderIcon: "w-8 h-8", // Increased icon size
           formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
           footerActionLink: "text-softspot-500 hover:text-softspot-600",
-          card: "shadow-none",
+          card: "shadow-lg border border-gray-200 rounded-lg",
           identityPreview: "bg-softspot-50",
           formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300"
         },

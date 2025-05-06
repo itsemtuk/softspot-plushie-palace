@@ -16,6 +16,15 @@ export const ClerkButtonComponent = () => {
     clerkValue = useClerk();
     clerkSyncValue = useClerkSync();
     
+    // Debug Clerk status on load
+    useEffect(() => {
+      console.log("ClerkButtonComponent mounted: ", {
+        isLoaded: userValue?.isLoaded,
+        isSignedIn: userValue?.isSignedIn,
+        user: userValue?.user?.id
+      });
+    }, []);
+    
     // If we successfully get the hooks, store their values in localStorage for components
     // that don't have direct access to Clerk context
     useEffect(() => {
@@ -41,21 +50,38 @@ export const ClerkButtonComponent = () => {
         
         // Dispatch event to notify components of auth state change
         window.dispatchEvent(new Event('clerk-auth-change'));
+      } else if (userValue?.isLoaded && !userValue?.isSignedIn) {
+        // Handle sign-out or unauthenticated state
+        console.log("User not signed in with Clerk");
       }
-    }, [userValue?.user, userValue?.isSignedIn]);
+    }, [userValue?.user, userValue?.isSignedIn, userValue?.isLoaded]);
     
-    // Debug Clerk state
+    // Debug Clerk state changes
     useEffect(() => {
-      console.log("Clerk authentication state:", {
+      console.log("Clerk authentication state changed:", {
         isLoaded: userValue?.isLoaded,
         isSignedIn: userValue?.isSignedIn,
         user: userValue?.user ? {
           id: userValue.user.id,
           firstName: userValue.user.firstName,
           username: userValue.user.username,
+          imageUrl: userValue.user.imageUrl
         } : null
       });
     }, [userValue?.isLoaded, userValue?.isSignedIn, userValue?.user]);
+    
+    // Handle social auth redirects and sign-in events
+    useEffect(() => {
+      // Check if we're returning from a social auth redirect
+      const isAuthCallback = 
+        window.location.href.includes('__clerk_status=') || 
+        window.location.href.includes('/sign-up') ||
+        window.location.href.includes('/sign-in');
+      
+      if (isAuthCallback) {
+        console.log("Detected auth callback in URL");
+      }
+    }, []);
     
   } catch (error) {
     // Silently handle the error when used outside ClerkProvider

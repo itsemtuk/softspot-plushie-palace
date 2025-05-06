@@ -1,300 +1,173 @@
-import { useState, useEffect } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle
-} from "@/components/ui/dialog";
+
+import { useState, useRef, useEffect } from 'react';
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { PostCreationForm } from "./PostCreationForm";
+import { ImageEditor } from "./ImageEditor";
+import { ImageUploader } from "./ImageUploader";
+import { PostCreationData } from "@/types/marketplace";
+import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
-import { ImageUploader } from "@/components/post/ImageUploader";
-import { ImageEditor } from "@/components/post/ImageEditor";
-import { PostCreationForm } from "@/components/post/PostCreationForm";
-import { PostCreationData, ImageUploadResult, ExtendedPost } from '@/types/marketplace';
-import { toast } from '@/components/ui/use-toast';
-import { ArrowLeft } from 'lucide-react';
-import { updatePost, addPost } from '@/utils/posts/postManagement';
-
-// Check if Clerk is configured
-const isClerkConfigured = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY && 
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY.startsWith('pk_') && 
-  import.meta.env.VITE_CLERK_PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
-
-// Create a safe version of useUser
-function useSafeUser() {
-  if (!isClerkConfigured) {
-    // Return a fallback when Clerk isn't configured
-    return {
-      user: null,
-      isLoaded: true
-    };
-  }
-
-  // Don't directly use useUser here - it would still throw in a non-Clerk context
-  // Instead, just provide a fallback with localStorage data
-  return {
-    user: null,
-    isLoaded: true
-  };
-}
+import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
 
 interface PostCreationFlowProps {
   isOpen: boolean;
   onClose: () => void;
-  onPostCreated?: (post: PostCreationData) => Promise<void>;
-  postToEdit?: ExtendedPost | null;
+  onPostCreated: (data: PostCreationData) => Promise<void>;
+  initialText?: string;
 }
 
-type FlowStep = 'upload' | 'edit' | 'details';
+const initialData: PostCreationData = {
+  title: "",
+  description: "",
+  image: "",
+  tags: [],
+  location: "",
+};
 
-const PostCreationFlow = ({ isOpen, onClose, onPostCreated, postToEdit }: PostCreationFlowProps) => {
-  const [currentStep, setCurrentStep] = useState<FlowStep>('upload');
-  const [uploadedImage, setUploadedImage] = useState<string>('');
-  const [editedImage, setEditedImage] = useState<string>('');
+const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "" }: PostCreationFlowProps) => {
+  const [step, setStep] = useState<'info' | 'upload' | 'editor'>('upload');
+  const [postData, setPostData] = useState<PostCreationData>({
+    ...initialData,
+    description: initialText
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Use our safe version that works with or without Clerk
-  const { user } = useSafeUser();
 
-  // Get user data from localStorage as a fallback
-  const userId = user?.id || localStorage.getItem('currentUserId') || 'anonymous';
-  const username = user?.username || user?.firstName || localStorage.getItem('currentUsername') || "Anonymous";
-  
-  // Initialize form with post to edit if provided
+  // Reset form when dialog opens/closes
   useEffect(() => {
-    if (postToEdit && isOpen) {
-      setUploadedImage(postToEdit.image);
-      setEditedImage(postToEdit.image);
-      setCurrentStep('details');
-    } else if (isOpen && !postToEdit) {
-      setCurrentStep('upload');
-    }
-  }, [postToEdit, isOpen]);
-  
-  const handleImageSelect = (result: ImageUploadResult) => {
-    if (result.success && result.url) {
-      setUploadedImage(result.url);
-      setCurrentStep('edit');
-    } else {
-      toast({
-        variant: "destructive",
-        title: "Upload failed",
-        description: result.error || "There was an error uploading your image"
+    if (isOpen) {
+      setStep('upload');
+      setPostData({
+        ...initialData,
+        description: initialText
       });
     }
+  }, [isOpen, initialText]);
+
+  const handleImageUploaded = (imageUrl: string) => {
+    setPostData(prev => ({ ...prev, image: imageUrl }));
+    setStep('editor');
   };
-  
-  const handleImageEdit = (editedImageUrl: string) => {
-    setEditedImage(editedImageUrl);
-    setCurrentStep('details');
+
+  const handleImageEdited = (editedImageUrl: string) => {
+    setPostData(prev => ({ ...prev, image: editedImageUrl }));
+    setStep('info');
   };
-  
-  const handleCreatePost = async (data: PostCreationData) => {
-    // Combine form data with the edited image
-    const finalPost = {
-      ...data,
-      image: editedImage || uploadedImage, // Use edited image if available, otherwise use the uploaded one
-    };
-    
-    setIsSubmitting(true);
-    
-    try {
-      if (postToEdit) {
-        // Handle editing existing post
-        const updatedPost: ExtendedPost = {
-          ...postToEdit,
-          title: data.title,
-          description: data.description || postToEdit.description,
-          image: editedImage || uploadedImage,
-          tags: data.tags || postToEdit.tags,
-          location: data.location || postToEdit.location
-        };
-        
-        const result = await updatePost(updatedPost);
-        if (!result.success) {
-          throw new Error(result.error || "Failed to update post");
-        }
-        
-        toast({
-          title: "Post updated!",
-          description: "Your post has been successfully updated."
-        });
-      } else {
-        // Handle creating new post
-        const newPost: ExtendedPost = {
-          id: `post-${Date.now()}`,
-          userId: userId,
-          image: finalPost.image,
-          title: finalPost.title,
-          username: username,
-          likes: 0,
-          comments: 0,
-          description: finalPost.description || "",
-          tags: finalPost.tags || [],
-          timestamp: new Date().toISOString(),
-          location: finalPost.location,
-          // Adding the required ExtendedPost properties
-          price: 0,
-          forSale: false,
-          condition: "New",
-          color: "",
-          material: ""
-        };
-        
-        const result = await addPost(newPost);
-        if (!result.success) {
-          throw new Error(result.error || "Failed to create post");
-        }
-        
-        if (onPostCreated) {
-          await onPostCreated(finalPost);
-        }
-        
-        toast({
-          title: "Post created!",
-          description: "Your post has been successfully created and saved."
-        });
-      }
-      
-      // Reset state and close dialog
-      resetState();
-      onClose();
-    } catch (error) {
-      console.error('Error processing post:', error);
+
+  const handleSkipEdit = () => {
+    setStep('info');
+  };
+
+  const handleSkipUpload = () => {
+    setStep('info');
+  };
+
+  const handleFormSubmit = async (data: PostCreationData) => {
+    // Make sure user is logged in
+    const userId = getCurrentUserId();
+    if (!userId) {
       toast({
         variant: "destructive",
-        title: postToEdit ? "Post update failed" : "Post creation failed",
-        description: "There was an error saving your post. Please try again."
+        title: "Authentication required",
+        description: "You must be logged in to create posts."
+      });
+      onClose();
+      return;
+    }
+
+    // Combine previous data with form data
+    const finalData = {
+      ...postData,
+      ...data,
+    };
+
+    try {
+      setIsSubmitting(true);
+      await onPostCreated(finalData);
+      toast({
+        title: "Success",
+        description: "Your post has been created."
+      });
+      onClose();
+    } catch (error) {
+      console.error("Error creating post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create post. Please try again."
       });
     } finally {
       setIsSubmitting(false);
     }
   };
-  
-  const resetState = () => {
-    setCurrentStep('upload');
-    setUploadedImage('');
-    setEditedImage('');
-    setIsSubmitting(false);
-  };
-  
-  const handleGoBack = () => {
-    if (currentStep === 'edit') {
-      setCurrentStep('upload');
-    } else if (currentStep === 'details') {
-      if (postToEdit) {
-        // When editing, going back from details should close the dialog
-        onClose();
+
+  const handleCancel = () => {
+    if (step === 'info') {
+      if (postData.image) {
+        setStep('editor');
       } else {
-        setCurrentStep('edit');
+        setStep('upload');
       }
+    } else if (step === 'editor') {
+      setStep('upload');
+    } else {
+      onClose();
     }
   };
-  
-  const handleClose = () => {
-    // Don't allow closing during submission
-    if (isSubmitting) return;
-    
-    resetState();
-    onClose();
-  };
-  
-  const getDialogSize = () => {
-    switch (currentStep) {
+
+  const renderContent = () => {
+    switch (step) {
       case 'upload':
-        return 'sm:max-w-md';
-      case 'edit':
-        return 'sm:max-w-lg max-h-[90vh] overflow-y-auto';
-      case 'details':
-        return 'sm:max-w-lg';
-      default:
-        return 'sm:max-w-md';
-    }
-  };
-  
-  const renderStepContent = () => {
-    switch (currentStep) {
-      case 'upload':
-        return <ImageUploader onImageSelect={handleImageSelect} />;
-      
-      case 'edit':
         return (
-          <div className="space-y-4">
+          <div className="flex flex-col items-center justify-center h-full">
+            <ImageUploader onImageUploaded={handleImageUploaded} />
             <Button 
               variant="ghost" 
-              className="flex items-center text-gray-500"
-              onClick={handleGoBack}
+              onClick={handleSkipUpload}
+              className="mt-4"
             >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to upload
+              Skip and continue without image
             </Button>
-            {uploadedImage && (
-              <ImageEditor 
-                imageUrl={uploadedImage} 
-                onSave={handleImageEdit} 
-                options={{ maxWidth: 1200, quality: 0.8 }}
-              />
-            )}
           </div>
         );
-      
-      case 'details':
+      case 'editor':
         return (
-          <div className="space-y-4">
-            <Button 
-              variant="ghost" 
-              className="flex items-center text-gray-500"
-              onClick={handleGoBack}
-              disabled={isSubmitting}
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              {postToEdit ? "Cancel edit" : "Back to editor"}
-            </Button>
-            <div className="aspect-square w-full max-w-[300px] mx-auto mb-4">
-              <img 
-                src={editedImage || uploadedImage} 
-                alt="Preview" 
-                className="w-full h-full object-cover rounded-lg"
-              />
-            </div>
-            <PostCreationForm 
-              onSubmit={handleCreatePost} 
-              imageUrl={editedImage || uploadedImage} 
-              isSubmitting={isSubmitting}
-              initialValues={postToEdit ? {
-                title: postToEdit.title,
-                description: postToEdit.description,
-                location: postToEdit.location,
-                tags: postToEdit.tags?.join(', ')
-              } : undefined}
+          <div className="flex flex-col items-center justify-center h-full">
+            <ImageEditor 
+              imageUrl={postData.image} 
+              onSave={handleImageEdited} 
+              onCancel={handleCancel}
             />
+            <Button 
+              variant="ghost" 
+              onClick={handleSkipEdit}
+              className="mt-4"
+            >
+              Skip editing
+            </Button>
           </div>
         );
+      case 'info':
+        return (
+          <PostCreationForm 
+            onSubmit={handleFormSubmit} 
+            onCancel={handleCancel} 
+            imageUrl={postData.image}
+            initialData={{
+              ...postData,
+              description: postData.description || initialText
+            }}
+            isSubmitting={isSubmitting} 
+          />
+        );
+      default:
+        return null;
     }
   };
-  
+
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className={`${getDialogSize()} max-h-[90vh] overflow-y-auto`}>
-        <DialogHeader>
-          <DialogTitle>
-            {postToEdit ? 'Edit Post' : (
-              currentStep === 'upload' ? 'Upload Image' :
-              currentStep === 'edit' ? 'Edit Image' : 'Create Post'
-            )}
-          </DialogTitle>
-          <DialogDescription>
-            {postToEdit ? 'Update your post details' : (
-              currentStep === 'upload' ? 'Upload an image to share with the community' :
-              currentStep === 'edit' ? 'Crop or adjust your image before posting' :
-              'Add details to your post'
-            )}
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="py-4">
-          {renderStepContent()}
-        </div>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
+        {renderContent()}
       </DialogContent>
     </Dialog>
   );

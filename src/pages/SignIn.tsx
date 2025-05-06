@@ -14,6 +14,9 @@ const SignIn = () => {
   // Force scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
+    
+    // Debug Clerk configuration
+    console.log("SignIn page - Clerk configured:", isClerkConfigured);
   }, []);
 
   const cardStyles = isMobile ? "border-softspot-200 shadow-lg mx-4" : "border-softspot-200 shadow-lg";
@@ -48,8 +51,9 @@ const SignIn = () => {
                     formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
                     footerActionLink: "text-softspot-500 hover:text-softspot-600",
                     socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-                    socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-12 h-12 flex items-center justify-center m-1", // Increased size
-                    socialButtonsProviderIcon: "w-6 h-6" // Increased icon size
+                    socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
+                    socialButtonsProviderIcon: "w-8 h-8", // Larger icons
+                    socialButtonsBlockButtonText: "text-base font-medium"
                   },
                   variables: {
                     colorPrimary: "#7e69ab",
