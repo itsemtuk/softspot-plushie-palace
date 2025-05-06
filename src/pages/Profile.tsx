@@ -13,27 +13,53 @@ import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/use-toast";
+import { isAuthenticated, getCurrentUser } from "@/utils/auth/authState";
 
 const Profile = () => {
-  const { user, isLoaded } = useUser();
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const isMobile = useIsMobile();
+  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+  
+  // Use Clerk's hooks if configured
+  const { user: clerkUser, isLoaded: isClerkLoaded, isSignedIn } = 
+    isClerkConfigured ? useUser() : { user: null, isLoaded: true, isSignedIn: false };
   
   // Use the post dialog properly 
   const { openPostDialog } = usePostDialog();
 
-  // Only fetch posts when user is loaded
+  // Check authentication status
+  const isAuthenticated = isClerkConfigured ? isSignedIn : !!localStorage.getItem('currentUserId');
+
+  // Only fetch posts when user is authenticated
   useEffect(() => {
     let isMounted = true;
     
     const fetchUserPosts = async () => {
-      if (!user || !isLoaded) return;
-      
       setIsLoading(true);
+      
+      // Get user ID based on authentication method
+      let userId;
+      if (isClerkConfigured && clerkUser) {
+        userId = clerkUser.id;
+      } else {
+        userId = localStorage.getItem('currentUserId');
+      }
+      
+      if (!userId) {
+        if (isClerkConfigured) {
+          if (isClerkLoaded && !isSignedIn) {
+            navigate('/sign-in');
+          }
+        } else {
+          navigate('/sign-in');
+        }
+        return;
+      }
+      
       try {
-        const posts = await getAllUserPosts(user.id);
+        const posts = await getAllUserPosts(userId);
         if (isMounted) {
           setUserPosts(posts);
         }
@@ -46,17 +72,19 @@ const Profile = () => {
       }
     };
 
-    if (isLoaded && user) {
+    // Wait for Clerk to load if using it
+    if (isClerkConfigured) {
+      if (isClerkLoaded) {
+        fetchUserPosts();
+      }
+    } else {
       fetchUserPosts();
-    } else if (isLoaded && !user) {
-      // If user is not authenticated, redirect to sign-in
-      navigate('/sign-in');
     }
     
     return () => {
       isMounted = false;
     };
-  }, [user, isLoaded, navigate]);
+  }, [isClerkConfigured, clerkUser, isClerkLoaded, isSignedIn, navigate]);
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);
@@ -88,7 +116,7 @@ const Profile = () => {
   };
 
   // Show loading state while checking authentication
-  if (!isLoaded) {
+  if ((isClerkConfigured && !isClerkLoaded) || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Spinner size="lg" />
@@ -96,20 +124,39 @@ const Profile = () => {
     );
   }
 
-  // Show loading state if we don't have a user yet
-  if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner size="lg" />
-      </div>
-    );
+  // Get user data based on authentication method
+  let userData = null;
+  let username = '';
+  let bio = '';
+  let interests: string[] = [];
+  
+  if (isClerkConfigured && clerkUser) {
+    username = clerkUser.username || '';
+    bio = clerkUser.unsafeMetadata?.bio as string || "Hi! I'm a passionate plushie collector. Always looking to connect with fellow plushie enthusiasts!";
+    interests = clerkUser.unsafeMetadata?.plushieInterests as string[] || ["Jellycat", "Squishmallows", "Build-A-Bear"];
+  } else {
+    // Use localStorage for non-Clerk
+    const currentUser = getCurrentUser();
+    username = currentUser?.username || '';
+    
+    // Try to get profile data from localStorage
+    try {
+      const userProfile = localStorage.getItem('userProfile');
+      if (userProfile) {
+        const parsedProfile = JSON.parse(userProfile);
+        bio = parsedProfile.bio || "Hi! I'm a passionate plushie collector. Always looking to connect with fellow plushie enthusiasts!";
+        interests = parsedProfile.interests || ["Jellycat", "Squishmallows", "Build-A-Bear"];
+      }
+    } catch (error) {
+      console.error("Error parsing user profile:", error);
+    }
   }
-
-  // Extract profile data from user metadata for consistency
+  
+  // Extract profile data for consistency
   const profileData = {
-    bio: user.unsafeMetadata?.bio as string || "Hi! I'm a passionate plushie collector. Always looking to connect with fellow plushie enthusiasts!",
-    interests: user.unsafeMetadata?.plushieInterests as string[] || ["Jellycat", "Squishmallows", "Build-A-Bear"],
-    isPrivate: user.unsafeMetadata?.isPrivate as boolean,
+    bio: bio,
+    interests: interests,
+    isPrivate: false,
   };
 
   return (
@@ -117,7 +164,7 @@ const Profile = () => {
       {isMobile ? <MobileNav /> : <Navbar />}
       
       <UserProfileHeader
-        username={user.username || undefined}
+        username={username}
         isOwnProfile={true}
         profileData={profileData}
       />
@@ -130,8 +177,6 @@ const Profile = () => {
           isOwnProfile={true} 
         />
       </div>
-      
-      {/* Mobile Bottom Navigation - already in MobileNav component */}
     </div>
   );
 };

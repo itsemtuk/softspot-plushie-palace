@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { toast } from '@/components/ui/use-toast';
 import { Link } from 'react-router-dom';
 import { Facebook, Apple } from 'lucide-react';
+import { setAuthenticatedUser } from '@/utils/auth/authState';
 
 export function FallbackSignIn() {
   const [email, setEmail] = useState('');
@@ -64,11 +65,13 @@ export function FallbackSignIn() {
     
     // Mock sign-in - in a real app this would verify with a backend
     setTimeout(() => {
-      // Store demo user details
-      localStorage.setItem('currentUserId', 'demo-user-id');
-      localStorage.setItem('currentUsername', email.split('@')[0]);
-      localStorage.setItem('userStatus', 'online');
-      localStorage.setItem('lastLoginTimestamp', new Date().getTime().toString());
+      // Store demo user details using our centralized auth state
+      setAuthenticatedUser({
+        userId: 'demo-user-id',
+        username: email.split('@')[0],
+        status: 'online',
+        provider: 'email'
+      });
       
       toast({
         title: "Signed in successfully",
@@ -94,11 +97,13 @@ export function FallbackSignIn() {
     
     // Mock social sign-in
     setTimeout(() => {
-      // Store demo user details
-      localStorage.setItem('currentUserId', `${provider}-user-id`);
-      localStorage.setItem('currentUsername', `${provider}User`);
-      localStorage.setItem('userStatus', 'online');
-      localStorage.setItem('lastLoginTimestamp', new Date().getTime().toString());
+      // Use our centralized auth state
+      setAuthenticatedUser({
+        userId: `${provider}-user-id`,
+        username: `${provider}User`,
+        status: 'online',
+        provider: provider.toLowerCase() as any
+      });
       
       toast({
         title: "Signed in successfully",
