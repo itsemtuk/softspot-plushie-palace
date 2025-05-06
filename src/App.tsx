@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -27,8 +28,8 @@ import { useEffect } from 'react';
 import { initAuthState } from './utils/auth/authState';
 
 function App() {
-  // Check if Clerk has a valid publishable key
-  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+  // Always assume Clerk is configured for testing
+  const isClerkConfigured = true;
   
   // Initialize auth state on app load
   useEffect(() => {

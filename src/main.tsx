@@ -5,14 +5,15 @@ import './index.css';
 import { ClerkProvider } from '@clerk/clerk-react';
 
 // Check if Clerk is configured
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_valid-test-key-for-dev-only";
 const isClerkConfigured = PUBLISHABLE_KEY && 
   PUBLISHABLE_KEY.startsWith('pk_') && 
   PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
 
 console.log("Clerk configuration status:", { 
   publishableKeyExists: !!PUBLISHABLE_KEY,
-  isConfigured: isClerkConfigured 
+  isConfigured: isClerkConfigured,
+  key: PUBLISHABLE_KEY
 });
 
 // Create the root element
@@ -41,10 +42,10 @@ const prepareStorage = () => {
     // Mark storage as prepared
     window.isStoragePrepared = true;
     
-    // Store clerk configuration status - must be done after clearing storage
-    localStorage.setItem('usingClerk', isClerkConfigured ? 'true' : 'false');
+    // Force enable Clerk for testing
+    localStorage.setItem('usingClerk', 'true');
     
-    console.log("Storage prepared successfully, Clerk configured:", isClerkConfigured, "Key available:", !!PUBLISHABLE_KEY);
+    console.log("Storage prepared successfully, Clerk configured:", isClerkConfigured, "Key:", PUBLISHABLE_KEY);
   } catch (e) {
     console.error("Error preparing storage:", e);
   }
@@ -52,40 +53,36 @@ const prepareStorage = () => {
 
 prepareStorage();
 
-// Render app with or without Clerk based on configuration
-if (isClerkConfigured) {
-  console.log("Rendering app with ClerkProvider");
-  root.render(
-    <ClerkProvider 
-      publishableKey={PUBLISHABLE_KEY}
-      appearance={{
-        variables: {
-          colorPrimary: "#7e69ab",
-          colorText: "#333333",
-        },
-        elements: {
-          socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-          socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
-          socialButtonsProviderIcon: "w-8 h-8", // Increased icon size
-          formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
-          footerActionLink: "text-softspot-500 hover:text-softspot-600",
-          card: "shadow-lg border border-gray-200 rounded-lg",
-          identityPreview: "bg-softspot-50",
-          formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300"
-        },
-        layout: {
-          socialButtonsVariant: "iconButton",
-          socialButtonsPlacement: "bottom"
-        }
-      }}
-    >
-      <App />
-    </ClerkProvider>
-  );
-} else {
-  console.warn("Clerk is not properly configured. Rendering app without Clerk. Check your environment variables.");
-  root.render(<App />);
-}
+// Always render with Clerk for testing sign-in/sign-up pages
+root.render(
+  <ClerkProvider 
+    publishableKey={PUBLISHABLE_KEY}
+    appearance={{
+      variables: {
+        colorPrimary: "#7e69ab",
+        colorText: "#333333",
+      },
+      elements: {
+        socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+        socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
+        socialButtonsProviderIcon: "w-8 h-8", // Increased icon size
+        formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
+        footerActionLink: "text-softspot-500 hover:text-softspot-600",
+        card: "shadow-lg border border-gray-200 rounded-lg",
+        identityPreview: "bg-softspot-50",
+        formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
+        formField: "mb-6", // Add more spacing between fields
+        socialButtonsBlockButtonText: "text-base font-medium" // Make text more visible
+      },
+      layout: {
+        socialButtonsVariant: "iconButton",
+        socialButtonsPlacement: "bottom"
+      }
+    }}
+  >
+    <App />
+  </ClerkProvider>
+);
 
 // Add typings for window object
 declare global {

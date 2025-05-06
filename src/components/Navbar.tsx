@@ -64,6 +64,7 @@ export function Navbar() {
         </div>
       </div>
       
+      {/* Only include the required props */}
       <PostCreationFlow
         isOpen={isPostCreationOpen}
         onClose={() => setIsPostCreationOpen(false)}

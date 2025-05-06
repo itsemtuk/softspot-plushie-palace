@@ -1,7 +1,7 @@
 
 import { SignIn as ClerkSignIn } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -9,77 +9,92 @@ import { FallbackSignIn } from '@/components/auth/FallbackSignIn';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
-  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+  const [isClerkConfigured, setIsClerkConfigured] = useState(true); // Default to true to force Clerk UI
+  const [isLoading, setIsLoading] = useState(true);
   
   // Force scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
     
+    // Small delay to ensure Clerk has time to initialize
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
+    
     // Debug Clerk configuration
-    console.log("SignIn page - Clerk configured:", isClerkConfigured);
+    console.log("SignIn page - Clerk is being forced to show");
   }, []);
 
   const cardStyles = isMobile ? "border-softspot-200 shadow-lg mx-4" : "border-softspot-200 shadow-lg";
+  
+  // Show loading state while checking Clerk
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <Navbar />
+        <div className="max-w-md mx-auto pt-16 pb-24 px-4 flex justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-600"></div>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className={`max-w-md mx-auto pt-16 pb-24 ${isMobile ? 'px-0' : 'px-4'}`}>
-        {isClerkConfigured ? (
-          <Card className={cardStyles}>
-            <CardHeader className="space-y-4">
-              <div className="flex items-center justify-center">
-                <span className="text-2xl font-bold text-softspot-600">SoftSpot</span>
-                <div className="h-8 w-8 rounded-full bg-softspot-200 flex items-center justify-center ml-2">
-                  <span className="text-lg">🧸</span>
-                </div>
+        <Card className={cardStyles}>
+          <CardHeader className="space-y-4">
+            <div className="flex items-center justify-center">
+              <span className="text-2xl font-bold text-softspot-600">SoftSpot</span>
+              <div className="h-8 w-8 rounded-full bg-softspot-200 flex items-center justify-center ml-2">
+                <span className="text-lg">🧸</span>
               </div>
-              <CardTitle className="text-2xl font-bold text-center text-softspot-600">Welcome Back</CardTitle>
-              <CardDescription className="text-center text-gray-500">
-                Sign in to continue your plushie journey
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent>
-              <ClerkSignIn 
-                appearance={{
-                  elements: {
-                    rootBox: "mx-auto w-full",
-                    card: "shadow-none p-0",
-                    footer: "text-softspot-500",
-                    formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
-                    formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
-                    footerActionLink: "text-softspot-500 hover:text-softspot-600",
-                    socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-                    socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
-                    socialButtonsProviderIcon: "w-8 h-8", // Larger icons
-                    socialButtonsBlockButtonText: "text-base font-medium"
-                  },
-                  variables: {
-                    colorPrimary: "#7e69ab",
-                    colorText: "#333333",
-                  },
-                  layout: {
-                    socialButtonsVariant: "iconButton",
-                    socialButtonsPlacement: "bottom"
-                  }
-                }}
-              />
-            </CardContent>
-            
-            <CardFooter className="flex flex-col items-center gap-4 border-t pt-6">
-              <p className="text-sm text-gray-500">Don't have an account?</p>
-              <Link 
-                to="/sign-up"
-                className="inline-flex h-9 items-center justify-center rounded-md bg-softspot-100 px-4 py-2 text-sm font-medium text-softspot-700 transition-colors hover:bg-softspot-200 hover:text-softspot-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-softspot-400"
-              >
-                Sign up for free
-              </Link>
-            </CardFooter>
-          </Card>
-        ) : (
-          <FallbackSignIn />
-        )}
+            </div>
+            <CardTitle className="text-2xl font-bold text-center text-softspot-600">Welcome Back</CardTitle>
+            <CardDescription className="text-center text-gray-500">
+              Sign in to continue your plushie journey
+            </CardDescription>
+          </CardHeader>
+          
+          <CardContent>
+            <ClerkSignIn 
+              appearance={{
+                elements: {
+                  rootBox: "mx-auto w-full",
+                  card: "shadow-none p-0",
+                  footer: "text-softspot-500",
+                  formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
+                  formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
+                  footerActionLink: "text-softspot-500 hover:text-softspot-600",
+                  socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+                  socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
+                  socialButtonsProviderIcon: "w-8 h-8", // Larger icons
+                  socialButtonsBlockButtonText: "text-base font-medium",
+                  formField: "mb-6" // Add more spacing between fields
+                },
+                variables: {
+                  colorPrimary: "#7e69ab",
+                  colorText: "#333333",
+                },
+                layout: {
+                  socialButtonsVariant: "iconButton",
+                  socialButtonsPlacement: "bottom"
+                }
+              }}
+            />
+          </CardContent>
+          
+          <CardFooter className="flex flex-col items-center gap-4 border-t pt-6">
+            <p className="text-sm text-gray-500">Don't have an account?</p>
+            <Link 
+              to="/sign-up"
+              className="inline-flex h-9 items-center justify-center rounded-md bg-softspot-100 px-4 py-2 text-sm font-medium text-softspot-700 transition-colors hover:bg-softspot-200 hover:text-softspot-800 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-softspot-400"
+            >
+              Sign up for free
+            </Link>
+          </CardFooter>
+        </Card>
         
         <div className="mt-8 space-y-4">
           <div className="bg-card p-5 rounded-lg shadow-md">
