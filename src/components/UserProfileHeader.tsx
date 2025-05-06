@@ -189,37 +189,81 @@ export default function UserProfileHeader({
   const displayName = displayUsername.includes('@') ? displayUsername.split('@')[0] : displayUsername;
   
   return (
-    <div className="bg-gradient-to-b from-softspot-100 to-white py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-          <ProfileAvatar profileImage={profileImage} />
+    <div>
+      {/* Profile Banner - gradient background */}
+      <div className="h-36 bg-gradient-to-r from-softspot-100 to-softspot-400 w-full"></div>
+      
+      <div className="container mx-auto px-4 -mt-16 max-w-2xl">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+          {/* Profile Header with Avatar and Stats */}
+          <div className="relative px-6 pt-6 pb-4 border-b border-gray-100">
+            <div className="flex flex-col md:flex-row items-center md:items-start">
+              <img 
+                src={profileImage || "https://i.pravatar.cc/300"} 
+                alt="Profile" 
+                className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-md"
+                onError={(e) => {
+                  e.currentTarget.src = "https://i.pravatar.cc/300";
+                }}
+              />
+              
+              <div className="md:ml-4 flex-1 text-center md:text-left mt-4 md:mt-0">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-start">
+                  <div>
+                    <h1 className="text-2xl font-bold">{displayName}</h1>
+                    <p className="text-gray-600 text-sm">Plushie collector</p>
+                  </div>
+                  
+                  <ProfileActionButton 
+                    isOwnProfile={isOwnProfile}
+                    isFollowing={isFollowing}
+                    isPending={isPending}
+                    isPrivate={isPrivate}
+                    username={username}
+                    onEditProfile={handleEditProfile}
+                    onFollowToggle={handleFollow}
+                  />
+                </div>
+                
+                <div className="flex justify-center md:justify-start space-x-6 mt-3">
+                  <div>
+                    <p className="font-bold text-gray-800">{postsCount}</p>
+                    <p className="text-xs text-gray-600">Posts</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-800">{followersCount}</p>
+                    <p className="text-xs text-gray-600">Followers</p>
+                  </div>
+                  <div>
+                    <p className="font-bold text-gray-800">{followingCount}</p>
+                    <p className="text-xs text-gray-600">Following</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
           
-          <ProfileInfo
-            username={displayUsername}
-            displayName={displayName}
-            bio={profileData?.bio || ''}
-            interests={plushieInterests}
-            isPrivate={isPrivate}
-          />
-          
-          <div className="flex gap-3">
-            <ProfileActionButton
-              isOwnProfile={isOwnProfile}
-              isFollowing={isFollowing}
-              isPending={isPending}
-              isPrivate={isPrivate}
-              username={username}
-              onEditProfile={handleEditProfile}
-              onFollowToggle={handleFollow}
-            />
+          {/* Profile Bio and Interests */}
+          <div className="p-6">
+            <div className="mb-4">
+              <h2 className="font-semibold text-gray-800 mb-2">About Me</h2>
+              <p className="text-gray-700">{profileData?.bio || "No bio yet"}</p>
+            </div>
+            
+            {plushieInterests.length > 0 && (
+              <div className="mb-4">
+                <h2 className="font-semibold text-gray-800 mb-2">Favorite Collections</h2>
+                <div className="flex flex-wrap gap-2">
+                  {plushieInterests.map((interest, index) => (
+                    <span key={index} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs">
+                      {interest}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </div>
-        
-        <ProfileHeaderStats
-          postsCount={postsCount}
-          followersCount={followersCount}
-          followingCount={followingCount}
-        />
       </div>
     </div>
   );

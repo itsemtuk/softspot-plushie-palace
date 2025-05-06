@@ -19,7 +19,7 @@ const formSchema = z.object({
 
 export interface PostCreationFormProps {
   onSubmit: (data: PostCreationData) => void;
-  onCancel: () => void; // Added onCancel prop
+  onCancel: () => void;
   imageUrl?: string;
   initialData?: Partial<PostCreationData>;
   isSubmitting?: boolean;
@@ -44,7 +44,10 @@ export const PostCreationForm = ({
   
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
     const formData: PostCreationData = {
-      ...data,
+      title: data.title, // This ensures title is always provided
+      description: data.description || "",
+      tags: data.tags || [],
+      location: data.location || "",
       image: imageUrl || "",
     };
     onSubmit(formData);

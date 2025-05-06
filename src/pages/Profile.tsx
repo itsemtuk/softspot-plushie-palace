@@ -2,7 +2,6 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getAllUserPosts, deletePost } from "@/utils/postStorage";
 import { ExtendedPost } from "@/types/marketplace";
 import NotificationsTab from "@/components/profile/NotificationsTab";
@@ -108,48 +107,31 @@ const Profile = () => {
 
   // Extract profile data from user metadata for consistency
   const profileData = {
-    bio: user.unsafeMetadata?.bio as string,
-    interests: user.unsafeMetadata?.plushieInterests as string[] || [],
+    bio: user.unsafeMetadata?.bio as string || "Hi! I'm a passionate plushie collector. Always looking to connect with fellow plushie enthusiasts!",
+    interests: user.unsafeMetadata?.plushieInterests as string[] || ["Jellycat", "Squishmallows", "Build-A-Bear"],
     isPrivate: user.unsafeMetadata?.isPrivate as boolean,
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-8">
+    <div className="min-h-screen bg-gray-50 pb-16 md:pb-8">
       {isMobile ? <MobileNav /> : <Navbar />}
       
-      {/* Use the refactored UserProfileHeader component */}
       <UserProfileHeader
         username={user.username || undefined}
         isOwnProfile={true}
         profileData={profileData}
       />
 
-      <div className="container mx-auto px-4 py-6">
-        <Tabs defaultValue="posts" className="mt-4">
-          <TabsList>
-            <TabsTrigger value="posts">Posts</TabsTrigger>
-            <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          </TabsList>
-          <TabsContent value="posts" className="mt-4">
-            {isLoading ? (
-              <div className="text-center py-12">
-                <Spinner size="lg" className="mx-auto" />
-                <p className="mt-4 text-gray-500">Loading posts...</p>
-              </div>
-            ) : (
-              <ProfilePostsGrid 
-                posts={userPosts} 
-                onPostClick={handlePostClick} 
-                onDeletePost={handleDeletePost}
-                isOwnProfile={true} 
-              />
-            )}
-          </TabsContent>
-          <TabsContent value="notifications" className="mt-4">
-            <NotificationsTab />
-          </TabsContent>
-        </Tabs>
+      <div className="container mx-auto px-4 py-4">
+        <ProfilePostsGrid 
+          posts={userPosts} 
+          onPostClick={handlePostClick} 
+          onDeletePost={handleDeletePost}
+          isOwnProfile={true} 
+        />
       </div>
+      
+      {/* Mobile Bottom Navigation - already in MobileNav component */}
     </div>
   );
 };
