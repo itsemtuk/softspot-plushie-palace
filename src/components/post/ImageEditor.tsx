@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -10,9 +9,10 @@ interface ImageEditorProps {
   imageUrl: string;
   options?: ImageEditorOptions;
   onSave: (editedImage: string) => void;
+  onCancel: () => void;
 }
 
-export const ImageEditor = ({ imageUrl, options, onSave }: ImageEditorProps) => {
+export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditorProps) => {
   const [brightness, setBrightness] = useState([100]);
   const [contrast, setContrast] = useState([100]);
   const [saturation, setSaturation] = useState([100]);
@@ -226,9 +226,14 @@ export const ImageEditor = ({ imageUrl, options, onSave }: ImageEditorProps) => 
           />
         </div>
 
-        <Button onClick={applyFilters} className="w-full">
-          Apply Changes
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={applyFilters} className="flex-1">
+            Apply Changes
+          </Button>
+          <Button onClick={onCancel} variant="outline" className="flex-1">
+            Cancel
+          </Button>
+        </div>
       </div>
     </Card>
   );

@@ -2,10 +2,8 @@
 import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect, useState } from 'react';
-import { FallbackSignUp } from '@/components/auth/FallbackSignUp';
 
 const SignUp = () => {
-  const [isClerkConfigured, setIsClerkConfigured] = useState(true); // Default to true to force Clerk UI
   const [isLoading, setIsLoading] = useState(true);
   
   // Force scroll to top when page loads
@@ -15,10 +13,8 @@ const SignUp = () => {
     // Small delay to ensure Clerk has time to initialize
     setTimeout(() => {
       setIsLoading(false);
+      console.log("SignUp page - showing Clerk UI");
     }, 500);
-    
-    // Debug Clerk configuration
-    console.log("SignUp page - Clerk is being forced to show");
   }, []);
   
   // Show loading state while checking Clerk

@@ -1,125 +1,82 @@
 
 import React from 'react';
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { PostCreationData } from "@/types/marketplace";
-import { toast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { MapPin } from 'lucide-react';
 
-// List of inappropriate words to filter
-const inappropriateWords = [
-  "badword1", "badword2", "profanity", "explicit"
-  // In a real app, this would be a more comprehensive list
-];
-
-// Function to check for inappropriate content
-const containsInappropriateContent = (text: string): boolean => {
-  if (!text) return false;
-  const lowerText = text.toLowerCase();
-  return inappropriateWords.some(word => lowerText.includes(word));
-};
-
-const postSchema = z.object({
-  title: z.string()
-    .min(1, "Title is required")
-    .refine(text => !containsInappropriateContent(text), {
-      message: "Title contains inappropriate content",
-    }),
-  description: z.string()
-    .optional()
-    .refine(text => !text || !containsInappropriateContent(text), {
-      message: "Description contains inappropriate content",
-    }),
-  location: z.string()
-    .optional()
-    .refine(text => !text || !containsInappropriateContent(text), {
-      message: "Location contains inappropriate content",
-    }),
-  tags: z.string()
-    .optional()
-    .refine(text => !text || !containsInappropriateContent(text), {
-      message: "Tags contain inappropriate content",
-    }),
+const formSchema = z.object({
+  title: z.string().min(1, { message: "Title is required" }).max(100),
+  description: z.string().max(1000, { message: "Description cannot exceed 1000 characters" }).optional(),
+  tags: z.array(z.string()).optional(),
+  location: z.string().optional(),
 });
 
-interface PostCreationFormProps {
+export interface PostCreationFormProps {
   onSubmit: (data: PostCreationData) => void;
-  imageUrl: string;
+  onCancel: () => void; // Added onCancel prop
+  imageUrl?: string;
+  initialData?: Partial<PostCreationData>;
   isSubmitting?: boolean;
-  initialValues?: {
-    title?: string;
-    description?: string;
-    location?: string;
-    tags?: string;
-  };
 }
 
-export const PostCreationForm = ({ onSubmit, imageUrl, isSubmitting = false, initialValues }: PostCreationFormProps) => {
-  const form = useForm<z.infer<typeof postSchema>>({
-    resolver: zodResolver(postSchema),
+export const PostCreationForm = ({ 
+  onSubmit, 
+  onCancel,
+  imageUrl, 
+  initialData = {}, 
+  isSubmitting = false 
+}: PostCreationFormProps) => {
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
-      title: initialValues?.title || "",
-      description: initialValues?.description || "",
-      location: initialValues?.location || "",
-      tags: initialValues?.tags || "",
+      title: initialData.title || "",
+      description: initialData.description || "",
+      tags: initialData.tags || [],
+      location: initialData.location || "",
     },
   });
-
-  const handleSubmit = (values: z.infer<typeof postSchema>) => {
-    // Check for inappropriate content one more time as a safety measure
-    if (containsInappropriateContent(values.title) || 
-        containsInappropriateContent(values.description || '') || 
-        containsInappropriateContent(values.tags || '')) {
-      toast({
-        title: "Content not allowed",
-        description: "Your post contains inappropriate content that goes against our community guidelines.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    onSubmit({
-      image: imageUrl,
-      title: values.title,
-      description: values.description,
-      location: values.location,
-      tags: values.tags ? values.tags.split(',').map(tag => tag.trim()) : undefined,
-    });
+  
+  const handleSubmit = (data: z.infer<typeof formSchema>) => {
+    const formData: PostCreationData = {
+      ...data,
+      image: imageUrl || "",
+    };
+    onSubmit(formData);
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {imageUrl && (
+          <div className="aspect-square w-full relative rounded-md overflow-hidden bg-gray-100 mb-4">
+            <img 
+              src={imageUrl} 
+              alt="Upload preview" 
+              className="w-full h-full object-cover"
+            />
+          </div>
+        )}
+        
         <FormField
           control={form.control}
           name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Title *</FormLabel>
+              <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input 
-                  {...field} 
-                  placeholder="Give your post a title" 
-                  disabled={isSubmitting}
-                />
+                <Input placeholder="Add a title" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="description"
@@ -128,16 +85,17 @@ export const PostCreationForm = ({ onSubmit, imageUrl, isSubmitting = false, ini
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Textarea 
+                  placeholder="Add a description" 
+                  className="resize-none" 
                   {...field} 
-                  placeholder="Add a description..." 
-                  disabled={isSubmitting}
+                  value={field.value || ""}
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-
+        
         <FormField
           control={form.control}
           name="location"
@@ -145,45 +103,41 @@ export const PostCreationForm = ({ onSubmit, imageUrl, isSubmitting = false, ini
             <FormItem>
               <FormLabel>Location</FormLabel>
               <FormControl>
-                <Input 
-                  {...field} 
-                  placeholder="Add a location" 
-                  disabled={isSubmitting}
-                />
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+                  <Input 
+                    placeholder="Add a location" 
+                    className="pl-10" 
+                    {...field} 
+                    value={field.value || ""}
+                  />
+                </div>
               </FormControl>
+              <FormDescription>
+                Add the location where this photo was taken
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-
-        <FormField
-          control={form.control}
-          name="tags"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Tags</FormLabel>
-              <FormControl>
-                <Input 
-                  {...field} 
-                  placeholder="Add tags separated by commas" 
-                  disabled={isSubmitting}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <Button type="submit" className="w-full" disabled={isSubmitting}>
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              {initialValues ? 'Updating Post...' : 'Creating Post...'}
-            </>
-          ) : (
-            initialValues ? 'Update Post' : 'Create Post'
-          )}
-        </Button>
+        
+        <div className="flex gap-2 pt-2">
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel} 
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button 
+            type="submit" 
+            disabled={isSubmitting} 
+            className="flex-1"
+          >
+            {isSubmitting ? "Posting..." : "Post"}
+          </Button>
+        </div>
       </form>
     </Form>
   );

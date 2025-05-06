@@ -5,11 +5,9 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { FallbackSignIn } from '@/components/auth/FallbackSignIn';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
-  const [isClerkConfigured, setIsClerkConfigured] = useState(true); // Default to true to force Clerk UI
   const [isLoading, setIsLoading] = useState(true);
   
   // Force scroll to top when page loads
@@ -19,10 +17,8 @@ const SignIn = () => {
     // Small delay to ensure Clerk has time to initialize
     setTimeout(() => {
       setIsLoading(false);
+      console.log("SignIn page - showing Clerk UI");
     }, 500);
-    
-    // Debug Clerk configuration
-    console.log("SignIn page - Clerk is being forced to show");
   }, []);
 
   const cardStyles = isMobile ? "border-softspot-200 shadow-lg mx-4" : "border-softspot-200 shadow-lg";

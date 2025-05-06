@@ -8,10 +8,10 @@ import { Camera, Upload, Facebook, Image } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 
 interface ImageUploaderProps {
-  onImageSelect: (result: ImageUploadResult) => void;
+  onImageUploaded: (imageUrl: string) => void;
 }
 
-export const ImageUploader = ({ onImageSelect }: ImageUploaderProps) => {
+export const ImageUploader = ({ onImageUploaded }: ImageUploaderProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,10 +29,7 @@ export const ImageUploader = ({ onImageSelect }: ImageUploaderProps) => {
       try {
         const reader = new FileReader();
         reader.onloadend = () => {
-          onImageSelect({
-            url: reader.result as string,
-            success: true
-          });
+          onImageUploaded(reader.result as string);
           setIsDialogOpen(false);
         };
         reader.readAsDataURL(file);

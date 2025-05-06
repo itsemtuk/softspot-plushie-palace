@@ -14,6 +14,7 @@ interface PostCreationFlowProps {
   onClose: () => void;
   onPostCreated: (data: PostCreationData) => Promise<void>;
   initialText?: string;
+  postToEdit?: any; // Adding optional postToEdit prop to match usage in CreateButton
 }
 
 const initialData: PostCreationData = {
@@ -24,7 +25,7 @@ const initialData: PostCreationData = {
   location: "",
 };
 
-const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "" }: PostCreationFlowProps) => {
+const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "", postToEdit }: PostCreationFlowProps) => {
   const [step, setStep] = useState<'info' | 'upload' | 'editor'>('upload');
   const [postData, setPostData] = useState<PostCreationData>({
     ...initialData,

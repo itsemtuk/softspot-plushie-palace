@@ -4,11 +4,9 @@ import App from './App.tsx';
 import './index.css';
 import { ClerkProvider } from '@clerk/clerk-react';
 
-// Check if Clerk is configured
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_valid-test-key-for-dev-only";
-const isClerkConfigured = PUBLISHABLE_KEY && 
-  PUBLISHABLE_KEY.startsWith('pk_') && 
-  PUBLISHABLE_KEY !== "pk_test_valid-test-key-for-dev-only";
+// Use the provided Clerk publishable key
+const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
+const isClerkConfigured = true; // Force Clerk to be configured
 
 console.log("Clerk configuration status:", { 
   publishableKeyExists: !!PUBLISHABLE_KEY,
