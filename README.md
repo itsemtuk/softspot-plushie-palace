@@ -1,4 +1,5 @@
-![SoftSpot Logo](https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvdXBsb2FkZWQvaW1nXzJ3ODdIWDRKRE5vSEFxak43dUtFMUdKeVhmQSJ9)
+<img src="https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvdXBsb2FkZWQvaW1nXzJ3ODdIWDRKRE5vSEFxak43dUtFMUdKeVhmQSJ9" width="150" />
+
 
 # SoftSpot
 
