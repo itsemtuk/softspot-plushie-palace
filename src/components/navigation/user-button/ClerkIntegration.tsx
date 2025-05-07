@@ -2,13 +2,14 @@
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useEffect } from 'react';
 import { useClerkSync } from '@/hooks/useClerkSync';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 export const ClerkButtonComponent = () => {
   // Safely access Clerk hooks
   let userValue;
   let clerkValue;
   let clerkSyncValue;
+  const { toast } = useToast();
   
   try {
     // These hooks will throw an error if used outside ClerkProvider
@@ -37,6 +38,9 @@ export const ClerkButtonComponent = () => {
         localStorage.setItem('authStatus', 'authenticated');
         localStorage.setItem('currentUsername', userValue.user.username || userValue.user.firstName || 'User');
         
+        // Store profile data for synchronization
+        localStorage.setItem('userBio', userValue.user.unsafeMetadata?.bio as string || '');
+        
         // Notify user of successful sign-in if this is a new session
         const lastNotifiedSignIn = localStorage.getItem('lastNotifiedSignIn');
         const currentTime = new Date().getTime();
@@ -50,6 +54,21 @@ export const ClerkButtonComponent = () => {
         
         // Dispatch event to notify components of auth state change
         window.dispatchEvent(new Event('clerk-auth-change'));
+        
+        // Listen for profileImageUrl changes
+        const checkForAvatarChanges = () => {
+          const storedAvatarUrl = localStorage.getItem('userAvatarUrl');
+          if (storedAvatarUrl !== userValue?.user?.imageUrl) {
+            localStorage.setItem('userAvatarUrl', userValue?.user?.imageUrl || '');
+            // Dispatch event to notify components of profile image change
+            window.dispatchEvent(new Event('profile-image-change'));
+          }
+        };
+        
+        // Check for avatar changes every 30 seconds
+        const intervalId = setInterval(checkForAvatarChanges, 30000);
+        
+        return () => clearInterval(intervalId);
       } else if (userValue?.isLoaded && !userValue?.isSignedIn) {
         // Handle sign-out or unauthenticated state
         console.log("User not signed in with Clerk");

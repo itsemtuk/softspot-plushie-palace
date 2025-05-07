@@ -1,141 +1,159 @@
 
-import { useFallbackProfileSettings } from "./useFallbackProfileSettings";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { useUser, useClerk } from "@clerk/clerk-react";
+import { useToast } from "@/hooks/use-toast";
+
+interface ProfileSettingsFormData {
+  username: string;
+  bio: string;
+  email: string;
+  phone?: string;
+  avatarUrl: string;
+  instagram?: string;
+  twitter?: string;
+  youtube?: string;
+  isPrivate?: boolean;
+  hideFromSearch?: boolean;
+  showActivityStatus?: boolean;
+  showCollection?: boolean;
+  showWishlist?: boolean;
+  receiveEmailUpdates?: boolean;
+  receiveMarketingEmails?: boolean;
+  receiveWishlistAlerts?: boolean;
+}
 
 export const useProfileSettings = () => {
-  const isClerkConfigured = !!localStorage.getItem('usingClerk');
-  
-  if (!isClerkConfigured) {
-    return useFallbackProfileSettings();
-  }
-  
-  // This will only be accessed if Clerk is configured
-  // We use dynamic imports to avoid Clerk errors when it's not configured
-  const { useState, useEffect, useCallback } = require("react");
-  const { useUser } = require("@clerk/clerk-react");
-  const { useForm } = require("react-hook-form");
-  const { zodResolver } = require("@hookform/resolvers/zod");
-  const { toast } = require("@/components/ui/use-toast");
-  const { plushieTypes, plushieBrands } = require("@/components/onboarding/onboardingData");
-  const z = require("zod");
+  const { user, isLoaded: isUserLoaded, isSignedIn } = useUser();
+  const { session } = useClerk();
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("basic-info");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSynced, setIsSynced] = useState(false);
 
-  const profileFormSchema = z.object({
-    username: z.string().min(3, {
-      message: "Username must be at least 3 characters.",
-    }),
-    bio: z.string().max(160).optional(),
-    plushieTypes: z.array(z.string()).optional().default([]),
-    plushieBrands: z.array(z.string()).optional().default([]),
-    profilePicture: z.string().optional(),
-    isPrivate: z.boolean().default(false),
-  });
-
-  const { user, isLoaded } = useUser();
-  const [isLoading, setIsLoading] = useState(false);
-
-  const form = useForm({
-    resolver: zodResolver(profileFormSchema),
+  const form = useForm<ProfileSettingsFormData>({
     defaultValues: {
       username: "",
       bio: "",
-      profilePicture: "",
-      plushieTypes: [],
-      plushieBrands: [],
+      email: "",
+      phone: "",
+      avatarUrl: "",
       isPrivate: false,
-    },
+      hideFromSearch: true,
+      showActivityStatus: true,
+      showCollection: true,
+      showWishlist: true,
+      receiveEmailUpdates: true,
+      receiveMarketingEmails: false,
+    }
   });
 
-  const loadUserData = useCallback(() => {
-    if (isLoaded && user) {
-      try {
-        console.log("Loading user data:", user);
-        const existingInterests = user?.unsafeMetadata?.plushieInterests as string[] || [];
-        
-        const existingTypeIDs = plushieTypes
-          .filter(type => existingInterests.includes(type.label))
-          .map(type => type.id);
-        
-        const existingBrandIDs = plushieBrands
-          .filter(brand => existingInterests.includes(brand.label))
-          .map(brand => brand.id);
-        
-        form.reset({
-          username: user?.username || "",
-          bio: user?.unsafeMetadata?.bio as string || "",
-          profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
-          plushieTypes: existingTypeIDs,
-          plushieBrands: existingBrandIDs,
-          isPrivate: user?.unsafeMetadata?.isPrivate as boolean || false,
-        });
-        
-        console.log("Form reset with data:", {
-          username: user?.username || "",
-          bio: user?.unsafeMetadata?.bio as string || "",
-          profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
-          plushieTypes: existingTypeIDs,
-          plushieBrands: existingBrandIDs,
-          isPrivate: user?.unsafeMetadata?.isPrivate as boolean || false,
-        });
-      } catch (error) {
-        console.error("Error loading user profile data:", error);
-      }
-    }
-  }, [isLoaded, user, form]);
-
+  // Load user data from Clerk when available
   useEffect(() => {
-    loadUserData();
-  }, [loadUserData]);
+    if (isUserLoaded && isSignedIn && user) {
+      const loadProfileData = async () => {
+        try {
+          // Populate form with Clerk user data
+          form.reset({
+            username: user.username || user.firstName || "",
+            bio: user.unsafeMetadata?.bio as string || "",
+            email: user.emailAddresses[0]?.emailAddress || "",
+            phone: user.phoneNumbers[0]?.phoneNumber || "",
+            avatarUrl: user.imageUrl || "",
+            instagram: user.unsafeMetadata?.instagram as string || "",
+            twitter: user.unsafeMetadata?.twitter as string || "",
+            youtube: user.unsafeMetadata?.youtube as string || "",
+            isPrivate: user.unsafeMetadata?.isPrivate as boolean || false,
+            hideFromSearch: user.unsafeMetadata?.hideFromSearch as boolean || true,
+            showActivityStatus: user.unsafeMetadata?.showActivityStatus as boolean || true,
+            showCollection: user.unsafeMetadata?.showCollection as boolean || true,
+            showWishlist: user.unsafeMetadata?.showWishlist as boolean || true,
+            receiveEmailUpdates: user.unsafeMetadata?.receiveEmailUpdates as boolean || true,
+            receiveMarketingEmails: user.unsafeMetadata?.receiveMarketingEmails as boolean || false,
+          });
+          
+          setIsSynced(true);
+        } catch (error) {
+          console.error("Error loading profile data:", error);
+          toast({
+            variant: "destructive",
+            title: "Error loading profile",
+            description: "Could not load your profile information. Please try again."
+          });
+        }
+      };
 
-  const onSubmit = async (data) => {
-    setIsLoading(true);
+      loadProfileData();
+    }
+  }, [isUserLoaded, isSignedIn, user]);
+
+  // Save profile data
+  const saveProfile = async (data: ProfileSettingsFormData) => {
+    if (!user) return;
+    
+    setIsSubmitting(true);
+    
     try {
-      if (!user) {
-        throw new Error("User not found");
-      }
-      
-      console.log("Submitting profile data:", data);
-      
-      const selectedTypes = plushieTypes
-        .filter(type => data.plushieTypes?.includes(type.id))
-        .map(type => type.label);
-      
-      const selectedBrands = plushieBrands
-        .filter(brand => data.plushieBrands?.includes(brand.id))
-        .map(brand => brand.label);
-      
-      const plushieInterests = [...selectedTypes, ...selectedBrands];
-      
-      // Update the user profile
+      // Save unsafe metadata to the user
       await user.update({
         username: data.username,
         unsafeMetadata: {
-          ...user.unsafeMetadata,
-          bio: data.bio || "",
-          profilePicture: data.profilePicture || "",
-          plushieInterests,
+          bio: data.bio,
+          instagram: data.instagram,
+          twitter: data.twitter,
+          youtube: data.youtube,
           isPrivate: data.isPrivate,
-          onboardingCompleted: true,
+          hideFromSearch: data.hideFromSearch,
+          showActivityStatus: data.showActivityStatus,
+          showCollection: data.showCollection,
+          showWishlist: data.showWishlist,
+          receiveEmailUpdates: data.receiveEmailUpdates,
+          receiveMarketingEmails: data.receiveMarketingEmails,
         },
       });
-
-      console.log("Profile updated successfully");
       
-      // Force reload user data to ensure changes are reflected
-      await user.reload();
+      // Update profile image if changed
+      if (data.avatarUrl && data.avatarUrl !== user.imageUrl) {
+        // For avatar URLs starting with data:, this is a file upload
+        if (data.avatarUrl.startsWith('data:')) {
+          const response = await fetch(data.avatarUrl);
+          const blob = await response.blob();
+          const file = new File([blob], "profile-image.png", { type: "image/png" });
+          await user.setProfileImage({ file });
+        } else {
+          // For URL-based avatars
+          await user.setProfileImage({ url: data.avatarUrl });
+        }
+      }
       
-      // Reload form data after update
-      loadUserData();
+      // Update localStorage with user settings 
+      localStorage.setItem('currentUsername', data.username);
+      localStorage.setItem('userAvatarUrl', user.imageUrl);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile settings have been saved."
+      });
+      
     } catch (error) {
-      console.error("Error updating profile:", error);
-      throw error; // Re-throw for component to handle
+      console.error("Error saving profile:", error);
+      toast({
+        variant: "destructive",
+        title: "Error saving profile",
+        description: "Could not save your profile information. Please try again."
+      });
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return {
     form,
-    isLoading,
-    onSubmit,
-    loadUserData,
+    isSubmitting,
+    isSynced,
+    activeTab,
+    setActiveTab,
+    saveProfile,
+    user
   };
 };

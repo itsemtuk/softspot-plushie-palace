@@ -1,105 +1,127 @@
-
-import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ImageUploadResult } from "@/types/marketplace";
-import { Camera, Upload, Facebook, Image } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import React, { useRef } from 'react';
+import { ImageIcon } from 'lucide-react';
+import { ImageUploadResult } from '@/types/marketplace';
 
 interface ImageUploaderProps {
-  onImageUploaded?: (imageUrl: string) => void;
-  onImageSelect?: (result: ImageUploadResult) => void;
+  onImageSelect: (result: ImageUploadResult) => void;
+  multiple?: boolean;
+  children?: React.ReactNode;
+  className?: string;
 }
 
-export const ImageUploader = ({ onImageUploaded, onImageSelect }: ImageUploaderProps) => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
+const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, multiple = false, children, className = "" }) => {
+  const fileInput = useRef<HTMLInputElement>(null);
+  const dropZone = useRef<HTMLDivElement>(null);
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          variant: "destructive",
-          title: "File too large",
-          description: "Please select an image under 5MB"
-        });
-        return;
-      }
-
-      try {
-        const reader = new FileReader();
-        reader.onloadend = () => {
-          const imageUrl = reader.result as string;
-          
-          // Call the appropriate callback based on which was provided
-          if (onImageUploaded) {
-            onImageUploaded(imageUrl);
-          }
-          
-          if (onImageSelect) {
-            onImageSelect({
-              url: imageUrl,
-              name: file.name,
-              size: file.size,
-              type: file.type
-            });
-          }
-          
-          setIsDialogOpen(false);
-        };
-        reader.readAsDataURL(file);
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Upload failed",
-          description: "There was an error uploading your image"
-        });
-      }
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (dropZone.current) {
+      dropZone.current.classList.add('border-softspot-500', 'bg-softspot-50');
     }
   };
 
-  return (
-    <>
-      <Button 
-        onClick={() => setIsDialogOpen(true)}
-        className="w-full h-32 border-2 border-dashed"
-      >
-        <Camera className="w-6 h-6 mr-2" />
-        Choose Image
-      </Button>
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (dropZone.current) {
+      dropZone.current.classList.remove('border-softspot-500', 'bg-softspot-50');
+    }
+  };
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Upload Image</DialogTitle>
-          </DialogHeader>
-          <div className="grid grid-cols-2 gap-4">
-            <Card className="cursor-pointer hover:bg-gray-50">
-              <CardContent className="p-6 text-center">
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  id="file-upload"
-                  onChange={handleFileUpload}
-                />
-                <label htmlFor="file-upload" className="cursor-pointer">
-                  <Upload className="w-8 h-8 mx-auto mb-2" />
-                  <p>Upload from device</p>
-                </label>
-              </CardContent>
-            </Card>
-            
-            <Card className="cursor-pointer hover:bg-gray-50">
-              <CardContent className="p-6 text-center">
-                <Facebook className="w-8 h-8 mx-auto mb-2" />
-                <p>Import from Facebook</p>
-              </CardContent>
-            </Card>
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    if (dropZone.current) {
+      dropZone.current.classList.remove('border-softspot-500', 'bg-softspot-50');
+    }
+
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      const files = Array.from(e.dataTransfer.files);
+      handleSelectedFiles(files);
+    }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const files = Array.from(e.target.files);
+      handleSelectedFiles(files);
+    }
+  };
+
+  const handleSelectedFiles = (files: File[]) => {
+    if (!multiple && files.length > 1) {
+      console.warn("Only one file is allowed.");
+      return;
+    }
+
+    files.forEach(selectedFile => {
+      if (!selectedFile.type.startsWith('image/')) {
+        console.warn("Only image files are supported.");
+        const result: ImageUploadResult = {
+          url: '',
+          success: false,
+          error: "Only image files are supported.",
+          file: selectedFile,
+          type: selectedFile.type,
+          name: selectedFile.name
+        };
+        onImageSelect(result);
+        return;
+      }
+
+      if (fileInput.current?.files) {
+        const selectedFile = fileInput.current.files[0];
+        
+        if (selectedFile) {
+          const reader = new FileReader();
+          
+          reader.onload = (event) => {
+            if (event.target?.result) {
+              const imageUrl = event.target.result.toString();
+              
+              // Create the result object with the proper type
+              const result: ImageUploadResult = {
+                url: imageUrl,
+                success: true,
+                file: selectedFile
+              };
+              
+              onImageSelect(result);
+            }
+          };
+          
+          reader.readAsDataURL(selectedFile);
+        }
+      }
+    });
+  };
+
+  const renderDropZone = () => (
+    <div
+      ref={dropZone}
+      className={`relative border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors ${className}`}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      onClick={() => fileInput.current?.click()}
+    >
+      <input
+        type="file"
+        accept="image/*"
+        multiple={multiple}
+        className="hidden"
+        ref={fileInput}
+        onChange={handleFileChange}
+      />
+      <div className="flex flex-col items-center justify-center">
+        <ImageIcon className="h-6 w-6 text-gray-400 mb-2" />
+        <p className="text-sm text-gray-500">
+          Drag and drop an image here, or click to select a file
+        </p>
+        {children}
+      </div>
+    </div>
   );
+
+  return renderDropZone();
 };
+
+export default ImageUploader;

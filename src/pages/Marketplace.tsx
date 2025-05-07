@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,7 @@ import { MobileFilterDrawer } from "@/components/marketplace/MobileFilterDrawer"
 import { SortOptions } from "@/components/marketplace/SortOptions";
 import { FilterChips } from "@/components/marketplace/FilterChips";
 import { QuickSellBanner } from "@/components/marketplace/QuickSellBanner";
-import { MarketplacePlushie } from "@/types/marketplace";
+import { MarketplacePlushie } from '@/types/marketplace';
 import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
 import { getMarketplaceListings, saveMarketplaceListings } from "@/utils/storage/localStorageUtils";
 import { useNavigate } from "react-router-dom";
@@ -43,6 +42,7 @@ const Marketplace = () => {
   const { user } = useUser();
   const isMobile = useIsMobile();
   const itemsPerPage = 10;
+  const { toast } = useToast();
 
   const loadMarketplaceData = () => {
     setIsLoading(true);

@@ -16,6 +16,8 @@ const defaultAvatars: AvatarOption[] = [
   { id: 'dog', src: '/assets/avatars/dog-avatar.png', bgColor: 'bg-yellow-100' },
   { id: 'unicorn', src: '/assets/avatars/unicorn-avatar.png', bgColor: 'bg-purple-100' },
   { id: 'penguin', src: '/assets/avatars/penguin-avatar.png', bgColor: 'bg-blue-200' },
+  { id: 'fox', src: '/assets/avatars/fox-avatar.png', bgColor: 'bg-orange-100' },
+  { id: 'panda', src: '/assets/avatars/panda-avatar.png', bgColor: 'bg-gray-100' },
 ];
 
 interface AvatarSelectorProps {
