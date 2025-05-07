@@ -40,9 +40,9 @@ export const ImageUploader = ({ onImageUploaded, onImageSelect }: ImageUploaderP
           if (onImageSelect) {
             onImageSelect({
               url: imageUrl,
-              type: file.type,
               name: file.name,
-              size: file.size
+              size: file.size,
+              type: file.type
             });
           }
           

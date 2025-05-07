@@ -16,7 +16,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Filter, Search, Heart, MessageSquare, Stream, ShoppingBag, LayersIcon, Users, Play } from "lucide-react";
+import { Filter, Search, Heart, MessageSquare, LayoutGrid, ShoppingBag, Layers, Users, Play } from "lucide-react";
 import { MarketplacePlushie } from '@/types/marketplace';
 import { getAllUserPosts } from '@/utils/postStorage';
 import { getMarketplaceListings } from '@/utils/storage/localStorageUtils';
@@ -207,7 +207,7 @@ const Discover = () => {
             className={`px-4 py-3 font-medium mr-2 flex items-center whitespace-nowrap ${activeTab === 'feed' ? 'text-softspot-500 border-b-2 border-softspot-500' : 'text-gray-700 hover:text-softspot-400'}`}
             onClick={() => handleTabChange('feed')}
           >
-            <Stream className="w-4 h-4 mr-2" />
+            <LayoutGrid className="w-4 h-4 mr-2" />
             Feed
           </button>
           <button 
@@ -221,7 +221,7 @@ const Discover = () => {
             className={`px-4 py-3 font-medium mr-2 flex items-center whitespace-nowrap ${activeTab === 'collections' ? 'text-softspot-500 border-b-2 border-softspot-500' : 'text-gray-700 hover:text-softspot-400'}`}
             onClick={() => handleTabChange('collections')}
           >
-            <LayersIcon className="w-4 h-4 mr-2" />
+            <Layers className="w-4 h-4 mr-2" />
             Collections
           </button>
           <button 
@@ -449,7 +449,7 @@ const Discover = () => {
             {collections.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center py-16">
                 <div className="bg-softspot-100 p-6 rounded-full mb-4">
-                  <LayersIcon className="h-12 w-12 text-softspot-400" />
+                  <Layers className="h-12 w-12 text-softspot-400" />
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">No collections yet</h3>
                 <p className="text-gray-600 text-center max-w-md">

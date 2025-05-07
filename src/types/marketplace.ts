@@ -1,3 +1,4 @@
+
 export interface WishlistItem {
   id: string;
   name: string;
@@ -50,6 +51,8 @@ export interface MarketplacePlushie {
   location?: string;
   deliveryCost?: number;
   deliveryMethod?: string; // Added for TradeRequestDialog
+  discount?: number; // Added for Discover page
+  originalPrice?: number; // Added for Discover page
 }
 
 export interface Post extends MarketplacePlushie {
@@ -77,8 +80,11 @@ export interface PostCreationData {
 
 // Types for image upload
 export interface ImageUploadResult {
-  success: boolean;
-  url?: string;
+  url: string;
+  name?: string;
+  size?: number;
+  type?: string;
+  success?: boolean;
   error?: string;
 }
 
