@@ -1,307 +1,392 @@
 
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { 
-  Collapsible,
-  CollapsibleTrigger,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
+import { Slider } from "@/components/ui/slider";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Slider } from "@/components/ui/slider"; 
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { 
-  Package, 
-  Palette, 
-  Shirt, 
-  PawPrint,
-  Box,
-  ChevronDown,
-  ChevronRight,
-  Truck,
-  CheckCircle,
-  Zap
-} from "lucide-react";
+  Accordion, 
+  AccordionContent, 
+  AccordionItem, 
+  AccordionTrigger 
+} from "@/components/ui/accordion";
 import { MarketplaceFilters } from "@/types/marketplace";
-
-const colors = [
-  { label: "Red", value: "red" },
-  { label: "Blue", value: "blue" },
-  { label: "Pink", value: "pink" },
-  { label: "Purple", value: "purple" },
-  { label: "Brown", value: "brown" },
-  { label: "White", value: "white" },
-  { label: "Black", value: "black" },
-];
-
-const materials = [
-  { label: "Cotton", value: "cotton" },
-  { label: "Polyester", value: "polyester" },
-  { label: "Minky", value: "minky" },
-  { label: "Plush", value: "plush" },
-  { label: "Fur", value: "fur" },
-  { label: "Velvet", value: "velvet" },
-];
-
-const fillings = [
-  { label: "Polyester Fill", value: "polyester-fill" },
-  { label: "Cotton", value: "cotton" },
-  { label: "Beans", value: "beans" },
-  { label: "Foam", value: "foam" },
-];
-
-const species = [
-  { label: "Bears", value: "bear" },
-  { label: "Cats", value: "cat" },
-  { label: "Dogs", value: "dog" },
-  { label: "Rabbits", value: "rabbit" },
-  { label: "Dragons", value: "dragon" },
-  { label: "Unicorns", value: "unicorn" },
-  { label: "Other", value: "other" },
-];
-
-const brands = [
-  { label: "Build-A-Bear", value: "build-a-bear" },
-  { label: "Squishmallows", value: "squishmallows" },
-  { label: "Jellycat", value: "jellycat" },
-  { label: "Gund", value: "gund" },
-  { label: "Ty", value: "ty" },
-  { label: "Other", value: "other" },
-];
-
-const conditions = [
-  { label: "New with tags", value: "new-with-tags" },
-  { label: "New", value: "new" },
-  { label: "Like New", value: "like-new" },
-  { label: "Good", value: "good" },
-  { label: "Fair", value: "fair" },
-  { label: "Poor", value: "poor" },
-];
+import { ChevronRight } from "lucide-react";
 
 interface FilterPanelProps {
   filters: MarketplaceFilters;
   onFilterChange: (filters: MarketplaceFilters) => void;
-  className?: string;
-  priceRange?: [number, number];
-  setPriceRange?: (range: [number, number]) => void;
-  freeShippingOnly?: boolean;
-  setFreeShippingOnly?: (value: boolean) => void;
-  verifiedSellersOnly?: boolean;
-  setVerifiedSellersOnly?: (value: boolean) => void;
+  priceRange: [number, number];
+  setPriceRange: (range: [number, number]) => void;
+  freeShippingOnly: boolean;
+  setFreeShippingOnly: (value: boolean) => void;
+  verifiedSellersOnly: boolean;
+  setVerifiedSellersOnly: (value: boolean) => void;
 }
 
-export function FilterPanel({ 
-  filters, 
-  onFilterChange, 
-  className = "",
-  priceRange = [0, 100],
+const colorOptions = [
+  { value: "red", label: "Red" },
+  { value: "blue", label: "Blue" },
+  { value: "green", label: "Green" },
+  { value: "yellow", label: "Yellow" },
+  { value: "purple", label: "Purple" },
+  { value: "pink", label: "Pink" },
+  { value: "brown", label: "Brown" },
+  { value: "black", label: "Black" },
+  { value: "white", label: "White" },
+  { value: "multi", label: "Multicolor" },
+];
+
+const materialOptions = [
+  { value: "plush", label: "Plush" },
+  { value: "cotton", label: "Cotton" },
+  { value: "polyester", label: "Polyester" },
+  { value: "minky", label: "Minky" },
+  { value: "fleece", label: "Fleece" },
+  { value: "fur", label: "Fur" },
+  { value: "wool", label: "Wool" },
+];
+
+const fillingOptions = [
+  { value: "cotton", label: "Cotton" },
+  { value: "polyester", label: "Polyester Fiberfill" },
+  { value: "memory foam", label: "Memory Foam" },
+  { value: "beans", label: "Beans" },
+  { value: "pellets", label: "Pellets" },
+];
+
+const speciesOptions = [
+  { value: "bear", label: "Bear" },
+  { value: "cat", label: "Cat" },
+  { value: "dog", label: "Dog" },
+  { value: "rabbit", label: "Rabbit" },
+  { value: "dinosaur", label: "Dinosaur" },
+  { value: "bird", label: "Bird" },
+  { value: "mythical", label: "Mythical Creature" },
+  { value: "other", label: "Other" },
+];
+
+const brandOptions = [
+  { value: "jellycat", label: "Jellycat" },
+  { value: "sanrio", label: "Sanrio" },
+  { value: "squishmallows", label: "Squishmallows" },
+  { value: "build-a-bear", label: "Build-A-Bear" },
+  { value: "ty", label: "TY" },
+  { value: "gund", label: "GUND" },
+  { value: "steiff", label: "Steiff" },
+];
+
+const conditionOptions = [
+  { value: "new", label: "New with Tags" },
+  { value: "like new", label: "Like New" },
+  { value: "good", label: "Good" },
+  { value: "fair", label: "Fair" },
+  { value: "vintage", label: "Vintage" },
+];
+
+export function FilterPanel({
+  filters,
+  onFilterChange,
+  priceRange,
   setPriceRange,
-  freeShippingOnly = false,
+  freeShippingOnly,
   setFreeShippingOnly,
-  verifiedSellersOnly = false,
-  setVerifiedSellersOnly
+  verifiedSellersOnly,
+  setVerifiedSellersOnly,
 }: FilterPanelProps) {
-  const [openSections, setOpenSections] = useState<string[]>(["price", "condition"]);
-
-  const toggleSection = (section: string) => {
-    setOpenSections(prev => 
-      prev.includes(section) 
-        ? prev.filter(s => s !== section)
-        : [...prev, section]
-    );
-  };
-
-  const updateFilter = (category: keyof MarketplaceFilters, value: string) => {
-    const currentValues = filters[category] as string[] || [];
-    const newValues = currentValues.includes(value)
-      ? currentValues.filter(v => v !== value)
-      : [...currentValues, value];
+  const handleFilterChange = (category: keyof MarketplaceFilters, value: string, isChecked: boolean) => {
+    const currentValues = filters[category] || [];
+    
+    let newValues;
+    if (isChecked) {
+      newValues = [...currentValues, value];
+    } else {
+      newValues = currentValues.filter(v => v !== value);
+    }
     
     onFilterChange({
       ...filters,
-      [category]: newValues,
+      [category]: newValues
     });
   };
-
-  const FilterSection = ({ 
-    title, 
-    icon: Icon, 
-    items, 
-    category 
-  }: { 
-    title: string;
-    icon: React.ComponentType<any>;
-    items: { label: string; value: string }[];
-    category: keyof MarketplaceFilters;
-  }) => {
-    const isOpen = openSections.includes(title.toLowerCase());
-    
-    return (
-      <Collapsible 
-        open={isOpen} 
-        onOpenChange={() => toggleSection(title.toLowerCase())}
-        className="border-b border-gray-100 py-3"
-      >
-        <CollapsibleTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className="w-full flex items-center justify-between p-0 hover:bg-transparent"
-          >
-            <div className="flex items-center gap-2 text-gray-700">
-              <Icon className="h-4 w-4 text-softspot-400" />
-              <span>{title}</span>
-            </div>
-            {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pt-2 pb-1 space-y-2">
-          {items.map(item => (
-            <div key={item.value} className="flex items-center space-x-2 py-1">
-              <Checkbox 
-                id={`${String(category)}-${item.value}`}
-                checked={(filters[category] as string[] || []).includes(item.value)}
-                onCheckedChange={() => updateFilter(category, item.value)}
-              />
-              <Label 
-                htmlFor={`${String(category)}-${item.value}`}
-                className="text-sm text-gray-700 cursor-pointer"
-              >
-                {item.label}
-              </Label>
-            </div>
-          ))}
-        </CollapsibleContent>
-      </Collapsible>
-    );
+  
+  const handleResetFilters = () => {
+    onFilterChange({});
+    setPriceRange([0, 100]);
+    setFreeShippingOnly(false);
+    setVerifiedSellersOnly(false);
   };
-
+  
+  const isFilterSelected = (category: keyof MarketplaceFilters, value: string) => {
+    return (filters[category] || []).includes(value);
+  };
+  
   return (
-    <div className={`bg-white rounded-lg shadow-sm p-4 ${className}`}>
-      <div className="mb-4">
-        <Label htmlFor="search" className="text-sm font-medium mb-1.5 block">Search within results</Label>
-        <div className="relative">
-          <Input 
-            id="search"
-            placeholder="Search plushies..."
-            className="pl-9"
+    <div className="bg-white rounded-lg shadow-sm p-4">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="font-semibold text-lg">Filters</h3>
+        <Button 
+          onClick={handleResetFilters} 
+          variant="link" 
+          className="text-gray-500 hover:text-softspot-500 p-0 h-auto text-sm"
+        >
+          Reset All
+        </Button>
+      </div>
+      
+      {/* Price Range */}
+      <div className="mb-6">
+        <h4 className="font-medium mb-2">Price Range</h4>
+        <div className="mb-4 px-1">
+          <Slider
+            defaultValue={[priceRange[0], priceRange[1]]}
+            value={[priceRange[0], priceRange[1]]}
+            onValueChange={(value) => setPriceRange(value as [number, number])}
+            min={0}
+            max={100}
+            step={1}
+            className="mb-2"
           />
-          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-gray-400"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+          <div className="flex justify-between items-center">
+            <span className="text-sm font-medium">${priceRange[0]}</span>
+            <span className="text-sm font-medium">${priceRange[1]}</span>
           </div>
         </div>
       </div>
-
-      {/* Price Range Section */}
-      <Collapsible 
-        open={openSections.includes("price")} 
-        onOpenChange={() => toggleSection("price")}
-        className="border-b border-gray-100 py-3"
-      >
-        <CollapsibleTrigger asChild>
-          <Button 
-            variant="ghost" 
-            className="w-full flex items-center justify-between p-0 hover:bg-transparent"
-          >
-            <div className="flex items-center gap-2 text-gray-700">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-softspot-400"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v12"></path><path d="M8 12h8"></path></svg>
-              <span>Price Range</span>
-            </div>
-            {openSections.includes("price") ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-          </Button>
-        </CollapsibleTrigger>
-        <CollapsibleContent className="pt-4 pb-2">
-          <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm text-gray-700">${priceRange[0]}</span>
-              <span className="text-sm text-gray-700">${priceRange[1]}</span>
-            </div>
-            {setPriceRange && (
-              <Slider
-                defaultValue={priceRange}
-                max={200}
-                step={5}
-                onValueChange={(values) => setPriceRange(values as [number, number])}
-                className="mt-1"
-              />
-            )}
-          </div>
-        </CollapsibleContent>
-      </Collapsible>
-
-      <FilterSection 
-        title="Condition" 
-        icon={() => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4 text-softspot-400"><path d="M8.8 19A9 9 0 1 0 4 12.8L2 22Z"></path></svg>} 
-        items={conditions} 
-        category="condition"
-      />
       
-      <FilterSection 
-        title="Colors" 
-        icon={Palette} 
-        items={colors} 
-        category="color"
-      />
+      <Separator className="mb-4" />
       
-      <FilterSection 
-        title="Materials" 
-        icon={Shirt} 
-        items={materials} 
-        category="material"
-      />
-      
-      <FilterSection 
-        title="Fillings" 
-        icon={Box} 
-        items={fillings} 
-        category="filling"
-      />
-      
-      <FilterSection 
-        title="Species" 
-        icon={PawPrint} 
-        items={species} 
-        category="species"
-      />
-      
-      <FilterSection 
-        title="Brands" 
-        icon={Package} 
-        items={brands} 
-        category="brands"
-      />
-
-      <div className="mt-4 space-y-4">
-        {setFreeShippingOnly && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Truck className="h-4 w-4 text-softspot-400" />
-              <Label htmlFor="free-shipping" className="text-sm text-gray-700">Free Shipping</Label>
-            </div>
-            <Switch 
-              id="free-shipping" 
-              checked={freeShippingOnly} 
+      {/* Shipping Options */}
+      <div className="mb-6">
+        <h4 className="font-medium mb-2">Shipping Options</h4>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="free-shipping"
+              checked={freeShippingOnly}
               onCheckedChange={setFreeShippingOnly}
             />
+            <Label htmlFor="free-shipping" className="text-sm font-normal cursor-pointer">Free Shipping Only</Label>
           </div>
-        )}
-
-        {setVerifiedSellersOnly && (
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="h-4 w-4 text-softspot-400" />
-              <Label htmlFor="verified-sellers" className="text-sm text-gray-700">Verified Sellers</Label>
-            </div>
-            <Switch 
-              id="verified-sellers" 
+        </div>
+      </div>
+      
+      <Separator className="mb-4" />
+      
+      {/* Seller Options */}
+      <div className="mb-6">
+        <h4 className="font-medium mb-2">Seller Options</h4>
+        <div className="space-y-2">
+          <div className="flex items-center space-x-2">
+            <Checkbox 
+              id="verified-sellers"
               checked={verifiedSellersOnly}
               onCheckedChange={setVerifiedSellersOnly}
             />
+            <Label htmlFor="verified-sellers" className="text-sm font-normal cursor-pointer">Verified Sellers Only</Label>
           </div>
-        )}
+        </div>
       </div>
-
-      <Button className="w-full mt-6 bg-softspot-500 hover:bg-softspot-600">
+      
+      <Separator className="mb-4" />
+      
+      {/* Color Filter */}
+      <Accordion type="multiple" defaultValue={["colors"]} className="w-full">
+        <AccordionItem value="colors" className="border-none">
+          <AccordionTrigger className="py-2 hover:no-underline">
+            <h4 className="font-medium">Colors</h4>
+          </AccordionTrigger>
+          <AccordionContent className="pt-1 pb-2">
+            <div className="space-y-2">
+              {colorOptions.map(option => (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`color-${option.value}`}
+                    checked={isFilterSelected("color", option.value)}
+                    onCheckedChange={(checked) => 
+                      handleFilterChange("color", option.value, checked as boolean)
+                    }
+                  />
+                  <Label 
+                    htmlFor={`color-${option.value}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+      
+      <Separator className="my-2" />
+      
+      {/* Material Filter */}
+      <Accordion type="multiple" className="w-full">
+        <AccordionItem value="materials" className="border-none">
+          <AccordionTrigger className="py-2 hover:no-underline">
+            <h4 className="font-medium">Materials</h4>
+          </AccordionTrigger>
+          <AccordionContent className="pt-1 pb-2">
+            <div className="space-y-2">
+              {materialOptions.map(option => (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`material-${option.value}`}
+                    checked={isFilterSelected("material", option.value)}
+                    onCheckedChange={(checked) => 
+                      handleFilterChange("material", option.value, checked as boolean)
+                    }
+                  />
+                  <Label 
+                    htmlFor={`material-${option.value}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+      
+      <Separator className="my-2" />
+      
+      {/* Filling Filter */}
+      <Accordion type="multiple" className="w-full">
+        <AccordionItem value="filling" className="border-none">
+          <AccordionTrigger className="py-2 hover:no-underline">
+            <h4 className="font-medium">Filling</h4>
+          </AccordionTrigger>
+          <AccordionContent className="pt-1 pb-2">
+            <div className="space-y-2">
+              {fillingOptions.map(option => (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`filling-${option.value}`}
+                    checked={isFilterSelected("filling", option.value)}
+                    onCheckedChange={(checked) => 
+                      handleFilterChange("filling", option.value, checked as boolean)
+                    }
+                  />
+                  <Label 
+                    htmlFor={`filling-${option.value}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+      
+      <Separator className="my-2" />
+      
+      {/* Species Filter */}
+      <Accordion type="multiple" className="w-full">
+        <AccordionItem value="species" className="border-none">
+          <AccordionTrigger className="py-2 hover:no-underline">
+            <h4 className="font-medium">Species</h4>
+          </AccordionTrigger>
+          <AccordionContent className="pt-1 pb-2">
+            <div className="space-y-2">
+              {speciesOptions.map(option => (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`species-${option.value}`}
+                    checked={isFilterSelected("species", option.value)}
+                    onCheckedChange={(checked) => 
+                      handleFilterChange("species", option.value, checked as boolean)
+                    }
+                  />
+                  <Label 
+                    htmlFor={`species-${option.value}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+      
+      <Separator className="my-2" />
+      
+      {/* Brands Filter */}
+      <Accordion type="multiple" className="w-full">
+        <AccordionItem value="brands" className="border-none">
+          <AccordionTrigger className="py-2 hover:no-underline">
+            <h4 className="font-medium">Brands</h4>
+          </AccordionTrigger>
+          <AccordionContent className="pt-1 pb-2">
+            <div className="space-y-2">
+              {brandOptions.map(option => (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`brand-${option.value}`}
+                    checked={isFilterSelected("brands", option.value)}
+                    onCheckedChange={(checked) => 
+                      handleFilterChange("brands", option.value, checked as boolean)
+                    }
+                  />
+                  <Label 
+                    htmlFor={`brand-${option.value}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+      
+      <Separator className="my-2" />
+      
+      {/* Condition Filter */}
+      <Accordion type="multiple" className="w-full">
+        <AccordionItem value="condition" className="border-none">
+          <AccordionTrigger className="py-2 hover:no-underline">
+            <h4 className="font-medium">Condition</h4>
+          </AccordionTrigger>
+          <AccordionContent className="pt-1 pb-2">
+            <div className="space-y-2">
+              {conditionOptions.map(option => (
+                <div key={option.value} className="flex items-center space-x-2">
+                  <Checkbox 
+                    id={`condition-${option.value}`}
+                    checked={isFilterSelected("condition", option.value)}
+                    onCheckedChange={(checked) => 
+                      handleFilterChange("condition", option.value, checked as boolean)
+                    }
+                  />
+                  <Label 
+                    htmlFor={`condition-${option.value}`}
+                    className="text-sm font-normal cursor-pointer"
+                  >
+                    {option.label}
+                  </Label>
+                </div>
+              ))}
+            </div>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+      
+      <Separator className="my-4" />
+      
+      <Button 
+        className="w-full bg-softspot-500 hover:bg-softspot-600"
+        size="lg"
+      >
         Apply Filters
       </Button>
     </div>

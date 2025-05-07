@@ -21,21 +21,22 @@ const BioInput = ({ form }: BioInputProps) => {
       name="bio"
       render={({ field }) => (
         <FormItem>
-          <FormLabel className="text-lg">Tell us about yourself</FormLabel>
-          <p className="text-sm text-muted-foreground mb-4">
-            Share a bit about your plushie journey (optional)
-          </p>
+          <FormLabel className="text-sm font-medium text-gray-700">Bio</FormLabel>
           <FormControl>
             <Textarea 
-              placeholder="I've been collecting plushies since I was a kid..."
+              placeholder="Tell the community about your plushie passion..."
               className="resize-none"
               maxLength={160}
+              rows={3}
               {...field}
             />
           </FormControl>
-          <p className="text-xs text-muted-foreground mt-2 text-right">
-            {field.value ? field.value.length : 0}/160
-          </p>
+          <div className="flex justify-between mt-1">
+            <p className="text-xs text-gray-500">Tell the community about your plushie passion</p>
+            <p className="text-xs text-gray-500">
+              {field.value ? field.value.length : 0}/160
+            </p>
+          </div>
           <FormMessage />
         </FormItem>
       )}

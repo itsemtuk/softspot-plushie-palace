@@ -26,6 +26,7 @@ export const useProfileSettings = () => {
     plushieTypes: z.array(z.string()).optional().default([]),
     plushieBrands: z.array(z.string()).optional().default([]),
     profilePicture: z.string().optional(),
+    isPrivate: z.boolean().default(false),
   });
 
   const { user, isLoaded } = useUser();
@@ -39,6 +40,7 @@ export const useProfileSettings = () => {
       profilePicture: "",
       plushieTypes: [],
       plushieBrands: [],
+      isPrivate: false,
     },
   });
 
@@ -62,6 +64,7 @@ export const useProfileSettings = () => {
           profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
           plushieTypes: existingTypeIDs,
           plushieBrands: existingBrandIDs,
+          isPrivate: user?.unsafeMetadata?.isPrivate as boolean || false,
         });
         
         console.log("Form reset with data:", {
@@ -70,6 +73,7 @@ export const useProfileSettings = () => {
           profilePicture: user?.unsafeMetadata?.profilePicture as string || user?.imageUrl || "",
           plushieTypes: existingTypeIDs,
           plushieBrands: existingBrandIDs,
+          isPrivate: user?.unsafeMetadata?.isPrivate as boolean || false,
         });
       } catch (error) {
         console.error("Error loading user profile data:", error);
@@ -108,17 +112,13 @@ export const useProfileSettings = () => {
           bio: data.bio || "",
           profilePicture: data.profilePicture || "",
           plushieInterests,
+          isPrivate: data.isPrivate,
           onboardingCompleted: true,
         },
       });
 
       console.log("Profile updated successfully");
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile information has been updated successfully.",
-      });
-
       // Force reload user data to ensure changes are reflected
       await user.reload();
       
@@ -126,11 +126,6 @@ export const useProfileSettings = () => {
       loadUserData();
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({
-        title: "Error",
-        description: "There was a problem updating your profile. Please try again.",
-        variant: "destructive",
-      });
       throw error; // Re-throw for component to handle
     } finally {
       setIsLoading(false);

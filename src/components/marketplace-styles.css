@@ -1,0 +1,54 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  .content-card {
+    @apply transition-all duration-300;
+  }
+  .content-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  }
+  
+  .filter-chip.active {
+    @apply bg-softspot-500 text-white;
+  }
+  
+  .filter-chip {
+    @apply bg-gray-100 text-gray-800 hover:bg-softspot-100;
+  }
+  
+  .tab-button.active {
+    @apply border-b-2 border-softspot-500 text-softspot-500;
+  }
+  
+  .hide-scrollbar {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+  }
+  
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+  
+  .avatar-option:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px #7e69ab;
+  }
+  
+  .avatar-option.selected {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 3px #7e69ab;
+  }
+  
+  .toggle-checkbox:checked {
+    @apply right-0 border-softspot-500;
+    background-color: #7e69ab;
+  }
+  
+  .toggle-checkbox:checked + .toggle-label {
+    @apply bg-softspot-500;
+  }
+}

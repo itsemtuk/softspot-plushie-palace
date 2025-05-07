@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { plushieTypes, plushieBrands } from "@/components/onboarding/onboardingData";
 import * as z from "zod";
 
@@ -14,6 +14,7 @@ const profileFormSchema = z.object({
   plushieTypes: z.array(z.string()).optional().default([]),
   plushieBrands: z.array(z.string()).optional().default([]),
   profilePicture: z.string().optional(),
+  isPrivate: z.boolean().default(false),
 });
 
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
@@ -40,6 +41,7 @@ export const useFallbackProfileSettings = () => {
       profilePicture: "",
       plushieTypes: [],
       plushieBrands: [],
+      isPrivate: false,
     },
   });
 
@@ -69,6 +71,7 @@ export const useFallbackProfileSettings = () => {
         profilePicture: profilePicture,
         plushieTypes: existingTypeIDs,
         plushieBrands: existingBrandIDs,
+        isPrivate: savedProfile?.isPrivate || false,
       });
       
       console.log("Form reset with data:", {
@@ -77,6 +80,7 @@ export const useFallbackProfileSettings = () => {
         profilePicture,
         plushieTypes: existingTypeIDs,
         plushieBrands: existingBrandIDs,
+        isPrivate: savedProfile?.isPrivate || false,
       });
     } catch (error) {
       console.error("Error loading user profile data:", error);
@@ -115,23 +119,14 @@ export const useFallbackProfileSettings = () => {
       localStorage.setItem('userProfile', JSON.stringify({
         bio: data.bio || "",
         interests: plushieInterests,
+        isPrivate: data.isPrivate || false,
         onboardingCompleted: true,
       }));
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile information has been updated successfully.",
-      });
       
       // Reload form data after update
       loadUserData();
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({
-        title: "Error",
-        description: "There was a problem updating your profile. Please try again.",
-        variant: "destructive",
-      });
       throw error; // Re-throw for component to handle
     } finally {
       setIsLoading(false);
