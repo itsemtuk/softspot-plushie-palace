@@ -1,3 +1,5 @@
+![SoftSpot Logo](https://img.clerk.com/eyJ0eXBlIjoicHJveHkiLCJzcmMiOiJodHRwczovL2ltYWdlcy5jbGVyay5kZXYvdXBsb2FkZWQvaW1nXzJ3ODdIWDRKRE5vSEFxak43dUtFMUdKeVhmQSJ9)
+
 # SoftSpot
 
 Welcome to **SoftSpot** - a community-driven social media platform and marketplace designed exclusively for plushie enthusiasts and collectors to share, sell, and communicate.
