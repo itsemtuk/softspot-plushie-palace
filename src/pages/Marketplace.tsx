@@ -4,18 +4,22 @@ import { Navbar } from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
 import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";
+import { ProductCard } from "@/components/marketplace/ProductCard";
+import { MobileFilterDrawer } from "@/components/marketplace/MobileFilterDrawer";
+import { SortOptions } from "@/components/marketplace/SortOptions";
+import { FilterChips } from "@/components/marketplace/FilterChips";
+import { QuickSellBanner } from "@/components/marketplace/QuickSellBanner";
 import { MarketplacePlushie } from "@/types/marketplace";
 import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
 import { getMarketplaceListings, saveMarketplaceListings } from "@/utils/storage/localStorageUtils";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
-import { Heart, MessageSquare, Bookmark, RefreshCw } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileNav } from "@/components/navigation/MobileNav";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/toaster";
 import { Spinner } from "@/components/ui/spinner";
+import { ChevronLeft, ChevronRight, Plus, Sliders, RefreshCw } from "lucide-react";
+import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 
 const Marketplace = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -27,9 +31,18 @@ const Marketplace = () => {
   const [isRefreshing, setIsRefreshing] = useState<boolean>(false);
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [filters, setFilters] = useState<any>({});
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100]);
+  const [freeShippingOnly, setFreeShippingOnly] = useState<boolean>(false);
+  const [verifiedSellersOnly, setVerifiedSellersOnly] = useState<boolean>(false);
+  const [sortOption, setSortOption] = useState<string>("relevance");
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [activeFilters, setActiveFilters] = useState<{ id: string; label: string; active: boolean }[]>([]);
+  
   const navigate = useNavigate();
   const { user } = useUser();
   const isMobile = useIsMobile();
+  const itemsPerPage = 10;
 
   const loadMarketplaceData = () => {
     setIsLoading(true);
@@ -63,7 +76,8 @@ const Marketplace = () => {
             tags: ["teddy", "bear", "brown"],
             timestamp: new Date().toISOString(),
             species: "Bear",
-            location: "New York"
+            location: "New York",
+            deliveryCost: 0
           },
           {
             id: "plushie-2",
@@ -85,7 +99,35 @@ const Marketplace = () => {
             tags: ["unicorn", "pink", "magical"],
             timestamp: new Date().toISOString(),
             species: "Mythical",
-            location: "Los Angeles"
+            location: "Los Angeles",
+            deliveryCost: 5.99,
+            discount: 15,
+            originalPrice: 39.99
+          },
+          {
+            id: "plushie-3",
+            userId: "default",
+            image: "https://images.unsplash.com/photo-1556012018-51c8c387300f",
+            title: "Jellycat Bunny",
+            username: "bunnylover",
+            likes: 120,
+            comments: 18,
+            price: 24.99,
+            forSale: true,
+            condition: "New",
+            description: "Super soft and cuddly Jellycat bunny.",
+            color: "Beige",
+            material: "Plush",
+            brand: "Jellycat",
+            size: "Small",
+            filling: "Polyester",
+            tags: ["bunny", "rabbit", "jellycat"],
+            timestamp: new Date().toISOString(),
+            species: "Rabbit",
+            location: "Chicago",
+            deliveryCost: 0,
+            discount: 20,
+            originalPrice: 29.99
           }
         ];
         console.log("Creating default items");
@@ -101,7 +143,10 @@ const Marketplace = () => {
           // Ensure deliveryCost is a number
           deliveryCost: typeof plushie.deliveryCost === 'number' ? plushie.deliveryCost : 0,
           // Only add timestamp if it doesn't exist
-          ...(plushie.timestamp ? {} : { timestamp: new Date().toISOString() })
+          ...(plushie.timestamp ? {} : { timestamp: new Date().toISOString() }),
+          // Add discount and originalPrice if they don't exist
+          discount: plushie.discount || 0,
+          originalPrice: plushie.originalPrice || null
         }));
         
         setPlushies(plushiesWithRequiredFields);
@@ -135,6 +180,140 @@ const Marketplace = () => {
     loadMarketplaceData();
   }, []);
 
+  // Filter and sort products when dependencies change
+  useEffect(() => {
+    if (plushies.length === 0) return;
+    
+    let result = [...plushies];
+    
+    // Apply category filter
+    if (selectedCategory !== 'all') {
+      result = result.filter(plushie => 
+        plushie.tags?.includes(selectedCategory) || 
+        plushie.species === selectedCategory
+      );
+    }
+    
+    // Apply filters
+    if (filters.color && filters.color.length > 0) {
+      result = result.filter(plushie => 
+        filters.color.includes(plushie.color?.toLowerCase())
+      );
+    }
+    
+    if (filters.material && filters.material.length > 0) {
+      result = result.filter(plushie => 
+        filters.material.includes(plushie.material?.toLowerCase())
+      );
+    }
+    
+    if (filters.filling && filters.filling.length > 0) {
+      result = result.filter(plushie => 
+        filters.filling.includes(plushie.filling?.toLowerCase())
+      );
+    }
+    
+    if (filters.species && filters.species.length > 0) {
+      result = result.filter(plushie => 
+        filters.species.includes(plushie.species?.toLowerCase())
+      );
+    }
+    
+    if (filters.brands && filters.brands.length > 0) {
+      result = result.filter(plushie => 
+        filters.brands.includes(plushie.brand?.toLowerCase())
+      );
+    }
+    
+    if (filters.condition && filters.condition.length > 0) {
+      result = result.filter(plushie => 
+        filters.condition.includes(plushie.condition?.toLowerCase())
+      );
+    }
+    
+    // Apply price range
+    result = result.filter(plushie => 
+      plushie.price >= priceRange[0] && plushie.price <= priceRange[1]
+    );
+    
+    // Apply free shipping filter
+    if (freeShippingOnly) {
+      result = result.filter(plushie => 
+        plushie.deliveryCost === 0
+      );
+    }
+    
+    // Apply sorting
+    switch (sortOption) {
+      case 'newest':
+        result.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        break;
+      case 'price-low':
+        result.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        result.sort((a, b) => b.price - a.price);
+        break;
+      case 'popular':
+        result.sort((a, b) => b.likes - a.likes);
+        break;
+      default:
+        // relevance or other: no specific sorting
+        break;
+    }
+    
+    // Update active filters for filter chips
+    const newActiveFilters = [];
+    
+    if (selectedCategory !== 'all') {
+      newActiveFilters.push({
+        id: `category-${selectedCategory}`,
+        label: `Category: ${selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}`,
+        active: true
+      });
+    }
+    
+    if (freeShippingOnly) {
+      newActiveFilters.push({
+        id: 'free-shipping',
+        label: 'Free Shipping',
+        active: true
+      });
+    }
+    
+    if (priceRange[0] > 0 || priceRange[1] < 100) {
+      newActiveFilters.push({
+        id: 'price-range',
+        label: `$${priceRange[0]} - $${priceRange[1]}`,
+        active: true
+      });
+    }
+    
+    Object.entries(filters).forEach(([key, values]) => {
+      if (Array.isArray(values) && values.length > 0) {
+        values.forEach(value => {
+          newActiveFilters.push({
+            id: `${key}-${value}`,
+            label: `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`,
+            active: true
+          });
+        });
+      }
+    });
+    
+    setActiveFilters(newActiveFilters);
+    setFilteredPlushies(result);
+    
+  }, [
+    plushies, 
+    selectedCategory, 
+    filters, 
+    priceRange, 
+    freeShippingOnly, 
+    verifiedSellersOnly, 
+    sortOption
+  ]);
+
   const handleRefresh = () => {
     setIsRefreshing(true);
     loadMarketplaceData();
@@ -142,15 +321,7 @@ const Marketplace = () => {
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategory(category);
-    
-    if (category === 'all') {
-      setFilteredPlushies(plushies);
-    } else {
-      const filtered = plushies.filter((plushie) => 
-        plushie.tags?.includes(category)
-      );
-      setFilteredPlushies(filtered);
-    }
+    setCurrentPage(1);
   };
 
   const handlePlushieClick = (plushie: MarketplacePlushie) => {
@@ -158,7 +329,7 @@ const Marketplace = () => {
     setIsDetailsOpen(true);
   };
 
-  const handleAddToWishlist = (id: string, event: React.MouseEvent) => {
+  const handleWishlistToggle = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
     
     if (!user) {
@@ -187,6 +358,47 @@ const Marketplace = () => {
   const handleSellPlushie = () => {
     navigate('/marketplace/sell');
   };
+  
+  const handleFilterChange = (newFilters: any) => {
+    setFilters(newFilters);
+    setCurrentPage(1);
+  };
+  
+  const handleFilterChipClick = (id: string) => {
+    // Remove the filter
+    if (id.startsWith('category-')) {
+      setSelectedCategory('all');
+    } else if (id === 'free-shipping') {
+      setFreeShippingOnly(false);
+    } else if (id === 'price-range') {
+      setPriceRange([0, 100]);
+    } else {
+      // Handle specific filters
+      const [category, value] = id.split('-');
+      const currentValues = filters[category] || [];
+      const newValues = currentValues.filter((v: string) => v !== value);
+      
+      setFilters({
+        ...filters,
+        [category]: newValues
+      });
+    }
+  };
+  
+  const resetFilters = () => {
+    setFilters({});
+    setPriceRange([0, 100]);
+    setFreeShippingOnly(false);
+    setVerifiedSellersOnly(false);
+    setSelectedCategory('all');
+    setSortOption('relevance');
+  };
+  
+  // Pagination logic
+  const totalPages = Math.ceil(filteredPlushies.length / itemsPerPage);
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const currentItems = filteredPlushies.slice(startIndex, endIndex);
 
   if (error) {
     return (
@@ -208,7 +420,7 @@ const Marketplace = () => {
     <div className="min-h-screen bg-gray-50">
       {isMobile ? <MobileNav /> : <Navbar />}
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col space-y-4">
           <div className="flex justify-between items-center">
             <h1 className="text-3xl font-bold">Marketplace</h1>
@@ -236,13 +448,58 @@ const Marketplace = () => {
             onCategoryChange={handleCategoryChange}
           />
           
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <FilterPanel 
-              filters={{}} 
-              onFilterChange={() => {}} 
+          {/* Quick Sell Banner (only on desktop) */}
+          {!isMobile && <QuickSellBanner />}
+          
+          {/* Mobile Filter & Sort Options */}
+          <div className="lg:hidden bg-white rounded-lg shadow-sm p-3 flex items-center justify-between">
+            <MobileFilterDrawer 
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              freeShippingOnly={freeShippingOnly}
+              setFreeShippingOnly={setFreeShippingOnly}
+              verifiedSellersOnly={verifiedSellersOnly}
+              setVerifiedSellersOnly={setVerifiedSellersOnly}
+              onApplyFilters={() => {}}
+              onResetFilters={resetFilters}
             />
+            <SortOptions sortOption={sortOption} onSortChange={setSortOption} />
+          </div>
+          
+          {/* Active Filter Chips */}
+          {activeFilters.length > 0 && (
+            <div className="bg-white rounded-lg shadow-sm p-3">
+              <FilterChips
+                chips={activeFilters}
+                onChipClick={handleFilterChipClick}
+              />
+            </div>
+          )}
+          
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Desktop Filter Panel */}
+            <div className="hidden lg:block">
+              <FilterPanel 
+                filters={filters} 
+                onFilterChange={handleFilterChange}
+                priceRange={priceRange}
+                setPriceRange={setPriceRange}
+                freeShippingOnly={freeShippingOnly}
+                setFreeShippingOnly={setFreeShippingOnly}
+                verifiedSellersOnly={verifiedSellersOnly}
+                setVerifiedSellersOnly={setVerifiedSellersOnly}
+              />
+            </div>
             
-            <div className="md:col-span-3">
+            {/* Products Grid */}
+            <div className="lg:col-span-3">
+              {/* Desktop Sort Options */}
+              <div className="hidden lg:flex justify-end mb-4">
+                <SortOptions sortOption={sortOption} onSortChange={setSortOption} />
+              </div>
+              
               {isLoading ? (
                 <div className="flex justify-center items-center h-64">
                   <Spinner size="lg" />
@@ -250,64 +507,81 @@ const Marketplace = () => {
               ) : filteredPlushies.length === 0 ? (
                 <div className="text-center py-20">
                   <h3 className="text-xl font-medium text-gray-600">No plushies found</h3>
-                  <p className="text-gray-500 mt-2">Try a different category or check back later</p>
+                  <p className="text-gray-500 mt-2">Try different filters or check back later</p>
+                  <Button
+                    variant="outline"
+                    onClick={resetFilters}
+                    className="mt-4"
+                  >
+                    Reset Filters
+                  </Button>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {filteredPlushies.map((plushie) => (
-                    <Card 
-                      key={plushie.id} 
-                      className="overflow-hidden cursor-pointer hover:shadow-md transition-shadow bg-white"
-                      onClick={() => handlePlushieClick(plushie)}
-                    >
-                      <div className="aspect-square relative">
-                        <img 
-                          src={plushie.image} 
-                          alt={plushie.title}
-                          className="object-cover w-full h-full"
-                          onError={(e) => {
-                            const target = e.target as HTMLImageElement;
-                            target.src = "https://images.unsplash.com/photo-1516067154453-6194ba34d121";
-                          }}
-                        />
-                        {plushie.condition && (
-                          <Badge className="absolute top-2 left-2 bg-softspot-500 hover:bg-softspot-600">
-                            {plushie.condition}
-                          </Badge>
-                        )}
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="absolute top-2 right-2 bg-white/80 hover:bg-white rounded-full"
-                          onClick={(e) => handleAddToWishlist(plushie.id, e)}
-                        >
-                          <Bookmark 
-                            className={`h-5 w-5 ${wishlist.includes(plushie.id) ? 'fill-softspot-500 text-softspot-500' : 'text-gray-600'}`}
-                          />
-                        </Button>
-                      </div>
-                      <CardContent className="p-4">
-                        <h3 className="font-medium truncate">{plushie.title}</h3>
-                        <p className="text-softspot-500 font-bold">
-                          ${typeof plushie.price === 'number' ? plushie.price.toFixed(2) : '0.00'}
-                        </p>
-                      </CardContent>
-                      <CardFooter className="px-4 py-2 border-t flex justify-between text-sm text-gray-500">
-                        <div className="flex items-center space-x-4">
-                          <span className="flex items-center">
-                            <Heart className="h-4 w-4 mr-1" />
-                            {plushie.likes || 0}
-                          </span>
-                          <span className="flex items-center">
-                            <MessageSquare className="h-4 w-4 mr-1" />
-                            {plushie.comments || 0}
-                          </span>
-                        </div>
-                        <span>{plushie.location || 'Location unknown'}</span>
-                      </CardFooter>
-                    </Card>
-                  ))}
-                </div>
+                <>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    {currentItems.map((plushie) => (
+                      <ProductCard
+                        key={plushie.id}
+                        product={plushie}
+                        onProductClick={handlePlushieClick}
+                        onWishlistToggle={handleWishlistToggle}
+                        isWishlisted={wishlist.includes(plushie.id)}
+                      />
+                    ))}
+                  </div>
+                  
+                  {/* Pagination Controls */}
+                  {totalPages > 1 && (
+                    <div className="flex justify-center mt-8">
+                      <Pagination>
+                        <PaginationContent>
+                          <PaginationItem>
+                            <PaginationPrevious 
+                              href="#" 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage > 1) setCurrentPage(currentPage - 1);
+                              }} 
+                              aria-disabled={currentPage === 1}
+                              className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                            />
+                          </PaginationItem>
+                          
+                          {[...Array(totalPages)].map((_, i) => (
+                            <PaginationItem key={i} className={totalPages > 5 && (i > 2 && i < totalPages - 2) && i !== currentPage - 1 ? 'hidden md:inline-flex' : ''}>
+                              {(i < 2 || i > totalPages - 3 || i === currentPage - 1) ? (
+                                <PaginationLink 
+                                  href="#" 
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    setCurrentPage(i + 1);
+                                  }}
+                                  isActive={currentPage === i + 1}
+                                >
+                                  {i + 1}
+                                </PaginationLink>
+                              ) : (i === 2 && currentPage > 4) ? (
+                                <PaginationEllipsis />
+                              ) : null}
+                            </PaginationItem>
+                          ))}
+                          
+                          <PaginationItem>
+                            <PaginationNext 
+                              href="#" 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+                              }}
+                              aria-disabled={currentPage === totalPages}
+                              className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                            />
+                          </PaginationItem>
+                        </PaginationContent>
+                      </Pagination>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -321,6 +595,16 @@ const Marketplace = () => {
           onClose={() => setIsDetailsOpen(false)}
         />
       )}
+      
+      {/* Quick Sell Floating Button (Mobile) */}
+      <div className="lg:hidden fixed bottom-20 right-4 z-50">
+        <Button
+          onClick={handleSellPlushie} 
+          className="bg-softspot-500 hover:bg-softspot-600 text-white h-14 w-14 rounded-full shadow-lg p-0"
+        >
+          <Plus className="h-6 w-6" />
+        </Button>
+      </div>
     </div>
   );
 };

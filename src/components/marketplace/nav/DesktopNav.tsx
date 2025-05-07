@@ -13,7 +13,8 @@ import {
   Package, 
   Tag, 
   Star, 
-  PawPrint
+  PawPrint,
+  ChevronDown
 } from "lucide-react";
 import { brandData, speciesData } from "./data";
 
@@ -27,7 +28,7 @@ export function DesktopNav({ selectedCategory, onCategoryChange }: DesktopNavPro
   const isActive = (category: string) => selectedCategory === category;
 
   return (
-    <div className="hidden lg:flex items-center h-12 space-x-8">
+    <div className="hidden lg:flex items-center h-12 space-x-4">
       <NavigationMenu>
         <NavigationMenuList>
           <NavigationMenuItem>
@@ -110,9 +111,6 @@ export function DesktopNav({ selectedCategory, onCategoryChange }: DesktopNavPro
                     {animal.name}
                   </Button>
                 ))}
-                <Link to="/animals" className="block p-2 hover:bg-gray-50 rounded-md col-span-2 text-softspot-500 font-medium">
-                  View all animals →
-                </Link>
               </div>
             </NavigationMenuContent>
           </NavigationMenuItem>

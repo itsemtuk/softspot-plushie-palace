@@ -1,90 +1,12 @@
 
-import { createRoot } from 'react-dom/client';
-import App from './App.tsx';
-import './index.css';
-import { ClerkProvider } from '@clerk/clerk-react';
+import React from 'react'
+import ReactDOM from 'react-dom/client'
+import App from './App.tsx'
+import './index.css'
+import './components/marketplace/marketplace-styles.css'
 
-// Use the provided Clerk publishable key
-const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
-const isClerkConfigured = true; // Force Clerk to be configured
-
-console.log("Clerk configuration status:", { 
-  publishableKeyExists: !!PUBLISHABLE_KEY,
-  isConfigured: isClerkConfigured,
-  key: PUBLISHABLE_KEY
-});
-
-// Create the root element
-const root = createRoot(document.getElementById("root")!);
-
-// Reset cache and prepare storage
-const prepareStorage = () => {
-  try {
-    // Get current cache version - this helps manage breaking changes
-    const cacheVersion = localStorage.getItem('cacheVersion') || '0';
-    const currentVersion = '1.0.3'; // Increment to force cache clear
-    
-    // Check for version mismatch or corrupted state
-    if (cacheVersion !== currentVersion) {
-      console.log(`Cache version mismatch: ${cacheVersion} vs ${currentVersion}. Clearing cache.`);
-      // Clear storage to prevent stale data issues
-      localStorage.clear();
-      sessionStorage.clear();
-      // Set the new cache version
-      localStorage.setItem('cacheVersion', currentVersion);
-    }
-    
-    // Set timestamp for cache invalidation
-    localStorage.setItem('lastSyncTimestamp', new Date().toISOString());
-    
-    // Mark storage as prepared
-    window.isStoragePrepared = true;
-    
-    // Force enable Clerk for testing
-    localStorage.setItem('usingClerk', 'true');
-    
-    console.log("Storage prepared successfully, Clerk configured:", isClerkConfigured, "Key:", PUBLISHABLE_KEY);
-  } catch (e) {
-    console.error("Error preparing storage:", e);
-  }
-};
-
-prepareStorage();
-
-// Always render with Clerk for testing sign-in/sign-up pages
-root.render(
-  <ClerkProvider 
-    publishableKey={PUBLISHABLE_KEY}
-    appearance={{
-      variables: {
-        colorPrimary: "#7e69ab",
-        colorText: "#333333",
-      },
-      elements: {
-        socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-        socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
-        socialButtonsProviderIcon: "w-8 h-8", // Increased icon size
-        formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
-        footerActionLink: "text-softspot-500 hover:text-softspot-600",
-        card: "shadow-lg border border-gray-200 rounded-lg",
-        identityPreview: "bg-softspot-50",
-        formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
-        formField: "mb-6", // Add more spacing between fields
-        socialButtonsBlockButtonText: "text-base font-medium" // Make text more visible
-      },
-      layout: {
-        socialButtonsVariant: "iconButton",
-        socialButtonsPlacement: "bottom"
-      }
-    }}
-  >
+ReactDOM.createRoot(document.getElementById('root')!).render(
+  <React.StrictMode>
     <App />
-  </ClerkProvider>
-);
-
-// Add typings for window object
-declare global {
-  interface Window {
-    isStoragePrepared?: boolean;
-  }
-}
+  </React.StrictMode>,
+)
