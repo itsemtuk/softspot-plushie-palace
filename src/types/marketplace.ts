@@ -1,3 +1,4 @@
+
 export interface ImageUploadResult {
   url: string;
   success: boolean;
@@ -77,6 +78,7 @@ export interface Wishlist {
   name?: string;
   description?: string;
   items?: WishlistItem[];
+  privacy?: string;
 }
 
 export interface UserProfile {
@@ -84,6 +86,7 @@ export interface UserProfile {
   username: string;
   bio?: string;
   profileImageUrl?: string;
+  followers?: number;
 }
 
 export interface Post {
@@ -94,4 +97,66 @@ export interface Post {
   imageUrl: string;
   createdAt: string;
   likes: number;
+  tags?: string[];
+  image?: string;
+}
+
+export interface Comment {
+  id: string;
+  userId: string;
+  username: string;
+  text: string;
+  timestamp: string;
+  isLiked?: boolean;
+  likes: number;
+}
+
+export interface MarketplaceFilters {
+  minPrice?: number;
+  maxPrice?: number;
+  condition?: string[];
+  color?: string[];
+  brand?: string[];
+  material?: string[];
+  sorting?: string;
+  inStock?: boolean;
+  freeShipping?: boolean;
+  hasOffers?: boolean;
+  searchTerm?: string;
+}
+
+export interface MarketplacePlushie extends ExtendedPost {
+  deliveryMethod?: DeliveryMethod;
+  filling?: PlushieFilling;
+  species?: PlushieSpecies;
+  brand?: string;
+}
+
+export type PlushieCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor';
+export type PlushieMaterial = 'Cotton' | 'Plush' | 'Fleece' | 'Polyester' | 'Minky' | 'Other';
+export type PlushieFilling = 'Polyester Fiberfill' | 'Cotton' | 'Beans' | 'Memory Foam' | 'Other';
+export type PlushieSpecies = 'Bear' | 'Cat' | 'Dog' | 'Rabbit' | 'Dinosaur' | 'Dragon' | 'Fox' | 'Panda' | 'Character' | 'Other';
+export type DeliveryMethod = 'Shipping' | 'Local Pickup' | 'Both';
+
+export type Currency = {
+  code: string;
+  name: string;
+  symbol: string;
+};
+
+export interface PrivacySetting {
+  id: string;
+  name: string;
+  description: string;
+  value: boolean;
+}
+
+export interface UserPrivacySettings {
+  privateProfile: boolean;
+  hideFromSearch: boolean;
+  showOnlineStatus: boolean;
+  allowDirectMessages: boolean;
+  allowComments: boolean;
+  showWishlist: boolean;
+  showCollection: boolean;
 }

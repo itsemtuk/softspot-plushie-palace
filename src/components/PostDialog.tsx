@@ -2,8 +2,7 @@
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
-import { ExtendedPost, Comment as MarketplaceComment } from "@/types/marketplace";
-import { Comment } from "./post-dialog/PostCommentItem";
+import { ExtendedPost, Comment } from "@/types/marketplace";
 import { useEffect, useRef } from "react";
 
 interface PostDialogProps {
@@ -14,7 +13,7 @@ interface PostDialogProps {
 }
 
 // Convert MarketplaceComment to our unified Comment interface
-function convertToUnifiedComment(comment: MarketplaceComment | any): Comment {
+function convertToUnifiedComment(comment: Comment | any): Comment {
   // Ensure we have a valid comment object
   if (!comment) return {
     id: `comment-${Date.now()}-${Math.random()}`,

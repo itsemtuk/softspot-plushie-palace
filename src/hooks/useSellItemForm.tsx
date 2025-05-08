@@ -6,12 +6,12 @@ import { useUser } from "@clerk/clerk-react";
 import { toast } from "@/hooks/use-toast";
 import { 
   ImageUploadResult, 
-  MarketplacePlushie,
   PlushieCondition,
   PlushieMaterial,
   PlushieFilling,
   PlushieSpecies,
-  DeliveryMethod
+  DeliveryMethod,
+  ExtendedPost
 } from "@/types/marketplace";
 import { saveMarketplaceListings, getMarketplaceListings, getCurrentUserId, setCurrentUserId } from "@/utils/storage/localStorageUtils";
 
@@ -85,7 +85,7 @@ export const useSellItemForm = () => {
       const username = user?.username || user?.firstName || "Anonymous";
       const userId = user?.id || getCurrentUserId();
       
-      const newListing: MarketplacePlushie = {
+      const newListing: ExtendedPost = {
         ...listingData,
         id: `listing-${Date.now()}`,
         userId: userId,
@@ -94,7 +94,11 @@ export const useSellItemForm = () => {
         comments: 0,
         timestamp: new Date().toISOString(),
         forSale: true,
-        tags: [] 
+        tags: [],
+        condition: data.condition,
+        material: data.material,
+        color: data.color,
+        deliveryCost: data.deliveryCost || 0
       };
       
       console.log("Creating new listing:", newListing);

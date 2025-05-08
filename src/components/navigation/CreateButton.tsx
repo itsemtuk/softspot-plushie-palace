@@ -1,4 +1,3 @@
-
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
@@ -62,7 +61,7 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
         color: "", // Default color
         material: "", // Default material
         location: postData.location, // Include location
-        deliveryCost: 0 // Add the missing required property
+        deliveryCost: 0 // Add the required property
       };
       
       const result = await addPost(newPost);
@@ -105,6 +104,7 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
     onOpenChange(true);
   };
 
+  
   return (
     <>
       <Sheet open={isSheetOpen} onOpenChange={onOpenChange}>
