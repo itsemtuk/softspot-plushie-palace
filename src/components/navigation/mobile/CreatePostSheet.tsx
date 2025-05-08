@@ -1,11 +1,11 @@
+
 import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageIcon, ShoppingCart } from "lucide-react";
 import { useUser } from '@clerk/clerk-react';
-import { getStorage, savePost } from '@/utils/posts/postManagement';
-import { generatePostId } from '@/utils/posts/postInteraction';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface CreatePostSheetProps {
   open: boolean;
@@ -29,7 +29,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
     
     try {
       const newPost = {
-        id: generatePostId(),
+        id: `post-${Date.now()}`, // Simple ID generation
         userId: user.id,
         image: image || "https://images.unsplash.com/photo-1591561582301-7ce6588cc286",
         title: title || "My new post",
@@ -48,9 +48,10 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
         deliveryCost: 0
       };
       
-      const posts = getStorage();
-      posts.unshift(newPost);
-      savePost(posts);
+      // For now, just store in localStorage
+      const currentPosts = JSON.parse(localStorage.getItem('posts') || '[]');
+      currentPosts.unshift(newPost);
+      localStorage.setItem('posts', JSON.stringify(currentPosts));
       
       // Reset form and close
       resetForm();

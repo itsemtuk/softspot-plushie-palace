@@ -46,3 +46,8 @@ export const sharePost = async (postId: string, userId: string, username: string
     return { success: false, error };
   }
 };
+
+// Add the missing generatePostId function
+export const generatePostId = (): string => {
+  return `post-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+};

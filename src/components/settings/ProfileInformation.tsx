@@ -43,11 +43,12 @@ const ProfileInformation = () => {
                   </AvatarFallback>
                 </Avatar>
                 <div className="space-y-1 flex-1">
-                  <Label htmlFor="profilePictureUrl">Profile Picture</Label>
+                  <Label htmlFor="avatarUrl">Profile Picture</Label>
                   <Input
-                    id="profilePictureUrl"
+                    id="avatarUrl"
                     {...register("avatarUrl")}
                     placeholder="https://example.com/avatar.jpg"
+                    onChange={(e) => setAvatarUrl(e.target.value)}
                   />
                   <p className="text-sm text-gray-500">
                     Enter a URL for your profile picture
@@ -56,7 +57,15 @@ const ProfileInformation = () => {
               </div>
 
               <div className="space-y-1">
-                <UsernameInput register={register} error={errors.username} />
+                <Label htmlFor="username">Username</Label>
+                <Input
+                  id="username"
+                  {...register("username")}
+                  placeholder="Your username"
+                />
+                {errors.username && (
+                  <p className="text-red-500 text-sm">{errors.username.message?.toString()}</p>
+                )}
               </div>
 
               <div className="space-y-1">
@@ -73,7 +82,15 @@ const ProfileInformation = () => {
               </div>
 
               <div className="space-y-1">
-                <BioInput register={register} error={errors.bio} />
+                <Label htmlFor="bio">Bio</Label>
+                <Input
+                  id="bio"
+                  {...register("bio")}
+                  placeholder="Tell us about yourself..."
+                />
+                {errors.bio && (
+                  <p className="text-red-500 text-sm">{errors.bio.message?.toString()}</p>
+                )}
               </div>
             </div>
 

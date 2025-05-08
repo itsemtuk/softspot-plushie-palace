@@ -7,9 +7,28 @@ import { uploadImage, deleteImage } from '../storage/imageStorage';
 const POSTS_TABLE = 'posts';
 
 /**
+ * Gets posts from storage
+ */
+export const getStorage = (): ExtendedPost[] => {
+  return getLocalPosts();
+};
+
+/**
  * Saves a post to storage
  */
-export const savePost = async (post: ExtendedPost): Promise<{ success: boolean, error?: any }> => {
+export const savePost = async (post: ExtendedPost | ExtendedPost[]): Promise<{ success: boolean, error?: any }> => {
+  // Handle both single post and array of posts
+  if (Array.isArray(post)) {
+    try {
+      savePosts(post);
+      updateSyncTimestamp();
+      return { success: true };
+    } catch (error) {
+      console.error('Error saving posts array to localStorage:', error);
+      return { success: false, error };
+    }
+  }
+  
   if (!isSupabaseConfigured()) {
     // Fallback to local storage if Supabase is not configured
     try {

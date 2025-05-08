@@ -61,13 +61,13 @@ export interface PlushieBrand {
 
 export interface WishlistItem {
   id: string;
-  name?: string;
+  name: string;
   price?: number;
   description?: string;
   imageUrl?: string;
   linkUrl?: string;
-  priority?: number | string;
-  status?: string;
+  priority?: number | "high" | "medium" | "low";
+  status?: string | "wanted" | "purchased" | "received";
   currencyCode?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -77,11 +77,12 @@ export interface WishlistItem {
 
 export interface Wishlist {
   id: string;
-  name?: string;
+  name: string;
   description?: string;
   items?: WishlistItem[];
   privacy?: string;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface UserProfile {
@@ -113,7 +114,7 @@ export interface Comment {
   text: string;
   timestamp: string;
   isLiked?: boolean;
-  likes: number;
+  likes: number | any[];
 }
 
 export interface MarketplaceFilters {
@@ -143,8 +144,8 @@ export interface MarketplacePlushie extends ExtendedPost {
 
 export type PlushieCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor';
 export type PlushieMaterial = 'Cotton' | 'Plush' | 'Fleece' | 'Polyester' | 'Minky' | 'Other';
-export type PlushieFilling = 'Polyester Fiberfill' | 'Cotton' | 'Memory Foam' | 'Beans' | 'Other';
-export type PlushieSpecies = 'Bear' | 'Cat' | 'Dog' | 'Rabbit' | 'Dinosaur' | 'Dragon' | 'Fox' | 'Panda' | 'Character' | 'Other';
+export type PlushieFilling = 'Polyester Fiberfill' | 'Cotton' | 'Memory Foam' | 'Beans' | 'Other' | string;
+export type PlushieSpecies = 'Bear' | 'Cat' | 'Dog' | 'Rabbit' | 'Dinosaur' | 'Dragon' | 'Fox' | 'Panda' | 'Character' | 'Other' | 'Food' | 'Object' | string;
 export type DeliveryMethod = 'Shipping' | 'Local Pickup' | 'Both';
 
 export type Currency = {

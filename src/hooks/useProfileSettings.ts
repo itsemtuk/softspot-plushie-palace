@@ -121,8 +121,18 @@ export const useProfileSettings = () => {
           const file = new File([blob], "profile-image.png", { type: "image/png" });
           await user.setProfileImage({ file });
         } else {
-          // For URL-based avatars
-          await user.setProfileImage({ url: data.avatarUrl });
+          // For URL-based avatars - handle with caution as Clerk might reject some URLs
+          try {
+            // Store the URL in user metadata instead
+            await user.update({
+              unsafeMetadata: {
+                ...user.unsafeMetadata,
+                customAvatarUrl: data.avatarUrl
+              }
+            });
+          } catch (error) {
+            console.error("Failed to update profile image with URL:", error);
+          }
         }
       }
       

@@ -161,9 +161,9 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
       id: `comment-${Date.now()}`,
       userId: currentUserId,
       username: currentUsername,
-      content: text,
-      createdAt: new Date().toISOString(),
-      likes: []
+      text: text,
+      timestamp: new Date().toISOString(),
+      likes: 0
     };
     
     // Add to local state
@@ -189,29 +189,24 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
     setCommentList(prevComments => 
       prevComments.map(comment => {
         if (comment.id === commentId) {
-          // Create a proper likes array if it doesn't exist
-          const currentLikes = comment.likes || [];
           const currentUserId = localStorage.getItem('currentUserId') || 'user-1';
           
-          // Check if user has liked the comment
-          const userLikeIndex = currentLikes.findIndex(like => like.userId === currentUserId);
-          let updatedLikes = [...currentLikes];
-          let isNowLiked = comment.isLiked || false;
-          
-          if (userLikeIndex >= 0) {
+          // Convert any likes format to a number for consistency
+          let likesCount = typeof comment.likes === 'number' ? comment.likes : 
+                       Array.isArray(comment.likes) ? comment.likes.length : 0;
+                       
+          if (comment.isLiked) {
             // User already liked it, remove the like
-            updatedLikes.splice(userLikeIndex, 1);
-            isNowLiked = false;
+            likesCount = Math.max(0, likesCount - 1);
           } else {
             // User hasn't liked it yet, add the like
-            updatedLikes.push({ userId: currentUserId });
-            isNowLiked = true;
+            likesCount += 1;
           }
           
           return {
             ...comment,
-            likes: updatedLikes,
-            isLiked: isNowLiked
+            likes: likesCount,
+            isLiked: !comment.isLiked
           };
         }
         return comment;
@@ -224,13 +219,25 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
       const updatedComments = allComments.map((c: any) => {
         if (c.id === commentId) {
           const currentUserId = localStorage.getItem('currentUserId') || 'user-1';
-          const userLiked = c.likes?.some((like: any) => like.userId === currentUserId);
+          const isLiked = c.likedBy?.includes(currentUserId) || false;
           
-          if (userLiked) {
-            c.likes = c.likes.filter((like: any) => like.userId !== currentUserId);
+          let likesCount = typeof c.likes === 'number' ? c.likes : 
+                        Array.isArray(c.likes) ? c.likes.length : 0;
+                        
+          // Toggle like
+          if (isLiked) {
+            likesCount = Math.max(0, likesCount - 1);
+            c.likedBy = (c.likedBy || []).filter((id: string) => id !== currentUserId);
           } else {
-            c.likes = [...(c.likes || []), { userId: currentUserId }];
+            likesCount += 1;
+            c.likedBy = [...(c.likedBy || []), currentUserId];
           }
+          
+          return {
+            ...c,
+            likes: likesCount,
+            isLiked: !isLiked
+          };
         }
         return c;
       });
