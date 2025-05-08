@@ -96,7 +96,7 @@ export function FilterPanel({
   setVerifiedSellersOnly,
 }: FilterPanelProps) {
   const handleFilterChange = (category: keyof MarketplaceFilters, value: string, isChecked: boolean) => {
-    const currentValues = filters[category] || [];
+    const currentValues = filters[category] as string[] || [];
     
     let newValues;
     if (isChecked) {
@@ -119,7 +119,8 @@ export function FilterPanel({
   };
   
   const isFilterSelected = (category: keyof MarketplaceFilters, value: string) => {
-    return (filters[category] || []).includes(value);
+    const categoryValues = filters[category] as string[] || [];
+    return categoryValues.includes(value);
   };
   
   return (

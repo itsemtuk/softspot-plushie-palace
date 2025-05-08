@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import {
   Dialog,
@@ -15,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, MessageSquare } from "lucide-react";
-import { MarketplacePlushie, UserProfile } from '@/types/marketplace';
+import { MarketplacePlushie, UserProfile, PlushieFilling } from '@/types/marketplace';
 import { toast } from '@/components/ui/use-toast';
 
 interface TradeRequestDialogProps {
@@ -31,27 +32,21 @@ const mockFollowers: UserProfile[] = [
     username: "sarahlovesplushies", 
     profileImageUrl: "https://i.pravatar.cc/150?img=5", 
     bio: "Collector of rare plushies", 
-    followers: 123, 
-    isFollowing: false,
-    avatar: "https://i.pravatar.cc/150?img=5"
+    followers: 123
   },
   { 
     id: "user-3", 
     username: "mikeplush", 
     profileImageUrl: "https://i.pravatar.cc/150?img=12", 
     bio: "Teddy bear enthusiast", 
-    followers: 56, 
-    isFollowing: false,
-    avatar: "https://i.pravatar.cc/150?img=12"
+    followers: 56
   },
   { 
     id: "user-4", 
     username: "emmacollects", 
     profileImageUrl: "https://i.pravatar.cc/150?img=9", 
     bio: "Plushie photographer", 
-    followers: 208, 
-    isFollowing: false,
-    avatar: "https://i.pravatar.cc/150?img=9"
+    followers: 208
   }
 ];
 
@@ -70,7 +65,7 @@ const mockPlushies: MarketplacePlushie[] = [
     description: "Adorable mint green bunny, super soft",
     color: "Mint",
     material: "Plush",
-    filling: "Cotton",
+    filling: "Cotton" as PlushieFilling,
     species: "Rabbit",
     brand: "Jellycat",
     timestamp: new Date().toISOString(),
@@ -91,7 +86,7 @@ const mockPlushies: MarketplacePlushie[] = [
     description: "Limited edition anniversary teddy bear",
     color: "Brown",
     material: "Cotton",
-    filling: "Polyester",
+    filling: "Polyester Fiberfill" as PlushieFilling,
     species: "Bear",
     brand: "Build-A-Bear",
     timestamp: new Date().toISOString(),

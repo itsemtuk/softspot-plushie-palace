@@ -26,6 +26,8 @@ export interface ExtendedPost {
   material?: string;
   location?: string;
   deliveryCost: number;
+  discount?: number;
+  originalPrice?: number;
 }
 
 export type PostCreationData = {
@@ -64,7 +66,7 @@ export interface WishlistItem {
   description?: string;
   imageUrl?: string;
   linkUrl?: string;
-  priority?: number;
+  priority?: number | string;
   status?: string;
   currencyCode?: string;
   createdAt?: string;
@@ -79,6 +81,7 @@ export interface Wishlist {
   description?: string;
   items?: WishlistItem[];
   privacy?: string;
+  createdAt?: string;
 }
 
 export interface UserProfile {
@@ -87,6 +90,8 @@ export interface UserProfile {
   bio?: string;
   profileImageUrl?: string;
   followers?: number;
+  isFollowing?: boolean;
+  avatar?: string;
 }
 
 export interface Post {
@@ -116,8 +121,10 @@ export interface MarketplaceFilters {
   maxPrice?: number;
   condition?: string[];
   color?: string[];
-  brand?: string[];
+  brands?: string[];
   material?: string[];
+  filling?: string[];
+  species?: string[];
   sorting?: string;
   inStock?: boolean;
   freeShipping?: boolean;
@@ -130,11 +137,13 @@ export interface MarketplacePlushie extends ExtendedPost {
   filling?: PlushieFilling;
   species?: PlushieSpecies;
   brand?: string;
+  discount?: number;
+  originalPrice?: number;
 }
 
 export type PlushieCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor';
 export type PlushieMaterial = 'Cotton' | 'Plush' | 'Fleece' | 'Polyester' | 'Minky' | 'Other';
-export type PlushieFilling = 'Polyester Fiberfill' | 'Cotton' | 'Beans' | 'Memory Foam' | 'Other';
+export type PlushieFilling = 'Polyester Fiberfill' | 'Cotton' | 'Memory Foam' | 'Beans' | 'Other';
 export type PlushieSpecies = 'Bear' | 'Cat' | 'Dog' | 'Rabbit' | 'Dinosaur' | 'Dragon' | 'Fox' | 'Panda' | 'Character' | 'Other';
 export type DeliveryMethod = 'Shipping' | 'Local Pickup' | 'Both';
 
@@ -159,4 +168,8 @@ export interface UserPrivacySettings {
   allowComments: boolean;
   showWishlist: boolean;
   showCollection: boolean;
+  profileVisibility?: string;
+  messagePermission?: string;
+  showActivity?: boolean;
+  allowTagging?: boolean;
 }

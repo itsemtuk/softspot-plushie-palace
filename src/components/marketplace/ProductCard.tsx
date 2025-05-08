@@ -22,8 +22,8 @@ export function ProductCard({
 }: ProductCardProps) {
   // Use discount or original price if available
   const hasDiscount = typeof product.discount === 'number' && product.discount > 0;
-  const originalPrice = product.originalPrice || (hasDiscount ? product.price / (1 - product.discount / 100) : null);
-  const displayPrice = product.price.toFixed(2);
+  const originalPrice = product.originalPrice || (hasDiscount && product.price ? product.price / (1 - (product.discount || 0) / 100) : null);
+  const displayPrice = product.price?.toFixed(2) || "0.00";
   const displayOriginalPrice = originalPrice ? originalPrice.toFixed(2) : null;
   
   // Determine badge type
