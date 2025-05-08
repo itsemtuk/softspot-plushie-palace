@@ -1,4 +1,3 @@
-
 export interface ImageUploadResult {
   url: string;
   success: boolean;
@@ -66,8 +65,8 @@ export interface WishlistItem {
   description?: string;
   imageUrl?: string;
   linkUrl?: string;
-  priority?: number | "high" | "medium" | "low";
-  status?: string | "wanted" | "purchased" | "received";
+  priority?: "high" | "medium" | "low" | number;
+  status?: "wanted" | "purchased" | "received" | string;
   currencyCode?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -83,6 +82,8 @@ export interface Wishlist {
   privacy?: string;
   createdAt?: string;
   updatedAt?: string;
+  isPublic?: boolean;
+  userId?: string;
 }
 
 export interface UserProfile {
@@ -140,6 +141,7 @@ export interface MarketplacePlushie extends ExtendedPost {
   brand?: string;
   discount?: number;
   originalPrice?: number;
+  size?: string; // Adding this missing property
 }
 
 export type PlushieCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor';

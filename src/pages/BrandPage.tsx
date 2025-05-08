@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { MarketplacePlushie } from '@/types/marketplace';
@@ -24,8 +25,8 @@ const BrandPage = () => {
         color: "Beige",
         material: "Plush",
         brand: "Jellycat",
-        size: "Medium",
-        filling: "Polyester",
+        size: "Medium", // This is now properly typed in MarketplacePlushie
+        filling: "Polyester Fiberfill",
         tags: ["bunny", "jellycat", "new"],
         timestamp: new Date().toISOString(),
         species: "Rabbit",
@@ -46,8 +47,8 @@ const BrandPage = () => {
         color: "Green",
         material: "Plush",
         brand: "Jellycat",
-        size: "Small",
-        filling: "Polyester",
+        size: "Small", // This is now properly typed
+        filling: "Polyester Fiberfill",
         tags: ["food", "jellycat", "avocado"],
         timestamp: new Date().toISOString(),
         species: "Food",
@@ -68,8 +69,8 @@ const BrandPage = () => {
         color: "White",
         material: "Plush",
         brand: "Jellycat",
-        size: "Small",
-        filling: "Polyester",
+        size: "Small", // This is now properly typed
+        filling: "Polyester Fiberfill",
         tags: ["cloud", "jellycat", "cute"],
         timestamp: new Date().toISOString(),
         species: "Object",

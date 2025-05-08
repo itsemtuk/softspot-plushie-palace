@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -51,7 +50,6 @@ import {
   WishlistItem
 } from "@/types/marketplace";
 
-// Instead of modifying the entire file, let's fix the specific issue with WishlistItem
 // This function creates a proper WishlistItem object with all required properties
 const createWishlistItem = (itemData: Partial<WishlistItem>): WishlistItem => {
   return {
@@ -151,17 +149,29 @@ const WishlistManager: React.FC<WishlistManagerProps> = ({ wishlist, onUpdateWis
   };
 
   const handleEditItemClick = (itemId: string) => {
-    const selectedItem = wishlist.flatMap(w => w.items).find(item => item.id === itemId);
+    const selectedItem = wishlist.flatMap(w => w.items || []).find(item => item?.id === itemId);
     if (selectedItem) {
       setEditingItemId(itemId);
       setEditedItemName(selectedItem.name);
-      setEditedItemPrice(selectedItem.price);
+      setEditedItemPrice(selectedItem.price || 0);
       setEditedItemDescription(selectedItem.description || '');
-      setEditedItemImageUrl(selectedItem.imageUrl);
+      setEditedItemImageUrl(selectedItem.imageUrl || '');
       setEditedItemLinkUrl(selectedItem.linkUrl || '');
-      setEditedItemPriority(selectedItem.priority);
-      setEditedItemStatus(selectedItem.status);
-      setEditedItemCurrencyCode(selectedItem.currencyCode);
+      
+      // Fix the type handling for priority and status
+      if (typeof selectedItem.priority === 'string') {
+        setEditedItemPriority(selectedItem.priority as "low" | "medium" | "high");
+      } else {
+        setEditedItemPriority("medium");
+      }
+      
+      if (selectedItem.status === 'wanted' || selectedItem.status === 'purchased' || selectedItem.status === 'received') {
+        setEditedItemStatus(selectedItem.status);
+      } else {
+        setEditedItemStatus("wanted");
+      }
+      
+      setEditedItemCurrencyCode(selectedItem.currencyCode || 'USD');
       setEditedItemBrand(selectedItem.brand || '');
       setIsEditingItem(true);
     }
