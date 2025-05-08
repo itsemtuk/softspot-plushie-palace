@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   PlusSquare,
@@ -65,7 +64,8 @@ export function CreatePostSheet() {
         condition: "New", // Default condition
         color: "", // Default color
         material: "", // Default material
-        location: postData.location // Include location
+        location: postData.location, // Include location
+        deliveryCost: 0 // Add the missing required property
       };
       
       const result = await addPost(newPost);

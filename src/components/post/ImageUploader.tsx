@@ -1,3 +1,4 @@
+
 import React, { useRef } from 'react';
 import { ImageIcon } from 'lucide-react';
 import { ImageUploadResult } from '@/types/marketplace';
@@ -7,9 +8,16 @@ interface ImageUploaderProps {
   multiple?: boolean;
   children?: React.ReactNode;
   className?: string;
+  onImageUploaded?: (url: string) => void; // Added for backward compatibility
 }
 
-const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, multiple = false, children, className = "" }) => {
+export const ImageUploader: React.FC<ImageUploaderProps> = ({ 
+  onImageSelect, 
+  multiple = false, 
+  children, 
+  className = "",
+  onImageUploaded
+}) => {
   const fileInput = useRef<HTMLInputElement>(null);
   const dropZone = useRef<HTMLDivElement>(null);
 
@@ -67,30 +75,31 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, multiple =
         return;
       }
 
-      if (fileInput.current?.files) {
-        const selectedFile = fileInput.current.files[0];
-        
-        if (selectedFile) {
-          const reader = new FileReader();
+      const reader = new FileReader();
           
-          reader.onload = (event) => {
-            if (event.target?.result) {
-              const imageUrl = event.target.result.toString();
-              
-              // Create the result object with the proper type
-              const result: ImageUploadResult = {
-                url: imageUrl,
-                success: true,
-                file: selectedFile
-              };
-              
-              onImageSelect(result);
-            }
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          const imageUrl = event.target.result.toString();
+          
+          // Create the result object with the proper type
+          const result: ImageUploadResult = {
+            url: imageUrl,
+            success: true,
+            file: selectedFile,
+            type: selectedFile.type,
+            name: selectedFile.name
           };
           
-          reader.readAsDataURL(selectedFile);
+          onImageSelect(result);
+          
+          // For backward compatibility
+          if (onImageUploaded) {
+            onImageUploaded(imageUrl);
+          }
         }
-      }
+      };
+          
+      reader.readAsDataURL(selectedFile);
     });
   };
 
@@ -124,4 +133,5 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onImageSelect, multiple =
   return renderDropZone();
 };
 
+// Export default for backward compatibility
 export default ImageUploader;

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ImageUploader } from "@/components/post/ImageUploader";
+import ImageUploader from "@/components/post/ImageUploader";
 import { Label } from "@/components/ui/label";
 import { ImageUploadResult } from "@/types/marketplace";
 

@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData, ExtendedPost } from "@/types/marketplace";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { addPost } from "@/utils/posts/postManagement";
 
 // Check if Clerk is configured
@@ -61,7 +61,8 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
         condition: "New", // Default condition
         color: "", // Default color
         material: "", // Default material
-        location: postData.location // Include location
+        location: postData.location, // Include location
+        deliveryCost: 0 // Add the missing required property
       };
       
       const result = await addPost(newPost);
