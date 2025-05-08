@@ -32,19 +32,32 @@ export const useNotifications = () => useContext(NotificationsContext);
 
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const userHook = useUser();
-  const { user, isLoaded } = userHook || { user: null, isLoaded: false };
+  // Safely access useUser with a try/catch to prevent errors
+  let username = "Anonymous";
+  let userId = "";
+  let isLoaded = false;
+
+  try {
+    const userHook = useUser();
+    const { user, isLoaded: clerkIsLoaded } = userHook || { user: null, isLoaded: false };
+    isLoaded = clerkIsLoaded;
+    
+    useEffect(() => {
+      if (isLoaded && user) {
+        username = user.username || user.firstName || "Anonymous";
+        userId = user.id;
+        localStorage.setItem('currentUsername', username);
+        localStorage.setItem('currentUserId', userId);
+      }
+    }, [user, isLoaded]);
+  } catch (error) {
+    console.warn("ClerkProvider not available, using fallback user data");
+    // Fallback to localStorage if Clerk is not available
+    username = localStorage.getItem('currentUsername') || "Anonymous";
+    userId = localStorage.getItem('currentUserId') || "";
+  }
 
   const unreadCount = notifications.filter(notification => !notification.read).length;
-
-  // Sync username when user changes - only if user is loaded and exists
-  useEffect(() => {
-    if (isLoaded && user) {
-      const username = user.username || user.firstName || "Anonymous";
-      localStorage.setItem('currentUsername', username);
-      localStorage.setItem('currentUserId', user.id);
-    }
-  }, [user, isLoaded]);
 
   const addNotification = (notification: Omit<Notification, 'id' | 'read'>) => {
     const newNotification: Notification = {
