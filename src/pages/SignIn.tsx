@@ -2,24 +2,46 @@
 import { SignIn as ClerkSignIn } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { isAuthenticated } from '@/utils/auth/authState';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
+  const navigate = useNavigate();
   
-  // Force scroll to top when page loads
+  // Check if already authenticated and redirect if needed
   useEffect(() => {
-    window.scrollTo(0, 0);
+    const checkAuthAndRedirect = () => {
+      if (isAuthenticated()) {
+        console.log("User is already authenticated, redirecting to home");
+        navigate('/');
+        return true;
+      }
+      return false;
+    };
     
-    // Small delay to ensure Clerk has time to initialize
-    setTimeout(() => {
-      setIsLoading(false);
-      console.log("SignIn page - showing Clerk UI");
-    }, 500);
-  }, []);
+    // Don't show loading if already redirecting
+    if (!checkAuthAndRedirect()) {
+      // Small delay to ensure Clerk has time to initialize
+      setTimeout(() => {
+        setIsLoading(false);
+        console.log("SignIn page - showing Clerk UI");
+      }, 500);
+    }
+    
+    // Listen for auth state changes
+    const handleAuthChange = () => {
+      checkAuthAndRedirect();
+    };
+    
+    window.addEventListener('clerk-auth-change', handleAuthChange);
+    return () => {
+      window.removeEventListener('clerk-auth-change', handleAuthChange);
+    };
+  }, [navigate]);
 
   const cardStyles = isMobile ? "border-softspot-200 shadow-lg mx-4" : "border-softspot-200 shadow-lg";
   
@@ -55,6 +77,10 @@ const SignIn = () => {
           
           <CardContent>
             <ClerkSignIn 
+              routing="path"
+              path="/sign-in"
+              signUpUrl="/sign-up"
+              afterSignInUrl="/"
               appearance={{
                 elements: {
                   rootBox: "mx-auto w-full",

@@ -2,7 +2,8 @@
 import { useUser, useClerk } from '@clerk/clerk-react';
 import { useEffect } from 'react';
 import { useClerkSync } from '@/hooks/useClerkSync';
-import { useToast } from '@/hooks/use-toast';
+import { useToast } from '@/components/ui/use-toast';
+import { setAuthenticatedUser } from '@/utils/auth/authState';
 
 export const ClerkButtonComponent = () => {
   // Safely access Clerk hooks
@@ -24,6 +25,9 @@ export const ClerkButtonComponent = () => {
         isSignedIn: userValue?.isSignedIn,
         user: userValue?.user?.id
       });
+      
+      // Mark that we're using Clerk for authentication
+      localStorage.setItem('usingClerk', 'true');
     }, []);
     
     // If we successfully get the hooks, store their values in localStorage for components
@@ -31,6 +35,13 @@ export const ClerkButtonComponent = () => {
     useEffect(() => {
       if (userValue?.user && userValue.isSignedIn) {
         console.log("Clerk user signed in:", userValue.user);
+        
+        // Update centralized auth state
+        setAuthenticatedUser({
+          userId: userValue.user.id,
+          username: userValue.user.username || userValue.user.firstName || 'User',
+          provider: 'clerk'
+        });
         
         // Store basic user info for components that can't access Clerk context
         localStorage.setItem('userAvatarUrl', userValue.user.imageUrl || '');
@@ -73,7 +84,7 @@ export const ClerkButtonComponent = () => {
         // Handle sign-out or unauthenticated state
         console.log("User not signed in with Clerk");
       }
-    }, [userValue?.user, userValue?.isSignedIn, userValue?.isLoaded]);
+    }, [userValue?.user, userValue?.isSignedIn, userValue?.isLoaded, toast]);
     
     // Debug Clerk state changes
     useEffect(() => {

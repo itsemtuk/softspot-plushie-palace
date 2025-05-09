@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -26,6 +25,7 @@ import { PostDialogProvider } from './hooks/use-post-dialog';
 import { AuthWrapper } from './components/auth/AuthWrapper';
 import { useEffect } from 'react';
 import { initAuthState } from './utils/auth/authState';
+import { ClerkButtonComponent } from './components/navigation/user-button/ClerkIntegration';
 
 function App() {
   // Always assume Clerk is configured for testing
@@ -34,6 +34,7 @@ function App() {
   // Initialize auth state on app load
   useEffect(() => {
     initAuthState();
+    localStorage.setItem('usingClerk', 'true');
     
     // Listen for storage events to keep authentication state in sync across tabs
     const handleStorageChange = (event: StorageEvent) => {
@@ -101,10 +102,14 @@ function App() {
     </Routes>
   );
 
+  // Add the global ClerkButtonComponent to ensure auth state is always tracked
+  const globalAuthTracker = isClerkConfigured ? <ClerkButtonComponent /> : null;
+
   // Conditionally wrap with NotificationsProvider
   const appContent = (
     <PostDialogProvider>
       <Router>
+        {globalAuthTracker}
         {appRoutes}
         <CloudSyncStatus />
         <Toaster />

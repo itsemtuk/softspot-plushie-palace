@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,7 +17,35 @@ import { AuthWrapper } from "./auth/AuthWrapper";
 export function Navbar() {
   const isMobile = useIsMobile();
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
-  const isSignedIn = !!localStorage.getItem('currentUserId');
+  const [isSignedIn, setIsSignedIn] = useState(false);
+
+  // Update auth status whenever it changes
+  useEffect(() => {
+    const checkAuthStatus = () => {
+      const currentUserId = localStorage.getItem('currentUserId');
+      setIsSignedIn(!!currentUserId);
+    };
+    
+    // Check on mount
+    checkAuthStatus();
+    
+    // Listen for auth changes
+    const handleAuthChange = () => {
+      checkAuthStatus();
+    };
+    
+    window.addEventListener('clerk-auth-change', handleAuthChange);
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'currentUserId' || e.key === 'authStatus') {
+        checkAuthStatus();
+      }
+    });
+    
+    return () => {
+      window.removeEventListener('clerk-auth-change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
 
   // Updated to return a Promise
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {

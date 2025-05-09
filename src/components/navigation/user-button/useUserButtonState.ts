@@ -12,13 +12,43 @@ export const useUserButtonState = () => {
   const [user, setUser] = useState(null);
   const [signOut, setSignOut] = useState<(() => Promise<void>) | null>(null);
   const [updateClerkProfile, setUpdateClerkProfile] = useState<((data: any) => Promise<any>) | null>(null);
+  const [username, setUsername] = useState<string>("Anonymous");
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
   
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
-  // Get user info from centralized auth state
-  const currentUser = getCurrentUser();
-  const username = currentUser?.username || "Anonymous";
-  const avatarUrl = localStorage.getItem('userAvatarUrl') || "";
+  // Get user info from centralized auth state and update when changed
+  useEffect(() => {
+    const updateUserInfo = () => {
+      const currentUser = getCurrentUser();
+      setUsername(currentUser?.username || "Anonymous");
+      setAvatarUrl(localStorage.getItem('userAvatarUrl') || "");
+      setUserStatusState(getUserStatus());
+    };
+    
+    updateUserInfo();
+    
+    // Listen for auth changes
+    const handleAuthChange = () => {
+      updateUserInfo();
+    };
+    
+    window.addEventListener('clerk-auth-change', handleAuthChange);
+    window.addEventListener('profile-image-change', handleAuthChange);
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'userAvatarUrl' || e.key === 'currentUsername' || 
+          e.key === 'userStatus' || e.key === 'authStatus' ||
+          e.key === 'currentUserId') {
+        updateUserInfo();
+      }
+    });
+    
+    return () => {
+      window.removeEventListener('clerk-auth-change', handleAuthChange);
+      window.removeEventListener('profile-image-change', handleAuthChange);
+      window.removeEventListener('storage', handleAuthChange);
+    };
+  }, []);
 
   // Load Clerk components dynamically if configured
   useEffect(() => {
@@ -102,24 +132,6 @@ export const useUserButtonState = () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, [user, updateClerkProfile]);
-
-  // Handle auth state changes from other tabs
-  useEffect(() => {
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'authStatus' || event.key === 'currentUserId') {
-        // Force re-render on auth changes
-        setUserStatusState(prev => {
-          const newStatus = getUserStatus();
-          return newStatus !== prev ? newStatus : prev;
-        });
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
 
   const handleChangeStatus = async (newStatus: "online" | "offline" | "away" | "busy") => {
     setUserStatusState(newStatus);
