@@ -4,6 +4,8 @@
  * This ensures consistent auth state across the application
  */
 
+import { supabase } from '../supabase/client';
+
 // Constants for storage keys
 const AUTH_STATUS_KEY = 'authStatus';
 const USER_ID_KEY = 'currentUserId';
@@ -11,37 +13,54 @@ const USERNAME_KEY = 'currentUsername';
 const USER_STATUS_KEY = 'userStatus';
 const AUTH_VERSION_KEY = 'authVersion';
 const AUTH_PROVIDER_KEY = 'authProvider';
+const SESSION_CHECK_KEY = 'lastSessionCheck';
 
 // Current version of the auth storage schema
-const CURRENT_AUTH_VERSION = '1.0.1';
+const CURRENT_AUTH_VERSION = '1.0.2';
 
 /**
  * Initialize the authentication state
  */
-export const initAuthState = () => {
+export const initAuthState = async () => {
   try {
     // Check version to handle schema migrations
     const storedVersion = localStorage.getItem(AUTH_VERSION_KEY) || '0';
     
     if (storedVersion !== CURRENT_AUTH_VERSION) {
       console.log(`Auth schema version mismatch: ${storedVersion} vs ${CURRENT_AUTH_VERSION}. Updating auth state.`);
-      
-      // Don't clear everything, just update the version
-      // We'll let Clerk handle authentication state for its users
       localStorage.setItem(AUTH_VERSION_KEY, CURRENT_AUTH_VERSION);
+    }
+    
+    // Check if using Clerk or Supabase
+    const isUsingClerk = localStorage.getItem('usingClerk') === 'true';
+    
+    // If not using Clerk, check Supabase session
+    if (!isUsingClerk) {
+      // Prevent checking the session too frequently
+      const lastCheck = parseInt(localStorage.getItem(SESSION_CHECK_KEY) || '0', 10);
+      const now = Date.now();
       
-      // Only clear specific auth data if using fallback auth (not Clerk)
-      const isUsingClerk = localStorage.getItem('usingClerk') === 'true';
-      if (!isUsingClerk) {
-        // For fallback auth, check if we have auth data that might be stale
-        const lastLoginStr = localStorage.getItem('lastLoginTimestamp');
-        if (lastLoginStr) {
-          const lastLogin = parseInt(lastLoginStr, 10);
-          const hoursSinceLogin = (new Date().getTime() - lastLogin) / (1000 * 60 * 60);
-          
-          // If it's been more than 24 hours, clear the stored credentials
-          if (hoursSinceLogin > 24) {
-            console.log("Clearing stale auth data");
+      // Only check if it's been more than 10 seconds since the last check
+      if (now - lastCheck > 10000) {
+        localStorage.setItem(SESSION_CHECK_KEY, now.toString());
+        
+        // Check Supabase session
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session) {
+          // If we have a valid session but no local auth state, set it
+          if (!isAuthenticated()) {
+            const { user } = session;
+            setAuthenticatedUser({
+              userId: user.id,
+              username: user.user_metadata?.username || user.email || 'User',
+              provider: 'supabase'
+            });
+          }
+        } else {
+          // If no valid session but local auth state exists, clear it
+          if (isAuthenticated() && localStorage.getItem(AUTH_PROVIDER_KEY) === 'supabase') {
+            console.log("No valid Supabase session but local auth exists. Clearing local auth.");
             clearAuthState();
           }
         }
@@ -77,7 +96,7 @@ export const setAuthenticatedUser = (data: {
   userId: string;
   username: string;
   status?: 'online' | 'offline' | 'away' | 'busy';
-  provider?: 'email' | 'google' | 'apple' | 'facebook' | 'clerk';
+  provider?: 'email' | 'google' | 'apple' | 'facebook' | 'clerk' | 'supabase';
 }): void => {
   try {
     localStorage.setItem(AUTH_STATUS_KEY, 'authenticated');
@@ -119,8 +138,21 @@ export const setAuthenticatedUser = (data: {
 /**
  * Clear authentication state
  */
-export const clearAuthState = (): void => {
+export const clearAuthState = async (): Promise<void> => {
   try {
+    const provider = localStorage.getItem(AUTH_PROVIDER_KEY);
+    
+    // Sign out from the appropriate provider
+    if (provider === 'supabase') {
+      try {
+        await supabase.auth.signOut();
+        console.log("Signed out from Supabase");
+      } catch (e) {
+        console.error("Error signing out from Supabase:", e);
+      }
+    }
+    
+    // Clear all local auth data
     localStorage.removeItem(AUTH_STATUS_KEY);
     localStorage.removeItem(USER_ID_KEY);
     localStorage.removeItem(USERNAME_KEY);
@@ -168,5 +200,6 @@ export const getCurrentUser = () => {
   }
 };
 
-// Initialize auth state immediately
-initAuthState();
+// Initialize auth state immediately - but use the async version 
+// to prevent blocking the main thread
+initAuthState().catch(console.error);

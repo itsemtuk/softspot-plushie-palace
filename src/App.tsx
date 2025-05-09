@@ -1,4 +1,3 @@
-
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -27,15 +26,41 @@ import { AuthWrapper } from './components/auth/AuthWrapper';
 import { useEffect } from 'react';
 import { initAuthState } from './utils/auth/authState';
 import { ClerkButtonComponent } from './components/navigation/user-button/ClerkIntegration';
+import { supabase } from './utils/supabase/client';
+import { toast } from './components/ui/use-toast';
 
 function App() {
-  // Always assume Clerk is configured for testing
-  const isClerkConfigured = true;
+  // Use Clerk integration only when specified
+  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
   // Initialize auth state on app load
   useEffect(() => {
-    initAuthState();
-    localStorage.setItem('usingClerk', 'true');
+    // Check if we're using Clerk or Supabase
+    const determineAuthProvider = async () => {
+      // Check if we have a valid Supabase session
+      const { data, error } = await supabase.auth.getSession();
+      
+      if (error) {
+        console.error("Error checking Supabase session:", error);
+      }
+      
+      // If we have a valid Supabase session, use Supabase auth
+      if (data?.session) {
+        console.log("Valid Supabase session found, using Supabase auth");
+        localStorage.setItem('usingClerk', 'false');
+        localStorage.setItem('authProvider', 'supabase');
+      } else {
+        // Otherwise, default to Clerk if not explicitly set
+        if (localStorage.getItem('usingClerk') === null) {
+          localStorage.setItem('usingClerk', 'true'); 
+        }
+      }
+      
+      // Initialize auth state
+      await initAuthState();
+    };
+    
+    determineAuthProvider();
     
     // Listen for storage events to keep authentication state in sync across tabs
     const handleStorageChange = (event: StorageEvent) => {
@@ -46,8 +71,30 @@ function App() {
       }
     };
     
+    // Set up Supabase auth change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Supabase auth state change:', event);
+      
+      if (event === 'SIGNED_IN' && session) {
+        // Show toast for successful sign-in
+        toast({
+          title: "Signed in successfully",
+          description: `Welcome back, ${session.user.email || 'User'}!`,
+        });
+      } else if (event === 'SIGNED_OUT') {
+        // Clear local auth state when signed out from Supabase
+        if (localStorage.getItem('authProvider') === 'supabase') {
+          initAuthState();
+        }
+      }
+    });
+    
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      subscription.unsubscribe();
+    };
   }, []);
 
   // Define routes once to avoid duplication
@@ -126,13 +173,11 @@ function App() {
     </PostDialogProvider>
   );
 
-  // Use NotificationsProvider only if Clerk is configured
-  const wrappedAppContent = isClerkConfigured ? (
+  // Use NotificationsProvider only if user is authenticated
+  const wrappedAppContent = (
     <NotificationsProvider>
       {appContent}
     </NotificationsProvider>
-  ) : (
-    appContent
   );
 
   return (

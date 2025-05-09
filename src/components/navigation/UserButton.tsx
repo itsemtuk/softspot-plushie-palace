@@ -12,6 +12,7 @@ import { UserAvatar } from "./user-button/UserAvatar";
 import { UserStatusDropdown } from "./user-button/UserStatusDropdown";
 import { ClerkButtonComponent } from "./user-button/ClerkIntegration";
 import { useUserButtonState } from "./user-button/useUserButtonState";
+import { useSignOut } from "@/hooks/useSignOut";
 
 export const UserButton = () => {
   const {
@@ -21,9 +22,10 @@ export const UserButton = () => {
     username,
     avatarUrl,
     handleChangeStatus,
-    handleProfileClick,
-    handleSignOut
+    handleProfileClick
   } = useUserButtonState();
+  
+  const { handleSignOut } = useSignOut();
 
   const onProfileClick = (e: React.MouseEvent) => {
     e.preventDefault();

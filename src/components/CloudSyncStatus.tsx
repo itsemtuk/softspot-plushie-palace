@@ -52,6 +52,9 @@ export function CloudSyncStatus() {
     // Initial check for user status
     checkSignInStatus();
     
+    // Check if Supabase is configured
+    setIsCloudEnabled(isSupabaseConfigured());
+    
     return () => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
@@ -66,21 +69,26 @@ export function CloudSyncStatus() {
   useEffect(() => {
     if (isMobileDevice) return;
     
-    if (isCloudEnabled && isSignedIn) {
-      toast({
-        title: "Cloud Sync Enabled",
-        description: "Your posts and data will be synced across all your devices.",
-        duration: 3000,
-      });
-    } else if (isSignedIn && !isCloudEnabled) {
-      toast({
-        variant: "default",
-        title: "Local Storage Only",
-        description: "Your data is only stored on this device. Enable Supabase integration for cloud sync.",
-        duration: 5000,
-      });
+    // Ensure Supabase status is correctly reported
+    const supabaseEnabled = isSupabaseConfigured();
+    
+    if (isSignedIn) {
+      if (supabaseEnabled) {
+        toast({
+          title: "Cloud Sync Enabled",
+          description: "Connected to Supabase. Your data will be synced across devices.",
+          duration: 3000,
+        });
+      } else {
+        toast({
+          variant: "default",
+          title: "Local Storage Only",
+          description: "Your data is only stored on this device.",
+          duration: 5000,
+        });
+      }
     }
-  }, [isCloudEnabled, isSignedIn, isMobileDevice]);
+  }, [isSignedIn, isMobileDevice]);
   
   // Return null as this is just a notification controller with no UI
   return null;

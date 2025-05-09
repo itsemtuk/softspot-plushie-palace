@@ -1,20 +1,16 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project-url.supabase.co';
-const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// Initialize Supabase client with the provided credentials
+const supabaseUrl = 'https://evsamjzmqzbynwkuzsm.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2c2FtanptcXpieW53a3VzenNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MzgwMTEsImV4cCI6MjA2MDQxNDAxMX0.rkYcUyq7tMf3om2doHkWt85bdAHinEceuH43Hwn1knw';
 
-// Check if we have the required Supabase credentials
-const hasValidSupabaseConfig = supabaseUrl !== 'https://your-project-url.supabase.co' && supabaseKey !== '';
+// Create and export the Supabase client
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Create Supabase client only if we have valid credentials
-export const supabase = hasValidSupabaseConfig 
-  ? createClient(supabaseUrl, supabaseKey)
-  : null;
-
+// Check if Supabase is configured
 export const isSupabaseConfigured = () => {
-  if (!hasValidSupabaseConfig) {
+  if (!supabaseUrl || !supabaseKey) {
     console.warn('Supabase is not properly configured. Using local storage fallback.');
     return false;
   }
