@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -62,7 +63,11 @@ function App() {
           <Feed />
         </AuthWrapper>
       } />
-      <Route path="/marketplace/*" element={<Marketplace />} />
+      <Route path="/marketplace/*" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <Marketplace />
+        </AuthWrapper>
+      } />
       <Route path="/profile" element={
         <AuthWrapper fallback={<SignIn />}>
           <Profile />
@@ -97,7 +102,11 @@ function App() {
         </AuthWrapper>
       } />
       <Route path="/brand/:brandId" element={<BrandPage />} />
-      <Route path="/discover" element={<Discover />} />
+      <Route path="/discover" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <Discover />
+        </AuthWrapper>
+      } />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
