@@ -152,7 +152,11 @@ export const useUserButtonState = () => {
   };
 
   const handleProfileClick = () => {
-    navigate('/profile');
+    console.log("Navigating to profile page");
+    // Ensure we're actually navigating - using setTimeout to break current execution context
+    setTimeout(() => {
+      navigate('/profile');
+    }, 0);
   };
 
   const handleSignOut = async () => {

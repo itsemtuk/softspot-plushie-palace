@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, PlusCircle } from "lucide-react";
+import { MessageSquare } from "lucide-react";
 import { UserButton } from "./UserButton";
 import { NotificationsButton } from "./NotificationsButton";
 import { toast } from "@/components/ui/use-toast";
@@ -61,7 +61,10 @@ export const UserMenu = () => {
       return false;
     }
     
-    navigate(path);
+    // Use setTimeout to break current execution context and ensure navigation happens
+    setTimeout(() => {
+      navigate(path);
+    }, 0);
     return true;
   };
 
@@ -88,13 +91,6 @@ export const UserMenu = () => {
 
   return (
     <div className="flex items-center space-x-2">
-      <Button 
-        variant="ghost" 
-        size="icon"
-        onClick={() => handleAuthRequiredAction("create content", "/feed")}
-      >
-        <PlusCircle className="h-4 w-4" />
-      </Button>
       <Button 
         variant="ghost" 
         size="icon"

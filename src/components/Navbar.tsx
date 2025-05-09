@@ -75,10 +75,12 @@ export function Navbar() {
             <NavLinks />
             <SearchBar />
             
+            {/* Display CreateButton for signed in users */}
             {isSignedIn && (
               <CreateButton onCreatePost={() => setIsPostCreationOpen(true)} />
             )}
             
+            {/* Display UserMenu or Sign In button based on auth state */}
             {isSignedIn ? (
               <UserMenu />
             ) : (

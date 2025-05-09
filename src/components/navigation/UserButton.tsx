@@ -25,6 +25,13 @@ export const UserButton = () => {
     handleSignOut
   } = useUserButtonState();
 
+  const onProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Profile clicked in UserButton");
+    handleProfileClick();
+  };
+
   return (
     <div className="relative">
       {/* Hidden component to access Clerk hooks */}
@@ -40,7 +47,7 @@ export const UserButton = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-white z-50 shadow-lg">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuItem onClick={handleProfileClick} className="flex items-center cursor-pointer">
+          <DropdownMenuItem onClick={onProfileClick} className="flex items-center cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             <span>My Profile</span>
           </DropdownMenuItem>
