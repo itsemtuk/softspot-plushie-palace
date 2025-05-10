@@ -1,3 +1,4 @@
+
 import { SignIn as ClerkSignIn } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect, useState } from 'react';
@@ -12,7 +13,7 @@ const SignIn = () => {
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const isUsingClerk = localStorage.getItem('usingClerk') === 'true';
+  const [isUsingClerk, setIsUsingClerk] = useState(localStorage.getItem('usingClerk') === 'true');
   
   // Check if already authenticated and redirect if needed
   useEffect(() => {
@@ -63,6 +64,13 @@ const SignIn = () => {
       window.removeEventListener('storage', handleAuthChange);
     };
   }, [navigate, isUsingClerk]);
+
+  // Toggle between auth providers
+  const toggleAuthProvider = () => {
+    const newValue = !isUsingClerk;
+    localStorage.setItem('usingClerk', newValue.toString());
+    setIsUsingClerk(newValue);
+  };
 
   const cardStyles = isMobile ? "border-softspot-200 shadow-lg mx-4" : "border-softspot-200 shadow-lg";
   
@@ -119,35 +127,37 @@ const SignIn = () => {
           
           <CardContent>
             {isUsingClerk ? (
-              <ClerkSignIn 
-                routing="path"
-                path="/sign-in"
-                signUpUrl="/sign-up"
-                afterSignInUrl="/"
-                appearance={{
-                  elements: {
-                    rootBox: "mx-auto w-full",
-                    card: "shadow-none p-0",
-                    footer: "text-softspot-500",
-                    formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
-                    formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
-                    footerActionLink: "text-softspot-500 hover:text-softspot-600",
-                    socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-                    socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
-                    socialButtonsProviderIcon: "w-8 h-8", // Larger icons
-                    socialButtonsBlockButtonText: "text-base font-medium",
-                    formField: "mb-6" // Add more spacing between fields
-                  },
-                  variables: {
-                    colorPrimary: "#7e69ab",
-                    colorText: "#333333",
-                  },
-                  layout: {
-                    socialButtonsVariant: "iconButton",
-                    socialButtonsPlacement: "bottom"
-                  }
-                }}
-              />
+              <>
+                <ClerkSignIn 
+                  routing="path"
+                  path="/sign-in"
+                  signUpUrl="/sign-up"
+                  afterSignInUrl="/"
+                  appearance={{
+                    elements: {
+                      rootBox: "mx-auto w-full",
+                      card: "shadow-none p-0",
+                      footer: "text-softspot-500",
+                      formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
+                      formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
+                      footerActionLink: "text-softspot-500 hover:text-softspot-600",
+                      socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
+                      socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
+                      socialButtonsProviderIcon: "w-8 h-8", // Larger icons
+                      socialButtonsBlockButtonText: "text-base font-medium",
+                      formField: "mb-6" // Add more spacing between fields
+                    },
+                    variables: {
+                      colorPrimary: "#7e69ab",
+                      colorText: "#333333",
+                    },
+                    layout: {
+                      socialButtonsVariant: "iconButton",
+                      socialButtonsPlacement: "bottom"
+                    }
+                  }}
+                />
+              </>
             ) : (
               <div className="flex flex-col items-center gap-4">
                 <button 
@@ -189,6 +199,14 @@ const SignIn = () => {
             >
               Sign up for free
             </Link>
+            
+            {/* Toggle between auth providers */}
+            <button 
+              onClick={toggleAuthProvider}
+              className="text-xs text-softspot-500 hover:text-softspot-700 mt-2"
+            >
+              Switch to {isUsingClerk ? 'Supabase' : 'Clerk'} authentication
+            </button>
           </CardFooter>
         </Card>
         

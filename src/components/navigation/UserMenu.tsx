@@ -6,12 +6,14 @@ import { MessageSquare } from "lucide-react";
 import { UserButton } from "./UserButton";
 import { NotificationsButton } from "./NotificationsButton";
 import { toast } from "@/components/ui/use-toast";
-import { isAuthenticated, getCurrentUser } from "@/utils/auth/authState";
+import { isAuthenticated } from "@/utils/auth/authState";
 import { useUser } from '@clerk/clerk-react';
+import { CreateButton } from "./CreateButton";
 
 export const UserMenu = () => {
   const navigate = useNavigate();
   const [isSignedIn, setIsSignedIn] = useState(false);
+  const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = 
     isClerkConfigured ? useUser() : { isLoaded: true, isSignedIn: false };
@@ -41,13 +43,11 @@ export const UserMenu = () => {
     };
     
     window.addEventListener('storage', handleStorageChange);
-    
-    // Also check auth status periodically to handle issues across tabs
-    const interval = setInterval(checkAuthStatus, 10000);
+    window.addEventListener('clerk-auth-change', checkAuthStatus);
     
     return () => {
       window.removeEventListener('storage', handleStorageChange);
-      clearInterval(interval);
+      window.removeEventListener('clerk-auth-change', checkAuthStatus);
     };
   }, [isClerkConfigured, isClerkLoaded, isClerkSignedIn]);
   
@@ -61,10 +61,7 @@ export const UserMenu = () => {
       return false;
     }
     
-    // Use setTimeout to break current execution context and ensure navigation happens
-    setTimeout(() => {
-      navigate(path);
-    }, 0);
+    navigate(path);
     return true;
   };
 
@@ -90,13 +87,15 @@ export const UserMenu = () => {
   }
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center space-x-4">
+      <CreateButton onCreatePost={() => setIsPostCreationOpen(true)} />
       <Button 
         variant="ghost" 
         size="icon"
         onClick={() => handleAuthRequiredAction("access messages", "/messages")}
+        className="hover:bg-softspot-100"
       >
-        <MessageSquare className="h-4 w-4" />
+        <MessageSquare className="h-5 w-5" />
       </Button>
       <NotificationsButton />
       <div className="relative">

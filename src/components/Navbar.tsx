@@ -13,17 +13,17 @@ import { SearchBar } from "@/components/navigation/SearchBar";
 import { CreateButton } from "@/components/navigation/CreateButton";
 import { UserMenu } from "@/components/navigation/UserMenu";
 import { AuthWrapper } from "./auth/AuthWrapper";
+import { isAuthenticated } from "@/utils/auth/authState";
 
 export function Navbar() {
   const isMobile = useIsMobile();
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [isSignedIn, setIsSignedIn] = useState(isAuthenticated());
 
   // Update auth status whenever it changes
   useEffect(() => {
     const checkAuthStatus = () => {
-      const currentUserId = localStorage.getItem('currentUserId');
-      setIsSignedIn(!!currentUserId);
+      setIsSignedIn(isAuthenticated());
     };
     
     // Check on mount
@@ -47,14 +47,13 @@ export function Navbar() {
     };
   }, []);
 
-  // Updated to return a Promise
+  // Handle post creation
   const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
     console.log("New post created:", postData);
     toast({
       title: "Post created successfully!",
       description: "Your post is now visible in your profile and feed."
     });
-    // Return a resolved promise to satisfy the TypeScript requirement
     return Promise.resolve();
   };
 
@@ -75,21 +74,8 @@ export function Navbar() {
             <NavLinks />
             <SearchBar />
             
-            {/* Display CreateButton for signed in users */}
-            {isSignedIn && (
-              <CreateButton onCreatePost={() => setIsPostCreationOpen(true)} />
-            )}
-            
-            {/* Display UserMenu or Sign In button based on auth state */}
-            {isSignedIn ? (
-              <UserMenu />
-            ) : (
-              <Link to="/sign-in">
-                <Button className="bg-softspot-400 hover:bg-softspot-500 text-white">
-                  Sign In
-                </Button>
-              </Link>
-            )}
+            {/* UserMenu contains both the CreateButton and user avatar/signin */}
+            <UserMenu />
           </div>
         </div>
       </div>

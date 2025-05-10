@@ -13,25 +13,25 @@ import { UserStatusDropdown } from "./user-button/UserStatusDropdown";
 import { ClerkButtonComponent } from "./user-button/ClerkIntegration";
 import { useUserButtonState } from "./user-button/useUserButtonState";
 import { useSignOut } from "@/hooks/useSignOut";
+import { useNavigate } from "react-router-dom";
 
 export const UserButton = () => {
+  const navigate = useNavigate();
+  
   const {
     userStatus,
     isClerkLoaded,
     isClerkConfigured,
     username,
     avatarUrl,
-    handleChangeStatus,
-    handleProfileClick
+    handleChangeStatus
   } = useUserButtonState();
   
   const { handleSignOut } = useSignOut();
 
-  const onProfileClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    console.log("Profile clicked in UserButton");
-    handleProfileClick();
+  const handleProfileClick = () => {
+    console.log("Profile clicked in UserButton, navigating to profile page");
+    navigate('/profile');
   };
 
   return (
@@ -49,7 +49,7 @@ export const UserButton = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="bg-white z-50 shadow-lg">
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuItem onClick={onProfileClick} className="flex items-center cursor-pointer">
+          <DropdownMenuItem onClick={handleProfileClick} className="flex items-center cursor-pointer">
             <User className="mr-2 h-4 w-4" />
             <span>My Profile</span>
           </DropdownMenuItem>
