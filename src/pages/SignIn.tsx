@@ -1,4 +1,3 @@
-
 import { SignIn as ClerkSignIn } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect, useState } from 'react';
@@ -7,6 +6,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { useIsMobile } from '@/hooks/use-mobile';
 import { isAuthenticated } from '@/utils/auth/authState';
 import { supabase } from '@/utils/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
