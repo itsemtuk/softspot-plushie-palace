@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData } from "@/types/marketplace";
@@ -10,9 +9,7 @@ import { MobileNav } from "@/components/navigation/MobileNav";
 import { Logo } from "@/components/navigation/Logo";
 import { NavLinks } from "@/components/navigation/NavLinks";
 import { SearchBar } from "@/components/navigation/SearchBar";
-import { CreateButton } from "@/components/navigation/CreateButton";
 import { UserMenu } from "@/components/navigation/UserMenu";
-import { AuthWrapper } from "./auth/AuthWrapper";
 import { isAuthenticated } from "@/utils/auth/authState";
 
 export function Navbar() {
@@ -73,14 +70,11 @@ export function Navbar() {
           <div className="hidden md:flex md:items-center md:space-x-4">
             <NavLinks />
             <SearchBar />
-            
-            {/* UserMenu contains both the CreateButton and user avatar/signin */}
             <UserMenu />
           </div>
         </div>
       </div>
       
-      {/* Only include the required props */}
       <PostCreationFlow
         isOpen={isPostCreationOpen}
         onClose={() => setIsPostCreationOpen(false)}

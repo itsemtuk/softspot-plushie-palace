@@ -61,7 +61,10 @@ export const UserMenu = () => {
       return false;
     }
     
-    navigate(path);
+    // Force navigation using setTimeout to break current execution context
+    setTimeout(() => {
+      navigate(path);
+    }, 0);
     return true;
   };
 

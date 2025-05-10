@@ -31,7 +31,10 @@ export const UserButton = () => {
 
   const handleProfileClick = () => {
     console.log("Profile clicked in UserButton, navigating to profile page");
-    navigate('/profile');
+    // Force navigation by using setTimeout to break out of current execution context
+    setTimeout(() => {
+      navigate('/profile');
+    }, 0);
   };
 
   return (
