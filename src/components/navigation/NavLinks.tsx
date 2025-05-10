@@ -1,9 +1,10 @@
 
 import { Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 
 export function NavLinks() {
   const location = useLocation();
+  const navigate = useNavigate();
   
   const links = [
     { href: "/feed", label: "Feed" },
@@ -21,6 +22,10 @@ export function NavLinks() {
       e.preventDefault();
       return;
     }
+
+    // Force navigation using navigate from useNavigate
+    e.preventDefault();
+    navigate(href);
   };
 
   return (

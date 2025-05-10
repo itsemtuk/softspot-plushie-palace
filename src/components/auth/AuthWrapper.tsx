@@ -1,7 +1,7 @@
-
 import React, { useEffect, useState } from 'react';
 import { isAuthenticated } from '@/utils/auth/authState';
 import { useUser } from '@clerk/clerk-react';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -20,6 +20,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
 }) => {
   const [isUserAuthenticated, setIsUserAuthenticated] = useState(false);
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+  const navigate = useNavigate();
   
   // If Clerk is configured, use the Clerk hook to check auth state
   const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = 
@@ -64,14 +65,22 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
     </div>;
   }
   
-  // If auth is required but user is not authenticated, show fallback
+  // If auth is required but user is not authenticated, show fallback or redirect
   if (requiresAuth && !isUserAuthenticated) {
-    return <>{fallback}</>;
+    if (fallback) {
+      return <>{fallback}</>;
+    } else {
+      return <Navigate to="/sign-in" replace />;
+    }
   }
 
-  // If auth is not required but user is authenticated, show fallback
+  // If auth is not required but user is authenticated, show fallback or redirect
   if (!requiresAuth && isUserAuthenticated) {
-    return <>{fallback}</>;
+    if (fallback) {
+      return <>{fallback}</>;
+    } else {
+      return <Navigate to="/feed" replace />;
+    }
   }
   
   // Otherwise show the children

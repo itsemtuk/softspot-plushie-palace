@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
 import { UserButton } from "./UserButton";
@@ -16,6 +16,7 @@ export const UserMenu = () => {
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = 
     isClerkConfigured ? useUser() : { isLoaded: true, isSignedIn: false };
+  const navigate = useNavigate();
   
   // Check authentication status when component mounts or updates
   useEffect(() => {
@@ -56,12 +57,14 @@ export const UserMenu = () => {
         title: "Authentication Required",
         description: `Please sign in to ${action}.`,
       });
-      window.location.href = "/sign-in";
+      navigate("/sign-in");
       return false;
     }
     
-    // Use direct navigation to avoid React Router issues
-    window.location.href = path;
+    // Use React Router navigate function with small delay
+    setTimeout(() => {
+      navigate(path);
+    }, 10);
     return true;
   };
 

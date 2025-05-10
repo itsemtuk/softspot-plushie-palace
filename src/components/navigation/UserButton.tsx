@@ -34,8 +34,11 @@ export const UserButton = () => {
     e.stopPropagation();
     console.log("Profile clicked in UserButton, navigating to profile page");
     
-    // Navigate to profile page using direct window.location to avoid potential React Router issues
-    window.location.href = '/profile';
+    // Navigate using React Router's navigate function with a slight delay
+    // to avoid potential React Router issues
+    setTimeout(() => {
+      navigate('/profile');
+    }, 10);
   };
 
   return (
