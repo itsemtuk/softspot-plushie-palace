@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { MessageSquare } from "lucide-react";
 import { UserButton } from "./UserButton";
@@ -11,7 +11,6 @@ import { useUser } from '@clerk/clerk-react';
 import { CreateButton } from "./CreateButton";
 
 export const UserMenu = () => {
-  const navigate = useNavigate();
   const [isSignedIn, setIsSignedIn] = useState(false);
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
@@ -57,14 +56,12 @@ export const UserMenu = () => {
         title: "Authentication Required",
         description: `Please sign in to ${action}.`,
       });
-      navigate("/sign-in");
+      window.location.href = "/sign-in";
       return false;
     }
     
-    // Force navigation using setTimeout to break current execution context
-    setTimeout(() => {
-      navigate(path);
-    }, 0);
+    // Use direct navigation to avoid React Router issues
+    window.location.href = path;
     return true;
   };
 

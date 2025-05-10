@@ -20,7 +20,9 @@ export function Navbar() {
   // Update auth status whenever it changes
   useEffect(() => {
     const checkAuthStatus = () => {
-      setIsSignedIn(isAuthenticated());
+      const authStatus = isAuthenticated();
+      console.log("Navbar: Auth status checked:", authStatus);
+      setIsSignedIn(authStatus);
     };
     
     // Check on mount
@@ -38,9 +40,13 @@ export function Navbar() {
       }
     });
     
+    // Check auth status periodically (every 5 seconds)
+    const intervalId = setInterval(checkAuthStatus, 5000);
+    
     return () => {
       window.removeEventListener('clerk-auth-change', handleAuthChange);
       window.removeEventListener('storage', handleAuthChange);
+      clearInterval(intervalId);
     };
   }, []);
 

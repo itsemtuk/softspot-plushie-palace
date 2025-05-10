@@ -29,12 +29,13 @@ export const UserButton = () => {
   
   const { handleSignOut } = useSignOut();
 
-  const handleProfileClick = () => {
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
     console.log("Profile clicked in UserButton, navigating to profile page");
-    // Force navigation by using setTimeout to break out of current execution context
-    setTimeout(() => {
-      navigate('/profile');
-    }, 0);
+    
+    // Navigate to profile page using direct window.location to avoid potential React Router issues
+    window.location.href = '/profile';
   };
 
   return (

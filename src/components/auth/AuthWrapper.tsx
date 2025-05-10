@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { isAuthenticated } from '@/utils/auth/authState';
 import { useUser } from '@clerk/clerk-react';
@@ -25,15 +26,20 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
     isClerkConfigured ? useUser() : { isLoaded: true, isSignedIn: false };
   
   useEffect(() => {
-    // For Clerk auth, wait for it to load
-    if (isClerkConfigured) {
-      if (isClerkLoaded) {
-        setIsUserAuthenticated(isClerkSignedIn);
+    const checkAuth = () => {
+      // For Clerk auth, wait for it to load
+      if (isClerkConfigured) {
+        if (isClerkLoaded) {
+          setIsUserAuthenticated(isClerkSignedIn);
+        }
+      } else {
+        // For fallback auth, check localStorage
+        setIsUserAuthenticated(isAuthenticated());
       }
-    } else {
-      // For fallback auth, check localStorage
-      setIsUserAuthenticated(isAuthenticated());
-    }
+    };
+    
+    // Initial check
+    checkAuth();
     
     // Listen for auth state changes
     const handleStorageChange = () => {
@@ -43,7 +49,12 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
     };
     
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('clerk-auth-change', checkAuth);
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('clerk-auth-change', checkAuth);
+    };
   }, [isClerkConfigured, isClerkLoaded, isClerkSignedIn]);
   
   // Show loading state if Clerk is still loading
