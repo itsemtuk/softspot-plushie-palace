@@ -3,9 +3,9 @@ import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImageIcon, ShoppingCart } from "lucide-react";
+import { ImageIcon, ShoppingCart, MessageSquare } from "lucide-react";
 import { useUser } from '@clerk/clerk-react';
-import { v4 as uuidv4 } from 'uuid';
+import { useNavigate } from 'react-router-dom';
 
 export interface CreatePostSheetProps {
   open: boolean;
@@ -14,6 +14,7 @@ export interface CreatePostSheetProps {
 
 export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) => {
   const { user } = useUser();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<"post" | "marketplace">("post");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -72,43 +73,47 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
     setTags([]);
   };
   
+  const navigateToPage = (path: string) => {
+    onOpenChange(false);
+    navigate(path);
+  };
+  
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md p-0">
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 pt-4 pb-2">
-            <SheetTitle>Create new post</SheetTitle>
+            <SheetTitle>Create new</SheetTitle>
           </SheetHeader>
           
-          <Tabs defaultValue="post" className="flex-1 flex flex-col" 
-                value={activeTab} onValueChange={(v) => setActiveTab(v as "post" | "marketplace")}>
-            <TabsList className="grid grid-cols-2 mx-4">
-              <TabsTrigger value="post" className="flex gap-2">
-                <ImageIcon className="h-4 w-4" />
-                Post
-              </TabsTrigger>
-              <TabsTrigger value="marketplace" className="flex gap-2">
-                <ShoppingCart className="h-4 w-4" />
-                Sell
-              </TabsTrigger>
-            </TabsList>
+          <div className="p-4 space-y-4">
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-3 justify-start w-full py-6"
+              onClick={handlePostSubmit}
+            >
+              <ImageIcon className="h-5 w-5" />
+              <span>Create Post</span>
+            </Button>
             
-            <TabsContent value="post" className="flex-1 p-4 space-y-4">
-              {/* Post creation content */}
-              <div>Post creation form will go here</div>
-              <Button onClick={handlePostSubmit} disabled={isSubmitting} className="w-full">
-                {isSubmitting ? "Creating..." : "Post"}
-              </Button>
-            </TabsContent>
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-3 justify-start w-full py-6"
+              onClick={() => navigateToPage('/sell')}
+            >
+              <ShoppingCart className="h-5 w-5" />
+              <span>Sell Item</span>
+            </Button>
             
-            <TabsContent value="marketplace" className="flex-1 p-4 space-y-4">
-              {/* Marketplace listing content */}
-              <div>Marketplace listing form will go here</div>
-              <Button onClick={handlePostSubmit} disabled={isSubmitting} className="w-full">
-                {isSubmitting ? "Creating..." : "List for Sale"}
-              </Button>
-            </TabsContent>
-          </Tabs>
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-3 justify-start w-full py-6"
+              onClick={() => navigateToPage('/messages')}
+            >
+              <MessageSquare className="h-5 w-5" />
+              <span>Trade Request</span>
+            </Button>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

@@ -27,11 +27,15 @@ export function MobileNav() {
     };
     
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    window.addEventListener('clerk-auth-change', checkAuthStatus);
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('clerk-auth-change', checkAuthStatus);
+    };
   }, [location.pathname]);
   
   // Hide bottom nav on homepage for non-authenticated users and on auth pages
-  const shouldShowBottomNav = !(isAuthPage || (isHomepage && !isSignedIn));
+  const shouldShowBottomNav = isSignedIn && !isAuthPage;
 
   return (
     <>

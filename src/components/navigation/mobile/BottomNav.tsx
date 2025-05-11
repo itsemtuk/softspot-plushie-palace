@@ -4,11 +4,10 @@ import { Link, useLocation } from "react-router-dom";
 import { 
   Home, 
   Search, 
-  MessagesSquare, 
+  ShoppingBag, 
   Heart, 
   User,
-  PlusSquare,
-  Bell
+  PlusSquare
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,9 +17,10 @@ interface BottomNavLinkProps {
   to: string;
   icon: React.ReactNode;
   isActive: boolean;
+  label: string;
 }
 
-const BottomNavLink = ({ to, icon, isActive }: BottomNavLinkProps) => (
+const BottomNavLink = ({ to, icon, isActive, label }: BottomNavLinkProps) => (
   <Link 
     to={to}
     className={cn(
@@ -35,7 +35,7 @@ const BottomNavLink = ({ to, icon, isActive }: BottomNavLinkProps) => (
       "text-[9px] mt-1",
       isActive ? "font-medium" : "font-normal"
     )}>
-      {/* Use the icon name as the label */}
+      {label}
     </span>
   </Link>
 );
@@ -47,40 +47,45 @@ export function BottomNav() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 flex bg-white border-t border-gray-200 h-14 z-20">
+      <div className="fixed bottom-0 left-0 right-0 flex bg-white border-t border-gray-200 h-16 z-20 pb-safe">
         <BottomNavLink 
-          to="/" 
+          to="/feed" 
           icon={<Home className="w-5 h-5" />} 
-          isActive={pathname === "/"}
+          isActive={pathname === "/feed"}
+          label="Feed"
         />
         
         <BottomNavLink 
           to="/discover" 
           icon={<Search className="w-5 h-5" />} 
           isActive={pathname === "/discover"}
+          label="Discover"
         />
         
         <div className="flex flex-col items-center justify-center flex-1">
           <Button 
             variant="outline" 
             size="sm" 
-            className="h-8 w-8 rounded-md border-softspot-200 flex items-center justify-center p-0"
+            className="h-10 w-10 rounded-full border-softspot-200 flex items-center justify-center p-0"
             onClick={() => setIsCreateSheetOpen(true)}
           >
             <PlusSquare className="h-5 w-5 text-softspot-500" />
           </Button>
+          <span className="text-[9px] mt-1">Create</span>
         </div>
         
         <BottomNavLink 
-          to="/messaging" 
-          icon={<MessagesSquare className="w-5 h-5" />} 
-          isActive={pathname === "/messaging"}
+          to="/marketplace" 
+          icon={<ShoppingBag className="w-5 h-5" />} 
+          isActive={pathname.startsWith("/marketplace")}
+          label="Shop"
         />
         
         <BottomNavLink 
           to="/profile" 
           icon={<User className="w-5 h-5" />} 
           isActive={pathname === "/profile"}
+          label="Profile"
         />
       </div>
 
