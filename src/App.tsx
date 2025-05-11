@@ -1,5 +1,5 @@
 import { BrowserRouter as Router } from 'react-router-dom';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { Toaster } from '@/components/ui/toaster';
 import Index from '@/pages/Index';
@@ -101,8 +101,18 @@ function App() {
   const appRoutes = (
     <Routes>
       <Route path="/" element={<Index />} />
-      <Route path="/sign-in/*" element={<SignIn />} />
-      <Route path="/sign-up/*" element={<SignUp />} />
+      
+      {/* Auth pages that should redirect to feed if already logged in */}
+      <Route path="/sign-in/*" element={
+        <AuthWrapper requiresAuth={false} fallback={<Navigate to="/feed" replace />}>
+          <SignIn />
+        </AuthWrapper>
+      } />
+      <Route path="/sign-up/*" element={
+        <AuthWrapper requiresAuth={false} fallback={<Navigate to="/feed" replace />}>
+          <SignUp />
+        </AuthWrapper>
+      } />
       
       {/* Protected routes that require authentication */}
       <Route path="/feed" element={

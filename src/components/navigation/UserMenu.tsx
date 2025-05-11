@@ -25,10 +25,13 @@ export const UserMenu = () => {
         // Wait for Clerk to load
         if (isClerkLoaded) {
           setIsSignedIn(isClerkSignedIn);
+          console.log("UserMenu - Clerk auth state:", isClerkSignedIn);
         }
       } else {
         // Use local auth state
-        setIsSignedIn(isAuthenticated());
+        const authState = isAuthenticated();
+        setIsSignedIn(authState);
+        console.log("UserMenu - Local auth state:", authState);
       }
     };
     
@@ -45,13 +48,19 @@ export const UserMenu = () => {
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('clerk-auth-change', checkAuthStatus);
     
+    // Check auth status periodically
+    const intervalId = setInterval(checkAuthStatus, 3000);
+    
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('clerk-auth-change', checkAuthStatus);
+      clearInterval(intervalId);
     };
   }, [isClerkConfigured, isClerkLoaded, isClerkSignedIn]);
   
   const handleAuthRequiredAction = (action: string, path: string) => {
+    console.log(`UserMenu - Auth required action: ${action}, path: ${path}`);
+    
     if (!isSignedIn) {
       toast({
         title: "Authentication Required",
@@ -61,10 +70,8 @@ export const UserMenu = () => {
       return false;
     }
     
-    // Use React Router navigate function with small delay
-    setTimeout(() => {
-      navigate(path);
-    }, 10);
+    console.log(`Navigating to: ${path}`);
+    navigate(path);
     return true;
   };
 

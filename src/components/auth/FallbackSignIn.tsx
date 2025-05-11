@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -78,7 +77,7 @@ export function FallbackSignIn() {
         description: "Welcome to SoftSpot!"
       });
       
-      navigate('/feed');
+      navigate('/feed', { replace: true });
       setIsLoading(false);
     }, 1000);
   };
@@ -110,7 +109,7 @@ export function FallbackSignIn() {
         description: `Welcome to SoftSpot! You signed in with ${provider}.`
       });
       
-      navigate('/feed');
+      navigate('/feed', { replace: true });
       setIsLoading(false);
     }, 1000);
   };

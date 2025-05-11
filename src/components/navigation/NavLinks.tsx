@@ -15,11 +15,12 @@ export function NavLinks() {
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
     // Log navigation attempt
-    console.log(`NavLinks: Navigating to ${href}`);
+    console.log(`NavLinks: Navigating to ${href} from ${location.pathname}`);
     
     // If already on the current page, prevent default and do nothing
     if (location.pathname === href) {
       e.preventDefault();
+      console.log("Already on this page, not navigating");
       return;
     }
 

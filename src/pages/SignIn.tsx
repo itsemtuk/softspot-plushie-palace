@@ -19,8 +19,8 @@ const SignIn = () => {
   useEffect(() => {
     const checkAuthAndRedirect = () => {
       if (isAuthenticated()) {
-        console.log("User is already authenticated, redirecting to home");
-        navigate('/');
+        console.log("User is already authenticated, redirecting to feed");
+        navigate('/feed', { replace: true });
         return true;
       }
       return false;
@@ -41,7 +41,7 @@ const SignIn = () => {
         console.log("Supabase auth state change:", event);
         if (event === 'SIGNED_IN' && session) {
           // Redirect after successful sign-in
-          navigate('/');
+          navigate('/feed', { replace: true });
         }
       });
       

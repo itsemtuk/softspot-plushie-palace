@@ -31,11 +31,14 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
       // For Clerk auth, wait for it to load
       if (isClerkConfigured) {
         if (isClerkLoaded) {
+          console.log(`Clerk auth state loaded. isSignedIn: ${isClerkSignedIn}`);
           setIsUserAuthenticated(isClerkSignedIn);
         }
       } else {
         // For fallback auth, check localStorage
-        setIsUserAuthenticated(isAuthenticated());
+        const authState = isAuthenticated();
+        console.log(`Fallback auth state checked. isAuthenticated: ${authState}`);
+        setIsUserAuthenticated(authState);
       }
     };
     
@@ -52,9 +55,13 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
     window.addEventListener('storage', handleStorageChange);
     window.addEventListener('clerk-auth-change', checkAuth);
     
+    // Check auth status periodically to ensure it's up to date
+    const intervalId = setInterval(checkAuth, 2000);
+    
     return () => {
       window.removeEventListener('storage', handleStorageChange);
       window.removeEventListener('clerk-auth-change', checkAuth);
+      clearInterval(intervalId);
     };
   }, [isClerkConfigured, isClerkLoaded, isClerkSignedIn]);
   
@@ -65,11 +72,14 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
     </div>;
   }
   
+  console.log(`AuthWrapper rendering: requiresAuth=${requiresAuth}, isUserAuthenticated=${isUserAuthenticated}`);
+  
   // If auth is required but user is not authenticated, show fallback or redirect
   if (requiresAuth && !isUserAuthenticated) {
     if (fallback) {
       return <>{fallback}</>;
     } else {
+      console.log("Redirecting to sign-in page due to missing authentication");
       return <Navigate to="/sign-in" replace />;
     }
   }
@@ -79,6 +89,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
     if (fallback) {
       return <>{fallback}</>;
     } else {
+      console.log("Already authenticated, redirecting to feed");
       return <Navigate to="/feed" replace />;
     }
   }
