@@ -29,7 +29,16 @@ export function TopNav() {
         
         <div className="flex items-center gap-2">
           {isSignedIn && (
-            <MobileNotifications />
+            <>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => navigate('/messages')}
+              >
+                <MessageSquare className="h-5 w-5" />
+              </Button>
+              <MobileNotifications />
+            </>
           )}
           
           {!isSignedIn && isHomepage && !isSignInPage && (

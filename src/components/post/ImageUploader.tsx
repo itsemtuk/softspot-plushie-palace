@@ -106,7 +106,7 @@ export const ImageUploader: React.FC<ImageUploaderProps> = ({
   const renderDropZone = () => (
     <div
       ref={dropZone}
-      className={`relative border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors ${className}`}
+      className={`relative border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors max-w-full overflow-hidden ${className}`}
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}

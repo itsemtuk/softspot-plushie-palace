@@ -14,6 +14,7 @@ import {
   ExtendedPost
 } from "@/types/marketplace";
 import { saveMarketplaceListings, getMarketplaceListings, getCurrentUserId, setCurrentUserId } from "@/utils/storage/localStorageUtils";
+import { addPost } from "@/utils/posts/postManagement";
 
 export interface SellItemFormData {
   title: string;
@@ -106,6 +107,12 @@ export const useSellItemForm = () => {
       // Add the new listing and save
       listings.unshift(newListing);
       saveMarketplaceListings(listings);
+      
+      // Also add to regular posts to make it appear in profile
+      await addPost({
+        ...newListing,
+        id: `post-${Date.now()}`,
+      });
       
       // Show success message
       toast({

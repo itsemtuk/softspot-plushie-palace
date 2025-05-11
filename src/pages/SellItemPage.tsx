@@ -23,7 +23,7 @@ const SellItemPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {isMobile ? <MobileNav /> : <Navbar />}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pt-20">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Sell Your Plushie</h1>
           

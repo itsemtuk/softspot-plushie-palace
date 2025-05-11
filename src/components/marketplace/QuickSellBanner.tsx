@@ -7,6 +7,10 @@ import { PlusCircle } from "lucide-react";
 export function QuickSellBanner() {
   const navigate = useNavigate();
   
+  const handleSellClick = () => {
+    navigate('/marketplace/sell');
+  };
+  
   return (
     <div className="bg-gradient-to-r from-softspot-500 to-purple-500 rounded-xl p-6 mb-8 text-white">
       <div className="flex flex-col md:flex-row items-center justify-between">
@@ -15,7 +19,7 @@ export function QuickSellBanner() {
           <p className="text-softspot-100">List your plushies and reach thousands of collectors</p>
         </div>
         <Button 
-          onClick={() => navigate('/marketplace/sell')} 
+          onClick={handleSellClick} 
           className="bg-white text-softspot-500 hover:bg-gray-100 font-bold px-6 py-5"
         >
           <PlusCircle className="w-5 h-5 mr-2" />
