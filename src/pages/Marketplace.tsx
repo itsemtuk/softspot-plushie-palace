@@ -356,7 +356,7 @@ const Marketplace = () => {
   };
 
   const handleSellPlushie = () => {
-    navigate('/marketplace/sell');
+    navigate('/sell');
   };
   
   const handleFilterChange = (newFilters: any) => {

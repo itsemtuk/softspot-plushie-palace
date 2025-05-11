@@ -7,7 +7,6 @@ import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
 import { ProfileAvatar } from "./profile/ProfileAvatar";
 import { ProfileInfo } from "./profile/ProfileInfo";
 import { ProfileActionButton } from "./profile/ProfileActionButton";
-import { ProfileHeaderStats } from "./profile/ProfileHeaderStats";
 import { useUser } from '@clerk/clerk-react';
 
 interface UserProfileHeaderProps {
@@ -275,13 +274,6 @@ export default function UserProfileHeader({
           </div>
         </div>
       </div>
-      
-      {/* Profile Header Stats - this will handle the tab selection */}
-      <ProfileHeaderStats
-        postsCount={postsCount}
-        followersCount={followersCount}
-        followingCount={followingCount}
-      />
     </div>
   );
 }

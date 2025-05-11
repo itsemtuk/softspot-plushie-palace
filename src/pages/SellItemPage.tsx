@@ -6,6 +6,7 @@ import { SellItemImageUploader } from "@/components/marketplace/sell/SellItemIma
 import { SellItemFormFields } from "@/components/marketplace/sell/SellItemFormFields";
 import { SellItemFormActions } from "@/components/marketplace/sell/SellItemFormActions";
 import { useSellItemForm } from "@/hooks/useSellItemForm";
+import Footer from "@/components/Footer";
 
 const SellItemPage = () => {
   const isMobile = useIsMobile();
@@ -21,9 +22,9 @@ const SellItemPage = () => {
   } = useSellItemForm();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {isMobile ? <MobileNav /> : <Navbar />}
-      <main className="container mx-auto px-4 py-8 pt-20">
+      <main className="container mx-auto px-4 py-8 pt-20 flex-grow">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Sell Your Plushie</h1>
           
@@ -45,6 +46,7 @@ const SellItemPage = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

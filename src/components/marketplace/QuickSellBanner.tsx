@@ -8,7 +8,7 @@ export function QuickSellBanner() {
   const navigate = useNavigate();
   
   const handleSellClick = () => {
-    navigate('/marketplace/sell');
+    navigate('/sell');
   };
   
   return (

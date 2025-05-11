@@ -1,7 +1,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ExtendedPost } from "@/types/marketplace";
-import { PlusSquare, ShoppingBag, Trash2, Image } from "lucide-react";
+import { PlusSquare, ShoppingBag, Trash2, Image, Grid3X3, BookMarked } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -19,6 +19,12 @@ export function ProfilePostsGrid({ posts, onPostClick, onDeletePost, isOwnProfil
   const navigate = useNavigate();
   const { setIsPostCreationOpen } = useCreatePost();
   const isMobile = useIsMobile();
+
+  // Get for sale posts
+  const forSalePosts = posts.filter(post => post.forSale === true);
+  
+  // Regular posts (not for sale)
+  const regularPosts = posts.filter(post => !post.forSale);
 
   // Function to render empty state
   const renderEmptyState = () => (
@@ -68,21 +74,21 @@ export function ProfilePostsGrid({ posts, onPostClick, onDeletePost, isOwnProfil
       <Tabs defaultValue="posts" className="w-full">
         <TabsList className="grid grid-cols-3 w-full">
           <TabsTrigger value="posts" className="data-[state=active]:border-b-2 data-[state=active]:border-softspot-500 data-[state=active]:text-softspot-500">
-            <Image className="h-4 w-4 mr-2" />
+            <Grid3X3 className="h-4 w-4 mr-2" />
             Posts
           </TabsTrigger>
           <TabsTrigger value="collection" className="data-[state=active]:border-b-2 data-[state=active]:border-softspot-500 data-[state=active]:text-softspot-500">
-            <ShoppingBag className="h-4 w-4 mr-2" />
+            <BookMarked className="h-4 w-4 mr-2" />
             Collection
           </TabsTrigger>
           <TabsTrigger value="forsale" className="data-[state=active]:border-b-2 data-[state=active]:border-softspot-500 data-[state=active]:text-softspot-500">
-            <PlusSquare className="h-4 w-4 mr-2" />
+            <ShoppingBag className="h-4 w-4 mr-2" />
             For Sale
           </TabsTrigger>
         </TabsList>
         
         <TabsContent value="posts">
-          {isOwnProfile && !isMobile && posts.length > 0 && (
+          {isOwnProfile && !isMobile && regularPosts.length > 0 && (
             <div className="px-4 py-2 flex justify-end space-x-3">
               <Button
                 onClick={() => setIsPostCreationOpen(true)}
@@ -95,11 +101,11 @@ export function ProfilePostsGrid({ posts, onPostClick, onDeletePost, isOwnProfil
             </div>
           )}
           
-          {posts.length === 0 && renderEmptyState()}
+          {regularPosts.length === 0 && renderEmptyState()}
           
-          {posts.length > 0 && (
+          {regularPosts.length > 0 && (
             <div className="grid grid-cols-3 gap-px">
-              {posts.map((post) => (
+              {regularPosts.map((post) => (
                 <div
                   key={post.id}
                   className="aspect-square cursor-pointer overflow-hidden relative group"
@@ -159,22 +165,78 @@ export function ProfilePostsGrid({ posts, onPostClick, onDeletePost, isOwnProfil
         </TabsContent>
         
         <TabsContent value="forsale">
-          <div className="text-center py-16">
-            <h3 className="text-lg font-medium">Items For Sale</h3>
-            <p className="text-gray-500 mt-2">
-              No items listed for sale yet.
-            </p>
-            {isOwnProfile && (
-              <Button 
-                variant="outline"
-                onClick={() => navigate('/sell')}
-                className="mt-4"
-              >
-                <ShoppingBag className="mr-2 h-4 w-4" />
-                List Item for Sale
-              </Button>
-            )}
-          </div>
+          {forSalePosts.length === 0 ? (
+            <div className="text-center py-16">
+              <h3 className="text-lg font-medium">Items For Sale</h3>
+              <p className="text-gray-500 mt-2">
+                No items listed for sale yet.
+              </p>
+              {isOwnProfile && (
+                <Button 
+                  variant="outline"
+                  onClick={() => navigate('/sell')}
+                  className="mt-4"
+                >
+                  <ShoppingBag className="mr-2 h-4 w-4" />
+                  List Item for Sale
+                </Button>
+              )}
+            </div>
+          ) : (
+            <div className="grid grid-cols-3 gap-px">
+              {forSalePosts.map((post) => (
+                <div
+                  key={post.id}
+                  className="aspect-square cursor-pointer overflow-hidden relative group"
+                >
+                  <img
+                    src={post.image}
+                    alt={post.title}
+                    className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                    onClick={() => onPostClick(post)}
+                  />
+                  
+                  {/* Price tag */}
+                  <div className="absolute bottom-2 left-2 bg-white/80 backdrop-blur-sm px-2 py-1 rounded text-xs font-medium">
+                    ${post.price}
+                  </div>
+                  
+                  {/* Delete button - only show for own profile if onDeletePost is provided */}
+                  {isOwnProfile && onDeletePost && (
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="destructive"
+                          size="icon"
+                          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete Listing</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            Are you sure you want to delete this listing? This action cannot be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction 
+                            onClick={() => onDeletePost(post.id)}
+                            className="bg-red-600 hover:bg-red-700"
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

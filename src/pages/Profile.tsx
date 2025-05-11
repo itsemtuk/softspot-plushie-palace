@@ -14,6 +14,7 @@ import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/use-toast";
 import { isAuthenticated, getCurrentUser } from "@/utils/auth/authState";
+import Footer from "@/components/Footer";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -160,23 +161,27 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-16 md:pb-8">
+    <div className="flex flex-col min-h-screen bg-gray-50">
       {isMobile ? <MobileNav /> : <Navbar />}
       
-      <UserProfileHeader
-        username={username}
-        isOwnProfile={true}
-        profileData={profileData}
-      />
-
-      <div className="container mx-auto px-4 py-4">
-        <ProfilePostsGrid 
-          posts={userPosts} 
-          onPostClick={handlePostClick} 
-          onDeletePost={handleDeletePost}
-          isOwnProfile={true} 
+      <div className="flex-grow">
+        <UserProfileHeader
+          username={username}
+          isOwnProfile={true}
+          profileData={profileData}
         />
+
+        <div className="container mx-auto px-4 py-4 mb-16">
+          <ProfilePostsGrid 
+            posts={userPosts} 
+            onPostClick={handlePostClick} 
+            onDeletePost={handleDeletePost}
+            isOwnProfile={true} 
+          />
+        </div>
       </div>
+      
+      <Footer />
     </div>
   );
 };
