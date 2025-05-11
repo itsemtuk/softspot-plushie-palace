@@ -2,8 +2,7 @@
 import React, { useState } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ImageIcon, ShoppingCart, MessageSquare } from "lucide-react";
+import { ImageIcon, ShoppingCart, MessageSquare, BarChart2 } from "lucide-react";
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -99,7 +98,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             <Button 
               variant="outline" 
               className="flex items-center gap-3 justify-start w-full py-6"
-              onClick={() => navigateToPage('/sell')}
+              onClick={() => navigateToPage('/marketplace/sell')}
             >
               <ShoppingCart className="h-5 w-5" />
               <span>Sell Item</span>
@@ -112,6 +111,15 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             >
               <MessageSquare className="h-5 w-5" />
               <span>Trade Request</span>
+            </Button>
+            
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-3 justify-start w-full py-6"
+              onClick={handlePostSubmit}
+            >
+              <BarChart2 className="h-5 w-5" />
+              <span>Create Poll</span>
             </Button>
           </div>
         </div>

@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -14,6 +15,16 @@ interface QuickPostFormProps {
 
 export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormProps) => {
   const { user } = useUser();
+  const navigate = useNavigate();
+  
+  const handleSellClick = () => {
+    navigate('/marketplace/sell');
+  };
+  
+  const handlePollClick = () => {
+    // Open create post dialog with poll option pre-selected
+    onCreatePost();
+  };
   
   return (
     <Card className="bg-white rounded-lg shadow p-4 mb-6">
@@ -48,7 +59,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
           variant="ghost" 
           size="sm" 
           className="flex items-center text-gray-600 hover:text-softspot-500"
-          onClick={onCreatePost}
+          onClick={handleSellClick}
         >
           <Tag className="mr-2 h-4 w-4" />
           <span>Sell</span>
@@ -57,7 +68,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
           variant="ghost" 
           size="sm" 
           className="flex items-center text-gray-600 hover:text-softspot-500"
-          onClick={onCreatePost}
+          onClick={handlePollClick}
         >
           <BarChart2 className="mr-2 h-4 w-4" />
           <span>Poll</span>

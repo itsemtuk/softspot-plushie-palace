@@ -1,6 +1,7 @@
+
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { PlusSquare, ShoppingBag, MessageSquare } from "lucide-react";
+import { PlusSquare, ShoppingBag, MessageSquare, BarChart2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
@@ -155,6 +156,21 @@ export const CreateButton = ({ onCreatePost: externalOnCreatePost }: CreateButto
               >
                 <MessageSquare className="h-4 w-4" />
                 Trade Request
+              </Button>
+              <Button 
+                variant="outline" 
+                className="flex items-center gap-2 justify-start"
+                onClick={() => {
+                  onOpenChange(false);
+                  if (externalOnCreatePost) {
+                    externalOnCreatePost();
+                  } else {
+                    handleCreatePost();
+                  }
+                }}
+              >
+                <BarChart2 className="h-4 w-4" />
+                Create Poll
               </Button>
             </div>
           </SheetContent>
