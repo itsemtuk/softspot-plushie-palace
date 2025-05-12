@@ -1,15 +1,16 @@
 
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { 
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+  SheetClose
+} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Store, ChevronDown, Search } from "lucide-react";
+import { Store, Search, ChevronDown, X, ShoppingBag, Tag, Percent } from "lucide-react";
 import { brandData, speciesData } from "./data";
 
 interface MobileNavProps {
@@ -19,70 +20,113 @@ interface MobileNavProps {
 
 export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps) {
   const [isSearchVisible, setIsSearchVisible] = useState(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
   
   // Helper to determine if a category button should have active styling
   const isActive = (category: string) => selectedCategory === category;
 
+  const handleCategorySelect = (category: string) => {
+    onCategoryChange(category);
+    setIsMenuOpen(false);
+  };
+
+  const navigateToSellItem = () => {
+    navigate("/marketplace/sell");
+    setIsMenuOpen(false);
+  };
+
   return (
     <div className="lg:hidden">
       <div className="flex items-center justify-between h-12">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+          <SheetTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2">
               <Store className="w-4 h-4" />
               <span>Shop</span>
               <ChevronDown className="w-4 h-4" />
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-screen max-w-xs">
-            <DropdownMenuItem 
-              className={isActive("all") ? "bg-softspot-100" : ""}
-              onClick={() => onCategoryChange("all")}
-            >
-              <div className="flex items-center gap-2 cursor-pointer">
-                <Store className="w-4 h-4" />
-                <span>Shop All</span>
-              </div>
-            </DropdownMenuItem>
+          </SheetTrigger>
+          <SheetContent side="bottom" className="h-[85vh] rounded-t-xl">
+            <SheetHeader className="flex flex-row items-center justify-between border-b pb-2">
+              <SheetTitle className="text-xl">Shop Categories</SheetTitle>
+              <SheetClose className="rounded-full h-8 w-8 flex items-center justify-center">
+                <X className="h-4 w-4" />
+              </SheetClose>
+            </SheetHeader>
             
-            <DropdownMenuSeparator />
-            <div className="px-2 py-1 text-xs text-gray-500">Featured</div>
-            <DropdownMenuItem asChild>
-              <Link to="/marketplace?featured=new">New Arrivals</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/marketplace?featured=trending">Trending</Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem asChild>
-              <Link to="/marketplace?featured=limited">Limited Editions</Link>
-            </DropdownMenuItem>
-            
-            <DropdownMenuSeparator />
-            <div className="px-2 py-1 text-xs text-gray-500">Brands</div>
-            {brandData.map(brand => (
-              <DropdownMenuItem key={brand.id} asChild>
-                <Link to={`/brand/${brand.id}`}>{brand.name}</Link>
-              </DropdownMenuItem>
-            ))}
-            
-            <DropdownMenuSeparator />
-            <div className="px-2 py-1 text-xs text-gray-500">Animals</div>
-            {speciesData.map(animal => (
-              <DropdownMenuItem 
-                key={animal.id} 
-                className={isActive(animal.id) ? "bg-softspot-100" : ""}
-                onClick={() => onCategoryChange(animal.id)}
+            <div className="py-4 space-y-4">
+              <Button 
+                variant={isActive("all") ? "default" : "ghost"}
+                className={`w-full justify-start ${isActive("all") ? "bg-softspot-500" : ""}`}
+                onClick={() => handleCategorySelect("all")}
               >
-                {animal.name}
-              </DropdownMenuItem>
-            ))}
-            
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/marketplace?sale=true" className="text-red-500">Sale Items</Link>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                Shop All
+              </Button>
+              
+              <div className="border-t pt-2">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Featured</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button variant="outline" asChild className="justify-start h-auto py-3">
+                    <Link to="/marketplace?featured=new">New Arrivals</Link>
+                  </Button>
+                  <Button variant="outline" asChild className="justify-start h-auto py-3">
+                    <Link to="/marketplace?featured=trending">Trending</Link>
+                  </Button>
+                  <Button variant="outline" asChild className="justify-start h-auto py-3">
+                    <Link to="/marketplace?featured=limited">Limited Editions</Link>
+                  </Button>
+                  <Button variant="outline" asChild className="justify-start h-auto py-3 text-red-500">
+                    <Link to="/marketplace?sale=true">Sale Items</Link>
+                  </Button>
+                </div>
+              </div>
+              
+              <div className="border-t pt-2">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Animals</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {speciesData.map(animal => (
+                    <Button 
+                      key={animal.id} 
+                      variant={isActive(animal.id) ? "default" : "outline"}
+                      className={`justify-start h-auto py-3 ${isActive(animal.id) ? "bg-softspot-500" : ""}`}
+                      onClick={() => handleCategorySelect(animal.id)}
+                    >
+                      {animal.name}
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="border-t pt-2">
+                <h3 className="text-sm font-medium text-gray-500 mb-2">Brands</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {brandData.map(brand => (
+                    <Button 
+                      key={brand.id} 
+                      variant="outline" 
+                      asChild
+                      className="justify-start h-auto py-3"
+                    >
+                      <Link to={`/brand/${brand.id}`}>{brand.name}</Link>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="border-t pt-4 mt-4">
+                <Button 
+                  className="w-full bg-softspot-500 hover:bg-softspot-600"
+                  onClick={navigateToSellItem}
+                >
+                  <Tag className="mr-2 h-4 w-4" /> 
+                  Sell a Plushie
+                </Button>
+              </div>
+            </div>
+          </SheetContent>
+        </Sheet>
         
         <div className="flex items-center">
           <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(!isSearchVisible)}>
@@ -106,5 +150,3 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
     </div>
   );
 }
-
-export default MobileNav;

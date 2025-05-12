@@ -66,10 +66,10 @@ export function BottomNav() {
           <Button 
             variant="outline" 
             size="sm" 
-            className="h-10 w-10 rounded-full border-softspot-200 flex items-center justify-center p-0"
+            className="h-10 w-10 rounded-full border-softspot-200 flex items-center justify-center p-0 bg-softspot-500 border-none"
             onClick={() => setIsCreateSheetOpen(true)}
           >
-            <PlusSquare className="h-5 w-5 text-softspot-500" />
+            <PlusSquare className="h-5 w-5 text-white" />
           </Button>
           <span className="text-[9px] mt-1">Create</span>
         </div>

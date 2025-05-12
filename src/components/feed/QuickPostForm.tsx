@@ -43,6 +43,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onClick={onCreatePost}
+          readOnly
         />
       </div>
       <div className="flex justify-between mt-3 pt-3 border-t">
