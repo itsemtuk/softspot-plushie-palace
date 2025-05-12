@@ -10,6 +10,7 @@ interface AvatarOption {
 }
 
 const defaultAvatars: AvatarOption[] = [
+  // Plushie avatars
   { id: 'bear', src: '/assets/avatars/bear-avatar.png', bgColor: 'bg-softspot-100' },
   { id: 'bunny', src: '/assets/avatars/bunny-avatar.png', bgColor: 'bg-blue-100' },
   { id: 'cat', src: '/assets/avatars/cat-avatar.png', bgColor: 'bg-softspot-200' },
@@ -18,6 +19,13 @@ const defaultAvatars: AvatarOption[] = [
   { id: 'penguin', src: '/assets/avatars/penguin-avatar.png', bgColor: 'bg-blue-200' },
   { id: 'fox', src: '/assets/avatars/fox-avatar.png', bgColor: 'bg-orange-100' },
   { id: 'panda', src: '/assets/avatars/panda-avatar.png', bgColor: 'bg-gray-100' },
+  // Kai avatars
+  { id: 'kai-default', src: '/assets/avatars/Kai.PNG', bgColor: 'bg-pink-100' },
+  { id: 'kai-happy', src: '/assets/avatars/Kai-Happy.PNG', bgColor: 'bg-green-100' },
+  { id: 'kai-hello', src: '/assets/avatars/Kai-Hello.PNG', bgColor: 'bg-blue-100' },
+  { id: 'kai-love', src: '/assets/avatars/Kai-Love.PNG', bgColor: 'bg-red-100' },
+  { id: 'kai-sad', src: '/assets/avatars/Kai-Sad.PNG', bgColor: 'bg-purple-100' },
+  { id: 'kai-sus', src: '/assets/avatars/Kai-Sus.PNG', bgColor: 'bg-yellow-100' },
 ];
 
 interface AvatarSelectorProps {
@@ -84,26 +92,54 @@ export const AvatarSelector = ({ currentAvatar, onSelect }: AvatarSelectorProps)
         </div>
         
         <div className="flex-1">
-          <p className="text-sm text-gray-500 mb-4">Upload a new photo or choose from our cute plushie avatars</p>
-          <div className="flex flex-wrap gap-3 mb-4">
-            {defaultAvatars.map((avatar) => (
-              <div 
-                key={avatar.id}
-                className={`w-16 h-16 rounded-full cursor-pointer transition-all ${avatar.bgColor} ${
-                  selectedAvatar === avatar.src 
-                    ? "transform scale-105 shadow-md ring-2 ring-softspot-500 avatar-option selected" 
-                    : "hover:transform hover:scale-105 avatar-option"
-                }`}
-                onClick={() => handleSelectAvatar(avatar)}
-              >
-                <img 
-                  src={avatar.src} 
-                  alt={`${avatar.id} avatar`} 
-                  className="w-full h-full object-contain p-2 rounded-full"
-                />
-              </div>
-            ))}
+          <p className="text-sm text-gray-500 mb-4">Upload a new photo or choose from our avatars</p>
+          
+          <div className="mb-4">
+            <h4 className="text-sm font-medium text-gray-600 mb-2">Plushie Avatars</h4>
+            <div className="flex flex-wrap gap-3 mb-4">
+              {defaultAvatars.slice(0, 8).map((avatar) => (
+                <div 
+                  key={avatar.id}
+                  className={`w-16 h-16 rounded-full cursor-pointer transition-all ${avatar.bgColor} ${
+                    selectedAvatar === avatar.src 
+                      ? "transform scale-105 shadow-md ring-2 ring-softspot-500 avatar-option selected" 
+                      : "hover:transform hover:scale-105 avatar-option"
+                  }`}
+                  onClick={() => handleSelectAvatar(avatar)}
+                >
+                  <img 
+                    src={avatar.src} 
+                    alt={`${avatar.id} avatar`} 
+                    className="w-full h-full object-contain p-2 rounded-full"
+                  />
+                </div>
+              ))}
+            </div>
           </div>
+          
+          <div>
+            <h4 className="text-sm font-medium text-gray-600 mb-2">Kai Avatars</h4>
+            <div className="flex flex-wrap gap-3 mb-4">
+              {defaultAvatars.slice(8).map((avatar) => (
+                <div 
+                  key={avatar.id}
+                  className={`w-16 h-16 rounded-full cursor-pointer transition-all ${avatar.bgColor} ${
+                    selectedAvatar === avatar.src 
+                      ? "transform scale-105 shadow-md ring-2 ring-softspot-500 avatar-option selected" 
+                      : "hover:transform hover:scale-105 avatar-option"
+                  }`}
+                  onClick={() => handleSelectAvatar(avatar)}
+                >
+                  <img 
+                    src={avatar.src} 
+                    alt={`${avatar.id} avatar`} 
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+          
           <Button 
             type="button"
             variant="link" 

@@ -5,7 +5,6 @@ import {
   Home, 
   Search, 
   ShoppingBag, 
-  Heart, 
   User,
   PlusSquare
 } from "lucide-react";
@@ -20,26 +19,19 @@ interface BottomNavLinkProps {
   to: string;
   icon: React.ReactNode;
   isActive: boolean;
-  label: string;
 }
 
-const BottomNavLink = ({ to, icon, isActive, label }: BottomNavLinkProps) => (
+const BottomNavLink = ({ to, icon, isActive }: BottomNavLinkProps) => (
   <Link 
     to={to}
     className={cn(
-      "flex flex-col items-center justify-center text-center py-1 flex-1",
+      "flex flex-col items-center justify-center text-center py-3 flex-1",
       isActive ? "text-softspot-500" : "text-gray-500"
     )}
   >
     <div className="flex items-center justify-center w-6 h-6">
       {icon}
     </div>
-    <span className={cn(
-      "text-[9px] mt-1",
-      isActive ? "font-medium" : "font-normal"
-    )}>
-      {label}
-    </span>
   </Link>
 );
 
@@ -69,17 +61,15 @@ export function BottomNav() {
           to="/feed" 
           icon={<Home className="w-5 h-5" />} 
           isActive={pathname === "/feed"}
-          label="Feed"
         />
         
         <BottomNavLink 
           to="/discover" 
           icon={<Search className="w-5 h-5" />} 
           isActive={pathname === "/discover"}
-          label="Discover"
         />
         
-        <div className="flex flex-col items-center justify-center flex-1">
+        <div className="flex flex-col items-center justify-center flex-1 py-3">
           <Button 
             variant="outline" 
             size="sm" 
@@ -88,21 +78,18 @@ export function BottomNav() {
           >
             <PlusSquare className="h-5 w-5 text-white" />
           </Button>
-          <span className="text-[9px] mt-1">Create</span>
         </div>
         
         <BottomNavLink 
           to="/marketplace" 
           icon={<ShoppingBag className="w-5 h-5" />} 
           isActive={pathname.startsWith("/marketplace")}
-          label="Shop"
         />
         
         <BottomNavLink 
           to="/profile" 
           icon={<User className="w-5 h-5" />} 
           isActive={pathname === "/profile"}
-          label="Profile"
         />
       </div>
 
