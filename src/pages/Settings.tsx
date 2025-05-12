@@ -7,6 +7,7 @@ import AccountSettings from "@/components/settings/AccountSettings";
 import { PrivacySettings } from "@/components/settings/PrivacySettings";
 import { MobileNav } from "@/components/navigation/MobileNav";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ProfileSettings } from "@/components/settings/ProfileSettings";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -27,7 +28,7 @@ const Settings = () => {
           </TabsList>
           
           <TabsContent value="profile" className="space-y-6">
-            <ProfileInformation />
+            <ProfileSettings />
           </TabsContent>
           
           <TabsContent value="account" className="space-y-6">
