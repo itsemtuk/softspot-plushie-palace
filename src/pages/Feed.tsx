@@ -8,18 +8,21 @@ import { Navbar } from "@/components/Navbar";
 import { MobileNav } from "@/components/navigation/MobileNav";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
-import { getAllPublicPosts } from "@/utils/posts/postFetch";
+import { getPosts } from "@/utils/posts/postFetch";
 import { ExtendedPost } from "@/types/marketplace";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import Footer from "@/components/Footer";
+import { useCreatePost } from "@/hooks/use-create-post";
 
 const Feed = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { openPostDialog } = usePostDialog();
+  const { onCreatePost } = useCreatePost();
   
   useEffect(() => {
     const userId = getCurrentUserId();
@@ -29,8 +32,9 @@ const Feed = () => {
     }
     
     setLoading(true);
-    getAllPublicPosts()
+    getPosts()
       .then(fetchedPosts => {
+        // Filter out private posts if needed (for now showing all posts)
         setPosts(fetchedPosts);
         setLoading(false);
       })
@@ -39,26 +43,54 @@ const Feed = () => {
         setLoading(false);
       });
   }, [navigate]);
+  
+  const handleRefresh = () => {
+    setLoading(true);
+    getPosts()
+      .then(fetchedPosts => {
+        setPosts(fetchedPosts);
+        setLoading(false);
+      })
+      .catch(error => {
+        console.error("Error refreshing posts:", error);
+        setLoading(false);
+      });
+  };
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);
   };
+
+  // Filter posts based on search query
+  const filteredPosts = searchQuery
+    ? posts.filter(post => 
+        post.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+        post.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
+      )
+    : posts;
 
   return (
     <div className="flex flex-col min-h-screen bg-gray-50">
       {isMobile ? <MobileNav /> : <Navbar />}
       
       <main className="flex-grow container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <FeedHeader />
+        <FeedHeader 
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery} 
+          onCreatePost={onCreatePost}
+          onRefresh={handleRefresh}
+          isRefreshing={loading} 
+        />
         
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <Spinner size="lg" />
           </div>
-        ) : posts.length > 0 ? (
-          <FeedContent posts={posts} onPostClick={handlePostClick} />
+        ) : filteredPosts.length > 0 ? (
+          <FeedContent posts={filteredPosts} onPostClick={handlePostClick} />
         ) : (
-          <EmptyFeed />
+          <EmptyFeed onCreatePost={onCreatePost} />
         )}
       </main>
       

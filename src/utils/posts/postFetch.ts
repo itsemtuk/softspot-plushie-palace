@@ -26,6 +26,15 @@ export const getPosts = async (): Promise<ExtendedPost[]> => {
 };
 
 /**
+ * Retrieves all public posts (accessible without login)
+ */
+export const getAllPublicPosts = async (): Promise<ExtendedPost[]> => {
+  // For now, this is just an alias to getPosts
+  // In the future, you might want to filter for public posts only
+  return getPosts();
+};
+
+/**
  * Retrieves posts by a specific user
  */
 export const getUserPosts = async (userId: string): Promise<ExtendedPost[]> => {
