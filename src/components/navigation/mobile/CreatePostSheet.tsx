@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { ImageIcon, ShoppingCart, MessageSquare, BarChart2 } from "lucide-react";
@@ -18,6 +18,11 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
   const handleCreatePost = () => {
     onOpenChange(false);
     onCreatePost();
+  };
+
+  const handleCreatePoll = () => {
+    onOpenChange(false);
+    onCreatePost(); // For now, use the same flow for polls
   };
   
   const navigateToPage = (path: string) => {
@@ -64,7 +69,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             <Button 
               variant="outline" 
               className="flex items-center gap-3 justify-start w-full py-6"
-              onClick={handleCreatePost}
+              onClick={handleCreatePoll}
             >
               <BarChart2 className="h-5 w-5" />
               <span>Create Poll</span>
