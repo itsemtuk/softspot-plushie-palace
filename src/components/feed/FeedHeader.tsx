@@ -2,6 +2,9 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusCircle, Search, RefreshCw, Users } from "lucide-react";
+import { isAuthenticated } from "@/utils/auth/authState";
+import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface FeedHeaderProps {
   searchQuery: string;
@@ -20,6 +23,21 @@ export const FeedHeader = ({
   isRefreshing = false,
   onToggleUserSearch
 }: FeedHeaderProps) => {
+  const navigate = useNavigate();
+  
+  const handleCreatePost = () => {
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create posts."
+      });
+      navigate('/sign-in');
+      return;
+    }
+    
+    onCreatePost();
+  };
+  
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
       <div className="flex items-center gap-2">
@@ -60,7 +78,7 @@ export const FeedHeader = ({
         )}
         <Button 
           className="bg-softspot-500 hover:bg-softspot-600 text-white whitespace-nowrap"
-          onClick={onCreatePost}
+          onClick={handleCreatePost}
         >
           <PlusCircle className="mr-2 h-4 w-4" />
           New Post

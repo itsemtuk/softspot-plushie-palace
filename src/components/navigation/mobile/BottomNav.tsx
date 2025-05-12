@@ -12,6 +12,9 @@ import {
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CreatePostSheet } from "./CreatePostSheet";
+import { isAuthenticated } from "@/utils/auth/authState";
+import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface BottomNavLinkProps {
   to: string;
@@ -42,8 +45,22 @@ const BottomNavLink = ({ to, icon, isActive, label }: BottomNavLinkProps) => (
 
 export function BottomNav() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isCreateSheetOpen, setIsCreateSheetOpen] = useState(false);
   const pathname = location.pathname;
+
+  const handleCreateButtonClick = () => {
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create content."
+      });
+      navigate("/sign-in");
+      return;
+    }
+    
+    setIsCreateSheetOpen(true);
+  };
 
   return (
     <>
@@ -67,7 +84,7 @@ export function BottomNav() {
             variant="outline" 
             size="sm" 
             className="h-10 w-10 rounded-full border-softspot-200 flex items-center justify-center p-0 bg-softspot-500 border-none"
-            onClick={() => setIsCreateSheetOpen(true)}
+            onClick={handleCreateButtonClick}
           >
             <PlusSquare className="h-5 w-5 text-white" />
           </Button>

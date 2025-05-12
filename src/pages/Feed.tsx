@@ -14,6 +14,8 @@ import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import Footer from "@/components/Footer";
 import { useCreatePost } from "@/hooks/use-create-post";
+import { isAuthenticated } from "@/utils/auth/authState";
+import { toast } from "@/components/ui/use-toast";
 
 const Feed = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
@@ -25,8 +27,12 @@ const Feed = () => {
   const { onCreatePost } = useCreatePost();
   
   useEffect(() => {
-    const userId = getCurrentUserId();
-    if (!userId) {
+    // Check if user is authenticated
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to view the feed."
+      });
       navigate('/sign-in');
       return;
     }
@@ -43,6 +49,19 @@ const Feed = () => {
         setLoading(false);
       });
   }, [navigate]);
+  
+  const handleCreatePostClick = () => {
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create posts."
+      });
+      navigate('/sign-in');
+      return;
+    }
+    
+    onCreatePost();
+  };
   
   const handleRefresh = () => {
     setLoading(true);
@@ -78,7 +97,7 @@ const Feed = () => {
         <FeedHeader 
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 
-          onCreatePost={onCreatePost}
+          onCreatePost={handleCreatePostClick}
           onRefresh={handleRefresh}
           isRefreshing={loading} 
         />
@@ -90,7 +109,7 @@ const Feed = () => {
         ) : filteredPosts.length > 0 ? (
           <FeedContent posts={filteredPosts} onPostClick={handlePostClick} />
         ) : (
-          <EmptyFeed onCreatePost={onCreatePost} />
+          <EmptyFeed onCreatePost={handleCreatePostClick} />
         )}
       </main>
       

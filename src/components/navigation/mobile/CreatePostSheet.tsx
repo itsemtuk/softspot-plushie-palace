@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { ImageIcon, ShoppingCart, MessageSquare, BarChart2 } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { useCreatePost } from "@/hooks/use-create-post";
+import { isAuthenticated } from "@/utils/auth/authState";
+import { toast } from "@/components/ui/use-toast";
 
 export interface CreatePostSheetProps {
   open: boolean;
@@ -15,19 +17,40 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
   const navigate = useNavigate();
   const { onCreatePost } = useCreatePost();
   
+  const handleAuthentication = (action: string, callback: () => void) => {
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: `Please sign in to ${action}.`
+      });
+      onOpenChange(false);
+      navigate("/sign-in");
+      return false;
+    }
+    
+    callback();
+    return true;
+  };
+  
   const handleCreatePost = () => {
-    onOpenChange(false);
-    onCreatePost();
+    handleAuthentication("create posts", () => {
+      onOpenChange(false);
+      onCreatePost();
+    });
   };
 
   const handleCreatePoll = () => {
-    onOpenChange(false);
-    onCreatePost(); // For now, use the same flow for polls
+    handleAuthentication("create polls", () => {
+      onOpenChange(false);
+      onCreatePost(); // For now, use the same flow for polls
+    });
   };
   
-  const navigateToPage = (path: string) => {
-    onOpenChange(false);
-    navigate(path);
+  const navigateToPage = (path: string, action: string) => {
+    handleAuthentication(action, () => {
+      onOpenChange(false);
+      navigate(path);
+    });
   };
   
   return (
@@ -51,7 +74,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             <Button 
               variant="outline" 
               className="flex items-center gap-3 justify-start w-full py-6"
-              onClick={() => navigateToPage('/marketplace/sell')}
+              onClick={() => navigateToPage('/marketplace/sell', 'sell items')}
             >
               <ShoppingCart className="h-5 w-5" />
               <span>Sell Item</span>
@@ -60,7 +83,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             <Button 
               variant="outline" 
               className="flex items-center gap-3 justify-start w-full py-6"
-              onClick={() => navigateToPage('/messages')}
+              onClick={() => navigateToPage('/messages', 'send messages')}
             >
               <MessageSquare className="h-5 w-5" />
               <span>Trade Request</span>

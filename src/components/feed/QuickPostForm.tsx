@@ -6,6 +6,8 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ImageIcon, Tag, BarChart2 } from "lucide-react";
+import { isAuthenticated } from "@/utils/auth/authState";
+import { toast } from "@/components/ui/use-toast";
 
 interface QuickPostFormProps {
   onCreatePost: () => void;
@@ -17,13 +19,33 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
   const { user } = useUser();
   const navigate = useNavigate();
   
+  const handleCreateAction = (action: string, path?: string) => {
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: `Please sign in to ${action}.`
+      });
+      navigate("/sign-in");
+      return;
+    }
+    
+    if (path) {
+      navigate(path);
+    } else {
+      onCreatePost();
+    }
+  };
+  
   const handleSellClick = () => {
-    navigate('/marketplace/sell');
+    handleCreateAction("sell items", "/marketplace/sell");
   };
   
   const handlePollClick = () => {
-    // Open create post dialog with poll option pre-selected
-    onCreatePost();
+    handleCreateAction("create polls");
+  };
+  
+  const handleCreateClick = () => {
+    handleCreateAction("create posts");
   };
   
   return (
@@ -42,7 +64,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
           className="flex-1 py-2 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-softspot-400 focus:bg-white"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          onClick={onCreatePost}
+          onClick={handleCreateClick}
           readOnly
         />
       </div>
@@ -51,7 +73,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
           variant="ghost" 
           size="sm" 
           className="flex items-center text-gray-600 hover:text-softspot-500"
-          onClick={onCreatePost}
+          onClick={handleCreateClick}
         >
           <ImageIcon className="mr-2 h-4 w-4" />
           <span>Photo</span>

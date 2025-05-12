@@ -3,6 +3,7 @@ import { TopNav } from "./mobile/TopNav";
 import { BottomNav } from "./mobile/BottomNav";
 import { useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { isAuthenticated } from "@/utils/auth/authState";
 
 export function MobileNav() {
   const location = useLocation();
@@ -13,15 +14,15 @@ export function MobileNav() {
   // Check auth status and update when location changes
   useEffect(() => {
     const checkAuthStatus = () => {
-      const currentUserId = localStorage.getItem('currentUserId');
-      setIsSignedIn(!!currentUserId);
+      const authStatus = isAuthenticated();
+      setIsSignedIn(authStatus);
     };
     
     checkAuthStatus();
     
     // Set up storage event listener to detect auth changes in other tabs
     const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'currentUserId') {
+      if (event.key === 'currentUserId' || event.key === 'authStatus') {
         checkAuthStatus();
       }
     };
