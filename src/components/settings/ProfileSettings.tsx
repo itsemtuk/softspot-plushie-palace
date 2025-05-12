@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -609,6 +610,27 @@ export function ProfileSettings() {
                   
                   <FormField
                     control={form.control}
+                    name="newReleaseAlerts"
+                    render={({ field }) => (
+                      <FormItem className="flex items-center justify-between">
+                        <div>
+                          <FormLabel className="font-medium text-gray-700">New release alerts</FormLabel>
+                          <FormDescription className="text-sm text-gray-500">
+                            Get notified about new plushie releases from your favorite brands
+                          </FormDescription>
+                        </div>
+                        <FormControl>
+                          <Switch
+                            checked={field.value || false}
+                            onCheckedChange={field.onChange}
+                          />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={form.control}
                     name="receiveWishlistAlerts"
                     render={({ field }) => (
                       <FormItem className="flex items-center justify-between">
@@ -620,7 +642,7 @@ export function ProfileSettings() {
                         </div>
                         <FormControl>
                           <Switch
-                            checked={field.value || false}
+                            checked={!!field.value}
                             onCheckedChange={field.onChange}
                           />
                         </FormControl>

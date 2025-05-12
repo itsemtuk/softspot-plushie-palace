@@ -21,6 +21,7 @@ interface ProfileSettingsFormData {
   receiveEmailUpdates?: boolean;
   receiveMarketingEmails?: boolean;
   receiveWishlistAlerts?: boolean;
+  newReleaseAlerts?: boolean;
 }
 
 export const useProfileSettings = () => {
@@ -45,6 +46,8 @@ export const useProfileSettings = () => {
       showWishlist: true,
       receiveEmailUpdates: true,
       receiveMarketingEmails: false,
+      newReleaseAlerts: false,
+      receiveWishlistAlerts: false,
     }
   });
 
@@ -70,6 +73,8 @@ export const useProfileSettings = () => {
             showWishlist: user.unsafeMetadata?.showWishlist as boolean || true,
             receiveEmailUpdates: user.unsafeMetadata?.receiveEmailUpdates as boolean || true,
             receiveMarketingEmails: user.unsafeMetadata?.receiveMarketingEmails as boolean || false,
+            receiveWishlistAlerts: user.unsafeMetadata?.receiveWishlistAlerts as boolean || false,
+            newReleaseAlerts: user.unsafeMetadata?.newReleaseAlerts as boolean || false,
           });
           
           setIsSynced(true);
@@ -109,6 +114,8 @@ export const useProfileSettings = () => {
           showWishlist: data.showWishlist,
           receiveEmailUpdates: data.receiveEmailUpdates,
           receiveMarketingEmails: data.receiveMarketingEmails,
+          receiveWishlistAlerts: data.receiveWishlistAlerts,
+          newReleaseAlerts: data.newReleaseAlerts,
         },
       });
       
