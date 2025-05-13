@@ -1,38 +1,29 @@
 
+import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
-import { DirectMessaging } from "@/components/messaging/DirectMessaging";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileNav } from "@/components/navigation/MobileNav";
-import { Card } from "@/components/ui/card";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { DirectMessaging } from "@/components/messaging/DirectMessaging";
+import { MessagingComposer } from "@/components/messaging/MessagingComposer";
+import Footer from "@/components/Footer";
 
 const MessagingPage = () => {
   const isMobile = useIsMobile();
-  const navigate = useNavigate();
-  
-  // Verify authentication on component mount
-  useEffect(() => {
-    const isAuthenticated = !!localStorage.getItem('currentUserId');
-    if (!isAuthenticated) {
-      toast({
-        title: "Authentication Required",
-        description: "You need to be signed in to access messages."
-      });
-      navigate('/sign-in');
-    }
-  }, [navigate]);
-  
+
   return (
     <div className="min-h-screen bg-gray-50">
       {isMobile ? <MobileNav /> : <Navbar />}
-      <main className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold mb-6">Messages</h1>
-        <Card className="bg-white shadow-sm">
-          <DirectMessaging />
-        </Card>
-      </main>
+
+      <div className="container mx-auto px-4 py-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-2xl font-bold">Messages</h1>
+          <MessagingComposer />
+        </div>
+
+        <DirectMessaging />
+      </div>
+
+      <Footer />
     </div>
   );
 };

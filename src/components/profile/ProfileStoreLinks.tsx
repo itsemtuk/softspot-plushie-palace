@@ -1,5 +1,5 @@
 
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, Ebay, Link } from "lucide-react";
 
 interface StoreLink {
   platform: string;
@@ -13,22 +13,42 @@ interface ProfileStoreLinksProps {
 export const ProfileStoreLinks = ({ storeLinks }: ProfileStoreLinksProps) => {
   if (!storeLinks || storeLinks.length === 0) return null;
   
+  // Store icon renderer
+  const renderStoreIcon = (platform: string) => {
+    switch (platform.toLowerCase()) {
+      case 'ebay':
+        return <Ebay size={16} />;
+      case 'etsy':
+        return <ShoppingBag size={16} />;
+      default:
+        return <Link size={16} />;
+    }
+  };
+  
   return (
     <div className="mb-4">
       <h2 className="font-semibold text-gray-800 mb-2">My Stores</h2>
-      <div className="flex flex-wrap gap-2">
-        {storeLinks.map((link: StoreLink, index: number) => (
-          <a 
-            key={index}
-            href={link.url}
-            target="_blank" 
-            rel="noopener noreferrer"
-            className="bg-softspot-100 text-softspot-700 px-3 py-1 rounded-full text-xs hover:bg-softspot-200 transition-colors inline-flex items-center gap-1"
-          >
-            <ShoppingBag className="h-3 w-3" />
-            {link.platform}
-          </a>
-        ))}
+      <div className="flex flex-wrap justify-center md:justify-start gap-2">
+        {storeLinks.map((link: StoreLink, index: number) => {
+          // Ensure URL has proper format
+          let url = link.url;
+          if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+            url = 'https://' + url;
+          }
+          
+          return (
+            <a 
+              key={index}
+              href={url}
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-softspot-100 text-softspot-700 px-3 py-1 rounded-full text-xs hover:bg-softspot-200 transition-colors inline-flex items-center gap-1"
+            >
+              {renderStoreIcon(link.platform)}
+              {link.platform}
+            </a>
+          );
+        })}
       </div>
     </div>
   );

@@ -153,6 +153,8 @@ export const useProfileSettings = () => {
         favoriteTypes: data.favoriteTypes,
         socialLinks: data.socialLinks,
         storeLinks: data.storeLinks,
+        // Sync plushie interests with favorite collections
+        plushieInterests: data.favoriteBrands || []
       };
       
       // Save username if changed

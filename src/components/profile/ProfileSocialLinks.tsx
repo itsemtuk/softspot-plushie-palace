@@ -1,5 +1,5 @@
 
-import { Facebook, Instagram, Twitter as X, Youtube, Link } from "lucide-react";
+import { Facebook, Instagram, Twitter as X, Youtube, Link, Ebay, ShoppingBag } from "lucide-react";
 
 interface ProfileSocialLinksProps {
   socialLinks: any[];
@@ -20,13 +20,15 @@ export const ProfileSocialLinks = ({ socialLinks }: ProfileSocialLinksProps) => 
         return <Facebook size={18} />;
       case 'youtube':
         return <Youtube size={18} />;
+      case 'ebay':
+        return <ShoppingBag size={18} />;
       default:
         return <Link size={18} />;
     }
   };
   
   return (
-    <div className="flex flex-wrap gap-2 mt-2">
+    <div className="flex flex-wrap justify-center md:justify-start gap-2 mt-2">
       {socialLinks.map((link: any, index: number) => (
         <a 
           key={index} 

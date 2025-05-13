@@ -6,19 +6,21 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Filter, Search, Heart, MessageSquare, LayoutGrid, ShoppingBag, LayersIcon, Users, Play } from "lucide-react";
+import { Filter, Search, Heart, MessageSquare, LayoutGrid, ShoppingBag, Users, Play } from "lucide-react";
 import { MarketplacePlushie } from '@/types/marketplace';
 import { getAllUserPosts } from '@/utils/postStorage';
 import { getMarketplaceListings } from '@/utils/storage/localStorageUtils';
 import { Input } from "@/components/ui/input";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileNav } from "@/components/navigation/MobileNav";
+import { UserSearchResults } from "@/components/user/UserSearchResults";
 
 const Discover = () => {
   const [activeTab, setActiveTab] = useState("trending");
   const [searchTerm, setSearchTerm] = useState("");
   const [trendingPosts, setTrendingPosts] = useState<any[]>([]);
   const [marketplaceItems, setMarketplaceItems] = useState<MarketplacePlushie[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const isMobile = useIsMobile();
 
   useEffect(() => {
@@ -37,7 +39,7 @@ const Discover = () => {
   }, []);
 
   const handleSearch = () => {
-    // Implement search logic here
+    setIsSearching(true);
     console.log("Searching for:", searchTerm);
   };
 
@@ -52,7 +54,7 @@ const Discover = () => {
             <div className="flex items-center space-x-2">
               <Input
                 type="text"
-                placeholder="Search"
+                placeholder="Search users"
                 className="sm:w-64"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -60,14 +62,24 @@ const Discover = () => {
               <Button onClick={handleSearch}><Search className="h-4 w-4" /></Button>
             </div>
           </div>
+          
+          {/* Show user search results when searching */}
+          {searchTerm && (
+            <div className="mb-4">
+              <UserSearchResults searchTerm={searchTerm} />
+            </div>
+          )}
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
             <TabsList className="bg-white border">
               <TabsTrigger value="trending">Trending</TabsTrigger>
               <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
               <TabsTrigger value="community">Community</TabsTrigger>
+              <TabsTrigger value="people">People</TabsTrigger>
             </TabsList>
 
+            
+            
             <TabsContent value="trending" className="space-y-4">
               <h2 className="text-xl font-semibold">Trending Posts</h2>
               {trendingPosts.length > 0 ? (
@@ -239,6 +251,92 @@ const Discover = () => {
                   </Card>
                 </div>
               </ScrollArea>
+            </TabsContent>
+          
+            <TabsContent value="people" className="space-y-4">
+              <h2 className="text-xl font-semibold">Popular Users</h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarImage src="/assets/avatars/PLUSH_Bear.PNG" alt="PlushieLover" />
+                        <AvatarFallback>PL</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="text-sm font-semibold">PlushieLover</h3>
+                        <p className="text-xs text-gray-500">@plushielover</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-700">
+                      Hi! I'm a passionate plushie collector. I love Squishmallows and Jellycats!
+                    </p>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline">Jellycat</Badge>
+                      <Badge variant="outline">Squishmallows</Badge>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full">Follow</Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarImage src="/assets/avatars/PLUSH_Panda.PNG" alt="PandaPal" />
+                        <AvatarFallback>PP</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="text-sm font-semibold">PandaPal</h3>
+                        <p className="text-xs text-gray-500">@pandapal</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-700">
+                      Collector and trader of rare panda plushies! Looking to expand my collection.
+                    </p>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline">Pandas</Badge>
+                      <Badge variant="outline">Trading</Badge>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full">Follow</Button>
+                  </CardFooter>
+                </Card>
+                
+                <Card>
+                  <CardHeader>
+                    <div className="flex items-center space-x-4">
+                      <Avatar>
+                        <AvatarImage src="/assets/avatars/PLUSH_Bunny.PNG" alt="BunnyLover" />
+                        <AvatarFallback>BL</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <h3 className="text-sm font-semibold">BunnyLover</h3>
+                        <p className="text-xs text-gray-500">@bunnylover</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-700">
+                      Specializing in bunny plushies from all brands. Let's trade!
+                    </p>
+                    <div className="flex gap-1 mt-2">
+                      <Badge variant="outline">Bunnies</Badge>
+                      <Badge variant="outline">Jellycat</Badge>
+                    </div>
+                  </CardContent>
+                  <CardFooter>
+                    <Button variant="outline" className="w-full">Follow</Button>
+                  </CardFooter>
+                </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>
