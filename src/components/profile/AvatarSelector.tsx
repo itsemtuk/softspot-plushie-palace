@@ -11,14 +11,14 @@ interface AvatarOption {
 
 const defaultAvatars: AvatarOption[] = [
   // Plushie avatars
-  { id: 'bear', src: '/assets/avatars/bear-avatar.png', bgColor: 'bg-softspot-100' },
-  { id: 'bunny', src: '/assets/avatars/bunny-avatar.png', bgColor: 'bg-blue-100' },
-  { id: 'cat', src: '/assets/avatars/cat-avatar.png', bgColor: 'bg-softspot-200' },
-  { id: 'dog', src: '/assets/avatars/dog-avatar.png', bgColor: 'bg-yellow-100' },
-  { id: 'unicorn', src: '/assets/avatars/unicorn-avatar.png', bgColor: 'bg-purple-100' },
-  { id: 'penguin', src: '/assets/avatars/penguin-avatar.png', bgColor: 'bg-blue-200' },
+  { id: 'bear', src: '/assets/avatars/PLUSH_Bear.PNG', bgColor: 'bg-softspot-100' },
+  { id: 'bunny', src: '/assets/avatars/PLUSH_Bunny.PNG', bgColor: 'bg-blue-100' },
+  { id: 'cat', src: '/assets/avatars/PLUSH_Cat.PNG', bgColor: 'bg-softspot-200' },
+  { id: 'dog', src: '/assets/avatars/PLUSH_Dog.PNG', bgColor: 'bg-yellow-100' },
+  { id: 'panda', src: '/assets/avatars/PLUSH_Panda.PNG', bgColor: 'bg-gray-100' },
+  { id: 'penguin', src: '/assets/avatars/PLUSH_Penguin.PNG', bgColor: 'bg-blue-200' },
+  { id: 'unicorn', src: '/assets/avatars/PLUSH_Unicorn.PNG', bgColor: 'bg-purple-100' },
   { id: 'fox', src: '/assets/avatars/fox-avatar.png', bgColor: 'bg-orange-100' },
-  { id: 'panda', src: '/assets/avatars/panda-avatar.png', bgColor: 'bg-gray-100' },
   // Kai avatars
   { id: 'kai-default', src: '/assets/avatars/Kai.PNG', bgColor: 'bg-pink-100' },
   { id: 'kai-happy', src: '/assets/avatars/Kai-Happy.PNG', bgColor: 'bg-green-100' },
