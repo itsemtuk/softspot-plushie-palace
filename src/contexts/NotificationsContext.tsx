@@ -8,6 +8,10 @@ export interface Notification {
   timestamp: string;
   read: boolean;
   type?: "info" | "success" | "warning" | "error";
+  userAvatar?: string;
+  username?: string;
+  link?: string;
+  content?: string;
 }
 
 interface NotificationsContextProps {
@@ -19,7 +23,8 @@ interface NotificationsContextProps {
   deleteNotification: (id: string) => void;
 }
 
-const NotificationsContext = createContext<NotificationsContextProps>({
+// Export the context so it can be imported elsewhere
+export const NotificationsContext = createContext<NotificationsContextProps>({
   notifications: [],
   unreadCount: 0,
   addNotification: () => {},

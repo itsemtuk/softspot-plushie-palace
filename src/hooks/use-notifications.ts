@@ -1,6 +1,6 @@
 
 import { useContext, useState, useEffect } from 'react';
-import { NotificationsContext } from '@/contexts/NotificationsContext';
+import { NotificationsContext, Notification } from '@/contexts/NotificationsContext';
 import { useUser } from '@clerk/clerk-react';
 import { toast } from '@/components/ui/use-toast';
 

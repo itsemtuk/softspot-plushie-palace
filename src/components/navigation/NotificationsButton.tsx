@@ -7,11 +7,11 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { formatTimeAgo } from "@/lib/utils";
-import { useNotifications } from "@/hooks/use-notifications";
+import { useNotifications } from "@/contexts/NotificationsContext";
 
 export const NotificationsButton = () => {
   const navigate = useNavigate();
-  const { notifications, unreadCount, markAsRead } = useNotifications();
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = useNotifications();
 
   return (
     <Popover>
@@ -35,7 +35,7 @@ export const NotificationsButton = () => {
               variant="ghost" 
               size="sm" 
               className="text-xs text-gray-500"
-              onClick={() => navigate('/notifications')}
+              onClick={() => markAllAsRead()}
             >
               Mark all read
             </Button>
