@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useClerkSync } from '@/hooks/useClerkSync';
 import { useToast } from '@/components/ui/use-toast';
 import { setAuthenticatedUser } from '@/utils/auth/authState';
+import { getUserStatus, setUserStatus } from '@/utils/storage/localStorageUtils';
 
 export const ClerkButtonComponent = () => {
   // Safely access Clerk hooks
@@ -52,6 +53,18 @@ export const ClerkButtonComponent = () => {
         // Store profile data for synchronization
         localStorage.setItem('userBio', userValue.user.unsafeMetadata?.bio as string || '');
         
+        // Sync status from localStorage to Clerk if it exists
+        const currentStatus = getUserStatus();
+        if (currentStatus && userValue.user.unsafeMetadata?.status !== currentStatus) {
+          clerkSyncValue?.updateUserStatus(currentStatus);
+        }
+        
+        // Or sync status from Clerk to localStorage if it exists
+        const clerkStatus = userValue.user.unsafeMetadata?.status as string;
+        if (clerkStatus && clerkStatus !== getUserStatus()) {
+          setUserStatus(clerkStatus as "online" | "offline" | "away" | "busy");
+        }
+        
         // Notify user of successful sign-in if this is a new session
         const lastNotifiedSignIn = localStorage.getItem('lastNotifiedSignIn');
         const currentTime = new Date().getTime();
@@ -76,15 +89,28 @@ export const ClerkButtonComponent = () => {
           }
         };
         
-        // Check for avatar changes every 30 seconds
-        const intervalId = setInterval(checkForAvatarChanges, 30000);
+        // Listen for status changes
+        const checkForStatusChanges = () => {
+          const storedStatus = localStorage.getItem('userStatus');
+          const clerkStatus = userValue?.user?.unsafeMetadata?.status as string;
+          
+          if (storedStatus !== clerkStatus && clerkStatus) {
+            setUserStatus(clerkStatus as "online" | "offline" | "away" | "busy");
+          }
+        };
+        
+        // Check for profile changes every 15 seconds
+        const intervalId = setInterval(() => {
+          checkForAvatarChanges();
+          checkForStatusChanges();
+        }, 15000);
         
         return () => clearInterval(intervalId);
       } else if (userValue?.isLoaded && !userValue?.isSignedIn) {
         // Handle sign-out or unauthenticated state
         console.log("User not signed in with Clerk");
       }
-    }, [userValue?.user, userValue?.isSignedIn, userValue?.isLoaded, toast]);
+    }, [userValue?.user, userValue?.isSignedIn, userValue?.isLoaded, toast, clerkSyncValue]);
     
     // Debug Clerk state changes
     useEffect(() => {

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { getAllUserPosts } from "@/utils/posts/postManagement";
@@ -8,7 +8,10 @@ import { ProfileAvatar } from "./profile/ProfileAvatar";
 import { ProfileInfo } from "./profile/ProfileInfo";
 import { ProfileActionButton } from "./profile/ProfileActionButton";
 import { useUser } from '@clerk/clerk-react';
-import { Facebook, Instagram, Twitter, Youtube, Link } from "lucide-react";
+import { ProfileHeaderStats } from "./profile/ProfileHeaderStats";
+import { ProfileSocialLinks } from "./profile/ProfileSocialLinks";
+import { ProfileStoreLinks } from "./profile/ProfileStoreLinks";
+import { ProfileBio } from "./profile/ProfileBio";
 
 interface UserProfileHeaderProps {
   username?: string;
@@ -42,7 +45,7 @@ export default function UserProfileHeader({
   // Set default values
   const isPrivate = profileData?.isPrivate ?? false;
   
-  // Get profile data and counts
+  // Load profile data
   useEffect(() => {
     const loadProfileData = async () => {
       try {
@@ -85,7 +88,7 @@ export default function UserProfileHeader({
           }
         }
         
-        // Get post count - include both regular posts and marketplace listings
+        // Get post count
         const userId = localStorage.getItem('currentUserId');
         if (userId) {
           const posts = await getAllUserPosts(userId);
@@ -198,29 +201,13 @@ export default function UserProfileHeader({
   // Get plushie interests from user metadata or defaults
   const plushieInterests = profileData?.interests || [];
   
-  // Get display name from various sources, ensuring we don't use email address
+  // Get display name from various sources
   const displayUsername = username || 
     (clerkUser?.username || 
     localStorage.getItem('currentUsername') || 
     "plushielover");
   
   const displayName = displayUsername.includes('@') ? displayUsername.split('@')[0] : displayUsername;
-
-  // Social media icon renderer
-  const renderSocialIcon = (platform: string) => {
-    switch (platform) {
-      case 'instagram':
-        return <Instagram size={18} />;
-      case 'twitter':
-        return <Twitter size={18} />;
-      case 'facebook':
-        return <Facebook size={18} />;
-      case 'youtube':
-        return <Youtube size={18} />;
-      default:
-        return <Link size={18} />;
-    }
-  };
   
   return (
     <div>
@@ -229,42 +216,23 @@ export default function UserProfileHeader({
       
       <div className="container mx-auto px-4 -mt-16 max-w-2xl">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Profile Header with Avatar and Stats */}
           <div className="relative px-6 pt-6 pb-4 border-b border-gray-100">
             <div className="flex flex-col md:flex-row items-center md:items-start">
-              <img 
-                src={profileImage || "https://i.pravatar.cc/300"} 
-                alt="Profile" 
-                className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-md"
-                onError={(e) => {
-                  e.currentTarget.src = "https://i.pravatar.cc/300";
-                }}
-              />
+              {/* Profile Avatar */}
+              <ProfileAvatar profileImage={profileImage} />
               
               <div className="md:ml-4 flex-1 text-center md:text-left mt-4 md:mt-0">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start">
                   <div>
+                    {/* Username and role */}
                     <h1 className="text-2xl font-bold">{displayName}</h1>
                     <p className="text-gray-600 text-sm">Plushie collector</p>
                     
                     {/* Social Media Icons */}
-                    {socialLinks.length > 0 && (
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {socialLinks.map((link: any, index: number) => (
-                          <a 
-                            key={index} 
-                            href={link.username.startsWith('http') ? link.username : `https://${link.platform}.com/${link.username}`}
-                            target="_blank" 
-                            rel="noopener noreferrer"
-                            className="text-gray-600 hover:text-softspot-500 transition-colors"
-                          >
-                            {renderSocialIcon(link.platform)}
-                          </a>
-                        ))}
-                      </div>
-                    )}
+                    <ProfileSocialLinks socialLinks={socialLinks} />
                   </div>
                   
+                  {/* Follow/Edit Profile Button */}
                   <ProfileActionButton 
                     isOwnProfile={isOwnProfile}
                     isFollowing={isFollowing}
@@ -276,30 +244,19 @@ export default function UserProfileHeader({
                   />
                 </div>
                 
-                <div className="flex justify-center md:justify-start space-x-6 mt-3">
-                  <div>
-                    <p className="font-bold text-gray-800">{postsCount}</p>
-                    <p className="text-xs text-gray-600">Posts</p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-800">{followersCount}</p>
-                    <p className="text-xs text-gray-600">Followers</p>
-                  </div>
-                  <div>
-                    <p className="font-bold text-gray-800">{followingCount}</p>
-                    <p className="text-xs text-gray-600">Following</p>
-                  </div>
-                </div>
+                {/* Profile Stats */}
+                <ProfileHeaderStats 
+                  postsCount={postsCount}
+                  followersCount={followersCount}
+                  followingCount={followingCount}
+                />
               </div>
             </div>
           </div>
           
           {/* Profile Bio and Interests */}
           <div className="p-6">
-            <div className="mb-4">
-              <h2 className="font-semibold text-gray-800 mb-2">About Me</h2>
-              <p className="text-gray-700">{profileData?.bio || "No bio yet"}</p>
-            </div>
+            <ProfileBio bio={profileData?.bio} />
             
             {plushieInterests.length > 0 && (
               <div className="mb-4">
@@ -315,24 +272,7 @@ export default function UserProfileHeader({
             )}
             
             {/* Store Links */}
-            {storeLinks && storeLinks.length > 0 && (
-              <div className="mb-4">
-                <h2 className="font-semibold text-gray-800 mb-2">My Stores</h2>
-                <div className="flex flex-wrap gap-2">
-                  {storeLinks.map((link: any, index: number) => (
-                    <a 
-                      key={index}
-                      href={link.url}
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="bg-softspot-100 text-softspot-700 px-3 py-1 rounded-full text-xs hover:bg-softspot-200 transition-colors"
-                    >
-                      {link.platform}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            )}
+            <ProfileStoreLinks storeLinks={storeLinks} />
           </div>
         </div>
       </div>

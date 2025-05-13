@@ -15,20 +15,46 @@ interface UserItem {
   imageUrl?: string;
 }
 
-// Mock user data - in a real app this would come from your API
-const MOCK_USERS: UserItem[] = [
-  { id: "user1", username: "plushielover", firstName: "Emily", lastName: "Chen", imageUrl: "https://i.pravatar.cc/150?img=1" },
-  { id: "user2", username: "teddycollector", firstName: "James", lastName: "Wilson", imageUrl: "https://i.pravatar.cc/150?img=2" },
-  { id: "user3", username: "softiequeen", firstName: "Maria", lastName: "Garcia", imageUrl: "https://i.pravatar.cc/150?img=3" },
-  { id: "user4", username: "plushiepals", firstName: "Alex", lastName: "Taylor", imageUrl: "https://i.pravatar.cc/150?img=4" },
-  { id: "user5", username: "cuddlycreatures", firstName: "Sam", lastName: "Johnson", imageUrl: "https://i.pravatar.cc/150?img=5" },
-];
-
 export function UserSearch() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<UserItem[]>([]);
+  const [allUsers, setAllUsers] = useState<UserItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
   const [following, setFollowing] = useState<string[]>([]);
+  
+  // Load all users from Clerk organization
+  useEffect(() => {
+    const fetchAllUsers = async () => {
+      if (!user) return;
+      
+      try {
+        // In a real implementation, this would be an API call to your backend
+        // that would interact with Clerk's API to get organization users
+        // For now, we'll use mock data as placeholder 
+        
+        // Mock user data - simulates fetching from Clerk
+        const mockUsers: UserItem[] = [
+          { id: "user1", username: "plushielover", firstName: "Emily", lastName: "Chen", imageUrl: "https://i.pravatar.cc/150?img=1" },
+          { id: "user2", username: "teddycollector", firstName: "James", lastName: "Wilson", imageUrl: "https://i.pravatar.cc/150?img=2" },
+          { id: "user3", username: "softiequeen", firstName: "Maria", lastName: "Garcia", imageUrl: "https://i.pravatar.cc/150?img=3" },
+          { id: "user4", username: "plushiepals", firstName: "Alex", lastName: "Taylor", imageUrl: "https://i.pravatar.cc/150?img=4" },
+          { id: "user5", username: "cuddlycreatures", firstName: "Sam", lastName: "Johnson", imageUrl: "https://i.pravatar.cc/150?img=5" },
+        ];
+        
+        setAllUsers(mockUsers.filter(u => u.id !== user.id)); // Exclude current user
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load users",
+          variant: "destructive"
+        });
+      }
+    };
+    
+    fetchAllUsers();
+  }, [user]);
   
   useEffect(() => {
     // Get following list from user metadata
@@ -44,17 +70,19 @@ export function UserSearch() {
       return;
     }
     
+    setIsLoading(true);
+    
     // Filter users based on search query
-    // In a real app, this would be an API call to search users
-    const filteredUsers = MOCK_USERS.filter(
+    const filteredUsers = allUsers.filter(
       user => 
-        user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
         (user.firstName && user.firstName.toLowerCase().includes(searchQuery.toLowerCase())) ||
         (user.lastName && user.lastName.toLowerCase().includes(searchQuery.toLowerCase()))
     );
     
     setSearchResults(filteredUsers);
-  }, [searchQuery]);
+    setIsLoading(false);
+  }, [searchQuery, allUsers]);
   
   const handleFollowToggle = (username: string) => {
     if (!user) {
@@ -118,7 +146,11 @@ export function UserSearch() {
         />
       </div>
       
-      {searchResults.length > 0 ? (
+      {isLoading ? (
+        <div className="text-center py-4">
+          <p className="text-gray-500">Loading...</p>
+        </div>
+      ) : searchResults.length > 0 ? (
         <div className="mt-4 border rounded-md divide-y">
           {searchResults.map(userResult => (
             <div key={userResult.id} className="flex items-center justify-between p-4">
