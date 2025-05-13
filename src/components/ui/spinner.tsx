@@ -1,33 +1,30 @@
 
-import { cva, type VariantProps } from "class-variance-authority";
+import React from "react";
 import { cn } from "@/lib/utils";
 
-const spinnerVariants = cva(
-  "inline-block animate-spin rounded-full border-2 border-solid border-current border-r-transparent motion-reduce:animate-[spin_1.5s_linear_infinite]",
-  {
-    variants: {
-      size: {
-        sm: "h-4 w-4",
-        md: "h-6 w-6",
-        lg: "h-8 w-8",
-        xl: "h-12 w-12",
-      },
-    },
-    defaultVariants: {
-      size: "md",
-    },
-  }
-);
-
-interface SpinnerProps extends VariantProps<typeof spinnerVariants> {
-  className?: string;
+interface SpinnerProps extends React.HTMLAttributes<HTMLDivElement> {
+  size?: "sm" | "md" | "lg";
 }
 
-export function Spinner({ className, size }: SpinnerProps) {
+export const Spinner = ({ className, size = "md", ...props }: SpinnerProps) => {
+  const sizeClasses = {
+    sm: "h-4 w-4",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
+  };
+
   return (
-    <div role="status" className={cn("text-softspot-500", className)}>
-      <div className={spinnerVariants({ size })} />
-      <span className="sr-only">Loading</span>
+    <div
+      className={cn(
+        "animate-spin rounded-full border-2 border-current border-t-transparent text-softspot-500",
+        sizeClasses[size],
+        className
+      )}
+      role="status"
+      aria-label="loading"
+      {...props}
+    >
+      <span className="sr-only">Loading...</span>
     </div>
   );
-}
+};

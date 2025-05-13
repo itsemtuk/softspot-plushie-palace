@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useUser, useClerk } from "@clerk/clerk-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 
 interface SocialLink {
   platform: string;
@@ -41,7 +41,6 @@ interface ProfileSettingsFormData {
 export const useProfileSettings = () => {
   const { user, isLoaded: isUserLoaded, isSignedIn } = useUser();
   const { session } = useClerk();
-  const { toast } = useToast();
   const [activeTab, setActiveTab] = useState("basic-info");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
@@ -115,37 +114,57 @@ export const useProfileSettings = () => {
 
       loadProfileData();
     }
-  }, [isUserLoaded, isSignedIn, user]);
+  }, [isUserLoaded, isSignedIn, user, form]);
 
   // Save profile data
   const saveProfile = async (data: ProfileSettingsFormData) => {
-    if (!user) return;
+    if (!user) {
+      console.error("No user found when trying to save profile");
+      toast({
+        variant: "destructive",
+        title: "Error saving profile",
+        description: "You must be logged in to save profile information."
+      });
+      return false;
+    }
     
     setIsSubmitting(true);
     
     try {
-      // Save unsafe metadata to the user
+      console.log("Saving profile data:", data);
+      
+      // Build updated metadata object
+      const updatedMetadata = {
+        ...user.unsafeMetadata,
+        bio: data.bio,
+        instagram: data.instagram,
+        twitter: data.twitter,
+        youtube: data.youtube,
+        isPrivate: data.isPrivate,
+        hideFromSearch: data.hideFromSearch,
+        showActivityStatus: data.showActivityStatus,
+        showCollection: data.showCollection,
+        showWishlist: data.showWishlist,
+        receiveEmailUpdates: data.receiveEmailUpdates,
+        receiveMarketingEmails: data.receiveMarketingEmails,
+        receiveWishlistAlerts: data.receiveWishlistAlerts,
+        newReleaseAlerts: data.newReleaseAlerts,
+        favoriteBrands: data.favoriteBrands,
+        favoriteTypes: data.favoriteTypes,
+        socialLinks: data.socialLinks,
+        storeLinks: data.storeLinks,
+      };
+      
+      // Save username if changed
+      if (data.username && data.username !== user.username) {
+        await user.update({
+          username: data.username,
+        });
+      }
+      
+      // Save metadata to user
       await user.update({
-        username: data.username,
-        unsafeMetadata: {
-          bio: data.bio,
-          instagram: data.instagram,
-          twitter: data.twitter,
-          youtube: data.youtube,
-          isPrivate: data.isPrivate,
-          hideFromSearch: data.hideFromSearch,
-          showActivityStatus: data.showActivityStatus,
-          showCollection: data.showCollection,
-          showWishlist: data.showWishlist,
-          receiveEmailUpdates: data.receiveEmailUpdates,
-          receiveMarketingEmails: data.receiveMarketingEmails,
-          receiveWishlistAlerts: data.receiveWishlistAlerts,
-          newReleaseAlerts: data.newReleaseAlerts,
-          favoriteBrands: data.favoriteBrands,
-          favoriteTypes: data.favoriteTypes,
-          socialLinks: data.socialLinks,
-          storeLinks: data.storeLinks,
-        },
+        unsafeMetadata: updatedMetadata,
       });
       
       // Update profile image if changed
@@ -172,7 +191,7 @@ export const useProfileSettings = () => {
             // Store the URL in user metadata instead
             await user.update({
               unsafeMetadata: {
-                ...user.unsafeMetadata,
+                ...updatedMetadata,
                 customAvatarUrl: data.avatarUrl
               }
             });
@@ -191,11 +210,21 @@ export const useProfileSettings = () => {
         detail: { username: data.username, avatarUrl: user.imageUrl } 
       }));
       
+      toast({
+        title: "Profile updated",
+        description: "Your profile settings have been saved successfully."
+      });
+      
       return true;
       
     } catch (error) {
       console.error("Error saving profile:", error);
-      throw error;
+      toast({
+        variant: "destructive",
+        title: "Error saving profile",
+        description: `Could not save your profile information: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+      return false;
     } finally {
       setIsSubmitting(false);
     }

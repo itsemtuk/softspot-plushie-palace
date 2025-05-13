@@ -11,6 +11,7 @@ import { NotificationsTab } from "@/components/settings/tabs/NotificationsTab";
 import { SocialMediaTab } from "@/components/settings/tabs/SocialMediaTab";
 import { StoreLinksTab } from "@/components/settings/tabs/StoreLinksTab";
 import { toast } from "@/components/ui/use-toast";
+import { Spinner } from "@/components/ui/spinner";
 
 export function ProfileSettings() {
   const { form, isSubmitting, activeTab, setActiveTab, saveProfile, isSynced } = useProfileSettings();
@@ -25,14 +26,17 @@ export function ProfileSettings() {
   ];
   
   const handleSubmit = async (data: any) => {
+    console.log("Form submitted with data:", data);
     try {
-      await saveProfile(data);
-      toast({
-        title: "Profile updated",
-        description: "Your profile settings have been saved successfully."
-      });
+      const success = await saveProfile(data);
+      if (success) {
+        toast({
+          title: "Profile updated",
+          description: "Your profile settings have been saved successfully."
+        });
+      }
     } catch (error) {
-      console.error("Error saving profile:", error);
+      console.error("Error in handleSubmit:", error);
       toast({
         variant: "destructive",
         title: "Error saving profile",
@@ -45,7 +49,8 @@ export function ProfileSettings() {
     return (
       <Card className="bg-white rounded-xl shadow-sm p-6">
         <div className="flex justify-center items-center h-40">
-          <p>Loading profile data...</p>
+          <Spinner size="lg" />
+          <p className="ml-2">Loading profile data...</p>
         </div>
       </Card>
     );
@@ -100,7 +105,14 @@ export function ProfileSettings() {
               className="bg-softspot-500 text-white hover:bg-softspot-600" 
               disabled={isSubmitting}
             >
-              {isSubmitting ? "Saving..." : "Save Changes"}
+              {isSubmitting ? (
+                <>
+                  <Spinner className="mr-2 h-4 w-4" />
+                  Saving...
+                </>
+              ) : (
+                "Save Changes"
+              )}
             </Button>
           </div>
         </form>
