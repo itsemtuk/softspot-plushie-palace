@@ -4,6 +4,16 @@ import { useForm } from "react-hook-form";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { useToast } from "@/hooks/use-toast";
 
+interface SocialLink {
+  platform: string;
+  username: string;
+}
+
+interface StoreLink {
+  platform: string;
+  url: string;
+}
+
 interface ProfileSettingsFormData {
   username: string;
   bio: string;
@@ -22,6 +32,10 @@ interface ProfileSettingsFormData {
   receiveMarketingEmails?: boolean;
   receiveWishlistAlerts?: boolean;
   newReleaseAlerts?: boolean;
+  favoriteBrands?: string[];
+  favoriteTypes?: string[];
+  socialLinks?: SocialLink[];
+  storeLinks?: StoreLink[];
 }
 
 export const useProfileSettings = () => {
@@ -48,6 +62,10 @@ export const useProfileSettings = () => {
       receiveMarketingEmails: false,
       newReleaseAlerts: false,
       receiveWishlistAlerts: false,
+      favoriteBrands: [],
+      favoriteTypes: [],
+      socialLinks: [],
+      storeLinks: []
     }
   });
 
@@ -56,25 +74,32 @@ export const useProfileSettings = () => {
     if (isUserLoaded && isSignedIn && user) {
       const loadProfileData = async () => {
         try {
+          // Get meta data with defaults
+          const meta = user.unsafeMetadata || {};
+          
           // Populate form with Clerk user data
           form.reset({
             username: user.username || user.firstName || "",
-            bio: user.unsafeMetadata?.bio as string || "",
+            bio: meta.bio as string || "",
             email: user.emailAddresses[0]?.emailAddress || "",
             phone: user.phoneNumbers[0]?.phoneNumber || "",
             avatarUrl: user.imageUrl || "",
-            instagram: user.unsafeMetadata?.instagram as string || "",
-            twitter: user.unsafeMetadata?.twitter as string || "",
-            youtube: user.unsafeMetadata?.youtube as string || "",
-            isPrivate: user.unsafeMetadata?.isPrivate as boolean || false,
-            hideFromSearch: user.unsafeMetadata?.hideFromSearch as boolean || true,
-            showActivityStatus: user.unsafeMetadata?.showActivityStatus as boolean || true,
-            showCollection: user.unsafeMetadata?.showCollection as boolean || true,
-            showWishlist: user.unsafeMetadata?.showWishlist as boolean || true,
-            receiveEmailUpdates: user.unsafeMetadata?.receiveEmailUpdates as boolean || true,
-            receiveMarketingEmails: user.unsafeMetadata?.receiveMarketingEmails as boolean || false,
-            receiveWishlistAlerts: user.unsafeMetadata?.receiveWishlistAlerts as boolean || false,
-            newReleaseAlerts: user.unsafeMetadata?.newReleaseAlerts as boolean || false,
+            instagram: meta.instagram as string || "",
+            twitter: meta.twitter as string || "",
+            youtube: meta.youtube as string || "",
+            isPrivate: meta.isPrivate as boolean || false,
+            hideFromSearch: meta.hideFromSearch as boolean || true,
+            showActivityStatus: meta.showActivityStatus as boolean || true,
+            showCollection: meta.showCollection as boolean || true,
+            showWishlist: meta.showWishlist as boolean || true,
+            receiveEmailUpdates: meta.receiveEmailUpdates as boolean || true,
+            receiveMarketingEmails: meta.receiveMarketingEmails as boolean || false,
+            receiveWishlistAlerts: meta.receiveWishlistAlerts as boolean || false,
+            newReleaseAlerts: meta.newReleaseAlerts as boolean || false,
+            favoriteBrands: meta.favoriteBrands as string[] || [],
+            favoriteTypes: meta.favoriteTypes as string[] || [],
+            socialLinks: meta.socialLinks as SocialLink[] || [],
+            storeLinks: meta.storeLinks as StoreLink[] || [],
           });
           
           setIsSynced(true);
@@ -116,6 +141,10 @@ export const useProfileSettings = () => {
           receiveMarketingEmails: data.receiveMarketingEmails,
           receiveWishlistAlerts: data.receiveWishlistAlerts,
           newReleaseAlerts: data.newReleaseAlerts,
+          favoriteBrands: data.favoriteBrands,
+          favoriteTypes: data.favoriteTypes,
+          socialLinks: data.socialLinks,
+          storeLinks: data.storeLinks,
         },
       });
       
@@ -127,6 +156,16 @@ export const useProfileSettings = () => {
           const blob = await response.blob();
           const file = new File([blob], "profile-image.png", { type: "image/png" });
           await user.setProfileImage({ file });
+        } else if (data.avatarUrl.startsWith('/')) {
+          // For local avatars from the assets folder
+          try {
+            const response = await fetch(data.avatarUrl);
+            const blob = await response.blob();
+            const file = new File([blob], "profile-image.png", { type: "image/png" });
+            await user.setProfileImage({ file });
+          } catch (error) {
+            console.error("Failed to update profile image with local URL:", error);
+          }
         } else {
           // For URL-based avatars - handle with caution as Clerk might reject some URLs
           try {
@@ -147,18 +186,16 @@ export const useProfileSettings = () => {
       localStorage.setItem('currentUsername', data.username);
       localStorage.setItem('userAvatarUrl', user.imageUrl);
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile settings have been saved."
-      });
+      // Dispatch event to update components that rely on this data
+      window.dispatchEvent(new CustomEvent('profile-update', { 
+        detail: { username: data.username, avatarUrl: user.imageUrl } 
+      }));
+      
+      return true;
       
     } catch (error) {
       console.error("Error saving profile:", error);
-      toast({
-        variant: "destructive",
-        title: "Error saving profile",
-        description: "Could not save your profile information. Please try again."
-      });
+      throw error;
     } finally {
       setIsSubmitting(false);
     }

@@ -10,11 +10,13 @@ import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { useSignOut } from "@/hooks/useSignOut";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
+import { useStatus } from "@/hooks/use-status";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const isMobile = useIsMobile();
   const { handleSignOut } = useSignOut();
+  const { status } = useStatus();
   
   return (
     <div className="min-h-screen bg-gray-50">

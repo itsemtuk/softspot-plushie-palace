@@ -8,6 +8,7 @@ import { ProfileAvatar } from "./profile/ProfileAvatar";
 import { ProfileInfo } from "./profile/ProfileInfo";
 import { ProfileActionButton } from "./profile/ProfileActionButton";
 import { useUser } from '@clerk/clerk-react';
+import { Facebook, Instagram, Twitter, Youtube, Link } from "lucide-react";
 
 interface UserProfileHeaderProps {
   username?: string;
@@ -31,6 +32,8 @@ export default function UserProfileHeader({
   const [followersCount, setFollowersCount] = useState(0);
   const [followingCount, setFollowingCount] = useState(0);
   const [postsCount, setPostsCount] = useState(0);
+  const [socialLinks, setSocialLinks] = useState<any[]>([]);
+  const [storeLinks, setStoreLinks] = useState<any[]>([]);
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
   // Get Clerk user if configured
@@ -58,6 +61,10 @@ export default function UserProfileHeader({
             
             setFollowingCount(following.length || 0);
             setFollowersCount(clerkUser.unsafeMetadata?.followerCount as number || 0);
+            
+            // Get social media links
+            setSocialLinks(clerkUser.unsafeMetadata?.socialLinks as any[] || []);
+            setStoreLinks(clerkUser.unsafeMetadata?.storeLinks as any[] || []);
           } else {
             // Use local storage for non-Clerk authentication
             const userProfile = JSON.parse(localStorage.getItem('userProfile') || '{}');
@@ -73,6 +80,8 @@ export default function UserProfileHeader({
             }
             
             setFollowersCount(userProfile.followerCount || 0);
+            setSocialLinks(userProfile.socialLinks || []);
+            setStoreLinks(userProfile.storeLinks || []);
           }
         }
         
@@ -196,6 +205,22 @@ export default function UserProfileHeader({
     "plushielover");
   
   const displayName = displayUsername.includes('@') ? displayUsername.split('@')[0] : displayUsername;
+
+  // Social media icon renderer
+  const renderSocialIcon = (platform: string) => {
+    switch (platform) {
+      case 'instagram':
+        return <Instagram size={18} />;
+      case 'twitter':
+        return <Twitter size={18} />;
+      case 'facebook':
+        return <Facebook size={18} />;
+      case 'youtube':
+        return <Youtube size={18} />;
+      default:
+        return <Link size={18} />;
+    }
+  };
   
   return (
     <div>
@@ -221,6 +246,23 @@ export default function UserProfileHeader({
                   <div>
                     <h1 className="text-2xl font-bold">{displayName}</h1>
                     <p className="text-gray-600 text-sm">Plushie collector</p>
+                    
+                    {/* Social Media Icons */}
+                    {socialLinks.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {socialLinks.map((link: any, index: number) => (
+                          <a 
+                            key={index} 
+                            href={link.username.startsWith('http') ? link.username : `https://${link.platform}.com/${link.username}`}
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-gray-600 hover:text-softspot-500 transition-colors"
+                          >
+                            {renderSocialIcon(link.platform)}
+                          </a>
+                        ))}
+                      </div>
+                    )}
                   </div>
                   
                   <ProfileActionButton 
@@ -267,6 +309,26 @@ export default function UserProfileHeader({
                     <span key={index} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs">
                       {interest}
                     </span>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Store Links */}
+            {storeLinks && storeLinks.length > 0 && (
+              <div className="mb-4">
+                <h2 className="font-semibold text-gray-800 mb-2">My Stores</h2>
+                <div className="flex flex-wrap gap-2">
+                  {storeLinks.map((link: any, index: number) => (
+                    <a 
+                      key={index}
+                      href={link.url}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-softspot-100 text-softspot-700 px-3 py-1 rounded-full text-xs hover:bg-softspot-200 transition-colors"
+                    >
+                      {link.platform}
+                    </a>
                   ))}
                 </div>
               </div>

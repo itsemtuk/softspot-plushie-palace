@@ -8,16 +8,48 @@ import { BasicInfoTab } from "@/components/settings/tabs/BasicInfoTab";
 import { PlushiePreferencesTab } from "@/components/settings/tabs/PlushiePreferencesTab";
 import { PrivacySecurityTab } from "@/components/settings/tabs/PrivacySecurityTab";
 import { NotificationsTab } from "@/components/settings/tabs/NotificationsTab";
+import { SocialMediaTab } from "@/components/settings/tabs/SocialMediaTab";
+import { StoreLinksTab } from "@/components/settings/tabs/StoreLinksTab";
+import { toast } from "@/components/ui/use-toast";
 
 export function ProfileSettings() {
-  const { form, isSubmitting, activeTab, setActiveTab, saveProfile } = useProfileSettings();
+  const { form, isSubmitting, activeTab, setActiveTab, saveProfile, isSynced } = useProfileSettings();
 
   const tabs = [
     { id: "basic-info", label: "Basic Info" },
     { id: "plush-preferences", label: "Plushie Preferences" },
+    { id: "social-media", label: "Social Media" },
+    { id: "store-links", label: "Store Links" },
     { id: "privacy-security", label: "Privacy & Security" },
     { id: "notifications", label: "Notifications" },
   ];
+  
+  const handleSubmit = async (data: any) => {
+    try {
+      await saveProfile(data);
+      toast({
+        title: "Profile updated",
+        description: "Your profile settings have been saved successfully."
+      });
+    } catch (error) {
+      console.error("Error saving profile:", error);
+      toast({
+        variant: "destructive",
+        title: "Error saving profile",
+        description: "Could not save your profile information. Please try again."
+      });
+    }
+  };
+
+  if (!isSynced) {
+    return (
+      <Card className="bg-white rounded-xl shadow-sm p-6">
+        <div className="flex justify-center items-center h-40">
+          <p>Loading profile data...</p>
+        </div>
+      </Card>
+    );
+  }
 
   return (
     <Card className="bg-white rounded-xl shadow-sm p-6">
@@ -30,7 +62,7 @@ export function ProfileSettings() {
       />
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(saveProfile)} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
           {/* Basic Info Tab */}
           {activeTab === "basic-info" && (
             <BasicInfoTab form={form} />
@@ -39,6 +71,16 @@ export function ProfileSettings() {
           {/* Plush Preferences Tab */}
           {activeTab === "plush-preferences" && (
             <PlushiePreferencesTab form={form} />
+          )}
+          
+          {/* Social Media Tab */}
+          {activeTab === "social-media" && (
+            <SocialMediaTab form={form} />
+          )}
+          
+          {/* Store Links Tab */}
+          {activeTab === "store-links" && (
+            <StoreLinksTab form={form} />
           )}
 
           {/* Privacy & Security Tab */}

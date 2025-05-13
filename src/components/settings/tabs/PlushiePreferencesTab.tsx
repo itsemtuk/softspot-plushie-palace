@@ -1,17 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription } from "@/components/ui/form";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
-import { 
-  Select,
-  SelectContent,
-  SelectGroup,
-  SelectItem,
-  SelectLabel,
-  SelectTrigger,
-  SelectValue, 
-} from "@/components/ui/select";
 import { UseFormReturn } from "react-hook-form";
 
 // Plushie brand and type data
@@ -43,8 +34,22 @@ interface PlushiePreferencesTabProps {
 }
 
 export const PlushiePreferencesTab = ({ form }: PlushiePreferencesTabProps) => {
-  const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
-  const [favoriteType, setFavoriteType] = useState<string>("");
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(
+    form.getValues().favoriteBrands || []
+  );
+  
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(
+    form.getValues().favoriteTypes || []
+  );
+  
+  // Update form value when selections change
+  useEffect(() => {
+    form.setValue("favoriteBrands", selectedBrands);
+  }, [selectedBrands, form]);
+  
+  useEffect(() => {
+    form.setValue("favoriteTypes", selectedTypes);
+  }, [selectedTypes, form]);
   
   // Toggle brand selection
   const toggleBrand = (brandId: string) => {
@@ -52,6 +57,15 @@ export const PlushiePreferencesTab = ({ form }: PlushiePreferencesTabProps) => {
       prev.includes(brandId) 
         ? prev.filter(id => id !== brandId) 
         : [...prev, brandId]
+    );
+  };
+  
+  // Toggle type selection
+  const toggleType = (typeId: string) => {
+    setSelectedTypes(prev => 
+      prev.includes(typeId) 
+        ? prev.filter(id => id !== typeId) 
+        : [...prev, typeId]
     );
   };
   
@@ -82,24 +96,26 @@ export const PlushiePreferencesTab = ({ form }: PlushiePreferencesTabProps) => {
       </div>
 
       <div className="border-b border-gray-200 pb-6">
-        <h3 className="text-lg font-medium text-gray-800 mb-4">Favorite Plushie Type</h3>
+        <h3 className="text-lg font-medium text-gray-800 mb-4">Favorite Plushie Types</h3>
         
         <div className="space-y-4">
-          <Select value={favoriteType} onValueChange={setFavoriteType}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Select your favorite type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectGroup>
-                <SelectLabel>Plushie Types</SelectLabel>
-                {plushieTypes.map(type => (
-                  <SelectItem key={type.id} value={type.id}>
-                    {type.label}
-                  </SelectItem>
-                ))}
-              </SelectGroup>
-            </SelectContent>
-          </Select>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {plushieTypes.map((type) => (
+              <div key={type.id} className="flex items-center space-x-3">
+                <Checkbox 
+                  id={`type-${type.id}`} 
+                  checked={selectedTypes.includes(type.id)} 
+                  onCheckedChange={() => toggleType(type.id)}
+                />
+                <label
+                  htmlFor={`type-${type.id}`}
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                >
+                  {type.label}
+                </label>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
       
