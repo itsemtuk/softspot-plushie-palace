@@ -1,109 +1,127 @@
 
-import React from 'react';
-import { Card } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Heart, Star, Truck } from "lucide-react";
+import { Heart } from "lucide-react";
 import { MarketplacePlushie } from "@/types/marketplace";
-import { cn } from '@/lib/utils';
+import { BrandLogo } from "../brand/BrandLogo";
+import { formatDistanceToNow } from "date-fns";
 
 interface ProductCardProps {
   product: MarketplacePlushie;
   onProductClick: (product: MarketplacePlushie) => void;
   onWishlistToggle: (id: string, event: React.MouseEvent) => void;
-  isWishlisted: boolean;
+  isWishlisted?: boolean;
 }
 
-export function ProductCard({ 
+export const ProductCard = ({ 
   product, 
   onProductClick, 
-  onWishlistToggle, 
-  isWishlisted 
-}: ProductCardProps) {
-  // Use discount or original price if available
-  const hasDiscount = typeof product.discount === 'number' && product.discount > 0;
-  const originalPrice = product.originalPrice || (hasDiscount && product.price ? product.price / (1 - (product.discount || 0) / 100) : null);
-  const displayPrice = product.price?.toFixed(2) || "0.00";
-  const displayOriginalPrice = originalPrice ? originalPrice.toFixed(2) : null;
+  onWishlistToggle,
+  isWishlisted = false
+}: ProductCardProps) => {
   
-  // Determine badge type
-  let badgeText = '';
-  let badgeColor = '';
+  // Format the date
+  const formattedDate = product.timestamp ? 
+    formatDistanceToNow(new Date(product.timestamp), { addSuffix: true }) : 
+    'Recently';
+
+  // Check if the product has reviews
+  const hasReviews = product.reviews && product.reviews.length > 0;
   
-  if (product.condition === 'New') {
-    badgeText = 'New';
-    badgeColor = 'bg-blue-500';
-  } else if (hasDiscount) {
-    badgeText = `-${product.discount}%`;
-    badgeColor = 'bg-softspot-500';
-  } else if (product.condition === 'Like New') {
-    badgeText = 'Like New';
-    badgeColor = 'bg-green-500';
-  } else if (product.condition === 'Good') {
-    badgeText = 'Good';
-    badgeColor = 'bg-yellow-500';
-  } else if (product.condition === 'Fair') {
-    badgeText = 'Fair';
-    badgeColor = 'bg-orange-500';
-  }
+  // Calculate average rating only if there are reviews
+  const avgRating = hasReviews ? 
+    product.reviews.reduce((acc, review) => acc + review.rating, 0) / product.reviews.length : 
+    0;
+  
+  // Format original price and current price for display
+  const originalPrice = product.originalPrice || product.price;
+  const currentPrice = product.discount ? 
+    product.price - (product.price * (product.discount / 100)) : 
+    product.price;
+  
+  // Format shipping info
+  const shippingInfo = product.deliveryCost === 0 ? 
+    "Free shipping" : 
+    `+$${product.deliveryCost.toFixed(2)} shipping`;
 
   return (
     <Card 
-      className="overflow-hidden content-card transition-all duration-300 h-full cursor-pointer hover:shadow-md"
+      className="overflow-hidden transition-all hover:shadow-md cursor-pointer h-full flex flex-col"
       onClick={() => onProductClick(product)}
     >
-      <div className="relative pt-[100%]">
-        <img
-          src={product.image}
-          alt={product.title}
-          className="absolute top-0 left-0 w-full h-full object-cover"
-          onError={(e) => {
-            const target = e.target as HTMLImageElement;
-            target.src = "https://via.placeholder.com/300?text=Image+Error";
-          }}
-        />
-        <Button
-          variant="ghost"
-          size="icon"
-          className="absolute top-2 right-2 bg-white hover:bg-softspot-100 rounded-full w-8 h-8 shadow-md"
+      <div className="relative">
+        {/* Discount badge */}
+        {product.discount && product.discount > 0 && (
+          <Badge className="absolute top-2 left-2 bg-red-500 z-10">
+            {product.discount}% OFF
+          </Badge>
+        )}
+        
+        {/* Wishlist button */}
+        <button
+          className={`absolute top-2 right-2 p-1.5 rounded-full z-10 
+            ${isWishlisted ? 'bg-red-100' : 'bg-white bg-opacity-75'}`}
           onClick={(e) => onWishlistToggle(product.id, e)}
         >
-          <Heart className={cn("h-4 w-4", isWishlisted ? "fill-softspot-500 text-softspot-500" : "text-gray-400")} />
-        </Button>
+          <Heart 
+            className={`h-5 w-5 ${isWishlisted ? 'fill-red-500 stroke-red-500' : 'stroke-gray-500'}`} 
+          />
+        </button>
         
-        {badgeText && (
-          <span className={`absolute top-2 left-2 ${badgeColor} text-white text-xs px-2 py-1 rounded`}>
-            {badgeText}
-          </span>
-        )}
+        {/* Product image */}
+        <AspectRatio ratio={1} className="bg-gray-100">
+          <img
+            src={product.image}
+            alt={product.title || "Plushie"}
+            className="object-cover w-full h-full"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1516067154453-6194ba34d121";
+            }}
+          />
+        </AspectRatio>
       </div>
       
-      <div className="p-3">
-        <h3 className="font-medium text-gray-800 text-sm truncate">{product.title}</h3>
-        <p className="text-xs text-gray-600 mb-1">{product.brand || 'Unknown brand'}</p>
+      <CardContent className="p-3 flex-grow flex flex-col">
+        <div className="mb-1 flex items-center">
+          {product.brand && (
+            <div className="mr-2 flex-shrink-0">
+              <BrandLogo brandName={product.brand} className="w-6 h-6" />
+            </div>
+          )}
+          <p className="text-xs text-gray-500 truncate">{product.brand || 'Unknown brand'}</p>
+        </div>
         
-        <div className="flex justify-between items-center">
-          <div>
-            <span className={`font-bold text-sm ${hasDiscount ? 'text-softspot-500' : ''}`}>${displayPrice}</span>
-            {hasDiscount && displayOriginalPrice && (
-              <span className="text-xs text-gray-400 line-through ml-1">${displayOriginalPrice}</span>
+        <h3 className="font-medium line-clamp-2 mb-1 flex-grow">{product.title}</h3>
+        
+        <div className="flex flex-col gap-1 mt-auto">
+          {/* Price section */}
+          <div className="flex items-baseline gap-2">
+            <span className="font-bold text-lg">
+              ${currentPrice.toFixed(2)}
+            </span>
+            {product.discount && product.discount > 0 && (
+              <span className="text-gray-500 text-xs line-through">
+                ${originalPrice.toFixed(2)}
+              </span>
             )}
           </div>
-          <div className="flex items-center text-xs text-gray-500">
-            <Star className="h-3 w-3 text-yellow-400 mr-1" />
-            <span>4.8</span>
+          
+          {/* Shipping and ratings */}
+          <div className="flex items-center justify-between text-xs">
+            <span className="text-gray-600">{shippingInfo}</span>
+            
+            {hasReviews ? (
+              <div className="flex items-center">
+                <span className="text-yellow-500 mr-1">★</span>
+                <span>{avgRating.toFixed(1)}</span>
+              </div>
+            ) : (
+              <span className="text-gray-400">No reviews</span>
+            )}
           </div>
         </div>
-        
-        <div className="mt-2 flex justify-between items-center text-xs">
-          <span className="text-gray-500 flex items-center">
-            <Truck className="h-3 w-3 mr-1" />
-            {product.deliveryCost === 0 ? 'Free' : `$${product.deliveryCost?.toFixed(2)}`}
-          </span>
-          
-          <span className="text-green-500">In Stock</span>
-        </div>
-      </div>
+      </CardContent>
     </Card>
   );
-}
+};

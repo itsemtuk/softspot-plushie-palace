@@ -17,6 +17,8 @@ import { useCreatePost } from "@/hooks/use-create-post";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { toast } from "@/components/ui/use-toast";
 import { QuickPostForm } from "@/components/feed/QuickPostForm";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const Feed = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
@@ -120,6 +122,18 @@ const Feed = () => {
           <EmptyFeed onCreatePost={handleCreatePostClick} />
         )}
       </main>
+      
+      {/* Mobile create post button */}
+      {isMobile && (
+        <div className="fixed bottom-20 right-4 z-50">
+          <Button 
+            onClick={handleCreatePostClick} 
+            className="bg-softspot-500 hover:bg-softspot-600 text-white h-14 w-14 rounded-full shadow-lg p-0"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
+      )}
       
       <Footer />
     </div>
