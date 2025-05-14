@@ -591,8 +591,8 @@ const Marketplace = () => {
       {selectedPlushie && (
         <PlushieDetailDialog
           plushie={selectedPlushie}
-          isOpen={isDetailsOpen}
-          onClose={() => setIsDetailsOpen(false)}
+          open={isDetailsOpen}
+          onOpenChange={setIsDetailsOpen}
         />
       )}
       
