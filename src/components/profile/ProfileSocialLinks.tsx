@@ -1,5 +1,5 @@
 
-import { Facebook, Instagram, Twitter as X, Youtube, Link, Ebay, ShoppingBag } from "lucide-react";
+import { Facebook, Instagram, Twitter as X, Youtube, Link, ShoppingBag } from "lucide-react";
 
 interface ProfileSocialLinksProps {
   socialLinks: any[];

@@ -1,5 +1,6 @@
 
-import { X, Heart, Share2, Flag, MessageSquare, DollarSign } from "lucide-react";
+import { useState, useEffect } from "react";
+import { X, Heart, Share2, MessageSquare, DollarSign } from "lucide-react";
 import { 
   Dialog, 
   DialogContent, 
@@ -23,7 +24,6 @@ import { PlushieInfo } from "./plushie-detail/PlushieInfo";
 import { PlushieActions } from "./plushie-detail/PlushieActions";
 import { PlushieComments } from "./plushie-detail/PlushieComments";
 import { MarketplacePlushie } from "@/types/marketplace";
-import { useState, useEffect } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface PlushieDetailDialogProps {
@@ -34,6 +34,10 @@ interface PlushieDetailDialogProps {
 
 export function PlushieDetailDialog({ plushie, open, onOpenChange }: PlushieDetailDialogProps) {
   const [isLiked, setIsLiked] = useState(false);
+  const [comments, setComments] = useState<any[]>([]);
+  const [likeCount, setLikeCount] = useState(0);
+  const [commentCount, setCommentCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
   
   const handleLike = () => {
@@ -44,6 +48,9 @@ export function PlushieDetailDialog({ plushie, open, onOpenChange }: PlushieDeta
     // Reset state when plushie changes
     if (plushie) {
       setIsLiked(false);
+      setLikeCount(plushie.likes || 0);
+      setCommentCount(plushie.comments || 0);
+      setComments([]);
     }
   }, [plushie]);
   
@@ -73,7 +80,7 @@ export function PlushieDetailDialog({ plushie, open, onOpenChange }: PlushieDeta
           <div className="space-y-4 p-4 pb-24">
             <PlushieDetails plushie={plushie} />
             <PlushieInfo plushie={plushie} />
-            <PlushieComments plushie={plushie} />
+            <PlushieComments comments={comments} setComments={setComments} />
           </div>
         </ScrollArea>
         
@@ -123,8 +130,14 @@ export function PlushieDetailDialog({ plushie, open, onOpenChange }: PlushieDeta
           
           <div className="space-y-6">
             <PlushieInfo plushie={plushie} />
-            <PlushieActions plushie={plushie} />
-            <PlushieComments plushie={plushie} />
+            <PlushieActions 
+              isLiked={isLiked} 
+              likeCount={likeCount} 
+              commentCount={commentCount} 
+              onLikeToggle={handleLike} 
+              isLoading={isLoading} 
+            />
+            <PlushieComments comments={comments} setComments={setComments} />
           </div>
         </div>
       </DialogContent>

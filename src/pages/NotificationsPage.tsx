@@ -2,7 +2,7 @@
 import { Navbar } from "@/components/Navbar";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { MobileNav } from "@/components/navigation/MobileNav";
-import { NotificationsTab } from "@/components/profile/NotificationsTab";
+import NotificationsTab from "@/components/profile/NotificationsTab";
 import Footer from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";

@@ -8,12 +8,15 @@ import { PlushieGrid } from "@/components/brand/PlushieGrid";
 import { CommunityPosts } from "@/components/brand/CommunityPosts";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
+import { MarketplacePlushie, Post } from "@/types/marketplace";
 
 export const BrandPageWrapper = () => {
   const { brandName } = useParams<{ brandName: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [brandData, setBrandData] = useState<any>(null);
+  const [plushies, setPlushies] = useState<MarketplacePlushie[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
   
   useEffect(() => {
     // Simulate loading brand data
@@ -75,12 +78,26 @@ export const BrandPageWrapper = () => {
         borderColor: "border-gray-300"
       });
       
+      // Mock plushies data for the brand
+      setPlushies([]);
+      setPosts([]);
+      
       setLoading(false);
     }, 800);
   }, [brandName]);
   
   const handleGoBack = () => {
     navigate(-1);
+  };
+  
+  const handlePlushieClick = (plushie: MarketplacePlushie) => {
+    // Handle plushie click
+    console.log("Clicked plushie:", plushie);
+  };
+  
+  const handlePostClick = (post: Post) => {
+    // Handle post click
+    console.log("Clicked post:", post);
   };
   
   if (loading) {
@@ -128,11 +145,11 @@ export const BrandPageWrapper = () => {
               </TabsList>
               
               <TabsContent value="collection" className="mt-4">
-                <PlushieGrid brandName={brandName as string} />
+                <PlushieGrid plushies={plushies} onPlushieClick={handlePlushieClick} />
               </TabsContent>
               
               <TabsContent value="community" className="mt-4">
-                <CommunityPosts brandName={brandName as string} />
+                <CommunityPosts posts={posts} onPostClick={handlePostClick} />
               </TabsContent>
               
               <TabsContent value="news" className="mt-4">

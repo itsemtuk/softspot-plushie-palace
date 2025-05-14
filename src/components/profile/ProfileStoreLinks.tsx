@@ -1,5 +1,5 @@
 
-import { ShoppingBag, Ebay, Link } from "lucide-react";
+import { ShoppingBag, Link } from "lucide-react";
 
 interface StoreLink {
   platform: string;
@@ -17,7 +17,7 @@ export const ProfileStoreLinks = ({ storeLinks }: ProfileStoreLinksProps) => {
   const renderStoreIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
       case 'ebay':
-        return <Ebay size={16} />;
+        return <ShoppingBag size={16} />;
       case 'etsy':
         return <ShoppingBag size={16} />;
       default:

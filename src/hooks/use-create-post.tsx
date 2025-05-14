@@ -1,25 +1,8 @@
 
-import React, { useEffect, useState } from "react";
-import { 
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { useState } from "react";
 import { PostCreationForm } from "@/components/post/PostCreationForm";
 import { useNavigate } from "react-router-dom";
+import { ExtendedPost } from "@/types/marketplace";
 
 interface UseCreatePostOptions {
   redirectAfterCreate?: boolean;
@@ -27,92 +10,31 @@ interface UseCreatePostOptions {
 }
 
 export const useCreatePost = (options?: UseCreatePostOptions) => {
-  const isMobile = useIsMobile();
-  const [isOpen, setIsOpen] = useState(false);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
+  const [postToEdit, setPostToEdit] = useState<ExtendedPost | null>(null);
   const navigate = useNavigate();
   
-  const closeForm = () => {
-    setIsOpen(false);
+  const onOpenChange = (open: boolean) => {
+    setIsSheetOpen(open);
   };
   
   const onCreatePost = () => {
-    console.log("Opening post creation form");
-    setIsOpen(true);
+    setIsPostCreationOpen(true);
   };
   
-  // For mobile, let's use a sheet
-  if (isMobile) {
-    return {
-      onCreatePost,
-      CreatePostTrigger: ({ children }: { children: React.ReactNode }) => (
-        <SheetTrigger asChild>
-          <Button
-            onClick={onCreatePost}
-            className="bg-softspot-500 hover:bg-softspot-600"
-          >
-            {children}
-          </Button>
-        </SheetTrigger>
-      ),
-      CreatePostContent: () => (
-        <Sheet open={isOpen} onOpenChange={setIsOpen}>
-          <SheetContent side="bottom" className="h-[85vh]">
-            <SheetHeader>
-              <SheetTitle>Create New Post</SheetTitle>
-              <SheetDescription>
-                Share a photo of your plushie with the community
-              </SheetDescription>
-            </SheetHeader>
-            <div className="py-4">
-              <PostCreationForm 
-                onSuccess={() => {
-                  closeForm();
-                  if (options?.redirectAfterCreate) {
-                    navigate(options.redirectPath || '/feed');
-                  }
-                }}
-                onCancel={closeForm}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
-      ),
-    };
-  }
+  const onClosePostCreation = () => {
+    setIsPostCreationOpen(false);
+    setPostToEdit(null);
+  };
   
-  // For desktop, let's use a dialog
   return {
+    isSheetOpen,
+    isPostCreationOpen,
+    setIsPostCreationOpen,
+    postToEdit,
+    onOpenChange,
     onCreatePost,
-    CreatePostTrigger: ({ children }: { children: React.ReactNode }) => (
-      <DialogTrigger asChild>
-        <Button
-          onClick={onCreatePost}
-          className="bg-softspot-500 hover:bg-softspot-600"
-        >
-          {children}
-        </Button>
-      </DialogTrigger>
-    ),
-    CreatePostContent: () => (
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle>Create New Post</DialogTitle>
-            <DialogDescription>
-              Share a photo of your plushie with the community
-            </DialogDescription>
-          </DialogHeader>
-          <PostCreationForm 
-            onSuccess={() => {
-              closeForm();
-              if (options?.redirectAfterCreate) {
-                navigate(options.redirectPath || '/feed');
-              }
-            }}
-            onCancel={closeForm}
-          />
-        </DialogContent>
-      </Dialog>
-    ),
+    onClosePostCreation
   };
 };
