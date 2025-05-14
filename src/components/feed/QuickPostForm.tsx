@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { ImageIcon, Tag, BarChart2 } from "lucide-react";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { toast } from "@/components/ui/use-toast";
+import { useCreatePost } from "@/hooks/use-create-post";
 
 interface QuickPostFormProps {
   onCreatePost: () => void;
@@ -18,6 +19,7 @@ interface QuickPostFormProps {
 export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormProps) => {
   const { user } = useUser();
   const navigate = useNavigate();
+  const { onCreatePost: openPostCreation } = useCreatePost();
   
   const handleCreateAction = (action: string, path?: string) => {
     if (!isAuthenticated()) {
@@ -32,7 +34,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
     if (path) {
       navigate(path);
     } else {
-      onCreatePost();
+      openPostCreation(); // Use the hook to open post creation
     }
   };
   
@@ -61,11 +63,10 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
         <input 
           type="text"
           placeholder="Share your plushie news..." 
-          className="flex-1 py-2 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-softspot-400 focus:bg-white"
+          className="flex-1 py-2 px-4 bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-softspot-400 focus:bg-white cursor-pointer"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           onClick={handleCreateClick}
-          readOnly
         />
       </div>
       <div className="flex justify-between mt-3 pt-3 border-t">

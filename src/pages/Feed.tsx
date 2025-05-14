@@ -16,15 +16,17 @@ import Footer from "@/components/Footer";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { toast } from "@/components/ui/use-toast";
+import { QuickPostForm } from "@/components/feed/QuickPostForm";
 
 const Feed = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [postText, setPostText] = useState(""); 
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { openPostDialog } = usePostDialog();
-  const { onCreatePost } = useCreatePost();
+  const { onCreatePost, isPostCreationOpen, setIsPostCreationOpen } = useCreatePost();
   
   useEffect(() => {
     // Check if user is authenticated
@@ -100,6 +102,12 @@ const Feed = () => {
           onCreatePost={handleCreatePostClick}
           onRefresh={handleRefresh}
           isRefreshing={loading} 
+        />
+        
+        <QuickPostForm 
+          onCreatePost={handleCreatePostClick} 
+          value={postText} 
+          onChange={setPostText} 
         />
         
         {loading ? (

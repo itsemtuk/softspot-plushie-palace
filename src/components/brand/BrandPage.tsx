@@ -126,6 +126,9 @@ export const BrandPageWrapper = () => {
                 src={brandData.logo}
                 alt={brandName}
                 className="object-contain w-full h-full"
+                onError={(e) => {
+                  e.currentTarget.src = '/placeholder.svg';
+                }}
               />
             </div>
             <h1 className={`text-2xl font-bold mt-4 ${brandData.accentColor}`}>

@@ -10,6 +10,7 @@ import { PrivacySecurityTab } from "@/components/settings/tabs/PrivacySecurityTa
 import { NotificationsTab } from "@/components/settings/tabs/NotificationsTab";
 import { SocialMediaTab } from "@/components/settings/tabs/SocialMediaTab";
 import { StoreLinksTab } from "@/components/settings/tabs/StoreLinksTab";
+import { DeliveryPaymentTab } from "@/components/settings/tabs/DeliveryPaymentTab";
 import { toast } from "@/components/ui/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -21,6 +22,7 @@ export function ProfileSettings() {
     { id: "plush-preferences", label: "Plushie Preferences" },
     { id: "social-media", label: "Social Media" },
     { id: "store-links", label: "Store Links" },
+    { id: "delivery-payment", label: "Delivery & Payment" },
     { id: "privacy-security", label: "Privacy & Security" },
     { id: "notifications", label: "Notifications" },
   ];
@@ -86,6 +88,11 @@ export function ProfileSettings() {
           {/* Store Links Tab */}
           {activeTab === "store-links" && (
             <StoreLinksTab form={form} />
+          )}
+          
+          {/* Delivery & Payment Tab */}
+          {activeTab === "delivery-payment" && (
+            <DeliveryPaymentTab form={form} />
           )}
 
           {/* Privacy & Security Tab */}
