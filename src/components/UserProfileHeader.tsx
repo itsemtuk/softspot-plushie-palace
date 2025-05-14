@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -12,6 +11,11 @@ import { ProfileHeaderStats } from "./profile/ProfileHeaderStats";
 import { ProfileSocialLinks } from "./profile/ProfileSocialLinks";
 import { ProfileStoreLinks } from "./profile/ProfileStoreLinks";
 import { ProfileBio } from "./profile/ProfileBio";
+import { ProfileBadges } from "./profile/ProfileBadges";
+import { useBadges } from "@/hooks/useBadges";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Star, Award } from "lucide-react";
 
 interface UserProfileHeaderProps {
   username?: string;
@@ -37,10 +41,14 @@ export default function UserProfileHeader({
   const [postsCount, setPostsCount] = useState(0);
   const [socialLinks, setSocialLinks] = useState<any[]>([]);
   const [storeLinks, setStoreLinks] = useState<any[]>([]);
+  const [activeTab, setActiveTab] = useState<'about' | 'badges' | 'reviews'>('about');
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
   // Get Clerk user if configured
   const { user: clerkUser } = isClerkConfigured ? useUser() : { user: null };
+  
+  // Load badges
+  const { badges, completedCount, totalCount, isVerified } = useBadges();
   
   // Set default values
   const isPrivate = profileData?.isPrivate ?? false;
@@ -216,7 +224,7 @@ export default function UserProfileHeader({
       
       <div className="container mx-auto px-4 -mt-16 max-w-2xl">
         <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="relative px-6 pt-6 pb-4 border-b border-gray-100">
+          <div className="relative px-6 pt-6 pb-4">
             <div className="flex flex-col md:flex-row items-center md:items-start">
               {/* Profile Avatar */}
               <ProfileAvatar profileImage={profileImage} />
@@ -225,7 +233,14 @@ export default function UserProfileHeader({
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start">
                   <div>
                     {/* Username and role */}
-                    <h1 className="text-2xl font-bold">{displayName}</h1>
+                    <div className="flex items-center">
+                      <h1 className="text-2xl font-bold">{displayName}</h1>
+                      {isVerified && (
+                        <Badge variant="default" className="ml-2 bg-softspot-500">
+                          <Star className="h-3 w-3 mr-1 fill-current" /> Verified
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-gray-600 text-sm">Plushie collector</p>
                     
                     {/* Social Media Icons */}
@@ -254,25 +269,61 @@ export default function UserProfileHeader({
             </div>
           </div>
           
-          {/* Profile Bio and Interests */}
-          <div className="p-6">
-            <ProfileBio bio={profileData?.bio} />
-            
-            {plushieInterests.length > 0 && (
-              <div className="mb-4">
-                <h2 className="font-semibold text-gray-800 mb-2">Favorite Collections</h2>
-                <div className="flex flex-wrap gap-2">
-                  {plushieInterests.map((interest, index) => (
-                    <span key={index} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs">
-                      {interest}
-                    </span>
-                  ))}
+          {/* Profile Tabs */}
+          <div className="border-t border-gray-100">
+            <Tabs 
+              defaultValue="about" 
+              value={activeTab} 
+              onValueChange={(value) => setActiveTab(value as any)} 
+              className="w-full"
+            >
+              <TabsList className="grid grid-cols-3 w-full">
+                <TabsTrigger value="about">About</TabsTrigger>
+                <TabsTrigger value="badges" className="flex items-center">
+                  <Award className="h-4 w-4 mr-1" /> Badges
+                </TabsTrigger>
+                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="about" className="p-6">
+                {/* Profile Bio and Interests */}
+                <ProfileBio bio={profileData?.bio} />
+                
+                {plushieInterests.length > 0 && (
+                  <div className="mb-4">
+                    <h2 className="font-semibold text-gray-800 mb-2">Favorite Collections</h2>
+                    <div className="flex flex-wrap gap-2">
+                      {plushieInterests.map((interest, index) => (
+                        <span key={index} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs">
+                          {interest}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                
+                {/* Store Links */}
+                <ProfileStoreLinks storeLinks={storeLinks} />
+              </TabsContent>
+              
+              <TabsContent value="badges" className="p-6">
+                <ProfileBadges 
+                  badges={badges} 
+                  completedCount={completedCount} 
+                  totalCount={totalCount} 
+                  showAll={isOwnProfile}
+                />
+              </TabsContent>
+              
+              <TabsContent value="reviews" className="p-6">
+                <div className="text-center py-10">
+                  <h3 className="text-lg font-medium">No reviews yet</h3>
+                  <p className="text-gray-500 mt-2">
+                    Reviews will appear here after someone purchases from you.
+                  </p>
                 </div>
-              </div>
-            )}
-            
-            {/* Store Links */}
-            <ProfileStoreLinks storeLinks={storeLinks} />
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       </div>

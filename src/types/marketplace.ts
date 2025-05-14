@@ -1,3 +1,4 @@
+
 export interface ImageUploadResult {
   url: string;
   success: boolean;
@@ -175,4 +176,58 @@ export interface UserPrivacySettings {
   messagePermission?: string;
   showActivity?: boolean;
   allowTagging?: boolean;
+}
+
+// Badge system types
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  imagePath: string;
+  criteria: BadgeCriteria;
+  earned?: boolean;
+  earnedAt?: string;
+  progress?: number;
+  maxProgress?: number;
+  type: BadgeType;
+  isSpecial?: boolean;
+}
+
+export type BadgeType = 'achievement' | 'special' | 'milestone' | 'verification';
+
+export interface BadgeCriteria {
+  requiresProfilePicture?: boolean;
+  requiresPlushiePreferences?: boolean;
+  requiresCompletedProfile?: boolean;
+  requiresFeedPosts?: number;
+  requiresSoldItems?: number;
+  requiresListedItems?: number;
+  requiresWishlist?: boolean;
+  requiresFollowers?: number;
+  requiresVerification?: boolean;
+  specialBadgeType?: 'alpha_tester' | 'beta_tester' | 'contributor' | 'moderator';
+}
+
+// Review types
+export interface MarketplaceReview {
+  id: string;
+  userId: string;
+  sellerId: string;
+  username: string;
+  rating: number;
+  text: string;
+  date: string;
+  itemId?: string;
+  itemName?: string;
+  verified: boolean;
+}
+
+export interface UserReviewSummary {
+  averageRating: number;
+  totalReviews: number;
+  fiveStarCount: number;
+  fourStarCount: number;
+  threeStarCount: number;
+  twoStarCount: number;
+  oneStarCount: number;
 }
