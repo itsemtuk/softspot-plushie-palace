@@ -1,4 +1,3 @@
-
 export interface ImageUploadResult {
   url: string;
   success: boolean;
@@ -28,6 +27,7 @@ export interface ExtendedPost {
   deliveryCost: number;
   discount?: number;
   originalPrice?: number;
+  sold?: boolean; // Adding this missing property
 }
 
 export type PostCreationData = {

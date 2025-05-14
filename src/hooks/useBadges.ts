@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { Badge, BadgeCriteria } from "@/types/marketplace";
+import { Badge, BadgeCriteria, BadgeType } from "@/types/marketplace";
 import { useUser } from "@clerk/clerk-react";
 import { getUserPosts } from "@/utils/posts/postFetch";
 
@@ -19,7 +19,8 @@ export const useBadges = () => {
       earned: false,
       criteria: {
         requiresProfilePicture: true
-      }
+      },
+      type: "achievement" as BadgeType
     },
     {
       id: "preferences",
@@ -29,7 +30,8 @@ export const useBadges = () => {
       earned: false,
       criteria: {
         requiresPlushiePreferences: true
-      }
+      },
+      type: "achievement" as BadgeType
     },
     {
       id: "complete-profile",
@@ -39,7 +41,8 @@ export const useBadges = () => {
       earned: false,
       criteria: {
         requiresCompletedProfile: true
-      }
+      },
+      type: "achievement" as BadgeType
     },
     {
       id: "first-post",
@@ -51,7 +54,8 @@ export const useBadges = () => {
         requiresFeedPosts: 1
       },
       progress: 0,
-      maxProgress: 1
+      maxProgress: 1,
+      type: "milestone" as BadgeType
     },
     {
       id: "first-listing",
@@ -63,7 +67,8 @@ export const useBadges = () => {
         requiresListedItems: 1
       },
       progress: 0,
-      maxProgress: 1
+      maxProgress: 1,
+      type: "milestone" as BadgeType
     },
     {
       id: "first-sale",
@@ -75,7 +80,8 @@ export const useBadges = () => {
         requiresSoldItems: 1
       },
       progress: 0,
-      maxProgress: 1
+      maxProgress: 1,
+      type: "milestone" as BadgeType
     },
     {
       id: "wishlist",
@@ -85,7 +91,8 @@ export const useBadges = () => {
       earned: false,
       criteria: {
         requiresWishlist: true
-      }
+      },
+      type: "achievement" as BadgeType
     },
     {
       id: "10-followers",
@@ -97,7 +104,8 @@ export const useBadges = () => {
         requiresFollowers: 10
       },
       progress: 0,
-      maxProgress: 10
+      maxProgress: 10,
+      type: "milestone" as BadgeType
     },
     {
       id: "50-followers",
@@ -109,7 +117,8 @@ export const useBadges = () => {
         requiresFollowers: 50
       },
       progress: 0,
-      maxProgress: 50
+      maxProgress: 50,
+      type: "milestone" as BadgeType
     },
     {
       id: "100-followers",
@@ -121,7 +130,8 @@ export const useBadges = () => {
         requiresFollowers: 100
       },
       progress: 0,
-      maxProgress: 100
+      maxProgress: 100,
+      type: "milestone" as BadgeType
     },
   ];
 
@@ -136,7 +146,8 @@ export const useBadges = () => {
       isSpecial: true,
       criteria: {
         specialBadgeType: "alpha_tester"
-      }
+      },
+      type: "special" as BadgeType
     },
     {
       id: "beta-tester",
@@ -147,7 +158,8 @@ export const useBadges = () => {
       isSpecial: true,
       criteria: {
         specialBadgeType: "beta_tester"
-      }
+      },
+      type: "special" as BadgeType
     }
   ];
 
@@ -256,7 +268,8 @@ export const useBadges = () => {
       const userPosts = await getUserPosts(user?.id || "");
       const totalPosts = userPosts.length;
       const listedItems = userPosts.filter(post => post.forSale).length;
-      const soldItems = userPosts.filter(post => post.forSale && post.sold).length;
+      // Fix: Check if post.sold exists before using it
+      const soldItems = userPosts.filter(post => post.forSale && post.sold === true).length;
       
       // Update first post badge
       const firstPostIndex = updatedBadges.findIndex(b => b.id === "first-post");

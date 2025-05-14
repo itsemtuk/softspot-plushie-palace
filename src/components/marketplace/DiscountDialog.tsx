@@ -83,7 +83,7 @@ export function DiscountDialog({ item, open, onOpenChange, onApplyDiscount }: Di
             Apply Discount
           </DialogTitle>
           <DialogDescription>
-            Create a special offer for your listing "{item.name}".
+            Create a special offer for your listing "{item.title}".
           </DialogDescription>
         </DialogHeader>
         
