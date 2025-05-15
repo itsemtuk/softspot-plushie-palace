@@ -115,7 +115,7 @@ const MessagingPage = () => {
 const MessageRequestList = () => {
   const mockRequests = [
     { id: '1', name: 'Alex Johnson', avatar: 'https://api.dicebear.com/6.x/initials/svg?seed=AJ', preview: 'Hey, I saw your plushie collection...' },
-    { id: '2', name: 'Taylor Smith', avatar: 'https://api.dicebear.com/6.x/initials/svg?seed=TS', preview: 'I'd like to ask about your Jellycat bunny...' }
+    { id: '2', name: 'Taylor Smith', avatar: 'https://api.dicebear.com/6.x/initials/svg?seed=TS', preview: "I'd like to ask about your Jellycat bunny..." }
   ];
   
   const handleAccept = (id: string) => {
