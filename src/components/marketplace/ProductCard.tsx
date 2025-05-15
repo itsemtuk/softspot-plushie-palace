@@ -6,6 +6,9 @@ import { Heart } from "lucide-react";
 import { MarketplacePlushie } from "@/types/marketplace";
 import { BrandLogo } from "../brand/BrandLogo";
 import { formatDistanceToNow } from "date-fns";
+import { useUser } from "@clerk/clerk-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
   product: MarketplacePlushie;
@@ -20,6 +23,9 @@ export const ProductCard = ({
   onWishlistToggle,
   isWishlisted = false
 }: ProductCardProps) => {
+  const { user } = useUser();
+  const navigate = useNavigate();
+  const isCurrentUserProduct = user?.id === product.userId;
   
   // Format the date
   const formattedDate = product.timestamp ? 
@@ -44,10 +50,17 @@ export const ProductCard = ({
   const shippingInfo = product.deliveryCost === 0 ? 
     "Free shipping" : 
     `+$${product.deliveryCost.toFixed(2)} shipping`;
+    
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (product.username) {
+      navigate(`/profile/${product.username}`);
+    }
+  };
 
   return (
     <Card 
-      className="overflow-hidden transition-all hover:shadow-md cursor-pointer h-full flex flex-col"
+      className={`overflow-hidden transition-all hover:shadow-md cursor-pointer h-full flex flex-col ${isCurrentUserProduct ? 'ring-2 ring-softspot-300' : ''}`}
       onClick={() => onProductClick(product)}
     >
       <div className="relative">
@@ -55,6 +68,13 @@ export const ProductCard = ({
         {product.discount && product.discount > 0 && (
           <Badge className="absolute top-2 left-2 bg-red-500 z-10">
             {product.discount}% OFF
+          </Badge>
+        )}
+        
+        {/* Owner badge - show if it's the current user's product */}
+        {isCurrentUserProduct && (
+          <Badge className="absolute top-2 left-2 bg-softspot-500 z-10">
+            Your listing
           </Badge>
         )}
         
@@ -85,13 +105,29 @@ export const ProductCard = ({
       </div>
       
       <CardContent className="p-3 flex-grow flex flex-col">
-        <div className="mb-1 flex items-center">
-          {product.brand && (
-            <div className="mr-2 flex-shrink-0">
-              <BrandLogo brandName={product.brand} className="w-6 h-6" />
-            </div>
-          )}
-          <p className="text-xs text-gray-500 truncate">{product.brand || 'Unknown brand'}</p>
+        <div className="mb-1 flex items-center justify-between">
+          <div className="flex items-center">
+            {product.brand && (
+              <div className="mr-2 flex-shrink-0">
+                <BrandLogo brandName={product.brand} className="w-6 h-6" />
+              </div>
+            )}
+            <p className="text-xs text-gray-500 truncate">{product.brand || 'Unknown brand'}</p>
+          </div>
+          
+          {/* User profile section */}
+          <div 
+            className="flex items-center cursor-pointer" 
+            onClick={handleProfileClick}
+          >
+            <Avatar className="h-6 w-6 mr-1">
+              <AvatarImage src={`/assets/avatars/PLUSH_Bear.PNG`} alt={product.username || ""} />
+              <AvatarFallback>{product.username?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
+            </Avatar>
+            <span className="text-xs text-gray-500 hover:text-softspot-500">
+              {product.username || "Anonymous"}
+            </span>
+          </div>
         </div>
         
         <h3 className="font-medium line-clamp-2 mb-1 flex-grow">{product.title}</h3>

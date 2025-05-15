@@ -3,7 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { PostCreationForm } from "./PostCreationForm";
 import { ImageEditor } from "./ImageEditor";
-import ImageUploader from "./ImageUploader";
+import { ImageUploader } from "./ImageUploader";
 import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";

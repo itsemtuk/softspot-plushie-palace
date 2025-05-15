@@ -55,22 +55,31 @@ const Discover = () => {
       setProductResults(filteredItems);
       
       // Search for hashtags
-      if (searchTerm.startsWith('#')) {
+      if (searchTerm && searchTerm.startsWith('#')) {
         const tag = searchTerm.substring(1).toLowerCase();
-        const allPosts = getAllUserPosts('');
-        const allTags = new Set<string>();
-        
-        allPosts.forEach((post: any) => {
-          if (post.tags) {
-            post.tags.forEach((postTag: string) => {
-              if (postTag.toLowerCase().includes(tag)) {
-                allTags.add(postTag);
+        const fetchPosts = async () => {
+          try {
+            const allPosts = await getAllUserPosts('');
+            const allTags = new Set<string>();
+            
+            allPosts.forEach((post: any) => {
+              if (post.tags) {
+                post.tags.forEach((postTag: string) => {
+                  if (postTag.toLowerCase().includes(tag)) {
+                    allTags.add(postTag);
+                  }
+                });
               }
             });
+            
+            setHashtagResults(Array.from(allTags));
+          } catch (error) {
+            console.error("Error fetching posts for hashtags:", error);
+            setHashtagResults([]);
           }
-        });
+        };
         
-        setHashtagResults(Array.from(allTags));
+        fetchPosts();
       } else {
         setHashtagResults([]);
       }

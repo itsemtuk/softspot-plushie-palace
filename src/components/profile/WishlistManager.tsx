@@ -52,20 +52,24 @@ import {
 
 // This function creates a proper WishlistItem object with all required properties
 const createWishlistItem = (itemData: Partial<WishlistItem>): WishlistItem => {
+  const now = new Date().toISOString();
   return {
     id: itemData.id || `item-${Date.now()}`,
+    plushieId: itemData.plushieId || `plushie-${Date.now()}`,
+    title: itemData.name || 'New Item',
     name: itemData.name || 'New Item',
     price: itemData.price || 0,
     description: itemData.description || '',
     imageUrl: itemData.imageUrl || '',
+    image: itemData.image || '',
     linkUrl: itemData.linkUrl || '',
     priority: itemData.priority || 'medium',
     status: itemData.status || 'wanted',
     currencyCode: itemData.currencyCode || 'USD',
-    createdAt: itemData.createdAt || new Date().toISOString(),
-    updatedAt: itemData.updatedAt || new Date().toISOString(),
-    brand: itemData.brand,
-    image: itemData.image,
+    createdAt: itemData.createdAt || now,
+    updatedAt: itemData.updatedAt || now,
+    addedDate: itemData.addedDate || now,
+    brand: itemData.brand || '',
   };
 };
 

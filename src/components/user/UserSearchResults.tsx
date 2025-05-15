@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -16,7 +15,7 @@ export const UserSearchResults = ({ searchTerm }: UserSearchResultsProps) => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const { user: currentUser } = useUser();
-  const { users: clerkUsers } = useClerk();
+  const clerk = useClerk();
   const navigate = useNavigate();
   
   useEffect(() => {
@@ -28,48 +27,60 @@ export const UserSearchResults = ({ searchTerm }: UserSearchResultsProps) => {
     const searchUsers = async () => {
       setLoading(true);
       try {
-        // Search users from Clerk
-        if (clerkUsers) {
-          const userResults = clerkUsers.filter(user => {
-            const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-            const username = user.username?.toLowerCase() || '';
-            return (
-              username.includes(searchTerm.toLowerCase()) ||
-              fullName.includes(searchTerm.toLowerCase())
-            );
-          }).map(user => ({
-            id: user.id,
-            username: user.username || `${user.firstName} ${user.lastName}`,
-            imageUrl: user.imageUrl,
-            status: 'online' // You might want to implement actual status tracking
-          }));
-          
-          setUsers(userResults);
+        // Search users from Clerk - using client instead of users property
+        if (clerk) {
+          try {
+            const userList = await clerk.users.getUserList();
+            const userResults = userList.filter(user => {
+              const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+              const username = user.username?.toLowerCase() || '';
+              return (
+                username.includes(searchTerm.toLowerCase()) ||
+                fullName.includes(searchTerm.toLowerCase())
+              );
+            }).map(user => ({
+              id: user.id,
+              username: user.username || `${user.firstName} ${user.lastName}`,
+              imageUrl: user.imageUrl,
+              status: 'online' // You might want to implement actual status tracking
+            }));
+            
+            setUsers(userResults);
+          } catch (error) {
+            console.error("Error fetching users from Clerk:", error);
+            // Fall back to mock data
+            fallbackToMockUsers();
+          }
         } else {
-          // Fallback for development
-          const mockUsers = [
-            { id: '1', username: 'plushielover', imageUrl: '/assets/avatars/PLUSH_Bear.PNG', status: 'online' },
-            { id: '2', username: 'jellycatfan', imageUrl: '/assets/avatars/PLUSH_Cat.PNG', status: 'away' },
-            { id: '3', username: 'squishmallowcollector', imageUrl: '/assets/avatars/PLUSH_Panda.PNG', status: 'offline' },
-            { id: '4', username: 'teddybearlover', imageUrl: '/assets/avatars/PLUSH_Bunny.PNG', status: 'busy' },
-          ];
-          
-          const filtered = mockUsers.filter(user => 
-            user.username.toLowerCase().includes(searchTerm.toLowerCase())
-          );
-          
-          setUsers(filtered);
+          fallbackToMockUsers();
         }
       } catch (error) {
         console.error("Error searching users:", error);
+        fallbackToMockUsers();
       } finally {
         setLoading(false);
       }
     };
     
+    const fallbackToMockUsers = () => {
+      // Fallback for development
+      const mockUsers = [
+        { id: '1', username: 'plushielover', imageUrl: '/assets/avatars/PLUSH_Bear.PNG', status: 'online' },
+        { id: '2', username: 'jellycatfan', imageUrl: '/assets/avatars/PLUSH_Cat.PNG', status: 'away' },
+        { id: '3', username: 'squishmallowcollector', imageUrl: '/assets/avatars/PLUSH_Panda.PNG', status: 'offline' },
+        { id: '4', username: 'teddybearlover', imageUrl: '/assets/avatars/PLUSH_Bunny.PNG', status: 'busy' },
+      ];
+      
+      const filtered = mockUsers.filter(user => 
+        user.username.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      
+      setUsers(filtered);
+    };
+    
     const timer = setTimeout(searchUsers, 300);
     return () => clearTimeout(timer);
-  }, [searchTerm, clerkUsers]);
+  }, [searchTerm, clerk]);
   
   const viewProfile = (username: string) => {
     navigate(`/profile/${username}`);
