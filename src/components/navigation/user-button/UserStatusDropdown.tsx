@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { CheckIcon, CircleIcon } from "@radix-ui/react-icons";
+import { CheckIcon } from "lucide-react";
 import { 
   DropdownMenuItem, 
   DropdownMenuPortal, 
@@ -61,7 +61,7 @@ export const UserStatusDropdown = ({
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger className="flex items-center">
-        <CircleIcon className={`mr-2 h-2 w-2 ${getStatusColor(currentStatus)}`} />
+        <div className={`mr-2 h-2 w-2 rounded-full ${getStatusColor(currentStatus)}`}></div>
         <span className="capitalize">{currentStatus}</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
@@ -72,7 +72,7 @@ export const UserStatusDropdown = ({
               onClick={() => handleStatusChange("online")}
               className="flex items-center cursor-pointer"
             >
-              <CircleIcon className="mr-2 h-2 w-2 bg-green-500" />
+              <div className="mr-2 h-2 w-2 rounded-full bg-green-500"></div>
               <span>Online</span>
               {currentStatus === "online" && <CheckIcon className="ml-auto h-4 w-4" />}
             </DropdownMenuRadioItem>
@@ -82,7 +82,7 @@ export const UserStatusDropdown = ({
               onClick={() => handleStatusChange("away")}
               className="flex items-center cursor-pointer"
             >
-              <CircleIcon className="mr-2 h-2 w-2 bg-yellow-500" />
+              <div className="mr-2 h-2 w-2 rounded-full bg-yellow-500"></div>
               <span>Away</span>
               {currentStatus === "away" && <CheckIcon className="ml-auto h-4 w-4" />}
             </DropdownMenuRadioItem>
@@ -92,7 +92,7 @@ export const UserStatusDropdown = ({
               onClick={() => handleStatusChange("busy")}
               className="flex items-center cursor-pointer"
             >
-              <CircleIcon className="mr-2 h-2 w-2 bg-red-500" />
+              <div className="mr-2 h-2 w-2 rounded-full bg-red-500"></div>
               <span>Busy</span>
               {currentStatus === "busy" && <CheckIcon className="ml-auto h-4 w-4" />}
             </DropdownMenuRadioItem>
@@ -102,7 +102,7 @@ export const UserStatusDropdown = ({
               onClick={() => handleStatusChange("offline")}
               className="flex items-center cursor-pointer"
             >
-              <CircleIcon className="mr-2 h-2 w-2 bg-gray-500" />
+              <div className="mr-2 h-2 w-2 rounded-full bg-gray-500"></div>
               <span>Offline</span>
               {currentStatus === "offline" && <CheckIcon className="ml-auto h-4 w-4" />}
             </DropdownMenuRadioItem>
