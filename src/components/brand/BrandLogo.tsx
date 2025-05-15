@@ -10,7 +10,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ brandName, className = "w-
   // Map of brand names to their logo files
   const brandLogoMap: Record<string, string> = {
     "Jellycat": "/assets/brands/jellycat-logo.png",
-    "jellycat": "/assets/brands/jellycat-logo.png",
+    "jellycat": "/assets/Brand_Logos/jellycat.png",
     "Build-A-Bear": "/assets/brands/build-a-bear-logo.png",
     "build-a-bear": "/assets/brands/build-a-bear-logo.png",
     "Squishmallow": "/assets/brands/squishmallow-logo.png",
