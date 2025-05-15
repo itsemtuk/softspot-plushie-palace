@@ -1,85 +1,114 @@
 
-import {
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
+import { useState } from "react";
+import { CheckIcon, CircleIcon } from "@radix-ui/react-icons";
+import { 
+  DropdownMenuItem, 
+  DropdownMenuPortal, 
+  DropdownMenuSub, 
+  DropdownMenuSubContent, 
+  DropdownMenuSubTrigger, 
+  DropdownMenuRadioGroup, 
+  DropdownMenuRadioItem 
 } from "@/components/ui/dropdown-menu";
-import { ActivityStatus } from "@/components/ui/activity-status";
+import { useStatus } from "@/hooks/use-status";
+import { toast } from "@/components/ui/use-toast";
 
 interface UserStatusDropdownProps {
   currentStatus: "online" | "offline" | "away" | "busy";
   onStatusChange: (status: "online" | "offline" | "away" | "busy") => void;
 }
 
-export const UserStatusDropdown = ({
+export const UserStatusDropdown = ({ 
   currentStatus,
-  onStatusChange,
+  onStatusChange
 }: UserStatusDropdownProps) => {
-  // Get status text
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "online":
-        return "Online";
-      case "offline":
-        return "Invisible";
-      case "away":
-        return "Away";
-      case "busy":
-        return "Do Not Disturb";
-      default:
-        return "Online";
+  const { updateStatus } = useStatus();
+  const [isUpdating, setIsUpdating] = useState(false);
+
+  const handleStatusChange = async (status: "online" | "offline" | "away" | "busy") => {
+    if (isUpdating) return;
+    
+    setIsUpdating(true);
+    try {
+      await updateStatus(status);
+      onStatusChange(status);
+      toast({
+        title: "Status updated",
+        description: `Your status is now set to ${status}.`
+      });
+    } catch (error) {
+      console.error("Failed to update status:", error);
+      toast({
+        variant: "destructive",
+        title: "Status update failed",
+        description: "There was an error updating your status."
+      });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const handleStatusChange = (newStatus: string) => {
-    console.log("Changing status to:", newStatus);
-    onStatusChange(newStatus as "online" | "offline" | "away" | "busy");
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "online": return "bg-green-500";
+      case "offline": return "bg-gray-500";
+      case "away": return "bg-yellow-500";
+      case "busy": return "bg-red-500";
+      default: return "bg-gray-500";
+    }
   };
 
   return (
     <DropdownMenuSub>
-      <DropdownMenuSubTrigger className="flex w-full items-center cursor-pointer">
-        <div className="flex items-center">
-          <ActivityStatus status={currentStatus} className="mr-2" />
-          <span>{getStatusText(currentStatus)}</span>
-        </div>
+      <DropdownMenuSubTrigger className="flex items-center">
+        <CircleIcon className={`mr-2 h-2 w-2 ${getStatusColor(currentStatus)}`} />
+        <span className="capitalize">{currentStatus}</span>
       </DropdownMenuSubTrigger>
-      <DropdownMenuSubContent>
-        <DropdownMenuRadioGroup
-          value={currentStatus}
-          onValueChange={handleStatusChange}
-        >
-          <DropdownMenuRadioItem value="online" className="cursor-pointer">
-            <div className="flex items-center">
-              <ActivityStatus status="online" className="mr-2" />
+      <DropdownMenuPortal>
+        <DropdownMenuSubContent className="w-48">
+          <DropdownMenuRadioGroup value={currentStatus}>
+            <DropdownMenuRadioItem 
+              value="online" 
+              onClick={() => handleStatusChange("online")}
+              className="flex items-center cursor-pointer"
+            >
+              <CircleIcon className="mr-2 h-2 w-2 bg-green-500" />
               <span>Online</span>
-            </div>
-          </DropdownMenuRadioItem>
-
-          <DropdownMenuRadioItem value="away" className="cursor-pointer">
-            <div className="flex items-center">
-              <ActivityStatus status="away" className="mr-2" />
+              {currentStatus === "online" && <CheckIcon className="ml-auto h-4 w-4" />}
+            </DropdownMenuRadioItem>
+            
+            <DropdownMenuRadioItem 
+              value="away" 
+              onClick={() => handleStatusChange("away")}
+              className="flex items-center cursor-pointer"
+            >
+              <CircleIcon className="mr-2 h-2 w-2 bg-yellow-500" />
               <span>Away</span>
-            </div>
-          </DropdownMenuRadioItem>
-
-          <DropdownMenuRadioItem value="busy" className="cursor-pointer">
-            <div className="flex items-center">
-              <ActivityStatus status="busy" className="mr-2" />
-              <span>Do Not Disturb</span>
-            </div>
-          </DropdownMenuRadioItem>
-
-          <DropdownMenuRadioItem value="offline" className="cursor-pointer">
-            <div className="flex items-center">
-              <ActivityStatus status="offline" className="mr-2" />
-              <span>Invisible</span>
-            </div>
-          </DropdownMenuRadioItem>
-        </DropdownMenuRadioGroup>
-      </DropdownMenuSubContent>
+              {currentStatus === "away" && <CheckIcon className="ml-auto h-4 w-4" />}
+            </DropdownMenuRadioItem>
+            
+            <DropdownMenuRadioItem 
+              value="busy" 
+              onClick={() => handleStatusChange("busy")}
+              className="flex items-center cursor-pointer"
+            >
+              <CircleIcon className="mr-2 h-2 w-2 bg-red-500" />
+              <span>Busy</span>
+              {currentStatus === "busy" && <CheckIcon className="ml-auto h-4 w-4" />}
+            </DropdownMenuRadioItem>
+            
+            <DropdownMenuRadioItem 
+              value="offline" 
+              onClick={() => handleStatusChange("offline")}
+              className="flex items-center cursor-pointer"
+            >
+              <CircleIcon className="mr-2 h-2 w-2 bg-gray-500" />
+              <span>Offline</span>
+              {currentStatus === "offline" && <CheckIcon className="ml-auto h-4 w-4" />}
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuSubContent>
+      </DropdownMenuPortal>
     </DropdownMenuSub>
   );
 };

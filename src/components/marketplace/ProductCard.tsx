@@ -75,7 +75,9 @@ export const ProductCard = ({
             src={product.image}
             alt={product.title || "Plushie"}
             className="object-cover w-full h-full"
+            loading="lazy"
             onError={(e) => {
+              console.error("Failed to load image:", product.image);
               (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1516067154453-6194ba34d121";
             }}
           />

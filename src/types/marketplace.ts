@@ -1,234 +1,53 @@
-export interface ImageUploadResult {
-  url: string;
-  success: boolean;
-  file: File;
-  error?: string;
-  type?: string;
-  name?: string;
-}
-
-export interface ExtendedPost {
+export interface MarketplaceReview {
   id: string;
   userId: string;
-  image: string;
-  title: string;
   username: string;
-  likes: number;
-  comments: number;
-  description: string;
-  tags: string[];
+  rating: number;
+  comment: string;
+  date: string;
+}
+
+export interface MarketplacePlushie {
+  id: string;
+  userId: string;
+  title?: string;
+  description?: string;
+  price: number;
+  image: string;
+  tags?: string[];
   timestamp: string;
-  price?: number;
+  username?: string;
+  likes?: number;
+  comments?: number;
   forSale?: boolean;
   condition?: string;
   color?: string;
   material?: string;
+  brand?: string;
+  filling?: string;
+  species?: string;
   location?: string;
   deliveryCost: number;
   discount?: number;
   originalPrice?: number;
-  sold?: boolean; // Adding this missing property
+  size?: string;
+  reviews?: MarketplaceReview[];
 }
 
-export type PostCreationData = {
+export interface PostCreationData {
   title: string;
   description: string;
   image: string;
-  tags?: string[];
-  location?: string;
-};
-
-export interface ImageEditorOptions {
-  aspectRatio?: number;
-  minScale?: number;
-  maxScale?: number;
-  allowRotation?: boolean;
-  allowFlip?: boolean;
-  allowCrop?: boolean;
+  tags: string[];
+  location: string;
 }
 
-export interface PlushieBrand {
+export interface ExtendedPost extends PostCreationData {
   id: string;
-  name: string;
-  logo: string;
-  description: string;
-  website?: string;
-  status?: string;
-  verified?: boolean;
-  location?: string;
-  founded?: string;
-}
-
-export interface WishlistItem {
-  id: string;
-  name: string;
-  price?: number;
-  description?: string;
-  imageUrl?: string;
-  linkUrl?: string;
-  priority?: "high" | "medium" | "low" | number;
-  status?: "wanted" | "purchased" | "received" | string;
-  currencyCode?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  brand?: string;
-  image?: string;
-}
-
-export interface Wishlist {
-  id: string;
-  name: string;
-  description?: string;
-  items?: WishlistItem[];
-  privacy?: string;
-  createdAt?: string;
-  updatedAt?: string;
-  isPublic?: boolean;
-  userId?: string;
-}
-
-export interface UserProfile {
-  id: string;
-  username: string;
-  bio?: string;
-  profileImageUrl?: string;
-  followers?: number;
-  isFollowing?: boolean;
-  avatar?: string;
-}
-
-export interface Post {
-  id: string;
-  title: string;
-  content: string;
-  author: string;
-  imageUrl: string;
   createdAt: string;
-  likes: number;
-  tags?: string[];
-  image?: string;
-}
-
-export interface Comment {
-  id: string;
+  updatedAt: string;
   userId: string;
   username: string;
-  text: string;
-  timestamp: string;
-  isLiked?: boolean;
-  likes: number | any[];
-}
-
-export interface MarketplaceFilters {
-  minPrice?: number;
-  maxPrice?: number;
-  condition?: string[];
-  color?: string[];
-  brands?: string[];
-  material?: string[];
-  filling?: string[];
-  species?: string[];
-  sorting?: string;
-  inStock?: boolean;
-  freeShipping?: boolean;
-  hasOffers?: boolean;
-  searchTerm?: string;
-}
-
-export interface MarketplacePlushie extends ExtendedPost {
-  deliveryMethod?: DeliveryMethod;
-  filling?: PlushieFilling;
-  species?: PlushieSpecies;
-  brand?: string;
-  discount?: number;
-  originalPrice?: number;
-  size?: string; // Adding this missing property
-  reviews?: MarketplaceReview[]; // Adding reviews array to fix errors
-}
-
-export type PlushieCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor';
-export type PlushieMaterial = 'Cotton' | 'Plush' | 'Fleece' | 'Polyester' | 'Minky' | 'Other';
-export type PlushieFilling = 'Polyester Fiberfill' | 'Cotton' | 'Memory Foam' | 'Beans' | 'Other' | string;
-export type PlushieSpecies = 'Bear' | 'Cat' | 'Dog' | 'Rabbit' | 'Dinosaur' | 'Dragon' | 'Fox' | 'Panda' | 'Character' | 'Other' | 'Food' | 'Object' | string;
-export type DeliveryMethod = 'Shipping' | 'Local Pickup' | 'Both';
-
-export type Currency = {
-  code: string;
-  name: string;
-  symbol: string;
-};
-
-export interface PrivacySetting {
-  id: string;
-  name: string;
-  description: string;
-  value: boolean;
-}
-
-export interface UserPrivacySettings {
-  privateProfile: boolean;
-  hideFromSearch: boolean;
-  showOnlineStatus: boolean;
-  allowDirectMessages: boolean;
-  allowComments: boolean;
-  showWishlist: boolean;
-  showCollection: boolean;
-  profileVisibility?: string;
-  messagePermission?: string;
-  showActivity?: boolean;
-  allowTagging?: boolean;
-}
-
-// Badge system types
-export interface Badge {
-  id: string;
-  name: string;
-  description: string;
-  imagePath: string;
-  criteria: BadgeCriteria;
-  earned?: boolean;
-  earnedAt?: string;
-  progress?: number;
-  maxProgress?: number;
-  type: BadgeType;
-  isSpecial?: boolean;
-}
-
-export type BadgeType = 'achievement' | 'special' | 'milestone' | 'verification';
-
-export interface BadgeCriteria {
-  requiresProfilePicture?: boolean;
-  requiresPlushiePreferences?: boolean;
-  requiresCompletedProfile?: boolean;
-  requiresFeedPosts?: number;
-  requiresSoldItems?: number;
-  requiresListedItems?: number;
-  requiresWishlist?: boolean;
-  requiresFollowers?: number;
-  requiresVerification?: boolean;
-  specialBadgeType?: 'alpha_tester' | 'beta_tester' | 'contributor' | 'moderator';
-}
-
-// Review types
-export interface MarketplaceReview {
-  id: string;
-  userId: string;
-  sellerId: string;
-  username: string;
-  rating: number;
-  text: string;
-  date: string;
-  itemId?: string;
-  itemName?: string;
-  verified: boolean;
-}
-
-export interface UserReviewSummary {
-  averageRating: number;
-  totalReviews: number;
-  fiveStarCount: number;
-  fourStarCount: number;
-  threeStarCount: number;
-  twoStarCount: number;
-  oneStarCount: number;
+  forSale?: boolean;
+  price?: number;
 }

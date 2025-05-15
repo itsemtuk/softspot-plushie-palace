@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -19,7 +18,8 @@ interface QuickPostFormProps {
 export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormProps) => {
   const { user } = useUser();
   const navigate = useNavigate();
-  const { onCreatePost: openPostCreation, setIsPostCreationOpen } = useCreatePost();
+  const { onCreatePost: openPostCreation } = useCreatePost();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleCreateAction = (action: string, path?: string) => {
     if (!isAuthenticated()) {
@@ -32,6 +32,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
     }
     
     if (action === "create posts" || action === "post photo") {
+      console.log("Opening post creation dialog");
       openPostCreation(); // Open the post creation dialog
     } else if (path) {
       navigate(path);
@@ -43,7 +44,10 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
   };
   
   const handlePollClick = () => {
-    handleCreateAction("create polls");
+    toast({
+      title: "Coming Soon",
+      description: "Poll creation will be available soon!"
+    });
   };
   
   const handleCreateClick = () => {
@@ -56,6 +60,8 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
   
   // This function directly submits the quick post form text
   const handleSubmitQuickPost = () => {
+    if (isSubmitting) return;
+    
     if (!value.trim()) {
       toast({
         title: "Empty post",
@@ -73,7 +79,22 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
       return;
     }
     
-    openPostCreation();
+    setIsSubmitting(true);
+    
+    try {
+      console.log("Opening post creation with value:", value);
+      onChange(value); // Update the parent component's state
+      openPostCreation(); // Open the dialog with the current text
+      setIsSubmitting(false);
+    } catch (error) {
+      console.error("Error submitting post:", error);
+      setIsSubmitting(false);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create post. Please try again."
+      });
+    }
   };
   
   return (
@@ -128,8 +149,9 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
           size="sm"
           className="bg-softspot-500 hover:bg-softspot-600 text-white ml-auto"
           onClick={handleSubmitQuickPost}
+          disabled={isSubmitting}
         >
-          Post
+          {isSubmitting ? "Posting..." : "Post"}
         </Button>
       </div>
     </Card>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FeedHeader } from "@/components/feed/FeedHeader";
@@ -65,6 +64,19 @@ const Feed = () => {
     }
     
     onCreatePost();
+  };
+  
+  const handleSellPlushie = () => {
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to sell items."
+      });
+      navigate('/sign-in');
+      return;
+    }
+    
+    navigate('/sell');
   };
   
   const handleRefresh = () => {

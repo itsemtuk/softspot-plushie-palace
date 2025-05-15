@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -13,9 +14,8 @@ import { ProfileStoreLinks } from "./profile/ProfileStoreLinks";
 import { ProfileBio } from "./profile/ProfileBio";
 import { ProfileBadges } from "./profile/ProfileBadges";
 import { useBadges } from "@/hooks/useBadges";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Star, Award } from "lucide-react";
+import { Star } from "lucide-react";
 
 interface UserProfileHeaderProps {
   username?: string;
@@ -41,7 +41,6 @@ export default function UserProfileHeader({
   const [postsCount, setPostsCount] = useState(0);
   const [socialLinks, setSocialLinks] = useState<any[]>([]);
   const [storeLinks, setStoreLinks] = useState<any[]>([]);
-  const [activeTab, setActiveTab] = useState<'about' | 'badges' | 'reviews'>('about');
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
   // Get Clerk user if configured
@@ -233,7 +232,7 @@ export default function UserProfileHeader({
                 <div className="flex flex-col md:flex-row md:justify-between md:items-start">
                   <div>
                     {/* Username and role */}
-                    <div className="flex items-center">
+                    <div className="flex items-center justify-center md:justify-start">
                       <h1 className="text-2xl font-bold">{displayName}</h1>
                       {isVerified && (
                         <Badge variant="default" className="ml-2 bg-softspot-500">
@@ -269,61 +268,26 @@ export default function UserProfileHeader({
             </div>
           </div>
           
-          {/* Profile Tabs */}
-          <div className="border-t border-gray-100">
-            <Tabs 
-              defaultValue="about" 
-              value={activeTab} 
-              onValueChange={(value) => setActiveTab(value as any)} 
-              className="w-full"
-            >
-              <TabsList className="grid grid-cols-3 w-full">
-                <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="badges" className="flex items-center">
-                  <Award className="h-4 w-4 mr-1" /> Badges
-                </TabsTrigger>
-                <TabsTrigger value="reviews">Reviews</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="about" className="p-6">
-                {/* Profile Bio and Interests */}
-                <ProfileBio bio={profileData?.bio} />
-                
-                {plushieInterests.length > 0 && (
-                  <div className="mb-4">
-                    <h2 className="font-semibold text-gray-800 mb-2">Favorite Collections</h2>
-                    <div className="flex flex-wrap gap-2">
-                      {plushieInterests.map((interest, index) => (
-                        <span key={index} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs">
-                          {interest}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Store Links */}
-                <ProfileStoreLinks storeLinks={storeLinks} />
-              </TabsContent>
-              
-              <TabsContent value="badges" className="p-6">
-                <ProfileBadges 
-                  badges={badges} 
-                  completedCount={completedCount} 
-                  totalCount={totalCount} 
-                  showAll={isOwnProfile}
-                />
-              </TabsContent>
-              
-              <TabsContent value="reviews" className="p-6">
-                <div className="text-center py-10">
-                  <h3 className="text-lg font-medium">No reviews yet</h3>
-                  <p className="text-gray-500 mt-2">
-                    Reviews will appear here after someone purchases from you.
-                  </p>
+          {/* Profile Content */}
+          <div className="border-t border-gray-100 p-6">
+            {/* Profile Bio and Interests */}
+            <ProfileBio bio={profileData?.bio} />
+            
+            {plushieInterests.length > 0 && (
+              <div className="mb-4">
+                <h2 className="font-semibold text-gray-800 mb-2">Favorite Collections</h2>
+                <div className="flex flex-wrap gap-2">
+                  {plushieInterests.map((interest, index) => (
+                    <span key={index} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-xs">
+                      {interest}
+                    </span>
+                  ))}
                 </div>
-              </TabsContent>
-            </Tabs>
+              </div>
+            )}
+            
+            {/* Store Links */}
+            <ProfileStoreLinks storeLinks={storeLinks} />
           </div>
         </div>
       </div>
