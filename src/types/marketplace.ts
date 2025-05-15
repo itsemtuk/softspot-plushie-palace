@@ -124,6 +124,7 @@ export type ImageUploadResult = {
   success: boolean;
   url?: string;
   error?: string;
+  file?: File;
 };
 
 export type PlushieCondition = "New" | "Like New" | "Good" | "Used" | "Vintage";
@@ -139,6 +140,11 @@ export interface UserPrivacySettings {
   allowMessages: "everyone" | "friends" | "none";
   showOnlineStatus: boolean;
   allowTagging: boolean;
+  messagePermission?: "everyone" | "friends" | "none";
+  showActivity?: boolean;
+  hideFromSearch?: boolean;
+  allowComments?: boolean;
+  showWishlist?: boolean;
 }
 
 export interface UserProfile {
@@ -160,6 +166,8 @@ export interface UserProfile {
     favoriteBrands?: string[];
     favoriteTypes?: string[];
   };
+  profileImageUrl?: string; // Added for TradeRequestDialog
+  followers?: number; // Added for TradeRequestDialog
 }
 
 export interface WishlistItem {
@@ -174,6 +182,14 @@ export interface WishlistItem {
   notes?: string;
   notifyOnDiscount?: boolean;
   notifyOnAvailability?: boolean;
+  name?: string;
+  description?: string;
+  imageUrl?: string;
+  linkUrl?: string;
+  status?: "wanted" | "purchased" | "received";
+  currencyCode?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface Wishlist {
@@ -185,6 +201,7 @@ export interface Wishlist {
   isPublic: boolean;
   createdAt: string;
   updatedAt: string;
+  privacy?: "public" | "private" | "friends";
 }
 
 export type BadgeType = "achievement" | "milestone" | "special";

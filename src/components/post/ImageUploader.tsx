@@ -1,137 +1,162 @@
 
-import React, { useRef } from 'react';
-import { ImageIcon } from 'lucide-react';
+import { useState, ChangeEvent, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+import { Upload, X, Image as ImageIcon } from 'lucide-react';
 import { ImageUploadResult } from '@/types/marketplace';
 
 interface ImageUploaderProps {
-  onImageSelect: (result: ImageUploadResult) => void;
-  multiple?: boolean;
-  children?: React.ReactNode;
+  onImageSelected: (result: ImageUploadResult) => void;
+  defaultImage?: string;
   className?: string;
-  onImageUploaded?: (url: string) => void; // Added for backward compatibility
+  buttonText?: string;
+  aspectRatio?: number;
 }
 
-export const ImageUploader: React.FC<ImageUploaderProps> = ({ 
-  onImageSelect, 
-  multiple = false, 
-  children, 
-  className = "",
-  onImageUploaded
-}) => {
-  const fileInput = useRef<HTMLInputElement>(null);
-  const dropZone = useRef<HTMLDivElement>(null);
-
-  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (dropZone.current) {
-      dropZone.current.classList.add('border-softspot-500', 'bg-softspot-50');
-    }
+export const ImageUploader = ({
+  onImageSelected,
+  defaultImage,
+  className = '',
+  buttonText = 'Upload Image',
+  aspectRatio
+}: ImageUploaderProps) => {
+  const [previewUrl, setPreviewUrl] = useState<string | null>(defaultImage || null);
+  const [dragging, setDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    handleSelectedFile(file);
   };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (dropZone.current) {
-      dropZone.current.classList.remove('border-softspot-500', 'bg-softspot-50');
-    }
-  };
-
-  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    if (dropZone.current) {
-      dropZone.current.classList.remove('border-softspot-500', 'bg-softspot-50');
-    }
-
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      const files = Array.from(e.dataTransfer.files);
-      handleSelectedFiles(files);
-    }
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const files = Array.from(e.target.files);
-      handleSelectedFiles(files);
-    }
-  };
-
-  const handleSelectedFiles = (files: File[]) => {
-    if (!multiple && files.length > 1) {
-      console.warn("Only one file is allowed.");
+  
+  const handleSelectedFile = async (file: File) => {
+    // Check if file is an image
+    if (!file.type.match(/image.*/)) {
+      onImageSelected({
+        success: false,
+        error: 'Please upload an image file (PNG, JPG, JPEG, GIF)'
+      });
       return;
     }
-
-    files.forEach(selectedFile => {
-      if (!selectedFile.type.startsWith('image/')) {
-        console.warn("Only image files are supported.");
-        const result: ImageUploadResult = {
-          url: '',
-          success: false,
-          error: "Only image files are supported.",
-          file: selectedFile,
-          type: selectedFile.type,
-          name: selectedFile.name
-        };
-        onImageSelect(result);
-        return;
-      }
-
-      const reader = new FileReader();
-          
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          const imageUrl = event.target.result.toString();
-          
-          // Create the result object with the proper type
-          const result: ImageUploadResult = {
-            url: imageUrl,
-            success: true,
-            file: selectedFile,
-            type: selectedFile.type,
-            name: selectedFile.name
-          };
-          
-          onImageSelect(result);
-          
-          // For backward compatibility
-          if (onImageUploaded) {
-            onImageUploaded(imageUrl);
-          }
-        }
-      };
-          
-      reader.readAsDataURL(selectedFile);
+    
+    // Check file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      onImageSelected({
+        success: false,
+        error: 'Image must be less than 5MB'
+      });
+      return;
+    }
+    
+    try {
+      // Create preview URL
+      const url = URL.createObjectURL(file);
+      setPreviewUrl(url);
+      
+      // In a real app, you'd upload to a server here
+      console.log('Would upload file:', file.name);
+      
+      // Return success with the URL
+      onImageSelected({
+        success: true,
+        url: url
+      });
+      
+    } catch (error) {
+      console.error('Error processing image:', error);
+      onImageSelected({
+        success: false,
+        error: 'Failed to process image'
+      });
+    }
+  };
+  
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(true);
+  };
+  
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+  };
+  
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleSelectedFile(file);
+    }
+  };
+  
+  const clearImage = () => {
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    onImageSelected({
+      success: false,
+      url: undefined
     });
   };
+  
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
 
-  const renderDropZone = () => (
-    <div
-      ref={dropZone}
-      className={`relative border-2 border-dashed rounded-md p-6 text-center cursor-pointer transition-colors max-w-full overflow-hidden ${className}`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-      onClick={() => fileInput.current?.click()}
-    >
+  return (
+    <div className={className}>
       <input
         type="file"
         accept="image/*"
-        multiple={multiple}
-        className="hidden"
-        ref={fileInput}
         onChange={handleFileChange}
+        ref={fileInputRef}
+        className="hidden"
       />
-      <div className="flex flex-col items-center justify-center">
-        <ImageIcon className="h-6 w-6 text-gray-400 mb-2" />
-        <p className="text-sm text-gray-500">
-          Drag and drop an image here, or click to select a file
-        </p>
-        {children}
-      </div>
+      
+      {previewUrl ? (
+        <div className="relative rounded-md overflow-hidden">
+          <img 
+            src={previewUrl} 
+            alt="Preview" 
+            className={`w-full object-cover ${aspectRatio ? 'aspect-[' + aspectRatio + ']' : 'max-h-[300px]'}`} 
+          />
+          <Button
+            variant="destructive"
+            size="icon"
+            className="absolute top-2 right-2 opacity-80 hover:opacity-100"
+            onClick={clearImage}
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      ) : (
+        <div
+          className={`border-2 border-dashed rounded-md ${
+            dragging ? 'border-softspot-400 bg-softspot-50' : 'border-gray-300'
+          } p-8 text-center cursor-pointer transition-colors`}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onClick={triggerFileInput}
+        >
+          <div className="flex flex-col items-center gap-2">
+            <div className="p-3 bg-softspot-100 rounded-full">
+              <Upload className="h-6 w-6 text-softspot-500" />
+            </div>
+            <p className="text-sm font-medium">{buttonText}</p>
+            <p className="text-xs text-gray-500">
+              Drag and drop or click to upload
+            </p>
+            <p className="text-xs text-gray-500">
+              PNG, JPG, JPEG, GIF up to 5MB
+            </p>
+          </div>
+        </div>
+      )}
     </div>
   );
-
-  return renderDropZone();
 };
-
-// Export default for backward compatibility
-export default ImageUploader;

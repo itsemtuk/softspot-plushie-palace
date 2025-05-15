@@ -18,11 +18,10 @@ const WishlistPage = () => {
         id: "default-wishlist",
         name: "My Wishlist",
         items: [],
-        privacy: "public",
+        isPublic: true,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        userId: user.id,
-        isPublic: true
+        userId: user.id
       };
       
       setWishlist([defaultWishlist]);

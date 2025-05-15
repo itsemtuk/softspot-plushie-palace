@@ -112,7 +112,20 @@ export function FilterPanel({
   };
   
   const handleResetFilters = () => {
-    onFilterChange({});
+    // Create default empty filters with all required properties
+    const defaultFilters: MarketplaceFilters = {
+      price: [0, 100],
+      condition: [],
+      material: [],
+      filling: [],
+      species: [],
+      brand: [],
+      color: [],
+      size: [],
+      deliveryMethod: []
+    };
+    
+    onFilterChange(defaultFilters);
     setPriceRange([0, 100]);
     setFreeShippingOnly(false);
     setVerifiedSellersOnly(false);
@@ -332,9 +345,9 @@ export function FilterPanel({
                 <div key={option.value} className="flex items-center space-x-2">
                   <Checkbox 
                     id={`brand-${option.value}`}
-                    checked={isFilterSelected("brands", option.value)}
+                    checked={isFilterSelected("brand", option.value)}
                     onCheckedChange={(checked) => 
-                      handleFilterChange("brands", option.value, checked as boolean)
+                      handleFilterChange("brand", option.value, checked as boolean)
                     }
                   />
                   <Label 

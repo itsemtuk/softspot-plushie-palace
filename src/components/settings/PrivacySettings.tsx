@@ -1,212 +1,213 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { UserPrivacySettings } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 
 export function PrivacySettings() {
-  const [settings, setSettings] = useState<UserPrivacySettings>({
-    privateProfile: false,
-    hideFromSearch: false,
-    showOnlineStatus: true,
-    allowDirectMessages: true,
-    allowComments: true,
-    showWishlist: true,
-    showCollection: true,
+  const [privacySettings, setPrivacySettings] = useState<UserPrivacySettings>({
     profileVisibility: "public",
+    showCollections: true,
+    allowMessages: "everyone",
+    showOnlineStatus: true,
+    allowTagging: true,
     messagePermission: "everyone",
     showActivity: true,
-    allowTagging: true
+    hideFromSearch: false,
+    allowComments: true,
+    showWishlist: true
   });
-  
-  const [isSaving, setIsSaving] = useState(false);
-  
-  const handleSwitchChange = (setting: keyof UserPrivacySettings, checked: boolean) => {
-    setSettings({
-      ...settings,
-      [setting]: checked
-    });
-  };
-  
-  const handleSelectChange = (setting: keyof UserPrivacySettings, value: string) => {
-    setSettings({
-      ...settings,
-      [setting]: value
-    });
-  };
-  
-  const handleSaveSettings = () => {
-    setIsSaving(true);
+
+  const handlePrivacyChange = <K extends keyof UserPrivacySettings>(
+    key: K, 
+    value: UserPrivacySettings[K]
+  ) => {
+    setPrivacySettings(prev => ({
+      ...prev,
+      [key]: value
+    }));
     
-    // Simulate API call with timeout
-    setTimeout(() => {
-      toast({
-        title: "Settings saved",
-        description: "Your privacy settings have been updated."
-      });
-      setIsSaving(false);
-    }, 1000);
+    toast({
+      title: "Privacy Setting Updated",
+      description: "Your privacy preferences have been saved."
+    });
   };
-  
+
   return (
     <div className="space-y-6">
+      {/* Profile Visibility */}
       <Card>
         <CardHeader>
-          <CardTitle>Profile Privacy</CardTitle>
+          <CardTitle>Profile Visibility</CardTitle>
           <CardDescription>
-            Control who can see your profile and collection.
+            Control who can see your profile information
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="profile-visibility">Profile Visibility</Label>
-              <Select 
-                value={settings.profileVisibility} 
-                onValueChange={(value) => handleSelectChange("profileVisibility", value)}
-              >
-                <SelectTrigger id="profile-visibility">
-                  <SelectValue placeholder="Select visibility" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="public">Public - Anyone can view your profile</SelectItem>
-                  <SelectItem value="followers">Followers Only - Only your followers can view your profile</SelectItem>
-                  <SelectItem value="private">Private - Only you can view your profile</SelectItem>
-                </SelectContent>
-              </Select>
+        <CardContent>
+          <RadioGroup 
+            value={privacySettings.profileVisibility} 
+            onValueChange={(value) => 
+              handlePrivacyChange('profileVisibility', value as "public" | "friends" | "private")
+            }
+          >
+            <div className="flex items-center space-x-2 mb-2">
+              <RadioGroupItem value="public" id="public" />
+              <Label htmlFor="public">Public</Label>
+              <p className="text-sm text-gray-500 ml-1">
+                (Anyone can view your profile)
+              </p>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="message-permission">Direct Message Permissions</Label>
-              <Select 
-                value={settings.messagePermission} 
-                onValueChange={(value) => handleSelectChange("messagePermission", value)}
-              >
-                <SelectTrigger id="message-permission">
-                  <SelectValue placeholder="Select message permissions" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="everyone">Everyone can message you</SelectItem>
-                  <SelectItem value="followers">Followers only can message you</SelectItem>
-                  <SelectItem value="nobody">Nobody can message you</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center space-x-2 mb-2">
+              <RadioGroupItem value="friends" id="friends" />
+              <Label htmlFor="friends">Friends Only</Label>
+              <p className="text-sm text-gray-500 ml-1">
+                (Only people you follow can view your profile)
+              </p>
             </div>
-          </div>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="show-online">Online Status</Label>
-                <div className="text-sm text-muted-foreground">
-                  Show when you're online to other users
-                </div>
-              </div>
-              <Switch 
-                id="show-online"
-                checked={settings.showActivity}
-                onCheckedChange={(checked) => handleSwitchChange("showActivity", checked)}
-              />
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="private" id="private" />
+              <Label htmlFor="private">Private</Label>
+              <p className="text-sm text-gray-500 ml-1">
+                (Only you can view your full profile)
+              </p>
             </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="allow-tagging">Allow Tagging</Label>
-                <div className="text-sm text-muted-foreground">
-                  Allow other users to tag you in posts
-                </div>
-              </div>
-              <Switch 
-                id="allow-tagging"
-                checked={settings.allowTagging}
-                onCheckedChange={(checked) => handleSwitchChange("allowTagging", checked)}
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="hide-search">Hide from Search</Label>
-                <div className="text-sm text-muted-foreground">
-                  Hide your profile from search results
-                </div>
-              </div>
-              <Switch 
-                id="hide-search"
-                checked={settings.hideFromSearch}
-                onCheckedChange={(checked) => handleSwitchChange("hideFromSearch", checked)}
-              />
-            </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="allow-comments">Allow Comments</Label>
-                <div className="text-sm text-muted-foreground">
-                  Allow other users to comment on your posts
-                </div>
-              </div>
-              <Switch 
-                id="allow-comments"
-                checked={settings.allowComments}
-                onCheckedChange={(checked) => handleSwitchChange("allowComments", checked)}
-              />
-            </div>
-          </div>
+          </RadioGroup>
         </CardContent>
       </Card>
-      
+
+      {/* Messages */}
       <Card>
         <CardHeader>
-          <CardTitle>Collection Privacy</CardTitle>
+          <CardTitle>Messages</CardTitle>
           <CardDescription>
-            Control who can see your collection and wishlist.
+            Control who can send you direct messages
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="show-collection">Show Collection</Label>
-                <div className="text-sm text-muted-foreground">
-                  Make your collection visible to other users
-                </div>
-              </div>
-              <Switch 
-                id="show-collection"
-                checked={settings.showCollection}
-                onCheckedChange={(checked) => handleSwitchChange("showCollection", checked)}
-              />
+        <CardContent>
+          <RadioGroup 
+            value={privacySettings.messagePermission} 
+            onValueChange={(value) => 
+              handlePrivacyChange('messagePermission', value as "everyone" | "friends" | "none")
+            }
+          >
+            <div className="flex items-center space-x-2 mb-2">
+              <RadioGroupItem value="everyone" id="msg-everyone" />
+              <Label htmlFor="msg-everyone">Everyone</Label>
             </div>
-            
-            <div className="flex items-center justify-between">
-              <div className="space-y-0.5">
-                <Label htmlFor="show-wishlist">Show Wishlist</Label>
-                <div className="text-sm text-muted-foreground">
-                  Make your wishlist visible to other users
-                </div>
-              </div>
-              <Switch 
-                id="show-wishlist"
-                checked={settings.showWishlist}
-                onCheckedChange={(checked) => handleSwitchChange("showWishlist", checked)}
-              />
+            <div className="flex items-center space-x-2 mb-2">
+              <RadioGroupItem value="friends" id="msg-friends" />
+              <Label htmlFor="msg-friends">Only People You Follow</Label>
             </div>
-          </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="none" id="msg-none" />
+              <Label htmlFor="msg-none">No One</Label>
+            </div>
+          </RadioGroup>
         </CardContent>
       </Card>
-      
-      <div className="flex justify-end">
-        <Button 
-          className="bg-softspot-400 hover:bg-softspot-500" 
-          onClick={handleSaveSettings}
-          disabled={isSaving}
-        >
-          {isSaving ? "Saving..." : "Save Settings"}
-        </Button>
-      </div>
+
+      {/* Activity Status */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Activity Status</CardTitle>
+          <CardDescription>
+            Control if others can see when you're active
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between">
+          <Label htmlFor="activity-status">Show my activity status</Label>
+          <Switch
+            id="activity-status"
+            checked={privacySettings.showActivity}
+            onCheckedChange={(checked) =>
+              handlePrivacyChange('showActivity', checked)
+            }
+          />
+        </CardContent>
+      </Card>
+
+      {/* Search Discovery */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Search & Discovery</CardTitle>
+          <CardDescription>
+            Control how people can find you
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between">
+          <Label htmlFor="search-discovery">Hide from search results</Label>
+          <Switch
+            id="search-discovery"
+            checked={privacySettings.hideFromSearch}
+            onCheckedChange={(checked) =>
+              handlePrivacyChange('hideFromSearch', checked)
+            }
+          />
+        </CardContent>
+      </Card>
+
+      {/* Comments */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Comments</CardTitle>
+          <CardDescription>
+            Control who can comment on your posts
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between">
+          <Label htmlFor="comments">Allow comments on posts</Label>
+          <Switch
+            id="comments"
+            checked={privacySettings.allowComments}
+            onCheckedChange={(checked) =>
+              handlePrivacyChange('allowComments', checked)
+            }
+          />
+        </CardContent>
+      </Card>
+
+      {/* Collections Visibility */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Collections Visibility</CardTitle>
+          <CardDescription>
+            Control who can see your plushie collections
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between">
+          <Label htmlFor="collections">Show collections on profile</Label>
+          <Switch
+            id="collections"
+            checked={privacySettings.showCollections}
+            onCheckedChange={(checked) =>
+              handlePrivacyChange('showCollections', checked)
+            }
+          />
+        </CardContent>
+      </Card>
+
+      {/* Wishlist Visibility */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Wishlist Visibility</CardTitle>
+          <CardDescription>
+            Control who can see your wishlist
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-between">
+          <Label htmlFor="wishlist">Show wishlist on profile</Label>
+          <Switch
+            id="wishlist"
+            checked={privacySettings.showWishlist}
+            onCheckedChange={(checked) =>
+              handlePrivacyChange('showWishlist', checked)
+            }
+          />
+        </CardContent>
+      </Card>
     </div>
   );
 }

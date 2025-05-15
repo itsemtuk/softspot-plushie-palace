@@ -30,23 +30,38 @@ const mockFollowers: UserProfile[] = [
   { 
     id: "user-2", 
     username: "sarahlovesplushies", 
-    profileImageUrl: "https://i.pravatar.cc/150?img=5", 
+    avatar: "https://i.pravatar.cc/150?img=5", 
     bio: "Collector of rare plushies", 
-    followers: 123
+    joinDate: new Date().toISOString(),
+    followersCount: 123,
+    followingCount: 45,
+    postsCount: 32,
+    collectionsCount: 5,
+    marketplaceListingsCount: 10
   },
   { 
     id: "user-3", 
     username: "mikeplush", 
-    profileImageUrl: "https://i.pravatar.cc/150?img=12", 
+    avatar: "https://i.pravatar.cc/150?img=12", 
     bio: "Teddy bear enthusiast", 
-    followers: 56
+    joinDate: new Date().toISOString(),
+    followersCount: 56,
+    followingCount: 30,
+    postsCount: 20,
+    collectionsCount: 3,
+    marketplaceListingsCount: 5
   },
   { 
     id: "user-4", 
     username: "emmacollects", 
-    profileImageUrl: "https://i.pravatar.cc/150?img=9", 
+    avatar: "https://i.pravatar.cc/150?img=9", 
     bio: "Plushie photographer", 
-    followers: 208
+    joinDate: new Date().toISOString(),
+    followersCount: 208,
+    followingCount: 150,
+    postsCount: 45,
+    collectionsCount: 8,
+    marketplaceListingsCount: 15
   }
 ];
 
@@ -166,12 +181,12 @@ const TradeRequestDialog = ({ isOpen, onClose, plushie }: TradeRequestDialogProp
                   >
                     <div className="flex items-center gap-3">
                       <Avatar>
-                        <AvatarImage src={follower.profileImageUrl} alt={follower.username} />
+                        <AvatarImage src={follower.avatar} alt={follower.username} />
                         <AvatarFallback>{follower.username[0]}</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="font-medium">{follower.username}</div>
-                        <div className="text-xs text-gray-500">{follower.followers} followers</div>
+                        <div className="text-xs text-gray-500">{follower.followersCount} followers</div>
                       </div>
                     </div>
                   </Card>
