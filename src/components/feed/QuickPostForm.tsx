@@ -124,7 +124,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
           <span>Poll</span>
         </Button>
         <Button 
-          variant="primary"
+          variant="default"
           size="sm"
           className="bg-softspot-500 hover:bg-softspot-600 text-white ml-auto"
           onClick={handleSubmitQuickPost}

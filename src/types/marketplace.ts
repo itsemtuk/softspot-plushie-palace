@@ -143,6 +143,7 @@ export interface MarketplacePlushie extends ExtendedPost {
   discount?: number;
   originalPrice?: number;
   size?: string; // Adding this missing property
+  reviews?: MarketplaceReview[]; // Adding reviews array to fix errors
 }
 
 export type PlushieCondition = 'New' | 'Like New' | 'Good' | 'Fair' | 'Poor';
