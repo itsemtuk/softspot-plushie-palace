@@ -187,7 +187,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
               width: '100%',
               height: '100%',
             }}
-            imageRestriction="stencil"
+            imageRestriction="stencil-area"
             defaultSize={{
               width: 0.8,
               height: 0.8,
