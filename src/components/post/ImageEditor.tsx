@@ -1,9 +1,13 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ImageEditorOptions } from "@/types/marketplace";
-import { Crop, Move, SunMedium, Contrast, Palette } from "lucide-react";
+import { Crop, Move, SunMedium, Contrast, Palette, RotateCcw, RotateCw, Sparkles } from "lucide-react";
+import { Cropper } from 'react-advanced-cropper';
+import 'react-advanced-cropper/dist/style.css';
 
 interface ImageEditorProps {
   imageUrl: string;
@@ -12,228 +16,333 @@ interface ImageEditorProps {
   onCancel: () => void;
 }
 
+// Predefined filter presets
+const FILTER_PRESETS = [
+  { name: "Normal", filter: "" },
+  { name: "Vintage", filter: "sepia(0.5) contrast(1.1)" },
+  { name: "Dramatic", filter: "contrast(1.3) brightness(0.9) saturate(1.2)" },
+  { name: "Cinematic", filter: "contrast(1.1) brightness(0.95) saturate(1.1) hue-rotate(5deg)" },
+  { name: "Warm", filter: "brightness(1.1) sepia(0.3) saturate(1.3)" },
+  { name: "Cool", filter: "brightness(1.1) hue-rotate(330deg) saturate(1.3)" },
+  { name: "Grayscale", filter: "grayscale(1)" },
+  { name: "High Contrast", filter: "contrast(1.5) brightness(0.9)" },
+  { name: "Soft", filter: "contrast(0.9) brightness(1.1) saturate(0.9)" },
+];
+
+// Aspect ratio presets
+const ASPECT_RATIOS = [
+  { label: "1:1", value: 1 },
+  { label: "4:5", value: 4/5 },
+  { label: "16:9", value: 16/9 },
+  { label: "Free", value: null },
+];
+
 export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditorProps) => {
+  // Cropper state
+  const cropperRef = useRef<any>(null);
+  const [aspectRatio, setAspectRatio] = useState<number | null>(1); // Default to 1:1 square
+  const [rotation, setRotation] = useState(0);
+  
+  // Filter states
   const [brightness, setBrightness] = useState([100]);
   const [contrast, setContrast] = useState([100]);
   const [saturation, setSaturation] = useState([100]);
-  const [scale, setScale] = useState([100]);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  
+  const [activePreset, setActivePreset] = useState<string>("Normal");
+  const [filterIntensity, setFilterIntensity] = useState([100]);
+
+  // Image preview with applied filters
   const imageRef = useRef<HTMLImageElement>(null);
-  const containerRef = useRef<HTMLDivElement>(null);
 
-  // Reset position when scale changes
-  useEffect(() => {
-    setPosition({ x: 0, y: 0 });
-  }, [scale]);
+  // Current tab
+  const [activeTab, setActiveTab] = useState('crop');
 
-  const handleMouseDown = (e: React.MouseEvent) => {
-    setIsDragging(true);
-    setDragStart({
-      x: e.clientX - position.x,
-      y: e.clientY - position.y
-    });
+  const handleAspectRatioChange = (ratio: number | null) => {
+    setAspectRatio(ratio);
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging) return;
-    
-    // Calculate new position
-    const newX = e.clientX - dragStart.x;
-    const newY = e.clientY - dragStart.y;
-    
-    // Calculate boundaries to prevent image from being dragged too far
-    const maxOffset = (scale[0] / 100 - 1) * 50; // This creates a boundary based on scale
-    
-    const clampedX = Math.max(Math.min(newX, maxOffset), -maxOffset);
-    const clampedY = Math.max(Math.min(newY, maxOffset), -maxOffset);
-    
-    setPosition({ x: clampedX, y: clampedY });
+  const handleRotateLeft = () => {
+    setRotation((prev) => (prev - 90) % 360);
   };
 
-  const handleMouseUp = () => {
-    setIsDragging(false);
+  const handleRotateRight = () => {
+    setRotation((prev) => (prev + 90) % 360);
   };
 
-  // Handle touch events for mobile
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 1) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.touches[0].clientX - position.x,
-        y: e.touches[0].clientY - position.y
-      });
+  const handleFilterPresetChange = (preset: string) => {
+    setActivePreset(preset);
+    // Reset sliders to default when changing presets
+    if (preset === "Normal") {
+      setBrightness([100]);
+      setContrast([100]);
+      setSaturation([100]);
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || e.touches.length !== 1) return;
-    
-    // Calculate new position
-    const newX = e.touches[0].clientX - dragStart.x;
-    const newY = e.touches[0].clientY - dragStart.y;
-    
-    // Calculate boundaries to prevent image from being dragged too far
-    const maxOffset = (scale[0] / 100 - 1) * 50; // This creates a boundary based on scale
-    
-    const clampedX = Math.max(Math.min(newX, maxOffset), -maxOffset);
-    const clampedY = Math.max(Math.min(newY, maxOffset), -maxOffset);
-    
-    setPosition({ x: clampedX, y: clampedY });
-  };
-
-  const handleTouchEnd = () => {
-    setIsDragging(false);
-  };
-
+  // Function to apply the current filters to a canvas
   const applyFilters = () => {
+    // Get the crop data
+    if (!cropperRef.current) return imageUrl;
+    
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
+    if (!ctx || !imageRef.current) return imageUrl;
     
-    if (!ctx || !imageRef.current) return;
+    // Get cropped coordinates from cropper
+    const data = cropperRef.current.getCanvas();
+    if (!data) return imageUrl;
     
-    const img = imageRef.current;
-    
-    // Get the dimensions of the displayed image
-    const container = containerRef.current;
-    if (!container) return;
-    
-    const containerWidth = container.clientWidth;
-    const containerHeight = container.clientHeight;
-    
-    // Set canvas dimensions to match the container
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
-    
-    // Calculate scaling and position adjustments
-    const scaleValue = scale[0] / 100;
-    
+    // Set canvas dimensions to match the cropped area
+    canvas.width = data.naturalWidth;
+    canvas.height = data.naturalHeight;
+
     // Apply filters
-    ctx.filter = `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`;
+    let filterString = "";
     
-    // Calculate source and destination dimensions
-    const scaledWidth = img.naturalWidth / scaleValue;
-    const scaledHeight = img.naturalHeight / scaleValue;
+    // Apply preset filter (if any)
+    const preset = FILTER_PRESETS.find(p => p.name === activePreset);
+    if (preset && preset.filter) {
+      filterString += preset.filter + " ";
+    }
     
-    // Calculate positioning
-    const sourceX = ((scaledWidth - img.naturalWidth) / 2) - (position.x * img.naturalWidth / containerWidth);
-    const sourceY = ((scaledHeight - img.naturalHeight) / 2) - (position.y * img.naturalHeight / containerHeight);
+    // Apply manual adjustments
+    filterString += `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`;
     
-    // Draw the image with proper scaling and positioning
-    ctx.drawImage(
-      img,
-      Math.max(0, sourceX), Math.max(0, sourceY),
-      Math.min(scaledWidth, img.naturalWidth), Math.min(scaledHeight, img.naturalHeight),
-      0, 0,
-      canvas.width, canvas.height
-    );
+    // Apply filter intensity
+    const intensity = filterIntensity[0] / 100;
+    if (intensity !== 1 && preset && preset.name !== "Normal") {
+      // Blend the filtered image with the original based on intensity
+      ctx.filter = "none";
+      ctx.drawImage(data, 0, 0, canvas.width, canvas.height);
+      
+      // Create a temporary canvas for the filtered version
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = canvas.width;
+      tempCanvas.height = canvas.height;
+      const tempCtx = tempCanvas.getContext('2d');
+      
+      if (tempCtx) {
+        tempCtx.filter = filterString;
+        tempCtx.drawImage(data, 0, 0, canvas.width, canvas.height);
+        
+        // Apply the filtered version with opacity for blending
+        ctx.globalAlpha = intensity;
+        ctx.drawImage(tempCanvas, 0, 0);
+        ctx.globalAlpha = 1.0;
+      }
+    } else {
+      // Apply filters directly if intensity is 100%
+      ctx.filter = filterString;
+      ctx.drawImage(data, 0, 0, canvas.width, canvas.height);
+    }
     
-    // Get the edited image as base64
-    const editedImageUrl = canvas.toDataURL('image/jpeg', 0.9);
+    // Return the edited image as a data URL
+    return canvas.toDataURL('image/jpeg', 0.9);
+  };
+
+  const handleSave = () => {
+    const editedImageUrl = applyFilters();
     onSave(editedImageUrl);
   };
 
   return (
-    <Card className="p-4">
-      <div 
-        ref={containerRef}
-        className="aspect-square relative mb-4 overflow-hidden rounded-lg bg-gray-200"
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        <img
-          ref={imageRef}
-          src={imageUrl}
-          alt="Edit preview"
-          className="w-full h-full object-cover rounded-lg cursor-move"
-          style={{
-            filter: `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`,
-            transform: `scale(${scale[0] / 100}) translate(${position.x}px, ${position.y}px)`,
-            transformOrigin: 'center center'
-          }}
-        />
-        {scale[0] > 100 && (
-          <div className="absolute top-4 left-4 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded-full">
-            <Move className="h-3 w-3 inline mr-1" />
-            Drag to position
+    <Card className="p-4 max-w-md mx-auto">
+      <Tabs defaultValue="crop" value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <TabsList className="grid grid-cols-3 mb-4">
+          <TabsTrigger value="crop" className="flex items-center gap-1">
+            <Crop className="h-4 w-4" />
+            <span>Crop</span>
+          </TabsTrigger>
+          <TabsTrigger value="adjust" className="flex items-center gap-1">
+            <Sliders className="h-4 w-4" />
+            <span>Adjust</span>
+          </TabsTrigger>
+          <TabsTrigger value="filters" className="flex items-center gap-1">
+            <Sparkles className="h-4 w-4" />
+            <span>Filters</span>
+          </TabsTrigger>
+        </TabsList>
+        
+        <div className="aspect-square relative mb-6 overflow-hidden rounded-lg bg-gray-200">
+          {/* Hidden reference image to apply filters preview */}
+          <img
+            ref={imageRef}
+            src={imageUrl}
+            alt="Original image"
+            className="hidden"
+          />
+          
+          {/* Cropper component */}
+          <Cropper
+            ref={cropperRef}
+            src={imageUrl}
+            className="cropper"
+            aspectRatio={aspectRatio}
+            stencilProps={{
+              handlers: true,
+              lines: true,
+              movable: true,
+              resizable: true,
+            }}
+            style={{
+              width: '100%',
+              height: '100%',
+            }}
+            imageRestriction='stencil'
+            defaultPosition={{
+              x: 0,
+              y: 0,
+            }}
+            defaultSize={{
+              width: '100%',
+              height: '100%',
+            }}
+            backgroundProps={{
+              style: {
+                filter: activePreset !== "Normal" || brightness[0] !== 100 || contrast[0] !== 100 || saturation[0] !== 100 ?
+                  `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%) ${FILTER_PRESETS.find(p => p.name === activePreset)?.filter || ""}` : ""
+              }
+            }}
+          />
+        </div>
+        
+        <TabsContent value="crop">
+          <div className="space-y-6">
+            <div>
+              <label className="text-sm font-medium flex items-center mb-2">
+                <Crop className="h-4 w-4 mr-2" />
+                Aspect Ratio
+              </label>
+              <div className="flex gap-2">
+                {ASPECT_RATIOS.map((ratio) => (
+                  <Button
+                    key={ratio.label}
+                    variant={aspectRatio === ratio.value ? "default" : "outline"}
+                    onClick={() => handleAspectRatioChange(ratio.value)}
+                    className="flex-1"
+                  >
+                    {ratio.label}
+                  </Button>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <label className="text-sm font-medium flex items-center mb-2">
+                Rotate Image
+              </label>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleRotateLeft} className="flex-1">
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Rotate Left
+                </Button>
+                <Button variant="outline" onClick={handleRotateRight} className="flex-1">
+                  <RotateCw className="h-4 w-4 mr-2" />
+                  Rotate Right
+                </Button>
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+        </TabsContent>
+        
+        <TabsContent value="adjust">
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium flex items-center">
+                <SunMedium className="h-4 w-4 mr-2" />
+                Brightness
+              </label>
+              <Slider
+                value={brightness}
+                onValueChange={setBrightness}
+                min={0}
+                max={200}
+                step={1}
+                className="my-2"
+              />
+            </div>
 
-      <div className="space-y-4">
-        <div>
-          <label className="text-sm font-medium flex items-center">
-            <Crop className="h-4 w-4 mr-2" />
-            Scale
-          </label>
-          <Slider
-            value={scale}
-            onValueChange={setScale}
-            min={100}
-            max={200}
-            step={1}
-            className="my-2"
-          />
-          <p className="text-xs text-gray-500">Scale up to crop your image, then drag to position</p>
-        </div>
+            <div>
+              <label className="text-sm font-medium flex items-center">
+                <Contrast className="h-4 w-4 mr-2" />
+                Contrast
+              </label>
+              <Slider
+                value={contrast}
+                onValueChange={setContrast}
+                min={0}
+                max={200}
+                step={1}
+                className="my-2"
+              />
+            </div>
 
-        <div>
-          <label className="text-sm font-medium flex items-center">
-            <SunMedium className="h-4 w-4 mr-2" />
-            Brightness
-          </label>
-          <Slider
-            value={brightness}
-            onValueChange={setBrightness}
-            max={200}
-            step={1}
-            className="my-2"
-          />
-        </div>
+            <div>
+              <label className="text-sm font-medium flex items-center">
+                <Palette className="h-4 w-4 mr-2" />
+                Saturation
+              </label>
+              <Slider
+                value={saturation}
+                onValueChange={setSaturation}
+                min={0}
+                max={200}
+                step={1}
+                className="my-2"
+              />
+            </div>
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="filters">
+          <div className="space-y-4">
+            <label className="text-sm font-medium">Presets</label>
+            <div className="grid grid-cols-3 gap-2">
+              {FILTER_PRESETS.map((preset) => (
+                <div 
+                  key={preset.name}
+                  onClick={() => handleFilterPresetChange(preset.name)}
+                  className={`cursor-pointer transition-all ${activePreset === preset.name ? 'ring-2 ring-softspot-500 ring-offset-2' : 'hover:opacity-80'} overflow-hidden rounded-md`}
+                >
+                  <div className="aspect-square relative overflow-hidden">
+                    <img
+                      src={imageUrl} 
+                      alt={preset.name}
+                      className="object-cover w-full h-full"
+                      style={{ filter: preset.filter }}
+                    />
+                  </div>
+                  <p className="text-xs font-medium text-center mt-1">{preset.name}</p>
+                </div>
+              ))}
+            </div>
+            
+            {activePreset !== "Normal" && (
+              <div>
+                <label className="text-sm font-medium flex items-center">
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Filter Intensity
+                </label>
+                <Slider
+                  value={filterIntensity}
+                  onValueChange={setFilterIntensity}
+                  min={0}
+                  max={100}
+                  step={1}
+                  className="my-2"
+                />
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
 
-        <div>
-          <label className="text-sm font-medium flex items-center">
-            <Contrast className="h-4 w-4 mr-2" />
-            Contrast
-          </label>
-          <Slider
-            value={contrast}
-            onValueChange={setContrast}
-            max={200}
-            step={1}
-            className="my-2"
-          />
-        </div>
-
-        <div>
-          <label className="text-sm font-medium flex items-center">
-            <Palette className="h-4 w-4 mr-2" />
-            Saturation
-          </label>
-          <Slider
-            value={saturation}
-            onValueChange={setSaturation}
-            max={200}
-            step={1}
-            className="my-2"
-          />
-        </div>
-
-        <div className="flex gap-2">
-          <Button onClick={applyFilters} className="flex-1">
-            Apply Changes
-          </Button>
-          <Button onClick={onCancel} variant="outline" className="flex-1">
-            Cancel
-          </Button>
-        </div>
+      <div className="flex gap-2 mt-6">
+        <Button onClick={handleSave} className="flex-1">
+          Apply Changes
+        </Button>
+        <Button onClick={onCancel} variant="outline" className="flex-1">
+          Cancel
+        </Button>
       </div>
     </Card>
   );
