@@ -121,7 +121,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "", po
         return (
           <div className="flex flex-col items-center justify-center h-full">
             <ImageUploader 
-              onImageSelect={(result) => {
+              onImageSelected={(result) => {
                 if (result.success) {
                   handleImageUploaded(result.url);
                 }

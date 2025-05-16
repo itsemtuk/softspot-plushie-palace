@@ -13,7 +13,7 @@ export const SellItemImageUploader = ({ imageUrl, onImageSelect }: SellItemImage
   return (
     <div className="mb-6">
       <Label htmlFor="image">Plushie Image</Label>
-      <ImageUploader onImageSelect={onImageSelect} />
+      <ImageUploader onImageSelected={onImageSelect} />
       {!imageUrl && (
         <p className="text-sm text-gray-500 mt-2">
           Please upload at least one image of your plushie
