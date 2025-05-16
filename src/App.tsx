@@ -28,6 +28,7 @@ import { initAuthState } from './utils/auth/authState';
 import { ClerkButtonComponent } from './components/navigation/user-button/ClerkIntegration';
 import { supabase } from './utils/supabase/client';
 import { toast } from './components/ui/use-toast';
+import WaitlistPage from './pages/WaitlistPage';
 
 function App() {
   // Use Clerk integration only when specified
@@ -100,9 +101,13 @@ function App() {
   // Define routes once to avoid duplication
   const appRoutes = (
     <Routes>
-      <Route path="/" element={<Index />} />
+      {/* Set WaitlistPage as the main route */}
+      <Route path="/" element={<WaitlistPage />} />
       
-      {/* Auth pages that should redirect to feed if already logged in */}
+      {/* Move the old Index page to a different route for future use */}
+      <Route path="/home" element={<Index />} />
+      
+      {/* Keep all other routes the same */}
       <Route path="/sign-in/*" element={
         <AuthWrapper requiresAuth={false} fallback={<Navigate to="/feed" replace />}>
           <SignIn />

@@ -1,154 +1,95 @@
-import { useState, useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { ActivityStatus } from "@/components/ui/activity-status";
-import { useUser, useClerk } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
-import { Skeleton } from "@/components/ui/skeleton";
+
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { useClerk } from '@clerk/clerk-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface UserSearchResultsProps {
-  searchTerm: string;
+  query: string;
 }
 
-export const UserSearchResults = ({ searchTerm }: UserSearchResultsProps) => {
-  const [users, setUsers] = useState<any[]>([]);
+export const UserSearchResults = ({ query }: UserSearchResultsProps) => {
+  const [results, setResults] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const { user: currentUser } = useUser();
   const clerk = useClerk();
-  const navigate = useNavigate();
-  
+
   useEffect(() => {
-    if (!searchTerm || searchTerm.length < 2) {
-      setUsers([]);
-      return;
-    }
-    
     const searchUsers = async () => {
+      if (!query || query.length < 2) {
+        setResults([]);
+        return;
+      }
+
       setLoading(true);
       try {
-        // Search users from Clerk - using client instead of users property
-        if (clerk) {
-          try {
-            const userList = await clerk.users.getUserList();
-            const userResults = userList.filter(user => {
-              const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-              const username = user.username?.toLowerCase() || '';
-              return (
-                username.includes(searchTerm.toLowerCase()) ||
-                fullName.includes(searchTerm.toLowerCase())
-              );
-            }).map(user => ({
-              id: user.id,
-              username: user.username || `${user.firstName} ${user.lastName}`,
-              imageUrl: user.imageUrl,
-              status: 'online' // You might want to implement actual status tracking
-            }));
-            
-            setUsers(userResults);
-          } catch (error) {
-            console.error("Error fetching users from Clerk:", error);
-            // Fall back to mock data
-            fallbackToMockUsers();
-          }
-        } else {
-          fallbackToMockUsers();
-        }
+        // Note: In a real implementation, we would use Clerk's search API or our own backend
+        // Since clerk.user?.getUserList doesn't exist, we're using a simple mock
+        // In a real app, you'd need to implement a proper backend search endpoint
+        
+        // Mock user data for demonstration
+        const mockResults = [
+          { id: '1', username: 'plushielover', imageUrl: '/assets/avatars/PLUSH_Bear.PNG' },
+          { id: '2', username: 'teddycollector', imageUrl: '/assets/avatars/PLUSH_Panda.PNG' },
+          { id: '3', username: 'softtoys', imageUrl: '/assets/avatars/PLUSH_Bunny.PNG' },
+        ].filter(user => 
+          user.username.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        setResults(mockResults);
       } catch (error) {
-        console.error("Error searching users:", error);
-        fallbackToMockUsers();
+        console.error('Error searching users:', error);
       } finally {
         setLoading(false);
       }
     };
-    
-    const fallbackToMockUsers = () => {
-      // Fallback for development
-      const mockUsers = [
-        { id: '1', username: 'plushielover', imageUrl: '/assets/avatars/PLUSH_Bear.PNG', status: 'online' },
-        { id: '2', username: 'jellycatfan', imageUrl: '/assets/avatars/PLUSH_Cat.PNG', status: 'away' },
-        { id: '3', username: 'squishmallowcollector', imageUrl: '/assets/avatars/PLUSH_Panda.PNG', status: 'offline' },
-        { id: '4', username: 'teddybearlover', imageUrl: '/assets/avatars/PLUSH_Bunny.PNG', status: 'busy' },
-      ];
-      
-      const filtered = mockUsers.filter(user => 
-        user.username.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-      
-      setUsers(filtered);
-    };
-    
-    const timer = setTimeout(searchUsers, 300);
-    return () => clearTimeout(timer);
-  }, [searchTerm, clerk]);
-  
-  const viewProfile = (username: string) => {
-    navigate(`/profile/${username}`);
-  };
-  
-  if (searchTerm.length < 2) {
-    return <p className="text-sm text-gray-500 mt-2">Enter at least 2 characters to search</p>;
-  }
-  
+
+    const timeout = setTimeout(searchUsers, 500);
+    return () => clearTimeout(timeout);
+  }, [query, clerk]);
+
   if (loading) {
     return (
-      <div className="mt-4 space-y-2">
-        <h3 className="text-sm font-medium">Users</h3>
-        <div className="grid grid-cols-1 gap-2">
-          {[1, 2].map((i) => (
-            <Card key={i} className="p-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <Skeleton className="h-10 w-10 rounded-full" />
-                  <div className="space-y-2">
-                    <Skeleton className="h-4 w-32" />
-                  </div>
-                </div>
-                <Skeleton className="h-8 w-16" />
-              </div>
-            </Card>
-          ))}
-        </div>
+      <div className="space-y-2">
+        {[1, 2, 3].map((i) => (
+          <div key={i} className="flex items-center space-x-2 p-2">
+            <Skeleton className="h-10 w-10 rounded-full" />
+            <div className="space-y-1">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
-  
-  if (users.length === 0) {
-    return <p className="text-sm text-gray-500 mt-2">No users found matching "{searchTerm}"</p>;
-  }
-  
-  return (
-    <div className="mt-4 space-y-2">
-      <h3 className="text-sm font-medium">Users</h3>
-      <div className="grid grid-cols-1 gap-2">
-        {users.map(user => (
-          <Card key={user.id} className="p-3 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <Avatar>
-                  <AvatarImage src={user.imageUrl} alt={user.username} />
-                  <AvatarFallback>{user.username.charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <ActivityStatus 
-                  status={user.status} 
-                  className="absolute bottom-0 right-0"
-                  size="sm"
-                />
-              </div>
-              <div>
-                <p className="font-medium">{user.username}</p>
-              </div>
-            </div>
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => viewProfile(user.username)}
-            >
-              View
-            </Button>
-          </Card>
-        ))}
+
+  if (results.length === 0 && query.length >= 2) {
+    return (
+      <div className="p-4 text-center text-sm text-gray-500">
+        No users found matching "{query}"
       </div>
+    );
+  }
+
+  return (
+    <div className="divide-y">
+      {results.map((user) => (
+        <Link
+          key={user.id}
+          to={`/profile/${user.id}`}
+          className="flex items-center p-3 hover:bg-gray-50 transition"
+        >
+          <Avatar className="h-10 w-10 mr-3">
+            <AvatarImage src={user.imageUrl} alt={user.username} />
+            <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
+          </Avatar>
+          <div>
+            <p className="font-medium text-sm">{user.username}</p>
+            <p className="text-xs text-gray-500">@{user.username}</p>
+          </div>
+        </Link>
+      ))}
     </div>
   );
 };
