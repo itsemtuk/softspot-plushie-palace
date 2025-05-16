@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ImageEditorOptions } from "@/types/marketplace";
-import { Crop, Move, SunMedium, Contrast, Palette, RotateCcw, RotateCw, Sparkles } from "lucide-react";
+import { Crop, Move, SunMedium, Contrast, Palette, RotateCcw, RotateCw, Sparkles, Sliders } from "lucide-react";
 import { Cropper } from 'react-advanced-cropper';
 import 'react-advanced-cropper/dist/style.css';
 
@@ -187,14 +187,10 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
               width: '100%',
               height: '100%',
             }}
-            imageRestriction='stencil'
-            defaultPosition={{
-              x: 0,
-              y: 0,
-            }}
+            imageRestriction="stencil"
             defaultSize={{
-              width: '100%',
-              height: '100%',
+              width: 0.8,
+              height: 0.8,
             }}
             backgroundProps={{
               style: {

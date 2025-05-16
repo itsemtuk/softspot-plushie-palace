@@ -1,95 +1,62 @@
 
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { useClerk } from '@clerk/clerk-react';
-import { Skeleton } from '@/components/ui/skeleton';
+import React from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from 'react-router-dom';
 
-interface UserSearchResultsProps {
-  query: string;
+export interface UserSearchResultsProps {
+  searchTerm?: string; // Make searchTerm optional to fix the error
 }
 
-export const UserSearchResults = ({ query }: UserSearchResultsProps) => {
-  const [results, setResults] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const clerk = useClerk();
-
-  useEffect(() => {
-    const searchUsers = async () => {
-      if (!query || query.length < 2) {
-        setResults([]);
-        return;
-      }
-
-      setLoading(true);
-      try {
-        // Note: In a real implementation, we would use Clerk's search API or our own backend
-        // Since clerk.user?.getUserList doesn't exist, we're using a simple mock
-        // In a real app, you'd need to implement a proper backend search endpoint
-        
-        // Mock user data for demonstration
-        const mockResults = [
-          { id: '1', username: 'plushielover', imageUrl: '/assets/avatars/PLUSH_Bear.PNG' },
-          { id: '2', username: 'teddycollector', imageUrl: '/assets/avatars/PLUSH_Panda.PNG' },
-          { id: '3', username: 'softtoys', imageUrl: '/assets/avatars/PLUSH_Bunny.PNG' },
-        ].filter(user => 
-          user.username.toLowerCase().includes(query.toLowerCase())
-        );
-        
-        setResults(mockResults);
-      } catch (error) {
-        console.error('Error searching users:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const timeout = setTimeout(searchUsers, 500);
-    return () => clearTimeout(timeout);
-  }, [query, clerk]);
-
-  if (loading) {
-    return (
-      <div className="space-y-2">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="flex items-center space-x-2 p-2">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <div className="space-y-1">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-3 w-24" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
-
-  if (results.length === 0 && query.length >= 2) {
-    return (
-      <div className="p-4 text-center text-sm text-gray-500">
-        No users found matching "{query}"
-      </div>
-    );
-  }
+export function UserSearchResults({ searchTerm = '' }: UserSearchResultsProps) {
+  const navigate = useNavigate();
+  
+  // Mock users for demonstration
+  const users = [
+    { id: '1', name: 'Alex Johnson', username: 'alexj', avatar: '/assets/avatars/PLUSH_Bear.PNG' },
+    { id: '2', name: 'Sam Parker', username: 'sammy', avatar: '/assets/avatars/PLUSH_Bunny.PNG' },
+    { id: '3', name: 'Jordan Lee', username: 'jlee', avatar: '/assets/avatars/PLUSH_Cat.PNG' },
+    { id: '4', name: 'Taylor Kim', username: 'tkim', avatar: '/assets/avatars/PLUSH_Dog.PNG' },
+  ];
+  
+  // Filter users based on search term
+  const filteredUsers = searchTerm
+    ? users.filter(user => 
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        user.username.toLowerCase().includes(searchTerm.toLowerCase())
+      )
+    : users;
 
   return (
-    <div className="divide-y">
-      {results.map((user) => (
-        <Link
-          key={user.id}
-          to={`/profile/${user.id}`}
-          className="flex items-center p-3 hover:bg-gray-50 transition"
-        >
-          <Avatar className="h-10 w-10 mr-3">
-            <AvatarImage src={user.imageUrl} alt={user.username} />
-            <AvatarFallback>{user.username.slice(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <p className="font-medium text-sm">{user.username}</p>
-            <p className="text-xs text-gray-500">@{user.username}</p>
-          </div>
-        </Link>
-      ))}
+    <div className="space-y-2">
+      {filteredUsers.length === 0 ? (
+        <p className="text-center text-gray-500 py-4">No users found</p>
+      ) : (
+        filteredUsers.map(user => (
+          <Card key={user.id} className="p-3 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar>
+                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium">{user.name}</p>
+                <p className="text-gray-500">@{user.username}</p>
+              </div>
+            </div>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => navigate(`/profile/${user.id}`)}
+            >
+              View
+            </Button>
+          </Card>
+        ))
+      )}
     </div>
   );
-};
+}
+
+export default UserSearchResults;

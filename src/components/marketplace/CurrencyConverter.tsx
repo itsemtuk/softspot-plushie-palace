@@ -69,36 +69,67 @@ interface CurrencyConverterProps {
 }
 
 const CurrencyConverter = ({ price, className }: CurrencyConverterProps) => {
-  const [selectedCurrency, setSelectedCurrency] = useState<string>('USD');
-  const [convertedPrice, setConvertedPrice] = useState<number>(0);
+  const [fromCurrency, setFromCurrency] = useState<string>('USD');
+  const [toCurrency, setToCurrency] = useState<string>('USD');
+  const [convertedPrice, setConvertedPrice] = useState<number>(price);
   
   useEffect(() => {
-    // Ensure price is a number before conversion
-    const safePrice = typeof price === 'number' ? price : 0;
-    const rate = exchangeRates[selectedCurrency];
-    setConvertedPrice(Number((safePrice * rate).toFixed(2)));
-  }, [selectedCurrency, price]);
+    if (
+      typeof price !== 'number' ||
+      !exchangeRates[fromCurrency] ||
+      !exchangeRates[toCurrency]
+    ) {
+      setConvertedPrice(0);
+      return;
+    }
+    // Convert from 'fromCurrency' to USD, then to 'toCurrency'
+    const priceInUSD = price / exchangeRates[fromCurrency];
+    const result = priceInUSD * exchangeRates[toCurrency];
+    setConvertedPrice(Number(result.toFixed(2)));
+  }, [fromCurrency, toCurrency, price]);
   
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      {getCurrencyIcon(selectedCurrency)}
-      <Select 
-        value={selectedCurrency} 
-        onValueChange={(value) => setSelectedCurrency(value)}
-      >
-        <SelectTrigger className="w-[90px] h-8 bg-white">
-          <SelectValue placeholder="Currency" />
-        </SelectTrigger>
-        <SelectContent className="bg-white">
-          {Object.entries(exchangeRates).map(([currency]) => (
-            <SelectItem key={currency} value={currency}>
-              {currency}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <span className="flex items-center gap-1">
+        {getCurrencyIcon(fromCurrency)}
+        <Select 
+          value={fromCurrency} 
+          onValueChange={(value) => setFromCurrency(value)}
+        >
+          <SelectTrigger className="w-[80px] h-8 bg-white">
+            <SelectValue placeholder="From" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            {Object.keys(exchangeRates).map((currency) => (
+              <SelectItem key={currency} value={currency}>
+                {currency}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </span>
+      <span className="font-medium">{currencySymbols[fromCurrency]}{price}</span>
+      <span className="mx-1">→</span>
+      <span className="flex items-center gap-1">
+        {getCurrencyIcon(toCurrency)}
+        <Select 
+          value={toCurrency} 
+          onValueChange={(value) => setToCurrency(value)}
+        >
+          <SelectTrigger className="w-[80px] h-8 bg-white">
+            <SelectValue placeholder="To" />
+          </SelectTrigger>
+          <SelectContent className="bg-white">
+            {Object.keys(exchangeRates).map((currency) => (
+              <SelectItem key={currency} value={currency}>
+                {currency}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </span>
       <span className="font-medium">
-        {convertedPrice > 0 ? `${currencySymbols[selectedCurrency]}${convertedPrice}` : ''}
+        {convertedPrice > 0 ? `${currencySymbols[toCurrency]}${convertedPrice}` : ''}
       </span>
     </div>
   );
