@@ -176,7 +176,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
             ref={cropperRef}
             src={imageUrl}
             className="cropper"
-            aspectRatio={aspectRatio}
+            aspectRatio={aspectRatio as any}
             stencilProps={{
               handlers: true,
               lines: true,
@@ -187,7 +187,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
               width: '100%',
               height: '100%',
             }}
-            imageRestriction="stencil-area"
+            imageRestriction="stencil"
             defaultSize={{
               width: 0.8,
               height: 0.8,

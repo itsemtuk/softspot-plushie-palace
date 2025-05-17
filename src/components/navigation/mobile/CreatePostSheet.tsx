@@ -2,7 +2,7 @@
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ImageIcon, ShoppingCart, MessageSquare, BarChart2 } from "lucide-react";
+import { ImageIcon, ShoppingCart, MessageSquare } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { useCreatePost } from "@/hooks/use-create-post";
 import { isAuthenticated } from "@/utils/auth/authState";
@@ -36,13 +36,6 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
     handleAuthentication("create posts", () => {
       onOpenChange(false);
       onCreatePost();
-    });
-  };
-
-  const handleCreatePoll = () => {
-    handleAuthentication("create polls", () => {
-      onOpenChange(false);
-      onCreatePost(); // For now, use the same flow for polls
     });
   };
   
@@ -87,15 +80,6 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             >
               <MessageSquare className="h-5 w-5" />
               <span>Trade Request</span>
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-3 justify-start w-full py-6"
-              onClick={handleCreatePoll}
-            >
-              <BarChart2 className="h-5 w-5" />
-              <span>Create Poll</span>
             </Button>
           </div>
         </div>
