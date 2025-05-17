@@ -28,7 +28,7 @@ export const ImageCropper = forwardRef<CropperRef, ImageCropperProps>(({
         stencilProps={{
           aspectRatio: aspectRatio
         }}
-        imageRestriction="stencil-area" // Changed from "stencil" to "stencil-area"
+        imageRestriction="stencil" // Fixed to use "stencil" which is a valid value
       />
     </div>
   );

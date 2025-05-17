@@ -93,8 +93,8 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
     if (!data) return imageUrl;
     
     // Set canvas dimensions to match the cropped area
-    canvas.width = data.naturalWidth;
-    canvas.height = data.naturalHeight;
+    canvas.width = data.width; // Use width instead of naturalWidth
+    canvas.height = data.height; // Use height instead of naturalHeight
 
     // Apply filters
     let filterString = "";
