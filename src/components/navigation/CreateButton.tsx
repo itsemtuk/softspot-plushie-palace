@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { PlusCircle, Image, Send, X } from "lucide-react";
+import { PlusCircle, Image, Send, Handshake } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -11,8 +11,6 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
-import { v4 as uuidv4 } from "uuid";
-import { ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -40,45 +38,6 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
     onCreatePost();
   };
 
-  const handleCreateDemoPlushie = () => {
-    if (!user) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to add a plushie."
-      });
-      navigate('/sign-in');
-      return;
-    }
-
-    const demoPost: Partial<ExtendedPost> = {
-      id: uuidv4(),
-      userId: user.id,
-      image: "https://i.pravatar.cc/300?img=1",
-      title: "Lovely Teddy Bear",
-      username: user.username || "user",
-      description: "A lovely teddy bear for sale. Great condition and very huggable!",
-      tags: ["teddy", "bear", "plushie"],
-      timestamp: new Date().toISOString(),
-      price: 24.99,
-      forSale: false,
-      condition: "Like New",
-      color: "Brown",
-      material: "Cotton",
-      location: "New York",
-      deliveryCost: 5.99,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    };
-
-    console.log("Created demo plushie:", demoPost);
-    setIsDropdownOpen(false);
-    
-    toast({
-      title: "Demo Plushie Created",
-      description: "Your demo plushie was created successfully!"
-    });
-  };
-
   const handleSellItem = () => {
     if (!user) {
       toast({
@@ -90,7 +49,26 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
     }
 
     setIsDropdownOpen(false);
-    navigate('/sell-item');
+    navigate('/sell');
+  };
+  
+  const handleTradeRequest = () => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to create a trade request."
+      });
+      navigate('/sign-in');
+      return;
+    }
+
+    setIsDropdownOpen(false);
+    navigate('/messages');
+    
+    toast({
+      title: "Trade Request",
+      description: "Trade request feature coming soon!"
+    });
   };
 
   return (
@@ -111,14 +89,13 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
           <Image className="mr-2 h-4 w-4" />
           <span>Post</span>
         </DropdownMenuItem>
+        <DropdownMenuItem onClick={handleTradeRequest} className="cursor-pointer">
+          <Handshake className="mr-2 h-4 w-4" />
+          <span>Trade Request</span>
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSellItem} className="cursor-pointer">
           <Send className="mr-2 h-4 w-4" />
           <span>Sell a Plushie</span>
-        </DropdownMenuItem>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleCreateDemoPlushie} className="cursor-pointer">
-          <PlusCircle className="mr-2 h-4 w-4" />
-          <span>Create Demo Plushie</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

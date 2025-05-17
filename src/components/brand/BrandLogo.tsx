@@ -7,34 +7,36 @@ interface BrandLogoProps {
 }
 
 export const BrandLogo: React.FC<BrandLogoProps> = ({ brandName, className = "w-6 h-6" }) => {
-  // Map of brand names to their logo files
+  // Map of brand names to their logo files - handle case variations
+  const normalizedBrandName = brandName.toLowerCase().trim();
+  
   const brandLogoMap: Record<string, string> = {
-    "Jellycat": "/assets/brands/jellycat-logo.png",
-    "jellycat": "/assets/Brand_Logos/jellycat.png",
-    "Build-A-Bear": "/assets/brands/build-a-bear-logo.png",
-    "build-a-bear": "/assets/brands/build-a-bear-logo.png",
-    "Squishmallow": "/assets/brands/squishmallow-logo.png",
-    "squishmallow": "/assets/brands/squishmallow-logo.png",
-    "Pokémon": "/assets/brands/pokemon-logo.png",
-    "pokemon": "/assets/brands/pokemon-logo.png",
-    "Pokemon": "/assets/brands/pokemon-logo.png",
-    "Sanrio": "/assets/brands/sanrio-logo.png",
-    "sanrio": "/assets/brands/sanrio-logo.png",
-    "Disney": "/assets/brands/disney-logo.png",
-    "disney": "/assets/brands/disney-logo.png",
-    "Ty": "/assets/brands/ty-logo.png",
+    "jellycat": "/assets/Brand_Logos/Jellycat.JPG",
+    "build a bear": "/assets/Brand_Logos/Build a Bear.JPG",
+    "build-a-bear": "/assets/Brand_Logos/Build a Bear.JPG",
+    "squishmallow": "/assets/Brand_Logos/Squishmallows.JPG",
+    "squishmallows": "/assets/Brand_Logos/Squishmallows.JPG",
+    "pokémon": "/assets/Brand_Logos/Pokemon.PNG",
+    "pokemon": "/assets/Brand_Logos/Pokemon.PNG",
+    "sanrio": "/assets/Brand_Logos/Sanrio.PNG",
+    "disney": "/assets/Brand_Logos/Disney.JPG",
     "ty": "/assets/brands/ty-logo.png",
-    "Gund": "/assets/brands/gund-logo.png",
     "gund": "/assets/brands/gund-logo.png",
-    "Steiff": "/assets/brands/steiff-logo.png",
     "steiff": "/assets/brands/steiff-logo.png",
-    "Aurora World": "/assets/brands/aurora-logo.png",
+    "aurora world": "/assets/brands/aurora-logo.png",
     "aurora": "/assets/brands/aurora-logo.png",
-    "Other": "/assets/brands/generic-plushie-icon.png"
   };
   
-  // Get the logo path or use a default
-  const logoPath = brandLogoMap[brandName] || "/assets/brands/generic-plushie-icon.png";
+  // Get the logo path by checking the normalized brand name
+  let logoPath = "/assets/brands/generic-plushie-icon.png"; // Default fallback
+  
+  // Try to find a match in our map
+  for (const [key, value] of Object.entries(brandLogoMap)) {
+    if (normalizedBrandName.includes(key)) {
+      logoPath = value;
+      break;
+    }
+  }
   
   // Generate a color based on brand name if no logo available
   const generateBrandColor = (name: string): string => {

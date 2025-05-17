@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useSignUp } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
@@ -34,7 +33,7 @@ const WaitlistPage = () => {
       setIsSubmitted(true);
       toast({
         title: "Thank you for joining our waitlist!",
-        description: "We'll notify you when Plushie Palace launches.",
+        description: "We'll notify you when SoftSpot launches.",
       });
       
     } catch (error) {
@@ -62,7 +61,7 @@ const WaitlistPage = () => {
       {/* Main content */}
       <div className="relative z-10 max-w-lg w-full bg-white bg-opacity-80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-gray-100">
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-gray-800 mb-2 tracking-tight">Plushie Palace</h1>
+          <h1 className="text-5xl font-bold text-gray-800 mb-2 tracking-tight">SoftSpot</h1>
           <p className="text-xl text-gray-600">The social marketplace for plushie lovers</p>
           
           <div className="mt-4 flex items-center justify-center">
@@ -296,7 +295,7 @@ const WaitlistPage = () => {
       
       {/* Footer */}
       <div className="mt-12 text-center text-gray-500 text-xs">
-        <p>© {new Date().getFullYear()} Plushie Palace. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} SoftSpot. All rights reserved.</p>
       </div>
     </div>
   );

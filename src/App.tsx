@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router } from 'react-router-dom';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from "@/components/ui/theme-provider";
@@ -147,7 +148,13 @@ function App() {
           <MessagingPage />
         </AuthWrapper>
       } />
+      {/* Fix both /sell and /sell-item routes to point to SellItemPage */}
       <Route path="/sell" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <SellItemPage />
+        </AuthWrapper>
+      } />
+      <Route path="/sell-item" element={
         <AuthWrapper fallback={<SignIn />}>
           <SellItemPage />
         </AuthWrapper>

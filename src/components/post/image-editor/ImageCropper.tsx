@@ -1,45 +1,37 @@
 
-import React, { forwardRef } from 'react';
-import { Cropper } from 'react-advanced-cropper';
+import React, { useState } from 'react';
+import { Cropper, CropperRef } from 'react-advanced-cropper';
 import 'react-advanced-cropper/dist/style.css';
 
 interface ImageCropperProps {
-  imageUrl: string;
-  aspectRatio: number | null;
-  filter: string;
+  image: string;
+  onCrop: (cropper: CropperRef) => void;
+  aspectRatio?: number;
 }
 
-export const ImageCropper = forwardRef<any, ImageCropperProps>(
-  ({ imageUrl, aspectRatio, filter }, ref) => {
-    return (
-      <Cropper
-        ref={ref}
-        src={imageUrl}
-        className="cropper"
-        aspectRatio={aspectRatio as any}
-        stencilProps={{
-          handlers: true,
-          lines: true,
-          movable: true,
-          resizable: true,
-        }}
-        style={{
-          width: '100%',
-          height: '100%',
-        }}
-        imageRestriction={{ byBoundaries: true }}
-        defaultSize={{
-          width: 0.8,
-          height: 0.8,
-        }}
-        backgroundProps={{
-          style: {
-            filter: filter || ""
-          }
-        }}
-      />
-    );
-  }
-);
+export const ImageCropper: React.FC<ImageCropperProps> = ({
+  image,
+  onCrop,
+  aspectRatio
+}) => {
+  const [cropper, setCropper] = useState<CropperRef | null>(null);
 
-ImageCropper.displayName = 'ImageCropper';
+  const handleChange = (newCropper: CropperRef) => {
+    setCropper(newCropper);
+    onCrop(newCropper);
+  };
+
+  return (
+    <div className="w-full h-full">
+      <Cropper
+        src={image}
+        onChange={handleChange}
+        className="h-[400px] bg-gray-100"
+        stencilProps={{
+          aspectRatio: aspectRatio
+        }}
+        imageRestriction="stencil" /* Changed from { byBoundaries: true } to "stencil" */
+      />
+    </div>
+  );
+};

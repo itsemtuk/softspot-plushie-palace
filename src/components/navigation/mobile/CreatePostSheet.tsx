@@ -2,7 +2,7 @@
 import React from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { ImageIcon, ShoppingCart, MessageSquare } from "lucide-react";
+import { ImageIcon, ShoppingCart, Handshake } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import { useCreatePost } from "@/hooks/use-create-post";
 import { isAuthenticated } from "@/utils/auth/authState";
@@ -39,6 +39,17 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
     });
   };
   
+  const handleTradeRequest = () => {
+    handleAuthentication("create trade requests", () => {
+      onOpenChange(false);
+      navigate('/messages');
+      toast({
+        title: "Trade Request",
+        description: "Trade request feature coming soon!"
+      });
+    });
+  };
+  
   const navigateToPage = (path: string, action: string) => {
     handleAuthentication(action, () => {
       onOpenChange(false);
@@ -67,19 +78,19 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             <Button 
               variant="outline" 
               className="flex items-center gap-3 justify-start w-full py-6"
-              onClick={() => navigateToPage('/marketplace/sell', 'sell items')}
+              onClick={handleTradeRequest}
             >
-              <ShoppingCart className="h-5 w-5" />
-              <span>Sell Item</span>
+              <Handshake className="h-5 w-5" />
+              <span>Trade Request</span>
             </Button>
             
             <Button 
               variant="outline" 
               className="flex items-center gap-3 justify-start w-full py-6"
-              onClick={() => navigateToPage('/messages', 'send messages')}
+              onClick={() => navigateToPage('/sell', 'sell items')}
             >
-              <MessageSquare className="h-5 w-5" />
-              <span>Trade Request</span>
+              <ShoppingCart className="h-5 w-5" />
+              <span>Sell Item</span>
             </Button>
           </div>
         </div>

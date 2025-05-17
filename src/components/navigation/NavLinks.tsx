@@ -1,32 +1,43 @@
 
-import { Link } from "react-router-dom";
-import { useLocation } from "react-router-dom";
+import React from "react";
+import { Link, useLocation } from "react-router-dom";
+import { cn } from "@/lib/utils";
+import { Home, ShoppingBag, Bookmark, Info } from "lucide-react";
 
-export function NavLinks() {
+export const NavLinks = () => {
   const location = useLocation();
   
+  const isActive = (path: string) => {
+    if (path === "/") {
+      return location.pathname === "/";
+    }
+    return location.pathname.startsWith(path);
+  };
+  
   const links = [
-    { href: "/feed", label: "Feed" },
-    { href: "/discover", label: "Discover" },
-    { href: "/marketplace", label: "Marketplace" },
-    { href: "/wishlist", label: "Wishlist" }
+    { name: "Feed", path: "/feed", icon: <Home className="h-4 w-4 mr-1.5" /> },
+    { name: "Marketplace", path: "/marketplace", icon: <ShoppingBag className="h-4 w-4 mr-1.5" /> },
+    { name: "Wishlist", path: "/wishlist", icon: <Bookmark className="h-4 w-4 mr-1.5" /> },
+    { name: "About", path: "/about", icon: <Info className="h-4 w-4 mr-1.5" /> },
   ];
 
   return (
-    <nav className="flex items-center space-x-4">
-      {links.map(link => (
+    <nav className="flex items-center space-x-1">
+      {links.map((link) => (
         <Link
-          key={link.href}
-          to={link.href}
-          className={`text-sm font-medium transition-colors hover:text-softspot-800 ${
-            location.pathname === link.href
-              ? "text-softspot-700 font-semibold"
-              : "text-softspot-600"
-          }`}
+          key={link.name}
+          to={link.path}
+          className={cn(
+            "flex items-center text-sm px-3 py-2 rounded-md",
+            isActive(link.path)
+              ? "bg-softspot-100 text-softspot-700 font-medium"
+              : "text-gray-600 hover:bg-gray-100"
+          )}
         >
-          {link.label}
+          {link.icon}
+          {link.name}
         </Link>
       ))}
     </nav>
   );
-}
+};
