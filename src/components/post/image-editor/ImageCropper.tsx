@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { forwardRef, ForwardedRef } from 'react';
 import { Cropper, CropperRef } from 'react-advanced-cropper';
 import 'react-advanced-cropper/dist/style.css';
 
@@ -9,29 +9,29 @@ interface ImageCropperProps {
   aspectRatio?: number;
 }
 
-export const ImageCropper: React.FC<ImageCropperProps> = ({
+export const ImageCropper = forwardRef<CropperRef, ImageCropperProps>(({
   image,
   onCrop,
   aspectRatio
-}) => {
-  const [cropper, setCropper] = useState<CropperRef | null>(null);
-
+}, ref) => {
   const handleChange = (newCropper: CropperRef) => {
-    setCropper(newCropper);
     onCrop(newCropper);
   };
 
   return (
     <div className="w-full h-full">
       <Cropper
+        ref={ref}
         src={image}
         onChange={handleChange}
         className="h-[400px] bg-gray-100"
         stencilProps={{
           aspectRatio: aspectRatio
         }}
-        imageRestriction="stencil" /* Changed from { byBoundaries: true } to "stencil" */
+        imageRestriction="stencil-area" // Changed from "stencil" to "stencil-area"
       />
     </div>
   );
-};
+});
+
+ImageCropper.displayName = 'ImageCropper';

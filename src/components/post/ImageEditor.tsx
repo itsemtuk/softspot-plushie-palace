@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import { CropControls } from "./image-editor/CropControls";
 import { AdjustmentControls } from "./image-editor/AdjustmentControls";
 import { FilterPresets } from "./image-editor/FilterPresets";
 import { ImageCropper } from "./image-editor/ImageCropper";
+import { CropperRef } from 'react-advanced-cropper';
 
 interface ImageEditorProps {
   imageUrl: string;
@@ -40,7 +40,7 @@ const ASPECT_RATIOS = [
 
 export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditorProps) => {
   // Cropper state
-  const cropperRef = useRef<any>(null);
+  const cropperRef = useRef<CropperRef>(null);
   const [aspectRatio, setAspectRatio] = useState<number | null>(1); // Default to 1:1 square
   const [rotation, setRotation] = useState(0);
   
@@ -190,9 +190,9 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
           {/* Cropper component */}
           <ImageCropper
             ref={cropperRef}
-            imageUrl={imageUrl}
-            aspectRatio={aspectRatio}
-            filter={getCurrentFilter()}
+            image={imageUrl}
+            onCrop={(cropper) => {}} // Add empty function to satisfy prop requirements
+            aspectRatio={aspectRatio || undefined}
           />
         </div>
         
