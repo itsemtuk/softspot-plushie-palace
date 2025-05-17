@@ -1,15 +1,17 @@
 
 import { useState, useRef, useEffect } from "react";
-import { Search } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { 
   Popover, 
   PopoverContent, 
   PopoverTrigger 
 } from "@/components/ui/popover";
-import { Link } from "react-router-dom";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SearchInput } from "./search/SearchInput";
+import { SearchResults } from "./search/SearchResults";
+import { SearchCategories } from "./search/SearchCategories";
+import { TrendingSearches } from "./search/TrendingSearches";
+import { RecentItems } from "./search/RecentItems";
+import { PopularUsers } from "./search/PopularUsers";
+import { SearchFooter } from "./search/SearchFooter";
 
 // Mock categories and trending searches
 const categories = ["Bears", "Rabbits", "Cats", "Dogs", "Mythical"];
@@ -47,169 +49,28 @@ export const SearchBar = () => {
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
         <div className="relative w-full max-w-xs" ref={inputRef}>
-          <form onSubmit={handleSearch} className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              type="text"
-              placeholder="Search plushies, posts, users..."
-              className="pl-9 pr-12 w-full"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              onFocus={() => setIsOpen(true)}
-            />
-            <Button 
-              size="sm" 
-              variant="ghost" 
-              type="submit"
-              className="absolute right-0 top-0 h-full rounded-l-none"
-            >
-              Search
-            </Button>
-          </form>
+          <SearchInput 
+            searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
+            handleSearch={handleSearch}
+          />
         </div>
       </PopoverTrigger>
       
       <PopoverContent className="w-[300px] p-0" align="start">
         <div className="p-4 space-y-4">
           {searchQuery ? (
-            <div>
-              <h3 className="text-sm font-medium mb-2">Search Results</h3>
-              <Link 
-                to={`/discover?q=${encodeURIComponent(searchQuery)}`} 
-                className="block p-2 hover:bg-gray-100 rounded-md"
-                onClick={() => setIsOpen(false)}
-              >
-                Search for products: "{searchQuery}"
-              </Link>
-              <Link 
-                to={`/feed?q=${encodeURIComponent(searchQuery)}`} 
-                className="block p-2 hover:bg-gray-100 rounded-md"
-                onClick={() => setIsOpen(false)}
-              >
-                Search for posts: "{searchQuery}"
-              </Link>
-              <Link 
-                to="#" 
-                className="block p-2 hover:bg-gray-100 rounded-md"
-                onClick={() => {setIsOpen(false)}}
-              >
-                Search for users: "{searchQuery}"
-              </Link>
-            </div>
+            <SearchResults searchQuery={searchQuery} setIsOpen={setIsOpen} />
           ) : (
             <>
-              <div>
-                <h3 className="text-sm font-medium mb-2">Categories</h3>
-                <div className="flex flex-wrap gap-2">
-                  {categories.map((category) => (
-                    <Link 
-                      key={category} 
-                      to={`/discover?category=${category.toLowerCase()}`}
-                      className="px-3 py-1 bg-gray-100 rounded-full text-sm hover:bg-gray-200 transition-colors"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      {category}
-                    </Link>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2">Trending Searches</h3>
-                <div className="space-y-1">
-                  {trendingSearches.map((trend) => (
-                    <Link 
-                      key={trend}
-                      to={`/discover?q=${encodeURIComponent(trend)}`}
-                      className="flex items-center p-2 hover:bg-gray-100 rounded-md"
-                      onClick={() => setIsOpen(false)}
-                    >
-                      <Search className="h-3.5 w-3.5 mr-2 text-gray-500" />
-                      <span className="text-sm">{trend}</span>
-                    </Link>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2">Recent Plushies</h3>
-                <div className="space-y-2">
-                  <Link 
-                    to="/marketplace/plushie-1"
-                    className="flex items-center p-2 hover:bg-gray-100 rounded-md"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Avatar className="h-8 w-8 mr-2">
-                      <AvatarImage src="https://i.pravatar.cc/150?img=1" alt="Teddy" />
-                      <AvatarFallback>TB</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">Vintage Teddy Bear</p>
-                      <p className="text-xs text-gray-500">$24.99</p>
-                    </div>
-                  </Link>
-                  <Link 
-                    to="/marketplace/plushie-2"
-                    className="flex items-center p-2 hover:bg-gray-100 rounded-md"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Avatar className="h-8 w-8 mr-2">
-                      <AvatarImage src="https://i.pravatar.cc/150?img=2" alt="Bunny" />
-                      <AvatarFallback>RB</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">Rainbow Bunny</p>
-                      <p className="text-xs text-gray-500">$19.50</p>
-                    </div>
-                  </Link>
-                </div>
-              </div>
-              
-              <div>
-                <h3 className="text-sm font-medium mb-2">Popular Users</h3>
-                <div className="space-y-2">
-                  <Link 
-                    to="/profile"
-                    className="flex items-center p-2 hover:bg-gray-100 rounded-md"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Avatar className="h-8 w-8 mr-2">
-                      <AvatarImage src="https://i.pravatar.cc/150?img=10" alt="User" />
-                      <AvatarFallback>JD</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">Jane Doe</p>
-                      <p className="text-xs text-gray-500">@janeplushie</p>
-                    </div>
-                  </Link>
-                  <Link 
-                    to="/profile"
-                    className="flex items-center p-2 hover:bg-gray-100 rounded-md"
-                    onClick={() => setIsOpen(false)}
-                  >
-                    <Avatar className="h-8 w-8 mr-2">
-                      <AvatarImage src="https://i.pravatar.cc/150?img=11" alt="User" />
-                      <AvatarFallback>JD</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">John Smith</p>
-                      <p className="text-xs text-gray-500">@teddymaster</p>
-                    </div>
-                  </Link>
-                </div>
-              </div>
+              <SearchCategories categories={categories} setIsOpen={setIsOpen} />
+              <TrendingSearches trendingSearches={trendingSearches} setIsOpen={setIsOpen} />
+              <RecentItems setIsOpen={setIsOpen} />
+              <PopularUsers setIsOpen={setIsOpen} />
             </>
           )}
           
-          <div className="pt-2 border-t">
-            <Link 
-              to="/discover" 
-              className="flex items-center justify-center w-full text-sm text-softspot-500 hover:text-softspot-600"
-              onClick={() => setIsOpen(false)}
-            >
-              Advanced Search
-            </Link>
-          </div>
+          <SearchFooter setIsOpen={setIsOpen} />
         </div>
       </PopoverContent>
     </Popover>

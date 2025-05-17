@@ -1,13 +1,14 @@
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { ImageEditorOptions } from "@/types/marketplace";
-import { Crop, Move, SunMedium, Contrast, Palette, RotateCcw, RotateCw, Sparkles, Sliders } from "lucide-react";
-import { Cropper } from 'react-advanced-cropper';
-import 'react-advanced-cropper/dist/style.css';
+import { Crop, Sliders, Sparkles } from "lucide-react";
+import { CropControls } from "./image-editor/CropControls";
+import { AdjustmentControls } from "./image-editor/AdjustmentControls";
+import { FilterPresets } from "./image-editor/FilterPresets";
+import { ImageCropper } from "./image-editor/ImageCropper";
 
 interface ImageEditorProps {
   imageUrl: string;
@@ -144,6 +145,21 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
     onSave(editedImageUrl);
   };
 
+  const getCurrentFilter = () => {
+    if (activePreset === "Normal" && brightness[0] === 100 && contrast[0] === 100 && saturation[0] === 100) {
+      return "";
+    }
+
+    let filterString = "";
+    const preset = FILTER_PRESETS.find(p => p.name === activePreset);
+    if (preset && preset.filter) {
+      filterString += preset.filter + " ";
+    }
+    
+    filterString += `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`;
+    return filterString;
+  };
+
   return (
     <Card className="p-4 max-w-md mx-auto">
       <Tabs defaultValue="crop" value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -172,163 +188,44 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
           />
           
           {/* Cropper component */}
-          <Cropper
+          <ImageCropper
             ref={cropperRef}
-            src={imageUrl}
-            className="cropper"
-            aspectRatio={aspectRatio as any}
-            stencilProps={{
-              handlers: true,
-              lines: true,
-              movable: true,
-              resizable: true,
-            }}
-            style={{
-              width: '100%',
-              height: '100%',
-            }}
-            imageRestriction="stencil"
-            defaultSize={{
-              width: 0.8,
-              height: 0.8,
-            }}
-            backgroundProps={{
-              style: {
-                filter: activePreset !== "Normal" || brightness[0] !== 100 || contrast[0] !== 100 || saturation[0] !== 100 ?
-                  `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%) ${FILTER_PRESETS.find(p => p.name === activePreset)?.filter || ""}` : ""
-              }
-            }}
+            imageUrl={imageUrl}
+            aspectRatio={aspectRatio}
+            filter={getCurrentFilter()}
           />
         </div>
         
         <TabsContent value="crop">
-          <div className="space-y-6">
-            <div>
-              <label className="text-sm font-medium flex items-center mb-2">
-                <Crop className="h-4 w-4 mr-2" />
-                Aspect Ratio
-              </label>
-              <div className="flex gap-2">
-                {ASPECT_RATIOS.map((ratio) => (
-                  <Button
-                    key={ratio.label}
-                    variant={aspectRatio === ratio.value ? "default" : "outline"}
-                    onClick={() => handleAspectRatioChange(ratio.value)}
-                    className="flex-1"
-                  >
-                    {ratio.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <label className="text-sm font-medium flex items-center mb-2">
-                Rotate Image
-              </label>
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handleRotateLeft} className="flex-1">
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Rotate Left
-                </Button>
-                <Button variant="outline" onClick={handleRotateRight} className="flex-1">
-                  <RotateCw className="h-4 w-4 mr-2" />
-                  Rotate Right
-                </Button>
-              </div>
-            </div>
-          </div>
+          <CropControls
+            aspectRatio={aspectRatio}
+            handleAspectRatioChange={handleAspectRatioChange}
+            handleRotateLeft={handleRotateLeft}
+            handleRotateRight={handleRotateRight}
+            aspectRatios={ASPECT_RATIOS}
+          />
         </TabsContent>
         
         <TabsContent value="adjust">
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium flex items-center">
-                <SunMedium className="h-4 w-4 mr-2" />
-                Brightness
-              </label>
-              <Slider
-                value={brightness}
-                onValueChange={setBrightness}
-                min={0}
-                max={200}
-                step={1}
-                className="my-2"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium flex items-center">
-                <Contrast className="h-4 w-4 mr-2" />
-                Contrast
-              </label>
-              <Slider
-                value={contrast}
-                onValueChange={setContrast}
-                min={0}
-                max={200}
-                step={1}
-                className="my-2"
-              />
-            </div>
-
-            <div>
-              <label className="text-sm font-medium flex items-center">
-                <Palette className="h-4 w-4 mr-2" />
-                Saturation
-              </label>
-              <Slider
-                value={saturation}
-                onValueChange={setSaturation}
-                min={0}
-                max={200}
-                step={1}
-                className="my-2"
-              />
-            </div>
-          </div>
+          <AdjustmentControls
+            brightness={brightness}
+            setBrightness={setBrightness}
+            contrast={contrast}
+            setContrast={setContrast}
+            saturation={saturation}
+            setSaturation={setSaturation}
+          />
         </TabsContent>
         
         <TabsContent value="filters">
-          <div className="space-y-4">
-            <label className="text-sm font-medium">Presets</label>
-            <div className="grid grid-cols-3 gap-2">
-              {FILTER_PRESETS.map((preset) => (
-                <div 
-                  key={preset.name}
-                  onClick={() => handleFilterPresetChange(preset.name)}
-                  className={`cursor-pointer transition-all ${activePreset === preset.name ? 'ring-2 ring-softspot-500 ring-offset-2' : 'hover:opacity-80'} overflow-hidden rounded-md`}
-                >
-                  <div className="aspect-square relative overflow-hidden">
-                    <img
-                      src={imageUrl} 
-                      alt={preset.name}
-                      className="object-cover w-full h-full"
-                      style={{ filter: preset.filter }}
-                    />
-                  </div>
-                  <p className="text-xs font-medium text-center mt-1">{preset.name}</p>
-                </div>
-              ))}
-            </div>
-            
-            {activePreset !== "Normal" && (
-              <div>
-                <label className="text-sm font-medium flex items-center">
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Filter Intensity
-                </label>
-                <Slider
-                  value={filterIntensity}
-                  onValueChange={setFilterIntensity}
-                  min={0}
-                  max={100}
-                  step={1}
-                  className="my-2"
-                />
-              </div>
-            )}
-          </div>
+          <FilterPresets
+            imageUrl={imageUrl}
+            activePreset={activePreset}
+            handleFilterPresetChange={handleFilterPresetChange}
+            filterIntensity={filterIntensity}
+            setFilterIntensity={setFilterIntensity}
+            filterPresets={FILTER_PRESETS}
+          />
         </TabsContent>
       </Tabs>
 
