@@ -127,7 +127,8 @@ export const BrandPageWrapper = () => {
                 alt={brandName}
                 className="object-contain w-full h-full"
                 onError={(e) => {
-                  e.currentTarget.src = '/placeholder.svg';
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.svg';
                 }}
               />
             </div>

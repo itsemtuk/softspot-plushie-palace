@@ -2,7 +2,7 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { Home, ShoppingBag, Bookmark, Info } from "lucide-react";
+import { Home, ShoppingBag, Bookmark, Search } from "lucide-react";
 
 export const NavLinks = () => {
   const location = useLocation();
@@ -17,8 +17,7 @@ export const NavLinks = () => {
   const links = [
     { name: "Feed", path: "/feed", icon: <Home className="h-4 w-4 mr-1.5" /> },
     { name: "Marketplace", path: "/marketplace", icon: <ShoppingBag className="h-4 w-4 mr-1.5" /> },
-    { name: "Wishlist", path: "/wishlist", icon: <Bookmark className="h-4 w-4 mr-1.5" /> },
-    { name: "About", path: "/about", icon: <Info className="h-4 w-4 mr-1.5" /> },
+    { name: "Discover", path: "/discover", icon: <Search className="h-4 w-4 mr-1.5" /> },
   ];
 
   return (

@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { PlusCircle, Image, Send, Handshake } from "lucide-react";
+import { PlusCircle, Image, Tag, Handshake } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,20 +82,20 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
           <span>Create</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[200px]">
+      <DropdownMenuContent align="end" className="w-[220px]">
         <DropdownMenuLabel>Create New</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer">
           <Image className="mr-2 h-4 w-4" />
-          <span>Post</span>
+          <span>New Post</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleTradeRequest} className="cursor-pointer">
           <Handshake className="mr-2 h-4 w-4" />
           <span>Trade Request</span>
         </DropdownMenuItem>
         <DropdownMenuItem onClick={handleSellItem} className="cursor-pointer">
-          <Send className="mr-2 h-4 w-4" />
-          <span>Sell a Plushie</span>
+          <Tag className="mr-2 h-4 w-4" />
+          <span>Sell Plushie</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

@@ -1,6 +1,6 @@
 
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import { MessageSquare, LogIn, Bell } from "lucide-react";
+import { MessageSquare, LogIn, Bell, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/navigation/Logo";
 import { MobileNotifications } from "./MobileNotifications";
@@ -52,6 +52,13 @@ export function TopNav() {
                 onClick={() => handleAuthRequiredAction("access messages", "/messages")}
               >
                 <MessageSquare className="h-5 w-5" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => handleAuthRequiredAction("view wishlist", "/wishlist")}
+              >
+                <Bookmark className="h-5 w-5" />
               </Button>
               <MobileNotifications />
             </>
