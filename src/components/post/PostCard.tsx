@@ -35,7 +35,7 @@ export const PostCard = ({ post, onLike }: PostCardProps) => {
     e.stopPropagation();
     
     if (isCurrentUserPost) {
-      navigate('/profile');
+      navigate('/me'); // Use /me route for current user
     } else if (post.userId) {
       navigate(`/user/${post.userId}`);
     }

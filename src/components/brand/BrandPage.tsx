@@ -9,45 +9,55 @@ import { CommunityPosts } from "@/components/brand/CommunityPosts";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { MarketplacePlushie, Post } from "@/types/marketplace";
+import { BrandLogo } from "@/components/brand/BrandLogo";
+import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
+import { getPosts } from "@/utils/posts/postFetch";
+import { toast } from "@/components/ui/use-toast";
 
 // Brand data mapping
 const brandData = {
-  "Build a Bear": {
+  "build-a-bear": {
+    name: "Build a Bear",
     logo: "/assets/Brand_Logos/Build a Bear.JPG",
     description: "Build-A-Bear Workshop is a retailer that sells teddy bears and other stuffed animals. Customers can customize their own plush toys.",
     themeColor: "bg-amber-100",
     accentColor: "text-amber-700",
     borderColor: "border-amber-300"
   },
-  "Disney": {
+  "disney": {
+    name: "Disney",
     logo: "/assets/Brand_Logos/Disney.JPG",
     description: "Disney's plush toy collection features beloved characters from Disney movies, TV shows, and theme parks.",
     themeColor: "bg-blue-100",
     accentColor: "text-blue-700",
     borderColor: "border-blue-300"
   },
-  "Jellycat": {
+  "jellycat": {
+    name: "Jellycat",
     logo: "/assets/Brand_Logos/Jellycat.JPG",
     description: "Jellycat is a London-based company that designs luxuriously soft and irresistible plush toys.",
     themeColor: "bg-green-100",
     accentColor: "text-green-700",
     borderColor: "border-green-300"
   },
-  "Pokemon": {
+  "pokemon": {
+    name: "Pokemon",
     logo: "/assets/Brand_Logos/Pokemon.PNG",
     description: "The official Pokémon plush collection features soft toys of popular Pokémon characters.",
     themeColor: "bg-yellow-100",
     accentColor: "text-yellow-700",
     borderColor: "border-yellow-300"
   },
-  "Sanrio": {
+  "sanrio": {
+    name: "Sanrio",
     logo: "/assets/Brand_Logos/Sanrio.PNG",
     description: "Sanrio is a Japanese company that designs and produces kawaii (cute) characters, notably Hello Kitty.",
     themeColor: "bg-pink-100",
     accentColor: "text-pink-700",
     borderColor: "border-pink-300"
   },
-  "Squishmallows": {
+  "squishmallows": {
+    name: "Squishmallows",
     logo: "/assets/Brand_Logos/Squishmallows.JPG",
     description: "Squishmallows are a line of plush toys known for their ultra-soft feel and round shape.",
     themeColor: "bg-purple-100",
@@ -69,49 +79,55 @@ export const BrandPageWrapper = () => {
       return;
     }
     
-    // Load brand data
-    setLoading(true);
-    
-    setTimeout(() => {
-      // Find the closest matching brand
-      const exactBrand = brandData[brandName as keyof typeof brandData];
+    const fetchBrandData = async () => {
+      setLoading(true);
       
-      if (exactBrand) {
-        setBrand({
-          name: brandName,
-          ...exactBrand
-        });
-      } else {
-        // Try case-insensitive match
-        const brandKeys = Object.keys(brandData);
-        const matchingBrand = brandKeys.find(key => 
-          key.toLowerCase() === brandName.toLowerCase()
-        );
+      try {
+        // Normalize the brand name for lookup
+        const normalizedBrandName = brandName.toLowerCase().replace(/\s+/g, '-');
         
-        if (matchingBrand) {
-          setBrand({
-            name: matchingBrand,
-            ...brandData[matchingBrand as keyof typeof brandData]
-          });
+        // Find the brand data
+        const currentBrand = brandData[normalizedBrandName as keyof typeof brandData];
+        
+        if (currentBrand) {
+          setBrand(currentBrand);
+          
+          // Fetch plushies and posts related to this brand
+          const allPlushies = getMarketplaceListings();
+          const brandPlushies = allPlushies.filter(
+            plushie => plushie.brand?.toLowerCase() === currentBrand.name.toLowerCase()
+          );
+          setPlushies(brandPlushies);
+          
+          // Fetch posts mentioning this brand
+          const allPosts = await getPosts();
+          const brandPosts = allPosts.filter(post => 
+            post.tags?.some(tag => tag.toLowerCase() === currentBrand.name.toLowerCase()) ||
+            (post.description && post.description.toLowerCase().includes(currentBrand.name.toLowerCase()))
+          );
+          setPosts(brandPosts);
         } else {
-          // Default fallback
-          setBrand({
-            name: brandName,
-            logo: "/placeholder.svg",
-            description: `Information about ${brandName} coming soon.`,
-            themeColor: "bg-gray-100",
-            accentColor: "text-gray-700",
-            borderColor: "border-gray-300"
+          // Try fuzzy matching or handle unknown brand
+          toast({
+            title: "Brand not found",
+            description: `We couldn't find information for "${brandName}"`,
+            variant: "destructive"
           });
+          setBrand(null);
         }
+      } catch (error) {
+        console.error("Error fetching brand data:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load brand information",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
       }
-      
-      // In a real app, fetch plushies and posts related to this brand
-      setPlushies([]);
-      setPosts([]);
-      
-      setLoading(false);
-    }, 300);
+    };
+    
+    fetchBrandData();
   }, [brandName]);
   
   const handleGoBack = () => {
@@ -119,13 +135,11 @@ export const BrandPageWrapper = () => {
   };
   
   const handlePlushieClick = (plushie: MarketplacePlushie) => {
-    // Handle plushie click
-    console.log("Clicked plushie:", plushie);
+    navigate(`/marketplace/product/${plushie.id}`);
   };
   
   const handlePostClick = (post: Post) => {
-    // Handle post click
-    console.log("Clicked post:", post);
+    navigate(`/post/${post.id}`);
   };
   
   if (loading) {
@@ -150,6 +164,13 @@ export const BrandPageWrapper = () => {
         <div className="text-center py-12">
           <h1 className="text-2xl font-bold">Brand not found</h1>
           <p className="mt-2">We couldn't find information about this brand.</p>
+          <Button 
+            variant="outline" 
+            onClick={() => navigate("/marketplace")}
+            className="mt-4"
+          >
+            Return to Marketplace
+          </Button>
         </div>
       </div>
     );
@@ -169,15 +190,7 @@ export const BrandPageWrapper = () => {
         <Card className={`${brand.borderColor} border-2 overflow-hidden`}>
           <CardHeader className="flex flex-col items-center">
             <div className="w-32 h-32 relative overflow-hidden flex items-center justify-center">
-              <img 
-                src={brand.logo}
-                alt={brand.name}
-                className="max-w-full max-h-full object-contain"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder.svg';
-                }}
-              />
+              <BrandLogo brandName={brand.name} className="w-full h-full" />
             </div>
             <h1 className={`text-2xl font-bold mt-4 ${brand.accentColor}`}>
               {brand.name}
@@ -192,15 +205,33 @@ export const BrandPageWrapper = () => {
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="collection">Collection</TabsTrigger>
                 <TabsTrigger value="community">Community</TabsTrigger>
-                <TabsTrigger value="news">News</TabsTrigger>
+                <TabsTrigger value="news" disabled>News</TabsTrigger>
               </TabsList>
               
               <TabsContent value="collection" className="mt-4">
-                <PlushieGrid plushies={plushies} onPlushieClick={handlePlushieClick} />
+                {plushies.length > 0 ? (
+                  <PlushieGrid plushies={plushies} onPlushieClick={handlePlushieClick} />
+                ) : (
+                  <div className="text-center py-8">
+                    <h3 className="text-lg font-medium">No items found</h3>
+                    <p className="text-gray-500">
+                      There are no {brand.name} items in the marketplace yet.
+                    </p>
+                  </div>
+                )}
               </TabsContent>
               
               <TabsContent value="community" className="mt-4">
-                <CommunityPosts posts={posts} onPostClick={handlePostClick} />
+                {posts.length > 0 ? (
+                  <CommunityPosts posts={posts} onPostClick={handlePostClick} />
+                ) : (
+                  <div className="text-center py-8">
+                    <h3 className="text-lg font-medium">No posts yet</h3>
+                    <p className="text-gray-500">
+                      Be the first to post about {brand.name}!
+                    </p>
+                  </div>
+                )}
               </TabsContent>
               
               <TabsContent value="news" className="mt-4">
