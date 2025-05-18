@@ -43,11 +43,7 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
       <div className="container mx-auto px-4 py-6">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-shrink-0 flex justify-center">
-            <ProfileAvatar 
-              imageUrl={userAvatarUrl}
-              size={isMobile ? "lg" : "xl"}
-              status={isOwnProfile ? "online" : undefined}
-            />
+            <ProfileAvatar profileImage={userAvatarUrl} />
           </div>
           
           <div className="flex-grow">
@@ -66,6 +62,8 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
                 <ProfileActionButton 
                   isFollowing={isFollowing} 
                   onFollowToggle={handleFollowToggle} 
+                  isOwnProfile={false}
+                  isPending={false}
                 />
               )}
             </div>
@@ -76,7 +74,11 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
               followingCount={0} 
             />
             
-            <ProfileInfo bio={profileData.bio} />
+            <ProfileInfo 
+              bio={profileData.bio} 
+              displayName={username}
+              interests={profileData.interests}
+            />
             
             {profileData.isPrivate && (
               <Badge variant="outline" className="mt-2">Private Account</Badge>
@@ -90,7 +92,11 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
               </div>
             )}
             
-            <ProfileBadges badgeCount={3} />
+            <ProfileBadges badges={[
+              { id: '1', name: 'First Post', image: '/assets/Badges/First_Post.PNG' },
+              { id: '2', name: 'Beta Tester', image: '/assets/Badges/Beta_Tester.PNG' },
+              { id: '3', name: 'Completed Profile', image: '/assets/Badges/Completed_Profile.PNG' },
+            ]} />
           </div>
         </div>
       </div>
