@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Bookmark } from "lucide-react";
 import { UserButton } from "./UserButton";
 import { NotificationsButton } from "./NotificationsButton";
 import { toast } from "@/components/ui/use-toast";
@@ -106,6 +106,14 @@ export const UserMenu = () => {
         className="hover:bg-softspot-100"
       >
         <MessageSquare className="h-5 w-5" />
+      </Button>
+      <Button 
+        variant="ghost" 
+        size="icon"
+        onClick={() => handleAuthRequiredAction("view wishlist", "/wishlist")}
+        className="hover:bg-softspot-100"
+      >
+        <Bookmark className="h-5 w-5" />
       </Button>
       <NotificationsButton />
       <div className="relative">

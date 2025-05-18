@@ -148,7 +148,7 @@ function App() {
           <MessagingPage />
         </AuthWrapper>
       } />
-      {/* Fix both /sell and /sell-item routes to point to SellItemPage */}
+      {/* Ensure both /sell and /sell-item routes point to SellItemPage */}
       <Route path="/sell" element={
         <AuthWrapper fallback={<SignIn />}>
           <SellItemPage />
@@ -170,7 +170,7 @@ function App() {
           <NotificationsPage />
         </AuthWrapper>
       } />
-      <Route path="/brand/:brandId" element={<BrandPage />} />
+      <Route path="/brand/:brandName" element={<BrandPage />} />
       <Route path="/discover" element={
         <AuthWrapper fallback={<SignIn />}>
           <Discover />

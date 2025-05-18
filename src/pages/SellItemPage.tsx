@@ -7,9 +7,14 @@ import { SellItemFormFields } from "@/components/marketplace/sell/SellItemFormFi
 import { SellItemFormActions } from "@/components/marketplace/sell/SellItemFormActions";
 import { useSellItemForm } from "@/hooks/useSellItemForm";
 import Footer from "@/components/Footer";
+import { toast } from "@/components/ui/use-toast";
+import { useEffect } from "react";
+import { isAuthenticated } from "@/utils/auth/authState";
+import { useNavigate } from "react-router-dom";
 
 const SellItemPage = () => {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const { 
     imageUrl, 
     isSubmitting, 
@@ -20,6 +25,17 @@ const SellItemPage = () => {
     handleImageSelect,
     handleSelectChange 
   } = useSellItemForm();
+
+  // Check if user is authenticated
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "You must be signed in to sell items."
+      });
+      navigate('/sign-in');
+    }
+  }, [navigate]);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">

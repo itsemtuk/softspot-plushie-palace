@@ -10,80 +10,108 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { MarketplacePlushie, Post } from "@/types/marketplace";
 
+// Brand data mapping
+const brandData = {
+  "Build a Bear": {
+    logo: "/assets/Brand_Logos/Build a Bear.JPG",
+    description: "Build-A-Bear Workshop is a retailer that sells teddy bears and other stuffed animals. Customers can customize their own plush toys.",
+    themeColor: "bg-amber-100",
+    accentColor: "text-amber-700",
+    borderColor: "border-amber-300"
+  },
+  "Disney": {
+    logo: "/assets/Brand_Logos/Disney.JPG",
+    description: "Disney's plush toy collection features beloved characters from Disney movies, TV shows, and theme parks.",
+    themeColor: "bg-blue-100",
+    accentColor: "text-blue-700",
+    borderColor: "border-blue-300"
+  },
+  "Jellycat": {
+    logo: "/assets/Brand_Logos/Jellycat.JPG",
+    description: "Jellycat is a London-based company that designs luxuriously soft and irresistible plush toys.",
+    themeColor: "bg-green-100",
+    accentColor: "text-green-700",
+    borderColor: "border-green-300"
+  },
+  "Pokemon": {
+    logo: "/assets/Brand_Logos/Pokemon.PNG",
+    description: "The official Pokémon plush collection features soft toys of popular Pokémon characters.",
+    themeColor: "bg-yellow-100",
+    accentColor: "text-yellow-700",
+    borderColor: "border-yellow-300"
+  },
+  "Sanrio": {
+    logo: "/assets/Brand_Logos/Sanrio.PNG",
+    description: "Sanrio is a Japanese company that designs and produces kawaii (cute) characters, notably Hello Kitty.",
+    themeColor: "bg-pink-100",
+    accentColor: "text-pink-700",
+    borderColor: "border-pink-300"
+  },
+  "Squishmallows": {
+    logo: "/assets/Brand_Logos/Squishmallows.JPG",
+    description: "Squishmallows are a line of plush toys known for their ultra-soft feel and round shape.",
+    themeColor: "bg-purple-100",
+    accentColor: "text-purple-700",
+    borderColor: "border-purple-300"
+  }
+};
+
 export const BrandPageWrapper = () => {
   const { brandName } = useParams<{ brandName: string }>();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const [brandData, setBrandData] = useState<any>(null);
+  const [brand, setBrand] = useState<any>(null);
   const [plushies, setPlushies] = useState<MarketplacePlushie[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
   
   useEffect(() => {
-    // Simulate loading brand data
+    if (!brandName) {
+      return;
+    }
+    
+    // Load brand data
     setLoading(true);
     
     setTimeout(() => {
-      const brands = {
-        "Build a Bear": {
-          logo: "/assets/Brand_Logos/Build a Bear.JPG",
-          description: "Build-A-Bear Workshop is a retailer that sells teddy bears and other stuffed animals. Customers can customize their own plush toys.",
-          themeColor: "bg-amber-100",
-          accentColor: "text-amber-700",
-          borderColor: "border-amber-300"
-        },
-        "Disney": {
-          logo: "/assets/Brand_Logos/Disney.JPG",
-          description: "Disney's plush toy collection features beloved characters from Disney movies, TV shows, and theme parks.",
-          themeColor: "bg-blue-100",
-          accentColor: "text-blue-700",
-          borderColor: "border-blue-300"
-        },
-        "Jellycat": {
-          logo: "/assets/Brand_Logos/Jellycat.JPG",
-          description: "Jellycat is a London-based company that designs luxuriously soft and irresistible plush toys.",
-          themeColor: "bg-green-100",
-          accentColor: "text-green-700",
-          borderColor: "border-green-300"
-        },
-        "Pokemon": {
-          logo: "/assets/Brand_Logos/Pokemon.PNG",
-          description: "The official Pokémon plush collection features soft toys of popular Pokémon characters.",
-          themeColor: "bg-yellow-100",
-          accentColor: "text-yellow-700",
-          borderColor: "border-yellow-300"
-        },
-        "Sanrio": {
-          logo: "/assets/Brand_Logos/Sanrio.PNG",
-          description: "Sanrio is a Japanese company that designs and produces kawaii (cute) characters, notably Hello Kitty.",
-          themeColor: "bg-pink-100",
-          accentColor: "text-pink-700",
-          borderColor: "border-pink-300"
-        },
-        "Squishmallows": {
-          logo: "/assets/Brand_Logos/Squishmallows.JPG",
-          description: "Squishmallows are a line of plush toys known for their ultra-soft feel and round shape.",
-          themeColor: "bg-purple-100",
-          accentColor: "text-purple-700",
-          borderColor: "border-purple-300"
+      // Find the closest matching brand
+      const exactBrand = brandData[brandName as keyof typeof brandData];
+      
+      if (exactBrand) {
+        setBrand({
+          name: brandName,
+          ...exactBrand
+        });
+      } else {
+        // Try case-insensitive match
+        const brandKeys = Object.keys(brandData);
+        const matchingBrand = brandKeys.find(key => 
+          key.toLowerCase() === brandName.toLowerCase()
+        );
+        
+        if (matchingBrand) {
+          setBrand({
+            name: matchingBrand,
+            ...brandData[matchingBrand as keyof typeof brandData]
+          });
+        } else {
+          // Default fallback
+          setBrand({
+            name: brandName,
+            logo: "/placeholder.svg",
+            description: `Information about ${brandName} coming soon.`,
+            themeColor: "bg-gray-100",
+            accentColor: "text-gray-700",
+            borderColor: "border-gray-300"
+          });
         }
-      };
+      }
       
-      // Format brand name to match keys (remove spaces)
-      const foundBrand = brands[brandName as keyof typeof brands];
-      setBrandData(foundBrand || {
-        logo: "/placeholder.svg",
-        description: "Brand information not available.",
-        themeColor: "bg-gray-100",
-        accentColor: "text-gray-700",
-        borderColor: "border-gray-300"
-      });
-      
-      // Mock plushies data for the brand
+      // In a real app, fetch plushies and posts related to this brand
       setPlushies([]);
       setPosts([]);
       
       setLoading(false);
-    }, 800);
+    }, 300);
   }, [brandName]);
   
   const handleGoBack = () => {
@@ -102,14 +130,14 @@ export const BrandPageWrapper = () => {
   
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
         <Spinner size="lg" />
       </div>
     );
   }
   
-  return (
-    <div className={`min-h-screen ${brandData.themeColor}`}>
+  if (!brand) {
+    return (
       <div className="container mx-auto px-4 py-6">
         <Button 
           variant="ghost" 
@@ -119,24 +147,43 @@ export const BrandPageWrapper = () => {
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         
-        <Card className={`${brandData.borderColor} border-2 overflow-hidden`}>
+        <div className="text-center py-12">
+          <h1 className="text-2xl font-bold">Brand not found</h1>
+          <p className="mt-2">We couldn't find information about this brand.</p>
+        </div>
+      </div>
+    );
+  }
+  
+  return (
+    <div className={`min-h-[calc(100vh-64px)] ${brand.themeColor}`}>
+      <div className="container mx-auto px-4 py-6">
+        <Button 
+          variant="ghost" 
+          onClick={handleGoBack}
+          className="mb-4"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" /> Back
+        </Button>
+        
+        <Card className={`${brand.borderColor} border-2 overflow-hidden`}>
           <CardHeader className="flex flex-col items-center">
-            <div className="w-32 h-32 relative overflow-hidden">
+            <div className="w-32 h-32 relative overflow-hidden flex items-center justify-center">
               <img 
-                src={brandData.logo}
-                alt={brandName}
-                className="object-contain w-full h-full"
+                src={brand.logo}
+                alt={brand.name}
+                className="max-w-full max-h-full object-contain"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.src = '/placeholder.svg';
                 }}
               />
             </div>
-            <h1 className={`text-2xl font-bold mt-4 ${brandData.accentColor}`}>
-              {brandName}
+            <h1 className={`text-2xl font-bold mt-4 ${brand.accentColor}`}>
+              {brand.name}
             </h1>
             <p className="text-center text-gray-600 mt-2">
-              {brandData.description}
+              {brand.description}
             </p>
           </CardHeader>
           
@@ -160,7 +207,7 @@ export const BrandPageWrapper = () => {
                 <div className="text-center py-8">
                   <h3 className="text-lg font-medium">Coming Soon!</h3>
                   <p className="text-gray-500">
-                    News and updates about {brandName} will be available here soon.
+                    News and updates about {brand.name} will be available here soon.
                   </p>
                 </div>
               </TabsContent>
