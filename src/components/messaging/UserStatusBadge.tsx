@@ -1,25 +1,26 @@
 
-import { ActivityStatus } from "@/components/ui/activity-status";
+import { cn } from "@/lib/utils";
 
 interface UserStatusBadgeProps {
   status: "online" | "offline" | "away" | "busy";
   className?: string;
-  pulseAnimation?: boolean;
-  size?: "sm" | "md" | "lg" | "xl";
 }
 
-export function UserStatusBadge({ 
-  status, 
-  className,
-  pulseAnimation = status === "online",
-  size = "sm"
-}: UserStatusBadgeProps) {
+export const UserStatusBadge: React.FC<UserStatusBadgeProps> = ({ status, className }) => {
+  const statusColors = {
+    online: "bg-green-500",
+    offline: "bg-gray-400",
+    away: "bg-yellow-500",
+    busy: "bg-red-500"
+  };
+
   return (
-    <ActivityStatus 
-      status={status} 
-      className={className}
-      size={size}
-      pulseAnimation={pulseAnimation}
+    <div
+      className={cn(
+        "h-2.5 w-2.5 rounded-full border-2 border-white",
+        statusColors[status],
+        className
+      )}
     />
   );
-}
+};

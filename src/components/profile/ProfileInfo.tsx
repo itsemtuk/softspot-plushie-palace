@@ -1,5 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export interface ProfileInfoProps {
   bio: string;
@@ -7,9 +8,29 @@ export interface ProfileInfoProps {
   interests?: string[];
   username?: string;
   isCurrentUser?: boolean;
+  joinDate?: string;
+  postsCount?: number;
+  followersCount?: number;
+  followingCount?: number;
 }
 
-export function ProfileInfo({ bio, displayName, interests = [], username, isCurrentUser }: ProfileInfoProps) {
+export function ProfileInfo({ 
+  bio, 
+  displayName, 
+  interests = [], 
+  username, 
+  isCurrentUser, 
+  joinDate,
+  postsCount,
+  followersCount,
+  followingCount
+}: ProfileInfoProps) {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', { year: 'numeric', month: 'long' });
+  };
+
   return (
     <div className="mt-3 w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
@@ -26,12 +47,51 @@ export function ProfileInfo({ bio, displayName, interests = [], username, isCurr
       
       <p className="text-gray-700 my-2">{bio || "No bio yet"}</p>
       
+      {/* Stats row */}
+      {(postsCount !== undefined || followersCount !== undefined || followingCount !== undefined) && (
+        <div className="flex gap-4 text-sm text-gray-600 my-3">
+          {postsCount !== undefined && (
+            <div>
+              <span className="font-semibold">{postsCount}</span> posts
+            </div>
+          )}
+          {followersCount !== undefined && (
+            <div>
+              <span className="font-semibold">{followersCount}</span> followers
+            </div>
+          )}
+          {followingCount !== undefined && (
+            <div>
+              <span className="font-semibold">{followingCount}</span> following
+            </div>
+          )}
+          {joinDate && (
+            <div>
+              Joined {formatDate(joinDate)}
+            </div>
+          )}
+        </div>
+      )}
+      
+      {/* Interests tags */}
       {interests && interests.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
           {interests.map((interest, index) => (
-            <Badge key={index} variant="outline" className="bg-gray-100 hover:bg-gray-200">
-              {interest}
-            </Badge>
+            <TooltipProvider key={index}>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Badge 
+                    variant="outline" 
+                    className="bg-gray-100 hover:bg-gray-200 cursor-pointer"
+                  >
+                    {interest}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>See more about {interest}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           ))}
         </div>
       )}
