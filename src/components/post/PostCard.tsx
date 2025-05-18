@@ -1,10 +1,11 @@
 
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Heart, MessageSquare, Share2 } from 'lucide-react';
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ExtendedPost } from '@/types/marketplace';
+import { useUser } from "@clerk/clerk-react";
 
 interface PostCardProps {
   post: ExtendedPost;
@@ -14,6 +15,8 @@ interface PostCardProps {
 export const PostCard = ({ post, onLike }: PostCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const [likesCount, setLikesCount] = useState(post.likes);
+  const { user } = useUser();
+  const navigate = useNavigate();
 
   const handleLikeClick = () => {
     if (onLike) {
@@ -21,6 +24,21 @@ export const PostCard = ({ post, onLike }: PostCardProps) => {
     }
     setIsLiked(!isLiked);
     setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
+  };
+
+  // Check if this post belongs to the current user
+  const isCurrentUserPost = user?.id === post.userId;
+  
+  // Profile link routing
+  const handleProfileClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (isCurrentUserPost) {
+      navigate('/profile');
+    } else if (post.userId) {
+      navigate(`/user/${post.userId}`);
+    }
   };
 
   // Extract first letter from username for avatar fallback
@@ -43,12 +61,15 @@ export const PostCard = ({ post, onLike }: PostCardProps) => {
       
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
-          <div className="flex items-center gap-2">
+          <div 
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={handleProfileClick}
+          >
             <Avatar className="h-6 w-6">
               <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${post.username}`} alt={post.username} />
               <AvatarFallback>{avatarFallback}</AvatarFallback>
             </Avatar>
-            <p className="text-sm font-medium">{post.username}</p>
+            <p className="text-sm font-medium hover:text-softspot-500 transition-colors">{post.username}</p>
           </div>
         </div>
         

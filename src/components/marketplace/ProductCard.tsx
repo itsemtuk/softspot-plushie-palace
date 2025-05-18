@@ -53,8 +53,13 @@ export const ProductCard = ({
     
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (product.username) {
-      navigate(`/profile/${product.username}`);
+    if (product.userId) {
+      // Check if this is the current user's product
+      if (isCurrentUserProduct) {
+        navigate('/profile');
+      } else {
+        navigate(`/user/${product.userId}`);
+      }
     }
   };
 

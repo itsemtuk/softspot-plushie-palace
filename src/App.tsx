@@ -30,6 +30,7 @@ import { ClerkButtonComponent } from './components/navigation/user-button/ClerkI
 import { supabase } from './utils/supabase/client';
 import { toast } from './components/ui/use-toast';
 import WaitlistPage from './pages/WaitlistPage';
+import UserProfile from './pages/UserProfile';
 
 function App() {
   // Use Clerk integration only when specified
@@ -131,11 +132,24 @@ function App() {
           <Marketplace />
         </AuthWrapper>
       } />
+      
+      {/* Updated Profile Routes */}
       <Route path="/profile" element={
         <AuthWrapper fallback={<SignIn />}>
           <Profile />
         </AuthWrapper>
       } />
+      <Route path="/user/:userId" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <UserProfile />
+        </AuthWrapper>
+      } />
+      <Route path="/me" element={
+        <AuthWrapper fallback={<SignIn />}>
+          <Profile />
+        </AuthWrapper>
+      } />
+      
       <Route path="/posts/:postId" element={<PostPage />} />
       <Route path="/settings" element={
         <AuthWrapper fallback={<SignIn />}>
