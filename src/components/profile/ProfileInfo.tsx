@@ -35,7 +35,7 @@ export function ProfileInfo({
   };
 
   return (
-    <div className="mt-3 w-full max-w-3xl mx-auto">
+    <div className="mt-3 w-full max-w-2xl mx-auto bg-white p-4 rounded-lg shadow-sm">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">{displayName}</h2>

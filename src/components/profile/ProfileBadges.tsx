@@ -17,9 +17,9 @@ export function ProfileBadges({ badges }: ProfileBadgesProps) {
   if (!badges || badges.length === 0) return null;
   
   return (
-    <div className="mt-6 bg-gray-50 p-4 rounded-lg border border-gray-100">
+    <div className="mt-6 bg-white p-4 rounded-lg border border-gray-100 shadow-sm max-w-2xl mx-auto">
       <h3 className="text-sm font-medium text-gray-700 mb-3">Badges & Achievements</h3>
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap gap-3 justify-center">
         {badges.map(badge => (
           <TooltipProvider key={badge.id}>
             <Tooltip>

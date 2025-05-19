@@ -27,12 +27,12 @@ export const PostCard: React.FC<PostCardProps> = ({
   
   return (
     <Card 
-      className={cn("overflow-hidden cursor-pointer transition-all hover:shadow-md", 
+      className={cn("overflow-hidden cursor-pointer transition-all hover:shadow-md bg-white", 
         className
       )}
       onClick={onClick}
     >
-      <CardHeader className="p-3 pb-0 bg-white">
+      <CardHeader className="p-3 pb-0">
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarFallback>{username?.[0] || 'U'}</AvatarFallback>
@@ -44,7 +44,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0 mt-2 bg-white">
+      <CardContent className="p-0 mt-2">
         <div className="aspect-square max-h-72 overflow-hidden">
           <img
             src={image}
@@ -53,7 +53,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           />
         </div>
       </CardContent>
-      <CardFooter className="p-3 flex justify-between bg-white">
+      <CardFooter className="p-3 flex justify-between">
         <div className="flex gap-3">
           <Button 
             variant="ghost" 

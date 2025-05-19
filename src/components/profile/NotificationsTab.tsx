@@ -29,7 +29,7 @@ const NotificationsTab = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center p-8">
+      <div className="flex justify-center items-center p-8 bg-white rounded-lg shadow-sm">
         <Spinner size="lg" />
       </div>
     );
@@ -37,7 +37,7 @@ const NotificationsTab = () => {
 
   if (notifications.length === 0) {
     return (
-      <Card className="p-8">
+      <Card className="p-8 bg-white">
         <div className="flex flex-col items-center justify-center text-center">
           <div className="bg-gray-100 rounded-full p-6 mb-4">
             <ThumbsUp className="h-12 w-12 text-softspot-400" />
@@ -52,7 +52,7 @@ const NotificationsTab = () => {
   }
 
   return (
-    <Card>
+    <Card className="bg-white">
       <ScrollArea className="h-[400px] p-4">
         {notifications.map((notification) => (
           <div

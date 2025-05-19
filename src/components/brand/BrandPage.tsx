@@ -144,7 +144,7 @@ export const BrandPageWrapper = () => {
   
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+      <div className="flex items-center justify-center min-h-[calc(100vh-64px)] bg-gray-50">
         <Spinner size="lg" />
       </div>
     );
@@ -152,7 +152,7 @@ export const BrandPageWrapper = () => {
   
   if (!brand) {
     return (
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 bg-gray-50">
         <Button 
           variant="ghost" 
           onClick={handleGoBack}
@@ -187,8 +187,8 @@ export const BrandPageWrapper = () => {
           <ArrowLeft className="mr-2 h-4 w-4" /> Back
         </Button>
         
-        <Card className={`${brand.borderColor} border-2 overflow-hidden`}>
-          <CardHeader className="flex flex-col items-center">
+        <Card className={`${brand.borderColor} border-2 overflow-hidden bg-white`}>
+          <CardHeader className="flex flex-col items-center bg-white">
             <div className="w-32 h-32 relative overflow-hidden flex items-center justify-center">
               <BrandLogo brandName={brand.name} className="w-full h-full" />
             </div>
@@ -200,7 +200,7 @@ export const BrandPageWrapper = () => {
             </p>
           </CardHeader>
           
-          <CardContent>
+          <CardContent className="bg-white">
             <Tabs defaultValue="collection" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="collection">Collection</TabsTrigger>

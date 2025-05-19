@@ -8,13 +8,15 @@ import { PostCreationData } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
+import { useNavigate } from "react-router-dom";
 
 interface PostCreationFlowProps {
   isOpen: boolean;
   onClose: () => void;
   onPostCreated: (data: PostCreationData) => Promise<void>;
   initialText?: string;
-  postToEdit?: any; // Adding optional postToEdit prop to match usage in CreateButton
+  postToEdit?: any;
+  isSubmitting?: boolean;
 }
 
 const initialData: PostCreationData = {
@@ -25,13 +27,21 @@ const initialData: PostCreationData = {
   location: "",
 };
 
-const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "", postToEdit }: PostCreationFlowProps) => {
+const PostCreationFlow = ({ 
+  isOpen, 
+  onClose, 
+  onPostCreated, 
+  initialText = "", 
+  postToEdit,
+  isSubmitting = false 
+}: PostCreationFlowProps) => {
   const [step, setStep] = useState<'info' | 'upload' | 'editor'>('upload');
   const [postData, setPostData] = useState<PostCreationData>({
     ...initialData,
     description: initialText
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [localSubmitting, setLocalSubmitting] = useState(false);
+  const navigate = useNavigate();
 
   // Reset form when dialog opens/closes
   useEffect(() => {
@@ -79,16 +89,19 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "", po
     const finalData = {
       ...postData,
       ...data,
+      userId,
+      username: userId, // This should be replaced with actual username from auth
     };
 
     try {
-      setIsSubmitting(true);
+      setLocalSubmitting(true);
       await onPostCreated(finalData);
       toast({
         title: "Success",
         description: "Your post has been created."
       });
       onClose();
+      navigate('/feed');
     } catch (error) {
       console.error("Error creating post:", error);
       toast({
@@ -97,7 +110,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "", po
         description: "Failed to create post. Please try again."
       });
     } finally {
-      setIsSubmitting(false);
+      setLocalSubmitting(false);
     }
   };
 
@@ -119,7 +132,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "", po
     switch (step) {
       case 'upload':
         return (
-          <div className="flex flex-col items-center justify-center h-full">
+          <div className="flex flex-col items-center justify-center h-full bg-white p-4">
             <ImageUploader 
               onImageSelected={(result) => {
                 if (result.success) {
@@ -138,7 +151,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "", po
         );
       case 'editor':
         return (
-          <div className="flex flex-col items-center justify-center h-full">
+          <div className="flex flex-col items-center justify-center h-full bg-white p-4">
             <ImageEditor 
               imageUrl={postData.image} 
               onSave={handleImageEdited} 
@@ -155,16 +168,18 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "", po
         );
       case 'info':
         return (
-          <PostCreationForm 
-            onSubmit={handleFormSubmit} 
-            onCancel={handleCancel} 
-            imageUrl={postData.image}
-            initialData={{
-              ...postData,
-              description: postData.description || initialText
-            }}
-            isSubmitting={isSubmitting} 
-          />
+          <div className="bg-white p-4 rounded-md">
+            <PostCreationForm 
+              onSubmit={handleFormSubmit} 
+              onCancel={handleCancel} 
+              imageUrl={postData.image}
+              initialData={{
+                ...postData,
+                description: postData.description || initialText
+              }}
+              isSubmitting={isSubmitting || localSubmitting} 
+            />
+          </div>
         );
       default:
         return null;
@@ -173,7 +188,7 @@ const PostCreationFlow = ({ isOpen, onClose, onPostCreated, initialText = "", po
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white">
         {renderContent()}
       </DialogContent>
     </Dialog>

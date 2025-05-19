@@ -91,7 +91,7 @@ export const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchTerm
 
   if (isLoading) {
     return (
-      <div className="flex justify-center p-6">
+      <div className="flex justify-center p-6 bg-white rounded-lg shadow-sm">
         <Spinner size="md" />
       </div>
     );
@@ -120,7 +120,7 @@ export const UserSearchResults: React.FC<UserSearchResultsProps> = ({ searchTerm
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {users.map((user) => (
-        <Card key={user.id} className="overflow-hidden hover:shadow-md transition-shadow">
+        <Card key={user.id} className="overflow-hidden hover:shadow-md transition-shadow bg-white">
           <div className="p-4">
             <div className="flex items-start gap-3">
               <div className="relative">

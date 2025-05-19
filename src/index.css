@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,7 +8,7 @@
     @apply antialiased;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground bg-gray-50;
   }
 }
 
@@ -32,4 +33,13 @@
 
 .animate-fade-in {
   animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+/* Fix card backgrounds */
+.card:not([class*="bg-"]) {
+  @apply bg-white rounded-lg shadow-sm;
+}
+
+.dialog-content {
+  @apply bg-white;
 }
