@@ -13,14 +13,16 @@ import { Button } from "@/components/ui/button";
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useCreatePost } from "@/hooks/use-create-post";
 
 interface CreateButtonProps {
-  onCreatePost: () => void;
+  onCreatePost?: () => void;
 }
 
 export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
   const { user } = useUser();
   const navigate = useNavigate();
+  const { setIsPostCreationOpen } = useCreatePost();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -35,7 +37,7 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
     }
 
     setIsDropdownOpen(false);
-    onCreatePost();
+    setIsPostCreationOpen(true);
   };
 
   const handleSellItem = () => {
@@ -82,7 +84,7 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
           <span>Create</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[220px]">
+      <DropdownMenuContent align="end" className="w-[220px] bg-white">
         <DropdownMenuLabel>Create New</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer">

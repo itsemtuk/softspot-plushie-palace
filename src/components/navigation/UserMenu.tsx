@@ -9,13 +9,17 @@ import { toast } from "@/components/ui/use-toast";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { useUser } from '@clerk/clerk-react';
 import { CreateButton } from "./CreateButton";
+import { useCreatePost } from "@/hooks/use-create-post";
+import PostCreationFlow from "../post/PostCreationFlow";
+import { addPost } from "@/utils/posts/postManagement";
+import { PostCreationData } from "@/types/marketplace";
 
 export const UserMenu = () => {
   const [isSignedIn, setIsSignedIn] = useState(false);
-  const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
+  const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
-  const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn } = 
-    isClerkConfigured ? useUser() : { isLoaded: true, isSignedIn: false };
+  const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn, user } = 
+    isClerkConfigured ? useUser() : { isLoaded: true, isSignedIn: false, user: null };
   const navigate = useNavigate();
   
   // Check authentication status when component mounts or updates
@@ -25,13 +29,11 @@ export const UserMenu = () => {
         // Wait for Clerk to load
         if (isClerkLoaded) {
           setIsSignedIn(isClerkSignedIn);
-          console.log("UserMenu - Clerk auth state:", isClerkSignedIn);
         }
       } else {
         // Use local auth state
         const authState = isAuthenticated();
         setIsSignedIn(authState);
-        console.log("UserMenu - Local auth state:", authState);
       }
     };
     
@@ -57,10 +59,33 @@ export const UserMenu = () => {
       clearInterval(intervalId);
     };
   }, [isClerkConfigured, isClerkLoaded, isClerkSignedIn]);
+
+  const handlePostCreated = async (data: PostCreationData) => {
+    try {
+      // Create the post using the utility function
+      const username = user?.username || user?.firstName || "Anonymous";
+      const userId = user?.id || localStorage.getItem('currentUserId');
+      
+      await addPost({
+        ...data,
+        id: `post-${Date.now()}`,
+        userId: userId as string,
+        username: username as string,
+        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        likes: 0,
+        comments: 0
+      });
+      
+      return Promise.resolve();
+    } catch (error) {
+      console.error("Error creating post:", error);
+      return Promise.reject(error);
+    }
+  };
   
   const handleAuthRequiredAction = (action: string, path: string) => {
-    console.log(`UserMenu - Auth required action: ${action}, path: ${path}`);
-    
     if (!isSignedIn) {
       toast({
         title: "Authentication Required",
@@ -70,7 +95,6 @@ export const UserMenu = () => {
       return false;
     }
     
-    console.log(`Navigating to: ${path}`);
     navigate(path);
     return true;
   };
@@ -97,28 +121,36 @@ export const UserMenu = () => {
   }
 
   return (
-    <div className="flex items-center space-x-4">
-      <CreateButton onCreatePost={() => setIsPostCreationOpen(true)} />
-      <Button 
-        variant="ghost" 
-        size="icon"
-        onClick={() => handleAuthRequiredAction("access messages", "/messages")}
-        className="hover:bg-softspot-100"
-      >
-        <MessageSquare className="h-5 w-5" />
-      </Button>
-      <Button 
-        variant="ghost" 
-        size="icon"
-        onClick={() => handleAuthRequiredAction("view wishlist", "/wishlist")}
-        className="hover:bg-softspot-100"
-      >
-        <Bookmark className="h-5 w-5" />
-      </Button>
-      <NotificationsButton />
-      <div className="relative">
-        <UserButton />
+    <>
+      <div className="flex items-center space-x-4">
+        <CreateButton />
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => handleAuthRequiredAction("access messages", "/messages")}
+          className="hover:bg-softspot-100"
+        >
+          <MessageSquare className="h-5 w-5" />
+        </Button>
+        <Button 
+          variant="ghost" 
+          size="icon"
+          onClick={() => handleAuthRequiredAction("view wishlist", "/wishlist")}
+          className="hover:bg-softspot-100"
+        >
+          <Bookmark className="h-5 w-5" />
+        </Button>
+        <NotificationsButton />
+        <div className="relative">
+          <UserButton />
+        </div>
       </div>
-    </div>
+      
+      <PostCreationFlow
+        isOpen={isPostCreationOpen}
+        onClose={onClosePostCreation}
+        onPostCreated={handlePostCreated}
+      />
+    </>
   );
 };

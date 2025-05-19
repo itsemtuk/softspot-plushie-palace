@@ -32,7 +32,7 @@ export const PostCard: React.FC<PostCardProps> = ({
       )}
       onClick={onClick}
     >
-      <CardHeader className="p-3 pb-0">
+      <CardHeader className="p-3 pb-0 bg-white">
         <div className="flex items-center gap-2">
           <Avatar className="h-8 w-8">
             <AvatarFallback>{username?.[0] || 'U'}</AvatarFallback>
@@ -44,7 +44,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           </div>
         </div>
       </CardHeader>
-      <CardContent className="p-0 mt-2">
+      <CardContent className="p-0 mt-2 bg-white">
         <div className="aspect-square max-h-72 overflow-hidden">
           <img
             src={image}
@@ -53,7 +53,7 @@ export const PostCard: React.FC<PostCardProps> = ({
           />
         </div>
       </CardContent>
-      <CardFooter className="p-3 flex justify-between">
+      <CardFooter className="p-3 flex justify-between bg-white">
         <div className="flex gap-3">
           <Button 
             variant="ghost" 
@@ -71,7 +71,7 @@ export const PostCard: React.FC<PostCardProps> = ({
             variant="ghost" 
             size="icon" 
             className="h-8 w-8"
-            onClick={(e) => e.stopPropagation()}  // Prevent opening the post on comment click
+            onClick={(e) => e.stopPropagation()}
           >
             <MessageSquare className="h-4 w-4" />
             <span className="ml-1 text-xs">{comments || 0}</span>

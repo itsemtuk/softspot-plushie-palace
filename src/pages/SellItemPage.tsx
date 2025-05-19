@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { useNavigate } from "react-router-dom";
+import { Card } from "@/components/ui/card";
 
 const SellItemPage = () => {
   const isMobile = useIsMobile();
@@ -44,7 +45,7 @@ const SellItemPage = () => {
         <div className="max-w-2xl mx-auto">
           <h1 className="text-3xl font-bold mb-6">Sell Your Plushie</h1>
           
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <Card className="bg-white rounded-lg shadow-sm p-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <SellItemImageUploader 
                 imageUrl={imageUrl} 
@@ -59,7 +60,7 @@ const SellItemPage = () => {
 
               <SellItemFormActions isSubmitting={isSubmitting} />
             </form>
-          </div>
+          </Card>
         </div>
       </main>
       <Footer />

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -10,7 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useCreatePost } from "@/hooks/use-create-post";
 
 interface QuickPostFormProps {
-  onCreatePost: () => void;
+  onCreatePost?: () => void;
   value: string;
   onChange: (value: string) => void;
 }
@@ -18,7 +19,7 @@ interface QuickPostFormProps {
 export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormProps) => {
   const { user } = useUser();
   const navigate = useNavigate();
-  const { onCreatePost: openPostCreation } = useCreatePost();
+  const { setIsPostCreationOpen } = useCreatePost();
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const handleCreateAction = (action: string, path?: string) => {
@@ -32,8 +33,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
     }
     
     if (action === "create posts" || action === "post photo") {
-      console.log("Opening post creation dialog");
-      openPostCreation(); // Open the post creation dialog
+      setIsPostCreationOpen(true);
     } else if (path) {
       navigate(path);
     }
@@ -82,9 +82,8 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
     setIsSubmitting(true);
     
     try {
-      console.log("Opening post creation with value:", value);
       onChange(value); // Update the parent component's state
-      openPostCreation(); // Open the dialog with the current text
+      setIsPostCreationOpen(true); // Open the dialog with the current text
       setIsSubmitting(false);
     } catch (error) {
       console.error("Error submitting post:", error);
@@ -120,7 +119,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex items-center text-gray-600 hover:text-softspot-500"
+          className="flex items-center text-gray-600 hover:text-softspot-500 bg-white"
           onClick={handlePhotoClick}
         >
           <ImageIcon className="mr-2 h-4 w-4" />
@@ -129,7 +128,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex items-center text-gray-600 hover:text-softspot-500"
+          className="flex items-center text-gray-600 hover:text-softspot-500 bg-white"
           onClick={handleSellClick}
         >
           <Tag className="mr-2 h-4 w-4" />
@@ -138,7 +137,7 @@ export const QuickPostForm = ({ onCreatePost, value, onChange }: QuickPostFormPr
         <Button 
           variant="ghost" 
           size="sm" 
-          className="flex items-center text-gray-600 hover:text-softspot-500"
+          className="flex items-center text-gray-600 hover:text-softspot-500 bg-white"
           onClick={handlePollClick}
         >
           <BarChart2 className="mr-2 h-4 w-4" />

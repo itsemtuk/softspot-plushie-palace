@@ -15,7 +15,7 @@ export interface CreatePostSheetProps {
 
 export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) => {
   const navigate = useNavigate();
-  const { onCreatePost } = useCreatePost();
+  const { setIsPostCreationOpen } = useCreatePost();
   
   const handleAuthentication = (action: string, callback: () => void) => {
     if (!isAuthenticated()) {
@@ -35,7 +35,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
   const handleCreatePost = () => {
     handleAuthentication("create posts", () => {
       onOpenChange(false);
-      onCreatePost();
+      setIsPostCreationOpen(true);
     });
   };
   
@@ -68,7 +68,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
           <div className="p-4 space-y-4">
             <Button 
               variant="outline" 
-              className="flex items-center gap-3 justify-start w-full py-6"
+              className="flex items-center gap-3 justify-start w-full py-6 bg-white"
               onClick={handleCreatePost}
             >
               <ImageIcon className="h-5 w-5" />
@@ -77,7 +77,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             
             <Button 
               variant="outline" 
-              className="flex items-center gap-3 justify-start w-full py-6"
+              className="flex items-center gap-3 justify-start w-full py-6 bg-white"
               onClick={handleTradeRequest}
             >
               <Handshake className="h-5 w-5" />
@@ -86,7 +86,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             
             <Button 
               variant="outline" 
-              className="flex items-center gap-3 justify-start w-full py-6"
+              className="flex items-center gap-3 justify-start w-full py-6 bg-white"
               onClick={() => navigateToPage('/sell', 'sell items')}
             >
               <ShoppingCart className="h-5 w-5" />
