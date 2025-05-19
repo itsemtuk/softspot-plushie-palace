@@ -1,111 +1,88 @@
 
-import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Heart, MessageSquare, Share2 } from 'lucide-react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import React from 'react';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Heart, MessageSquare } from 'lucide-react';
 import { ExtendedPost } from '@/types/marketplace';
-import { useUser } from "@clerk/clerk-react";
+import { cn } from '@/lib/utils';
+import { formatDistanceToNow } from 'date-fns';
 
 interface PostCardProps {
   post: ExtendedPost;
   onLike?: (postId: string) => void;
+  onClick?: () => void;
+  className?: string;
 }
 
-export const PostCard = ({ post, onLike }: PostCardProps) => {
-  const [isLiked, setIsLiked] = useState(false);
-  const [likesCount, setLikesCount] = useState(post.likes);
-  const { user } = useUser();
-  const navigate = useNavigate();
-
-  const handleLikeClick = () => {
-    if (onLike) {
-      onLike(post.id);
-    }
-    setIsLiked(!isLiked);
-    setLikesCount(prev => isLiked ? prev - 1 : prev + 1);
-  };
-
-  // Check if this post belongs to the current user
-  const isCurrentUserPost = user?.id === post.userId;
+export const PostCard: React.FC<PostCardProps> = ({ 
+  post, 
+  onLike,
+  onClick,
+  className 
+}) => {
+  const { id, username, image, likes, comments, forSale, createdAt } = post;
   
-  // Profile link routing
-  const handleProfileClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (isCurrentUserPost) {
-      navigate('/me'); // Use /me route for current user
-    } else if (post.userId) {
-      navigate(`/user/${post.userId}`);
-    }
-  };
-
-  // Extract first letter from username for avatar fallback
-  const avatarFallback = post.username ? post.username[0].toUpperCase() : '?';
-
+  const formattedTime = createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : '';
+  
   return (
-    <Card className="overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-      <Link to={`/post/${post.id}`}>
-        <div className="relative aspect-square">
-          <img 
-            src={post.image} 
-            alt={post.title} 
+    <Card 
+      className={cn("overflow-hidden cursor-pointer transition-all hover:shadow-md", 
+        className
+      )}
+      onClick={onClick}
+    >
+      <CardHeader className="p-3 pb-0">
+        <div className="flex items-center gap-2">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback>{username?.[0] || 'U'}</AvatarFallback>
+            <AvatarImage src={`https://api.dicebear.com/7.x/thumbs/svg?seed=${username}`} />
+          </Avatar>
+          <div className="flex flex-col">
+            <span className="text-sm font-medium">{username}</span>
+            {formattedTime && <span className="text-[10px] text-gray-500">{formattedTime}</span>}
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-0 mt-2">
+        <div className="aspect-square max-h-72 overflow-hidden">
+          <img
+            src={image}
+            alt="Post"
             className="w-full h-full object-cover"
-            onError={(e) => {
-              e.currentTarget.src = 'https://via.placeholder.com/300?text=Image+Error';
-            }}
           />
         </div>
-      </Link>
-      
-      <CardContent className="p-4">
-        <div className="flex items-center justify-between mb-2">
-          <div 
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={handleProfileClick}
-          >
-            <Avatar className="h-6 w-6">
-              <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${post.username}`} alt={post.username} />
-              <AvatarFallback>{avatarFallback}</AvatarFallback>
-            </Avatar>
-            <p className="text-sm font-medium hover:text-softspot-500 transition-colors">{post.username}</p>
-          </div>
-        </div>
-        
-        <Link to={`/post/${post.id}`}>
-          <h3 className="text-lg font-semibold mb-1 line-clamp-1">{post.title}</h3>
-        </Link>
-        
-        {post.description && (
-          <p className="text-sm text-gray-600 mb-2 line-clamp-2">{post.description}</p>
-        )}
-        
-        <div className="flex items-center justify-between mt-2">
-          <div className="flex items-center gap-4">
-            <button 
-              className="flex items-center gap-1 text-gray-500 hover:text-softspot-500 transition-colors"
-              onClick={(e) => {
-                e.preventDefault();
-                handleLikeClick();
-              }}
-            >
-              <Heart className={`h-4 w-4 ${isLiked ? 'fill-softspot-500 text-softspot-500' : ''}`} />
-              <span className="text-xs">{likesCount}</span>
-            </button>
-            <Link to={`/post/${post.id}`} className="flex items-center gap-1 text-gray-500 hover:text-softspot-500 transition-colors">
-              <MessageSquare className="h-4 w-4" />
-              <span className="text-xs">{post.comments}</span>
-            </Link>
-          </div>
-          
-          <button className="flex items-center gap-1 text-gray-500 hover:text-softspot-500 transition-colors">
-            <Share2 className="h-4 w-4" />
-          </button>
-        </div>
       </CardContent>
+      <CardFooter className="p-3 flex justify-between">
+        <div className="flex gap-3">
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8" 
+            onClick={(e) => {
+              e.stopPropagation();
+              onLike?.(id);
+            }}
+          >
+            <Heart className="h-4 w-4" />
+            <span className="ml-1 text-xs">{likes || 0}</span>
+          </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="h-8 w-8"
+            onClick={(e) => e.stopPropagation()}  // Prevent opening the post on comment click
+          >
+            <MessageSquare className="h-4 w-4" />
+            <span className="ml-1 text-xs">{comments || 0}</span>
+          </Button>
+        </div>
+        {forSale && (
+          <span className="text-xs font-medium bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
+            For Sale
+          </span>
+        )}
+      </CardFooter>
     </Card>
   );
 };
-
-export default PostCard;

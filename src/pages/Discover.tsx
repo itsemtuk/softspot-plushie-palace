@@ -6,7 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Filter, Search, Heart, MessageSquare, Users, ShoppingBag } from "lucide-react";
+import { Filter, Search, Grid3X3, MessageSquare, Users, ShoppingBag } from "lucide-react";
 import { MarketplacePlushie, ExtendedPost } from '@/types/marketplace';
 import { getPosts } from '@/utils/posts/postFetch';
 import { getMarketplaceListings } from '@/utils/storage/localStorageUtils';
@@ -20,6 +20,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { PostCard } from "@/components/post/PostCard";
 import { ProductCard } from "@/components/marketplace/ProductCard";
 import { toast } from "@/components/ui/use-toast";
+import { usePostDialog } from "@/hooks/use-post-dialog";
+import Footer from "@/components/Footer";
 
 const Discover = () => {
   const [activeTab, setActiveTab] = useState("trending");
@@ -34,6 +36,7 @@ const Discover = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { user } = useUser();
+  const { openPostDialog } = usePostDialog();
 
   useEffect(() => {
     const loadData = async () => {
@@ -124,7 +127,6 @@ const Discover = () => {
 
   const handleWishlistToggle = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    // Implementation would go here - but for now just show a toast
     toast({
       title: "Feature coming soon",
       description: "Wishlist functionality will be available soon!",
@@ -134,6 +136,10 @@ const Discover = () => {
   const handlePostLike = (postId: string) => {
     // Implementation would go here
     console.log("Liking post:", postId);
+  };
+  
+  const handlePostClick = (post: ExtendedPost) => {
+    openPostDialog(post);
   };
 
   if (isLoading) {
@@ -146,18 +152,18 @@ const Discover = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       {isMobile ? <MobileNav /> : <Navbar />}
 
-      <div className="container mx-auto px-4 py-6">
-        <div className="flex flex-col space-y-4">
-          <div className="flex justify-between items-center">
+      <div className="container mx-auto px-4 py-6 flex-grow">
+        <div className="flex flex-col space-y-4 mb-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h1 className="text-3xl font-bold">Discover</h1>
-            <div className="flex items-center space-x-2">
+            <div className="flex items-center space-x-2 w-full sm:w-auto">
               <Input
                 type="text"
                 placeholder="Search users, plushies, or #tags..."
-                className="sm:w-64"
+                className="w-full sm:w-64"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
@@ -168,7 +174,7 @@ const Discover = () => {
           
           {/* Search type selector */}
           {searchTerm && (
-            <div className="flex space-x-2">
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant={searchType === "all" ? "default" : "outline"}
                 size="sm"
@@ -279,7 +285,6 @@ const Discover = () => {
               <TabsList className="bg-white border">
                 <TabsTrigger value="trending">Trending</TabsTrigger>
                 <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
-                <TabsTrigger value="community" disabled>Community</TabsTrigger>
                 <TabsTrigger value="people">People</TabsTrigger>
               </TabsList>
               
@@ -291,12 +296,13 @@ const Discover = () => {
                       <PostCard 
                         key={post.id} 
                         post={post} 
-                        onLike={handlePostLike} 
+                        onLike={handlePostLike}
+                        onClick={() => handlePostClick(post)}
                       />
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white p-8 rounded-lg text-center">
+                  <div className="bg-white p-8 rounded-lg shadow text-center">
                     <p className="text-gray-500">No trending posts found. Check back later!</p>
                   </div>
                 )}
@@ -316,17 +322,10 @@ const Discover = () => {
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white p-8 rounded-lg text-center">
+                  <div className="bg-white p-8 rounded-lg shadow text-center">
                     <p className="text-gray-500">No marketplace items found. Check back later!</p>
                   </div>
                 )}
-              </TabsContent>
-
-              <TabsContent value="community" className="space-y-4">
-                <h2 className="text-xl font-semibold">Explore Communities</h2>
-                <div className="bg-white p-8 rounded-lg text-center">
-                  <p className="text-gray-500">Community features coming soon!</p>
-                </div>
               </TabsContent>
             
               <TabsContent value="people" className="space-y-4">
@@ -337,6 +336,7 @@ const Discover = () => {
           )}
         </div>
       </div>
+      <Footer />
     </div>
   );
 };
