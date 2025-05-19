@@ -1,6 +1,7 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { UserStatusBadge } from "@/components/messaging/UserStatusBadge";
 
 export interface ProfileInfoProps {
   bio: string;
@@ -12,6 +13,7 @@ export interface ProfileInfoProps {
   postsCount?: number;
   followersCount?: number;
   followingCount?: number;
+  status?: "online" | "offline" | "away" | "busy";
 }
 
 export function ProfileInfo({ 
@@ -23,7 +25,8 @@ export function ProfileInfo({
   joinDate,
   postsCount,
   followersCount,
-  followingCount
+  followingCount,
+  status = "online"
 }: ProfileInfoProps) {
   const formatDate = (dateString?: string) => {
     if (!dateString) return '';
@@ -32,11 +35,17 @@ export function ProfileInfo({
   };
 
   return (
-    <div className="mt-3 w-full">
+    <div className="mt-3 w-full max-w-3xl mx-auto">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2">
-        <div>
+        <div className="flex items-center gap-2">
           <h2 className="text-lg font-semibold">{displayName}</h2>
           {username && <p className="text-sm text-gray-500">@{username}</p>}
+          {status && (
+            <div className="flex items-center gap-1 ml-2">
+              <UserStatusBadge status={status} size="sm" />
+              <span className="text-xs text-gray-500 capitalize">{status}</span>
+            </div>
+          )}
         </div>
         {isCurrentUser && (
           <span className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full mt-1 sm:mt-0">
@@ -79,10 +88,10 @@ export function ProfileInfo({
           {interests.map((interest, index) => (
             <TooltipProvider key={index}>
               <Tooltip>
-                <TooltipTrigger>
+                <TooltipTrigger asChild>
                   <Badge 
                     variant="outline" 
-                    className="bg-gray-100 hover:bg-gray-200 cursor-pointer"
+                    className="bg-gray-100 hover:bg-gray-200 cursor-pointer transition-colors"
                   >
                     {interest}
                   </Badge>

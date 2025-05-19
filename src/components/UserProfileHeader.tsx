@@ -40,7 +40,7 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
   
   return (
     <div className="bg-white shadow-sm">
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-shrink-0 flex justify-center">
             <ProfileAvatar profileImage={userAvatarUrl} />
@@ -50,22 +50,24 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
             <div className="flex justify-between items-center flex-wrap gap-2">
               <h1 className="text-2xl font-bold">{username}</h1>
               
-              {isOwnProfile ? (
-                <Button 
-                  variant="outline"
-                  size={isMobile ? "sm" : "default"}
-                  onClick={handleEditProfileClick}
-                >
-                  Edit Profile
-                </Button>
-              ) : (
-                <ProfileActionButton 
-                  isFollowing={isFollowing} 
-                  onFollowToggle={handleFollowToggle} 
-                  isOwnProfile={false}
-                  isPending={false}
-                />
-              )}
+              <div className="flex gap-2">
+                {isOwnProfile ? (
+                  <Button 
+                    variant="outline"
+                    size={isMobile ? "sm" : "default"}
+                    onClick={handleEditProfileClick}
+                  >
+                    Edit Profile
+                  </Button>
+                ) : (
+                  <ProfileActionButton 
+                    isFollowing={isFollowing} 
+                    onFollowToggle={handleFollowToggle} 
+                    isOwnProfile={false}
+                    isPending={false}
+                  />
+                )}
+              </div>
             </div>
             
             <ProfileHeaderStats 
@@ -78,18 +80,12 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
               bio={profileData.bio} 
               displayName={username}
               interests={profileData.interests}
+              username={username}
+              status="online"
             />
             
             {profileData.isPrivate && (
               <Badge variant="outline" className="mt-2">Private Account</Badge>
-            )}
-            
-            {profileData.interests?.length > 0 && (
-              <div className="flex flex-wrap gap-1 mt-3">
-                {profileData.interests.map((interest, index) => (
-                  <Badge key={index} variant="secondary">{interest}</Badge>
-                ))}
-              </div>
             )}
             
             <ProfileBadges badges={[
