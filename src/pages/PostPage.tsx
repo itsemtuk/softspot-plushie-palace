@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { useParams, Navigate, Link, useNavigate } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
 import { PostDialog } from "@/components/PostDialog";
 import { SignedIn, SignedOut, useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
@@ -9,8 +8,7 @@ import { ExtendedPost } from "@/types/marketplace";
 import { getPostById } from "@/utils/postStorage";
 import { toast } from "@/components/ui/use-toast";
 import { Spinner } from "@/components/ui/spinner";
-import { MobileNav } from "@/components/navigation/MobileNav";
-import { useIsMobile } from "@/hooks/use-mobile";
+import MainLayout from "@/components/layout/MainLayout";
 
 const PostPage = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -20,11 +18,10 @@ const PostPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const navigate = useNavigate();
   const { isSignedIn } = useUser();
-  const isMobile = useIsMobile();
   
   // Prevent body scrolling when dialog is open on mobile
   useEffect(() => {
-    if (isMobile && dialogOpen) {
+    if (dialogOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'unset';
@@ -33,7 +30,7 @@ const PostPage = () => {
     return () => {
       document.body.style.overflow = 'unset';
     };
-  }, [dialogOpen, isMobile]);
+  }, [dialogOpen]);
   
   useEffect(() => {
     const loadPost = async () => {
@@ -90,9 +87,8 @@ const PostPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {isMobile ? <MobileNav /> : <Navbar />}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <MainLayout>
+      <div className="max-w-7xl mx-auto">
         {isLoading ? (
           <div className="flex justify-center py-12">
             <Spinner size="lg" />
@@ -180,7 +176,7 @@ const PostPage = () => {
           isLoading={isLoading}
         />
       </SignedIn>
-    </div>
+    </MainLayout>
   );
 };
 

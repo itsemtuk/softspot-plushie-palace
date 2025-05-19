@@ -4,24 +4,20 @@ import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { getAllUserPosts, deletePost } from "@/utils/postStorage";
 import { ExtendedPost } from "@/types/marketplace";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { MobileNav } from "@/components/navigation/MobileNav";
-import { Navbar } from "@/components/Navbar";
-import UserProfileHeader from "@/components/UserProfileHeader";
-import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/use-toast";
 import { isAuthenticated, getCurrentUser } from "@/utils/auth/authState";
-import Footer from "@/components/Footer";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Grid3X3, BookMarked, ShoppingBag } from "lucide-react";
+import MainLayout from "@/components/layout/MainLayout";
+import UserProfileHeader from "@/components/UserProfileHeader";
+import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const isMobile = useIsMobile();
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
   // Use Clerk's hooks if configured
@@ -120,9 +116,11 @@ const Profile = () => {
   // Show loading state while checking authentication
   if ((isClerkConfigured && !isClerkLoaded) || isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner size="lg" />
-      </div>
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <Spinner size="lg" />
+        </div>
+      </MainLayout>
     );
   }
 
@@ -166,9 +164,7 @@ const Profile = () => {
   const salesPosts = userPosts.filter(post => post.forSale === true);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {isMobile ? <MobileNav /> : <Navbar />}
-      
+    <MainLayout noPadding>
       <div className="flex-grow">
         <UserProfileHeader
           username={username}
@@ -230,9 +226,7 @@ const Profile = () => {
           </Tabs>
         </div>
       </div>
-      
-      <Footer />
-    </div>
+    </MainLayout>
   );
 };
 
