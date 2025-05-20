@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { CreditCard, Paypal, ShoppingBag, Lock } from 'lucide-react';
+import { CreditCard, ShoppingBag, Lock } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 interface PaymentFormProps {
@@ -27,7 +27,10 @@ export function PaymentForm({ onSubmit, onBack, isSubmitting }: PaymentFormProps
               <span className="hidden sm:inline">Card</span>
             </TabsTrigger>
             <TabsTrigger value="paypal" className="flex items-center gap-2">
-              <Paypal className="h-4 w-4" />
+              <svg className="h-4 w-4" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.384a.641.641 0 0 1 .632-.547h6.914c2.256 0 3.495.702 3.924 1.439.473.796.369 1.817.244 2.483l-.002.012c-.709 3.9-3.058 5.263-6.589 5.263h-.67a.641.641 0 0 0-.632.548l-.736 4.22-1.439 8.263a.127.127 0 0 1-.127.11h-3.37v.003ZM4.502 6.708l-1.493 9.54h2.178l1.492-9.534.005-.026a.127.127 0 0 1 .126-.108h1.217l-.001-.001h.873c2.086 0 3.431-.674 4.079-2.86.308-1.088.244-1.478.193-1.613-.15-.243-.49-.576-1.95-.576H6.529a.641.641 0 0 0-.632.547l-1.362 4.582-.033.049Z" />
+                <path fill="currentColor" d="M17.071 9.447c-.028.1-.056.202-.088.31v.001c-.971 4.987-4.353 6.109-8.499 6.109H7.349c-.203 0-.38.142-.427.341L5.458 24h3.368c.203 0 .38-.142.427-.341l.574-3.65.036-.066a.428.428 0 0 1 .426-.342h.893c3.645 0 6.705-.941 7.566-5.259.359-1.795.218-3.116-.677-3.895"/>
+              </svg>
               <span className="hidden sm:inline">PayPal</span>
             </TabsTrigger>
             <TabsTrigger value="apple" className="flex items-center gap-2">
@@ -51,7 +54,7 @@ export function PaymentForm({ onSubmit, onBack, isSubmitting }: PaymentFormProps
                   className={errors.cardName ? 'border-red-500' : ''}
                 />
                 {errors.cardName && (
-                  <p className="text-red-500 text-sm">{errors.cardName.message}</p>
+                  <p className="text-red-500 text-sm">{errors.cardName.message as string}</p>
                 )}
               </div>
               
@@ -72,7 +75,7 @@ export function PaymentForm({ onSubmit, onBack, isSubmitting }: PaymentFormProps
                   className={errors.cardNumber ? 'border-red-500' : ''}
                 />
                 {errors.cardNumber && (
-                  <p className="text-red-500 text-sm">{errors.cardNumber.message}</p>
+                  <p className="text-red-500 text-sm">{errors.cardNumber.message as string}</p>
                 )}
               </div>
               
@@ -94,7 +97,7 @@ export function PaymentForm({ onSubmit, onBack, isSubmitting }: PaymentFormProps
                     className={errors.expDate ? 'border-red-500' : ''}
                   />
                   {errors.expDate && (
-                    <p className="text-red-500 text-sm">{errors.expDate.message}</p>
+                    <p className="text-red-500 text-sm">{errors.expDate.message as string}</p>
                   )}
                 </div>
                 
@@ -117,7 +120,7 @@ export function PaymentForm({ onSubmit, onBack, isSubmitting }: PaymentFormProps
                     className={errors.cvv ? 'border-red-500' : ''}
                   />
                   {errors.cvv && (
-                    <p className="text-red-500 text-sm">{errors.cvv.message}</p>
+                    <p className="text-red-500 text-sm">{errors.cvv.message as string}</p>
                   )}
                 </div>
               </div>
@@ -157,7 +160,10 @@ export function PaymentForm({ onSubmit, onBack, isSubmitting }: PaymentFormProps
           
           <TabsContent value="paypal">
             <div className="py-8 flex flex-col items-center justify-center">
-              <img src="/assets/paypal-logo.svg" alt="PayPal" className="h-12 mb-4" />
+              <svg className="h-12 mb-4" viewBox="0 0 24 24">
+                <path fill="#003087" d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 3.384a.641.641 0 0 1 .632-.547h6.914c2.256 0 3.495.702 3.924 1.439.473.796.369 1.817.244 2.483l-.002.012c-.709 3.9-3.058 5.263-6.589 5.263h-.67a.641.641 0 0 0-.632.548l-.736 4.22-1.439 8.263a.127.127 0 0 1-.127.11h-3.37v.003ZM4.502 6.708l-1.493 9.54h2.178l1.492-9.534.005-.026a.127.127 0 0 1 .126-.108h1.217l-.001-.001h.873c2.086 0 3.431-.674 4.079-2.86.308-1.088.244-1.478.193-1.613-.15-.243-.49-.576-1.95-.576H6.529a.641.641 0 0 0-.632.547l-1.362 4.582-.033.049Z" />
+                <path fill="#003087" d="M17.071 9.447c-.028.1-.056.202-.088.31v.001c-.971 4.987-4.353 6.109-8.499 6.109H7.349c-.203 0-.38.142-.427.341L5.458 24h3.368c.203 0 .38-.142.427-.341l.574-3.65.036-.066a.428.428 0 0 1 .426-.342h.893c3.645 0 6.705-.941 7.566-5.259.359-1.795.218-3.116-.677-3.895"/>
+              </svg>
               <p className="text-gray-600 mb-6">Click the button below to pay with PayPal</p>
               <Button 
                 className="bg-[#0070BA] hover:bg-[#005ea6] min-w-[200px]"
