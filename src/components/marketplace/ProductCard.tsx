@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import { useUser } from "@clerk/clerk-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
+import { Button } from "../ui/button";
 
 interface ProductCardProps {
   product: MarketplacePlushie;
@@ -61,6 +62,12 @@ export const ProductCard = ({
         navigate(`/user/${product.userId}`);
       }
     }
+  };
+
+  const handleBuyNow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    // Navigate to checkout with this product
+    navigate(`/checkout?item=${product.id}`);
   };
 
   return (
@@ -162,6 +169,14 @@ export const ProductCard = ({
               <span className="text-gray-400">No reviews</span>
             )}
           </div>
+          
+          {/* Buy Now button */}
+          <Button 
+            className="mt-3 bg-softspot-500 hover:bg-softspot-600 text-white w-full text-sm h-9"
+            onClick={handleBuyNow}
+          >
+            Buy Now
+          </Button>
         </div>
       </CardContent>
     </Card>
