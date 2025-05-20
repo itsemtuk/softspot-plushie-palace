@@ -21,7 +21,7 @@ export const MainLayout: React.FC<MainLayoutProps> = ({
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       {isMobile ? <MobileNav /> : <Navbar />}
-      <main className={`flex-grow ${!noPadding ? 'container mx-auto px-4 py-8 pt-20' : ''} ${className}`}>
+      <main className={`flex-grow ${!noPadding ? 'container mx-auto px-4 py-8 pt-20' : 'pt-16'} ${className}`}>
         {children}
       </main>
       <Footer />

@@ -8,7 +8,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useEffect } from "react";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { useNavigate } from "react-router-dom";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 
 const SellItemPage = () => {
   const navigate = useNavigate();
@@ -36,24 +36,26 @@ const SellItemPage = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-2xl mx-auto">
+      <div className="max-w-2xl mx-auto py-6">
         <h1 className="text-3xl font-bold mb-6">Sell Your Plushie</h1>
         
-        <Card className="bg-white rounded-lg shadow-sm p-6">
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            <SellItemImageUploader 
-              imageUrl={imageUrl} 
-              onImageSelect={handleImageSelect} 
-            />
+        <Card>
+          <CardContent className="pt-6">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+              <SellItemImageUploader 
+                imageUrl={imageUrl} 
+                onImageSelect={handleImageSelect} 
+              />
 
-            <SellItemFormFields
-              register={register}
-              errors={errors}
-              onSelectChange={handleSelectChange}
-            />
+              <SellItemFormFields
+                register={register}
+                errors={errors}
+                onSelectChange={handleSelectChange}
+              />
 
-            <SellItemFormActions isSubmitting={isSubmitting} />
-          </form>
+              <SellItemFormActions isSubmitting={isSubmitting} />
+            </form>
+          </CardContent>
         </Card>
       </div>
     </MainLayout>

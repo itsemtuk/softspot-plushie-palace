@@ -9,6 +9,7 @@ import { getPostById } from "@/utils/postStorage";
 import { toast } from "@/components/ui/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 import MainLayout from "@/components/layout/MainLayout";
+import { Card, CardContent } from "@/components/ui/card";
 
 const PostPage = () => {
   const { postId } = useParams<{ postId: string }>();
@@ -101,60 +102,62 @@ const PostPage = () => {
             </div>
 
             {/* Main post content */}
-            <div className="bg-white shadow rounded-lg overflow-hidden">
-              <div className="md:flex">
-                {/* Image on left for md+ screens, top for mobile */}
-                <div className="md:w-1/2 bg-black flex items-center justify-center">
-                  <img 
-                    src={post.image} 
-                    alt={post.title || "Post"} 
-                    className="w-full h-auto object-contain md:max-h-[600px]"
-                    onError={(e) => {
-                      // Fallback for image loading errors
-                      const target = e.target as HTMLImageElement;
-                      target.src = "/placeholder.svg";
-                    }}
-                  />
-                </div>
+            <Card>
+              <CardContent className="p-0">
+                <div className="md:flex">
+                  {/* Image on left for md+ screens, top for mobile */}
+                  <div className="md:w-1/2 bg-black flex items-center justify-center">
+                    <img 
+                      src={post.image} 
+                      alt={post.title || "Post"} 
+                      className="w-full h-auto object-contain md:max-h-[600px]"
+                      onError={(e) => {
+                        // Fallback for image loading errors
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/placeholder.svg";
+                      }}
+                    />
+                  </div>
 
-                {/* Content on right for md+ screens, bottom for mobile */}
-                <div className="md:w-1/2 p-6">
-                  {/* Display post content */}
-                  {post.description && (
-                    <div className="my-4">
-                      <p className="text-gray-700">{post.description}</p>
-                    </div>
-                  )}
-
-                  {post.tags && post.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 my-4">
-                      {post.tags.map(tag => (
-                        <div key={tag} className="bg-softspot-100 text-softspot-700 px-2 py-1 rounded-full text-xs flex items-center">
-                          <span className="mr-1">#</span>
-                          {tag}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Guest-specific call to action */}
-                  <SignedOut>
-                    <div className="mt-8 bg-softspot-50 border border-softspot-100 rounded-lg p-4">
-                      <h3 className="text-lg font-medium text-softspot-800">Join SoftSpot</h3>
-                      <p className="text-softspot-600 mt-1">Create an account to like, comment, and share more plushies!</p>
-                      <div className="mt-4 space-x-2">
-                        <Link to="/sign-up">
-                          <Button className="bg-softspot-500 hover:bg-softspot-600">Sign Up</Button>
-                        </Link>
-                        <Link to="/sign-in">
-                          <Button variant="outline">Log In</Button>
-                        </Link>
+                  {/* Content on right for md+ screens, bottom for mobile */}
+                  <div className="md:w-1/2 p-6">
+                    {/* Display post content */}
+                    {post.description && (
+                      <div className="my-4">
+                        <p className="text-gray-700">{post.description}</p>
                       </div>
-                    </div>
-                  </SignedOut>
+                    )}
+
+                    {post.tags && post.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 my-4">
+                        {post.tags.map(tag => (
+                          <div key={tag} className="bg-softspot-100 text-softspot-700 px-2 py-1 rounded-full text-xs flex items-center">
+                            <span className="mr-1">#</span>
+                            {tag}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Guest-specific call to action */}
+                    <SignedOut>
+                      <div className="mt-8 bg-softspot-50 border border-softspot-100 rounded-lg p-4">
+                        <h3 className="text-lg font-medium text-softspot-800">Join SoftSpot</h3>
+                        <p className="text-softspot-600 mt-1">Create an account to like, comment, and share more plushies!</p>
+                        <div className="mt-4 space-x-2">
+                          <Link to="/sign-up">
+                            <Button className="bg-softspot-500 hover:bg-softspot-600">Sign Up</Button>
+                          </Link>
+                          <Link to="/sign-in">
+                            <Button variant="outline">Log In</Button>
+                          </Link>
+                        </div>
+                      </div>
+                    </SignedOut>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </CardContent>
+            </Card>
           </>
         ) : (
           <div className="text-center py-12">

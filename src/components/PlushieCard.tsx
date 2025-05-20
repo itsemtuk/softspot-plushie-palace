@@ -2,6 +2,7 @@
 import { Heart, MessageCircle, DollarSign } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
 
 interface PlushieCardProps {
   id: string;
@@ -30,13 +31,11 @@ export function PlushieCard({
   const displayPrice = typeof price === 'number' ? price : 0;
   
   return (
-    <div 
-      className={cn(
-        "rounded-2xl overflow-hidden bg-white border card-hover plushie-shadow",
-        variant === "featured" ? "border-softspot-200" : "border-gray-100",
-        variant === "marketplace" ? "h-full flex flex-col" : ""
-      )}
-    >
+    <Card className={cn(
+      "overflow-hidden card-hover",
+      variant === "featured" ? "border-softspot-200" : "border-gray-100",
+      variant === "marketplace" ? "h-full flex flex-col" : ""
+    )}>
       <div className={cn(
         "relative overflow-hidden",
         variant === "featured" ? "h-56" : "h-48",
@@ -55,7 +54,7 @@ export function PlushieCard({
         )}
       </div>
       
-      <div className={cn(
+      <CardContent className={cn(
         "p-4",
         variant === "marketplace" ? "flex flex-col flex-grow" : ""
       )}>
@@ -83,8 +82,8 @@ export function PlushieCard({
             </Button>
           )}
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

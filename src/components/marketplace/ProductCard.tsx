@@ -85,8 +85,7 @@ export const ProductCard = ({
         
         {/* Wishlist button */}
         <button
-          className={`absolute top-2 right-2 p-1.5 rounded-full z-10 
-            ${isWishlisted ? 'bg-red-100' : 'bg-white bg-opacity-75'}`}
+          className={`absolute top-2 right-2 p-1.5 rounded-full z-10 ${isWishlisted ? 'bg-red-100' : 'bg-white bg-opacity-75'}`}
           onClick={(e) => onWishlistToggle(product.id, e)}
         >
           <Heart 

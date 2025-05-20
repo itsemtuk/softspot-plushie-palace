@@ -13,6 +13,7 @@ import { Grid3X3, BookMarked, ShoppingBag } from "lucide-react";
 import MainLayout from "@/components/layout/MainLayout";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
+import { Card } from "@/components/ui/card";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -185,12 +186,12 @@ const Profile = () => {
               </TabsTrigger>
               <TabsTrigger value="sales" className="flex items-center">
                 <ShoppingBag className="h-4 w-4 mr-2" />
-                For Sale
+                Sales
               </TabsTrigger>
             </TabsList>
             
             <TabsContent value="posts">
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <Card className="overflow-hidden">
                 <ProfilePostsGrid 
                   posts={regularPosts} 
                   onPostClick={handlePostClick} 
@@ -198,22 +199,22 @@ const Profile = () => {
                   isOwnProfile={true}
                   showCreateButton={true}
                 />
-              </div>
+              </Card>
             </TabsContent>
             
             <TabsContent value="collections">
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <Card>
                 <div className="text-center py-16">
                   <h3 className="text-lg font-medium">Collection Coming Soon</h3>
                   <p className="text-gray-500 mt-2">
                     This feature will be available in a future update.
                   </p>
                 </div>
-              </div>
+              </Card>
             </TabsContent>
             
             <TabsContent value="sales">
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+              <Card className="overflow-hidden">
                 <ProfilePostsGrid 
                   posts={salesPosts} 
                   onPostClick={handlePostClick} 
@@ -221,7 +222,7 @@ const Profile = () => {
                   isOwnProfile={true}
                   showCreateButton={false}
                 />
-              </div>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

@@ -43,3 +43,31 @@
 .dialog-content {
   @apply bg-white;
 }
+
+/* Ensure proper background colors for different containers */
+.main-content-area {
+  @apply bg-white min-h-screen;
+}
+
+/* Fix form elements appearance */
+.form-group {
+  @apply space-y-1;
+}
+
+.form-label {
+  @apply text-sm font-medium text-gray-700;
+}
+
+/* Add consistent shadows */
+.plushie-shadow {
+  @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+}
+
+/* Consistent button styling */
+.btn-primary {
+  @apply bg-softspot-500 hover:bg-softspot-600 text-white;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-800;
+}
