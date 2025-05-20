@@ -70,6 +70,9 @@ export const ProductCard = ({
     navigate(`/checkout?item=${product.id}`);
   };
 
+  // Default image fallback
+  const fallbackImage = "https://via.placeholder.com/400x400?text=No+Image";
+
   return (
     <Card 
       className={`overflow-hidden transition-all hover:shadow-md cursor-pointer h-full flex flex-col ${isCurrentUserProduct ? 'ring-2 ring-softspot-300' : ''}`}
@@ -103,13 +106,12 @@ export const ProductCard = ({
         {/* Product image */}
         <AspectRatio ratio={1} className="bg-gray-100">
           <img
-            src={product.image}
+            src={product.image || fallbackImage}
             alt={product.title || "Plushie"}
             className="object-cover w-full h-full"
             loading="lazy"
             onError={(e) => {
-              console.error("Failed to load image:", product.image);
-              (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1516067154453-6194ba34d121";
+              (e.target as HTMLImageElement).src = fallbackImage;
             }}
           />
         </AspectRatio>

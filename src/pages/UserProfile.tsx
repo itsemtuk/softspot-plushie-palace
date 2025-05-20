@@ -1,158 +1,125 @@
 
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
-import { MobileNav } from "@/components/navigation/MobileNav";
-import { Navbar } from "@/components/Navbar";
-import UserProfileHeader from "@/components/UserProfileHeader";
-import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
-import { usePostDialog } from "@/hooks/use-post-dialog";
-import { Spinner } from "@/components/ui/spinner";
-import { toast } from "@/components/ui/use-toast";
-import Footer from "@/components/Footer";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Grid3X3 } from "lucide-react";
-import { getAllUserPosts } from "@/utils/postStorage";
-import { ExtendedPost } from "@/types/marketplace";
-import { useIsMobile } from "@/hooks/use-mobile";
+import React from 'react';
+import MainLayout from '@/components/layout/MainLayout';
+import { useParams } from 'react-router-dom';
+import { isAuthenticated } from "@/utils/auth/authState";
+import { toast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { getUserPosts } from '@/utils/posts/postFetch';
+import { ExtendedPost } from '@/types/marketplace';
+import { Spinner } from '@/components/ui/spinner';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { FeedGrid } from '@/components/feed/FeedGrid';
+import { usePostDialog } from '@/hooks/use-post-dialog';
 
 const UserProfile = () => {
-  const navigate = useNavigate();
   const { userId } = useParams();
-  const { user: currentUser, isLoaded } = useUser();
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [profileData, setProfileData] = useState<{
-    username: string,
-    bio: string,
-    interests: string[],
-    isPrivate: boolean
-  }>({
-    username: '',
-    bio: '',
-    interests: [],
-    isPrivate: false
-  });
-  
-  const isMobile = useIsMobile();
+  const [username, setUsername] = useState('');
   const { openPostDialog } = usePostDialog();
-  
-  // Determine if this is the current user's profile
-  const isOwnProfile = currentUser?.id === userId;
-  
-  // If it's the current user's profile, redirect to /profile
+
   useEffect(() => {
-    if (isLoaded && currentUser && isOwnProfile) {
-      navigate('/profile');
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to view user profiles."
+      });
+      navigate('/sign-in');
+      return;
     }
-  }, [currentUser, isLoaded, isOwnProfile, navigate]);
-  
-  // Fetch posts and profile data for the requested user
-  useEffect(() => {
-    let isMounted = true;
-    
-    const fetchUserData = async () => {
-      setIsLoading(true);
-      
+
+    const loadUserData = async () => {
       if (!userId) return;
       
+      setLoading(true);
       try {
-        // In a real app with a backend, you would fetch user data from an API
-        // For now, we'll simulate this with existing functions
-        const posts = await getAllUserPosts(userId);
+        const posts = await getUserPosts(userId);
+        setUserPosts(posts);
         
-        // Fetch user profile data (this would normally be a separate API call)
-        // For now we'll use placeholder data
-        const userData = {
-          username: posts[0]?.username || 'User',
-          bio: "This user hasn't added a bio yet.",
-          interests: ["Plushies"],
-          isPrivate: false
-        };
-        
-        if (isMounted) {
-          setUserPosts(posts);
-          setProfileData(userData);
+        // Set username from the first post if available
+        if (posts.length > 0 && posts[0].username) {
+          setUsername(posts[0].username);
         }
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error('Error loading user data:', error);
         toast({
-          variant: "destructive",
           title: "Error",
-          description: "Failed to load user profile. Please try again."
+          description: "Failed to load user profile data.",
+          variant: "destructive"
         });
       } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
+        setLoading(false);
       }
     };
-    
-    fetchUserData();
-    
-    return () => {
-      isMounted = false;
-    };
-  }, [userId]);
+
+    loadUserData();
+  }, [userId, navigate]);
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);
   };
-  
-  // Handle post deletion (only for own posts, which shouldn't happen on this page)
-  const handleDeletePost = async (postId: string) => {
-    // This should never be called on other users' profiles
-    console.warn("Delete post attempted on another user's profile");
-  };
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  // Filter posts by type
-  const regularPosts = userPosts.filter(post => !post.forSale);
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {isMobile ? <MobileNav /> : <Navbar />}
-      
-      <div className="flex-grow">
-        <UserProfileHeader
-          username={profileData.username}
-          isOwnProfile={false}
-          profileData={profileData}
-        />
-
-        <div className="container mx-auto px-4 py-4 mb-16">
-          <Tabs defaultValue="posts" className="w-full">
-            <TabsList className="w-full mb-4">
-              <TabsTrigger value="posts" className="flex items-center flex-1">
-                <Grid3X3 className="h-4 w-4 mr-2" />
-                Posts
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="posts">
-              <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                <ProfilePostsGrid 
-                  posts={regularPosts} 
-                  onPostClick={handlePostClick} 
-                  onDeletePost={handleDeletePost}
-                  isOwnProfile={false}
-                  showCreateButton={false}
-                />
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8">
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <Spinner size="lg" />
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {/* Profile Header */}
+            <div className="bg-white rounded-lg shadow-sm p-6">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20 border-2 border-softspot-100">
+                  <AvatarImage 
+                    src={`https://api.dicebear.com/6.x/initials/svg?seed=${username}`}
+                    alt={username} 
+                  />
+                  <AvatarFallback>{username?.charAt(0) || '?'}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <h1 className="text-2xl font-bold">{username}</h1>
+                  <p className="text-gray-500">{userPosts.length} posts</p>
+                </div>
               </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+            </div>
+            
+            {/* Tabs for different content types */}
+            <Tabs defaultValue="posts" className="w-full">
+              <TabsList className="mb-6">
+                <TabsTrigger value="posts">Posts</TabsTrigger>
+                <TabsTrigger value="forSale">For Sale</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="posts">
+                {userPosts.length > 0 ? (
+                  <FeedGrid posts={userPosts} onPostClick={handlePostClick} />
+                ) : (
+                  <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+                    <p className="text-gray-500">This user hasn't posted anything yet.</p>
+                  </div>
+                )}
+              </TabsContent>
+              
+              <TabsContent value="forSale">
+                {userPosts.filter(post => post.forSale).length > 0 ? (
+                  <FeedGrid posts={userPosts.filter(post => post.forSale)} onPostClick={handlePostClick} />
+                ) : (
+                  <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+                    <p className="text-gray-500">This user doesn't have any items for sale.</p>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
       </div>
-      
-      <Footer />
-    </div>
+    </MainLayout>
   );
 };
 

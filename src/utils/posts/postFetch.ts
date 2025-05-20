@@ -1,7 +1,8 @@
 
 import { ExtendedPost } from "@/types/marketplace";
-import { supabase, isSupabaseConfigured } from '../supabase/client';
+import { supabase, isSupabaseConfigured, handleSupabaseError } from '../supabase/client';
 import { getLocalPosts } from '../storage/localStorageUtils';
+import { toast } from '@/components/ui/use-toast';
 
 /**
  * Retrieves posts from storage
@@ -12,12 +13,21 @@ export const getPosts = async (): Promise<ExtendedPost[]> => {
   }
 
   try {
-    const { data, error } = await supabase!
+    const { data, error } = await supabase
       .from('posts')
       .select('*')
       .order('timestamp', { ascending: false });
       
-    if (error) throw error;
+    if (error) {
+      const errorDetails = handleSupabaseError(error);
+      if (errorDetails.isCORSError) {
+        toast({
+          title: "Connection Issue",
+          description: "Using local data due to connection issues."
+        });
+      }
+      throw error;
+    }
     return data as ExtendedPost[];
   } catch (error) {
     console.error('Error retrieving posts from Supabase:', error);
@@ -43,13 +53,22 @@ export const getUserPosts = async (userId: string): Promise<ExtendedPost[]> => {
   }
 
   try {
-    const { data, error } = await supabase!
+    const { data, error } = await supabase
       .from('posts')
       .select('*')
       .eq('userId', userId)
       .order('timestamp', { ascending: false });
       
-    if (error) throw error;
+    if (error) {
+      const errorDetails = handleSupabaseError(error);
+      if (errorDetails.isCORSError) {
+        toast({
+          title: "Connection Issue",
+          description: "Using local data due to connection issues."
+        });
+      }
+      throw error;
+    }
     return data as ExtendedPost[];
   } catch (error) {
     console.error('Error retrieving user posts from Supabase:', error);
@@ -67,13 +86,22 @@ export const getPostById = async (postId: string): Promise<ExtendedPost | null> 
   }
 
   try {
-    const { data, error } = await supabase!
+    const { data, error } = await supabase
       .from('posts')
       .select('*')
       .eq('id', postId)
       .single();
       
-    if (error) throw error;
+    if (error) {
+      const errorDetails = handleSupabaseError(error);
+      if (errorDetails.isCORSError) {
+        toast({
+          title: "Connection Issue",
+          description: "Using local data due to connection issues."
+        });
+      }
+      throw error;
+    }
     return data as ExtendedPost;
   } catch (error) {
     console.error(`Error retrieving post ${postId} from Supabase:`, error);

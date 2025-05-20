@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   createBrowserRouter,
@@ -7,7 +8,7 @@ import Index from "@/pages/Index";
 import Feed from "@/pages/Feed";
 import Discover from "@/pages/Discover";
 import Profile from "@/pages/Profile";
-import UserProfilePage from "@/pages/UserProfilePage";
+import UserProfile from "@/pages/UserProfile";
 import EditProfile from "@/pages/EditProfile";
 import NotFound from "@/pages/NotFound";
 import Settings from "@/pages/Settings";
@@ -37,7 +38,7 @@ const router = createBrowserRouter(
     },
     {
       path: "/user/:userId",
-      element: <UserProfilePage />,
+      element: <UserProfile />,
     },
     {
       path: "/edit-profile",
