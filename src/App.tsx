@@ -8,7 +8,7 @@ import Index from "@/pages/Index";
 import Feed from "@/pages/Feed";
 import Discover from "@/pages/Discover";
 import Profile from "@/pages/Profile";
-import UserProfile from "@/pages/UserProfile";
+import UserProfile from "@/pages/UserProfile";  // Changed from UserProfilePage to UserProfile
 import EditProfile from "@/pages/EditProfile";
 import NotFound from "@/pages/NotFound";
 import Settings from "@/pages/Settings";
@@ -38,7 +38,7 @@ const router = createBrowserRouter(
     },
     {
       path: "/user/:userId",
-      element: <UserProfile />,
+      element: <UserProfile />,  // Changed from UserProfilePage to UserProfile
     },
     {
       path: "/edit-profile",

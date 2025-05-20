@@ -5,15 +5,19 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = 'https://evsamjzmqzbynwkuzsm.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2c2FtanptcXpieW53a3VzenNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MzgwMTEsImV4cCI6MjA2MDQxNDAxMX0.rkYcUyq7tMf3om2doHkWt85bdAHinEceuH43Hwn1knw';
 
-// Create and export the Supabase client with additional headers
+// Create and export the Supabase client with proper configuration options
 export const supabase = createClient(supabaseUrl, supabaseKey, {
-  headers: {
-    'Access-Control-Allow-Origin': '*',
-  },
   auth: {
     persistSession: true,
     autoRefreshToken: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    // Add CORS headers via fetch options
+    flowType: 'implicit'
+  },
+  global: {
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+    },
   }
 });
 
@@ -31,7 +35,11 @@ export const handleSupabaseError = (error: any) => {
   console.error('Supabase error:', error);
   
   // Check if it's a CORS error
-  if (error.message && error.message.includes('NetworkError')) {
+  if (error.message && (
+    error.message.includes('NetworkError') || 
+    error.message.includes('Failed to fetch') ||
+    error.message.includes('CORS')
+  )) {
     console.warn('Possible CORS issue detected. Falling back to local storage.');
     return {
       isCORSError: true,
