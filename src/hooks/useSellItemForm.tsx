@@ -1,8 +1,8 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { 
   ImageUploadResult, 
   PlushieCondition,
@@ -32,15 +32,17 @@ export interface SellItemFormData {
 
 export const useSellItemForm = () => {
   const navigate = useNavigate();
-  const { user } = useUser();
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<SellItemFormData>();
 
-  // Store current user ID for syncing
-  if (user?.id) {
-    setCurrentUserId(user.id);
+  // Get current user ID safely
+  const currentUserId = getCurrentUserId();
+  
+  // Store current user ID for syncing if available
+  if (currentUserId) {
+    setCurrentUserId(currentUserId);
   }
 
   const handleImageSelect = (result: ImageUploadResult) => {
@@ -81,9 +83,9 @@ export const useSellItemForm = () => {
       // Get existing listings
       const listings = getMarketplaceListings();
       
-      // Create new listing
-      const username = user?.username || user?.firstName || "Anonymous";
-      const userId = user?.id || getCurrentUserId();
+      // Get user info safely
+      const userId = currentUserId || 'anonymous-user';
+      const username = 'Anonymous User';
       const timestamp = new Date().toISOString();
       
       const newListing: ExtendedPost = {

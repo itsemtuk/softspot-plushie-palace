@@ -5,13 +5,16 @@ import { SellItemFormFields } from "@/components/marketplace/sell/SellItemFormFi
 import { SellItemFormActions } from "@/components/marketplace/sell/SellItemFormActions";
 import { useSellItemForm } from "@/hooks/useSellItemForm";
 import { toast } from "@/components/ui/use-toast";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 const SellItemPage = () => {
   const navigate = useNavigate();
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  
   const { 
     imageUrl, 
     isSubmitting, 
@@ -25,14 +28,34 @@ const SellItemPage = () => {
 
   // Check if user is authenticated
   useEffect(() => {
-    if (!isAuthenticated()) {
-      toast({
-        title: "Authentication Required",
-        description: "You must be signed in to sell items."
-      });
-      navigate('/sign-in');
-    }
+    const checkAuth = () => {
+      const auth = isAuthenticated();
+      setIsAuthChecking(false);
+      
+      if (!auth) {
+        toast({
+          title: "Authentication Required",
+          description: "You must be signed in to sell items."
+        });
+        navigate('/sign-in');
+      }
+    };
+    
+    // Add a small delay to ensure auth state is properly loaded
+    const timer = setTimeout(checkAuth, 100);
+    return () => clearTimeout(timer);
   }, [navigate]);
+
+  // Show loading state while checking authentication
+  if (isAuthChecking) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center items-center h-[60vh]">
+          <Spinner size="lg" />
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
