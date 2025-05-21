@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { supabase, fetchWithRetry } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -7,8 +7,35 @@ import { Spinner } from '@/components/ui/spinner';
 
 export const SupabaseSignInButton = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const [isSupabaseReady, setIsSupabaseReady] = useState(false);
+  
+  // Check if Supabase is initialized
+  useEffect(() => {
+    const checkSupabase = () => {
+      if (supabase) {
+        setIsSupabaseReady(true);
+      } else {
+        console.error("Supabase client not initialized");
+      }
+    };
+    
+    checkSupabase();
+    
+    // Check again after a delay in case of async initialization
+    const timeout = setTimeout(checkSupabase, 1000);
+    return () => clearTimeout(timeout);
+  }, []);
 
   const handleSupabaseGoogleSignIn = async () => {
+    if (!isSupabaseReady) {
+      toast({
+        variant: "destructive",
+        title: "Service Unavailable",
+        description: "Authentication service is not ready. Please try again later.",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -24,7 +51,7 @@ export const SupabaseSignInButton = () => {
         })
       );
       
-      if (result.error) {
+      if (result?.error) {
         console.error("Supabase OAuth error:", result.error);
         throw result.error;
       }
@@ -35,7 +62,7 @@ export const SupabaseSignInButton = () => {
       console.error("Error signing in with Google via Supabase:", error);
       
       // Show appropriate error based on error message
-      if (error.message?.includes('CORS') || error.message?.includes('network')) {
+      if (error?.message?.includes('CORS') || error?.message?.includes('network')) {
         toast({
           variant: "destructive",
           title: "Connection Error",
@@ -60,7 +87,7 @@ export const SupabaseSignInButton = () => {
     <div className="flex flex-col items-center gap-4">
       <Button 
         onClick={handleSupabaseGoogleSignIn}
-        disabled={isLoading}
+        disabled={isLoading || !isSupabaseReady}
         variant="outline"
         className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-md py-2 px-4 hover:bg-gray-50 transition-colors"
       >

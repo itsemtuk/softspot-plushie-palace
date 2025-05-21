@@ -19,14 +19,14 @@ const SellItemPage = () => {
   // Get form values with null safety
   const formValues = useSellItemForm();
   const { 
-    imageUrl, 
-    isSubmitting, 
-    register, 
-    errors, 
-    handleSubmit,
-    onSubmit, 
-    handleImageSelect,
-    handleSelectChange 
+    imageUrl = "", 
+    isSubmitting = false, 
+    register = null, 
+    errors = {}, 
+    handleSubmit = null,
+    onSubmit = null, 
+    handleImageSelect = null,
+    handleSelectChange = null 
   } = formValues || {};
 
   // Check if user is authenticated with improved error handling
@@ -89,6 +89,12 @@ const SellItemPage = () => {
     );
   }
 
+  // Only render form when everything is properly initialized
+  const safeHandleSubmit = handleSubmit || (() => console.error("handleSubmit not initialized"));
+  const safeOnSubmit = onSubmit || (() => console.error("onSubmit not initialized"));
+  const safeHandleImageSelect = handleImageSelect || (() => console.error("handleImageSelect not initialized"));
+  const safeHandleSelectChange = handleSelectChange || (() => console.error("handleSelectChange not initialized"));
+
   return (
     <MainLayout>
       <div className="max-w-2xl mx-auto py-6">
@@ -96,19 +102,19 @@ const SellItemPage = () => {
         
         <Card>
           <CardContent className="pt-6">
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={safeHandleSubmit(safeOnSubmit)} className="space-y-6">
               <SellItemImageUploader 
-                imageUrl={imageUrl || ""} 
-                onImageSelect={handleImageSelect || (() => {})} 
+                imageUrl={imageUrl} 
+                onImageSelect={safeHandleImageSelect} 
               />
 
               <SellItemFormFields
                 register={register}
-                errors={errors || {}}
-                onSelectChange={handleSelectChange || (() => {})}
+                errors={errors}
+                onSelectChange={safeHandleSelectChange}
               />
 
-              <SellItemFormActions isSubmitting={isSubmitting || false} />
+              <SellItemFormActions isSubmitting={isSubmitting} />
             </form>
           </CardContent>
         </Card>

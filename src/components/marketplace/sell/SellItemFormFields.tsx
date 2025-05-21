@@ -11,13 +11,14 @@ import { Spinner } from "@/components/ui/spinner";
 
 export const SellItemFormFields = ({ 
   register, 
-  errors, 
+  errors = {}, 
   onSelectChange 
 }) => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [otherBrandValue, setOtherBrandValue] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   
-  // Guard against null props
+  // Guard against null props with more explicit loading state
   if (!register || !onSelectChange) {
     return (
       <div className="flex justify-center items-center p-8">
@@ -28,6 +29,8 @@ export const SellItemFormFields = ({
   }
   
   const handleBrandChange = (value: string) => {
+    if (!value) return;
+    
     setSelectedBrand(value);
     if (value !== "other") {
       onSelectChange("brand", value);
@@ -37,7 +40,9 @@ export const SellItemFormFields = ({
   };
   
   const handleOtherBrandChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e?.target?.value || "";
+    if (!e || !e.target) return;
+    
+    const value = e.target.value || "";
     setOtherBrandValue(value);
     if (selectedBrand === "other") {
       onSelectChange("brand", value || "Other");
@@ -47,9 +52,9 @@ export const SellItemFormFields = ({
   return (
     <>
       <div className="space-y-4">
-        <BasicInfoFields register={register} errors={errors || {}} />
+        <BasicInfoFields register={register} errors={errors} />
         
-        <DescriptionField register={register} errors={errors || {}} />
+        <DescriptionField register={register} errors={errors} />
         
         <ConditionBrandFields 
           onSelectChange={onSelectChange} 

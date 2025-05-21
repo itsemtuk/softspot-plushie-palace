@@ -51,10 +51,12 @@ export const useSellItemForm = () => {
         species: 'bear' as PlushieSpecies,
         brand: 'other',
         deliveryMethod: 'shipping' as DeliveryMethod,
+        image: '',
       }
     });
 
-    const { register, handleSubmit, setValue, formState: { errors } } = form;
+    const { register, handleSubmit, setValue, formState } = form;
+    const errors = formState?.errors || {};
     
     useEffect(() => {
       // Mark form as initialized after first render
@@ -69,12 +71,23 @@ export const useSellItemForm = () => {
       }
     }, []);
 
-    // If form is not initialized, return null
+    // If form is not initialized, return empty object with defaults
     if (!isFormInitialized) {
-      return null;
+      return {
+        imageUrl: "",
+        isSubmitting: false,
+        register: null,
+        errors: {},
+        handleSubmit: null, 
+        onSubmit: null,
+        handleImageSelect: null,
+        handleSelectChange: null
+      };
     }
 
     const handleImageSelect = (result: ImageUploadResult) => {
+      if (!result) return;
+      
       if (result?.success && result?.url) {
         setImageUrl(result.url);
       } else {
@@ -87,9 +100,8 @@ export const useSellItemForm = () => {
     };
 
     const handleSelectChange = (field: keyof SellItemFormData, value: any) => {
-      if (setValue) {
-        setValue(field, value);
-      }
+      if (!setValue || !field || value === undefined) return;
+      setValue(field, value);
     };
 
     const onSubmit = async (data: SellItemFormData) => {
@@ -184,6 +196,16 @@ export const useSellItemForm = () => {
     };
   } catch (error) {
     console.error("Error in useSellItemForm:", error);
-    return null; // Return null if hook initialization fails
+    // Return safe defaults if hook initialization fails
+    return {
+      imageUrl: "",
+      isSubmitting: false,
+      register: null,
+      errors: {},
+      handleSubmit: null,
+      onSubmit: null, 
+      handleImageSelect: null,
+      handleSelectChange: null
+    };
   }
 };

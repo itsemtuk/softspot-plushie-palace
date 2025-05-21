@@ -36,7 +36,7 @@ export const safeCheckAuth = async (
     // Get current user info
     const user = getCurrentUser();
     
-    if (!user?.id) {
+    if (!user || !user.id) {
       if (showToast) {
         toast({
           title: "User Profile Error",
@@ -70,6 +70,11 @@ export const safeCheckAuth = async (
  */
 export const checkSupabaseAuth = async (): Promise<boolean> => {
   try {
+    if (!supabase) {
+      console.error("Supabase client not initialized");
+      return false;
+    }
+    
     const { data } = await safeQueryWithRetry(() => supabase.auth.getSession());
     return !!data?.session;
   } catch (error) {
