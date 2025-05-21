@@ -89,11 +89,20 @@ const SellItemPage = () => {
     );
   }
 
-  // Only render form when everything is properly initialized
-  const safeHandleSubmit = handleSubmit || (() => console.error("handleSubmit not initialized"));
-  const safeOnSubmit = onSubmit || (() => console.error("onSubmit not initialized"));
-  const safeHandleImageSelect = handleImageSelect || (() => console.error("handleImageSelect not initialized"));
-  const safeHandleSelectChange = handleSelectChange || (() => console.error("handleSelectChange not initialized"));
+  // Create a type-safe wrapper for the form submit handler
+  const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+    if (handleSubmit && onSubmit) {
+      handleSubmit(onSubmit)(e);
+    } else {
+      e.preventDefault();
+      console.error("Form submission failed: handleSubmit or onSubmit is not initialized");
+      toast({
+        title: "Error",
+        description: "Unable to process form submission at this time. Please try again later.",
+        variant: "destructive"
+      });
+    }
+  };
 
   return (
     <MainLayout>
@@ -102,16 +111,16 @@ const SellItemPage = () => {
         
         <Card>
           <CardContent className="pt-6">
-            <form onSubmit={safeHandleSubmit(safeOnSubmit)} className="space-y-6">
+            <form onSubmit={formSubmitHandler} className="space-y-6">
               <SellItemImageUploader 
                 imageUrl={imageUrl} 
-                onImageSelect={safeHandleImageSelect} 
+                onImageSelect={handleImageSelect || (() => {})} 
               />
 
               <SellItemFormFields
                 register={register}
                 errors={errors}
-                onSelectChange={safeHandleSelectChange}
+                onSelectChange={handleSelectChange || (() => {})}
               />
 
               <SellItemFormActions isSubmitting={isSubmitting} />
