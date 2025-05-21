@@ -92,6 +92,14 @@ export const waitForAuth = async (maxWaitMs = 2000): Promise<boolean> => {
     return true;
   }
   
+  // Check Supabase auth as a backup
+  try {
+    const hasSupabaseSession = await checkSupabaseAuth();
+    if (hasSupabaseSession) return true;
+  } catch (err) {
+    console.log("Supabase auth check failed, continuing with local checks");
+  }
+  
   // Poll until authenticated or timeout
   return new Promise(resolve => {
     const interval = setInterval(() => {

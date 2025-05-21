@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { toast } from '@/components/ui/use-toast';
 import { supabase, fetchWithRetry } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Spinner } from '@/components/ui/spinner';
 
 export const SupabaseSignInButton = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -11,6 +12,8 @@ export const SupabaseSignInButton = () => {
     setIsLoading(true);
     
     try {
+      console.log("Initiating Supabase Google sign-in...");
+      
       // Use fetchWithRetry to handle potential network issues
       const result = await fetchWithRetry(() => 
         supabase.auth.signInWithOAuth({
@@ -21,7 +24,10 @@ export const SupabaseSignInButton = () => {
         })
       );
       
-      if (result.error) throw result.error;
+      if (result.error) {
+        console.error("Supabase OAuth error:", result.error);
+        throw result.error;
+      }
       
       // If we get here, the OAuth redirect should be happening
       console.log("Supabase OAuth redirect initiated");
@@ -29,11 +35,11 @@ export const SupabaseSignInButton = () => {
       console.error("Error signing in with Google via Supabase:", error);
       
       // Show appropriate error based on error message
-      if (error.message?.includes('CORS')) {
+      if (error.message?.includes('CORS') || error.message?.includes('network')) {
         toast({
           variant: "destructive",
-          title: "Sign in failed",
-          description: "CORS error detected. Please try again or use a different sign-in method.",
+          title: "Connection Error",
+          description: "Unable to connect to authentication service. Please check your network and try again.",
         });
       } else {
         toast({
@@ -43,7 +49,10 @@ export const SupabaseSignInButton = () => {
         });
       }
     } finally {
-      setIsLoading(false);
+      // Reset loading state after a short delay (since redirect might happen)
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 3000);
     }
   };
 
@@ -56,7 +65,7 @@ export const SupabaseSignInButton = () => {
         className="w-full flex items-center justify-center gap-2 border border-gray-300 rounded-md py-2 px-4 hover:bg-gray-50 transition-colors"
       >
         {isLoading ? (
-          <span className="mr-2 h-4 w-4 animate-spin rounded-full border-b-2 border-gray-900"></span>
+          <Spinner className="mr-2 h-4 w-4" />
         ) : (
           <svg className="w-6 h-6" viewBox="0 0 24 24">
             <path

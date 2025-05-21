@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
@@ -35,23 +35,43 @@ export const useSellItemForm = () => {
     const navigate = useNavigate();
     const [imageUrl, setImageUrl] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [isFormInitialized, setIsFormInitialized] = useState(false);
     
-    const { register, handleSubmit, setValue, formState: { errors } } = useForm<SellItemFormData>({
+    // Initialize form with safe defaults
+    const form = useForm<SellItemFormData>({
       defaultValues: {
         title: '',
         price: 0,
         description: '',
         deliveryCost: 0,
-        color: ''
+        color: '',
+        condition: 'new' as PlushieCondition,
+        material: 'plush' as PlushieMaterial,
+        filling: 'polyester' as PlushieFilling,
+        species: 'bear' as PlushieSpecies,
+        brand: 'other',
+        deliveryMethod: 'shipping' as DeliveryMethod,
       }
     });
 
-    // Get current user ID safely
-    const currentUserId = getCurrentUserId();
+    const { register, handleSubmit, setValue, formState: { errors } } = form;
     
-    // Store current user ID for syncing if available
-    if (currentUserId) {
-      setCurrentUserId(currentUserId);
+    useEffect(() => {
+      // Mark form as initialized after first render
+      setIsFormInitialized(true);
+      
+      // Get current user ID safely
+      const currentUserId = getCurrentUserId();
+      
+      // Store current user ID for syncing if available
+      if (currentUserId) {
+        setCurrentUserId(currentUserId);
+      }
+    }, []);
+
+    // If form is not initialized, return null
+    if (!isFormInitialized) {
+      return null;
     }
 
     const handleImageSelect = (result: ImageUploadResult) => {
@@ -95,7 +115,7 @@ export const useSellItemForm = () => {
         const listings = getMarketplaceListings() || [];
         
         // Get user info safely
-        const userId = currentUserId || 'anonymous-user';
+        const userId = getCurrentUserId() || 'anonymous-user';
         const username = 'Anonymous User';
         const timestamp = new Date().toISOString();
         

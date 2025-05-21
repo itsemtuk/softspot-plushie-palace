@@ -7,6 +7,7 @@ import { OtherBrandInput } from "./form-fields/OtherBrandInput";
 import { MaterialFillingFields } from "./form-fields/MaterialFillingFields";
 import { SpeciesDeliveryFields } from "./form-fields/SpeciesDeliveryFields";
 import { ShippingCostField } from "./form-fields/ShippingCostField";
+import { Spinner } from "@/components/ui/spinner";
 
 export const SellItemFormFields = ({ 
   register, 
@@ -18,7 +19,12 @@ export const SellItemFormFields = ({
   
   // Guard against null props
   if (!register || !onSelectChange) {
-    return <div>Loading form fields...</div>;
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Spinner size="md" />
+        <span className="ml-3 text-sm text-gray-500">Loading form fields...</span>
+      </div>
+    );
   }
   
   const handleBrandChange = (value: string) => {

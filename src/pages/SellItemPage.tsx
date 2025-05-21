@@ -14,8 +14,10 @@ import { waitForAuth, safeCheckAuth } from "@/utils/auth/authHelpers";
 const SellItemPage = () => {
   const navigate = useNavigate();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [isFormLoaded, setIsFormLoaded] = useState(false);
   
-  // Use optional chaining for form values to prevent null errors
+  // Get form values with null safety
+  const formValues = useSellItemForm();
   const { 
     imageUrl, 
     isSubmitting, 
@@ -25,25 +27,28 @@ const SellItemPage = () => {
     onSubmit, 
     handleImageSelect,
     handleSelectChange 
-  } = useSellItemForm() || {}; // Provide fallback empty object
+  } = formValues || {};
 
   // Check if user is authenticated with improved error handling
   useEffect(() => {
     const checkAuth = async () => {
       try {
         // Wait for auth to be ready with a timeout
-        const isAuthReady = await waitForAuth(1500);
+        const isAuthReady = await waitForAuth(2000);
         
         // If auth is not ready after waiting, do a manual check
         if (!isAuthReady) {
-          const { isAuthenticated: isAuth } = await safeCheckAuth(() => {
+          const { isAuthenticated } = await safeCheckAuth(() => {
             navigate('/sign-in');
           });
           
-          if (!isAuth) {
+          if (!isAuthenticated) {
             return; // Navigate will happen in the callback
           }
         }
+        
+        // Set form as loaded after auth check is complete
+        setIsFormLoaded(true);
       } catch (error) {
         console.error("Auth check error:", error);
         toast({
@@ -66,13 +71,14 @@ const SellItemPage = () => {
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh]">
           <Spinner size="lg" />
+          <p className="ml-3 text-gray-600">Checking authentication...</p>
         </div>
       </MainLayout>
     );
   }
 
   // Show loading state while form is initializing
-  if (!register || !handleSubmit || !onSubmit) {
+  if (!isFormLoaded || !register || !handleSubmit || !onSubmit) {
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh] flex-col">
