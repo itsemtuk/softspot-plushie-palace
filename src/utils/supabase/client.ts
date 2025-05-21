@@ -12,9 +12,6 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     autoRefreshToken: true,
     detectSessionInUrl: true,
     flowType: 'implicit'
-  },
-  global: {
-    // No headers property in SupabaseClientOptions, so we remove it
   }
 });
 
@@ -48,4 +45,43 @@ export const handleSupabaseError = (error: any) => {
     isCORSError: false,
     message: error.message || 'An unknown error occurred'
   };
+};
+
+// Implement retry logic for network requests
+export const fetchWithRetry = async <T>(
+  fn: () => Promise<T>, 
+  retries = 3, 
+  delay = 1000
+): Promise<T> => {
+  try {
+    return await fn();
+  } catch (err: any) {
+    if (retries > 0) {
+      console.log(`Request failed, retrying... (${retries} attempts left)`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+      return fetchWithRetry(fn, retries - 1, delay * 1.5);
+    }
+    
+    console.error('Request failed after multiple retries:', err);
+    throw err;
+  }
+};
+
+// Helper to safely execute Supabase queries with retries and error handling
+export const safeQueryWithRetry = async <T>(
+  queryFn: () => Promise<{data: T | null, error: any}>,
+  fallbackData: T | null = null
+): Promise<{data: T | null, error: any}> => {
+  try {
+    // First try with retries
+    return await fetchWithRetry(queryFn);
+  } catch (error: any) {
+    // Handle error and provide fallback
+    const handledError = handleSupabaseError(error);
+    
+    return {
+      data: fallbackData,
+      error: handledError
+    };
+  }
 };

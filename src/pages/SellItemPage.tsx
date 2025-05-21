@@ -6,10 +6,10 @@ import { SellItemFormActions } from "@/components/marketplace/sell/SellItemFormA
 import { useSellItemForm } from "@/hooks/useSellItemForm";
 import { toast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
-import { isAuthenticated } from "@/utils/auth/authState";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { waitForAuth, safeCheckAuth } from "@/utils/auth/authHelpers";
 
 const SellItemPage = () => {
   const navigate = useNavigate();
@@ -27,34 +27,37 @@ const SellItemPage = () => {
     handleSelectChange 
   } = useSellItemForm() || {}; // Provide fallback empty object
 
-  // Check if user is authenticated
+  // Check if user is authenticated with improved error handling
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const auth = isAuthenticated();
-        setIsAuthChecking(false);
+        // Wait for auth to be ready with a timeout
+        const isAuthReady = await waitForAuth(1500);
         
-        if (!auth) {
-          toast({
-            title: "Authentication Required",
-            description: "You must be signed in to sell items."
+        // If auth is not ready after waiting, do a manual check
+        if (!isAuthReady) {
+          const { isAuthenticated: isAuth } = await safeCheckAuth(() => {
+            navigate('/sign-in');
           });
-          navigate('/sign-in');
+          
+          if (!isAuth) {
+            return; // Navigate will happen in the callback
+          }
         }
       } catch (error) {
         console.error("Auth check error:", error);
-        setIsAuthChecking(false);
         toast({
           title: "Authentication Error",
           description: "There was a problem checking your authentication status.",
           variant: "destructive"
         });
+      } finally {
+        // Always set auth checking to false when done
+        setIsAuthChecking(false);
       }
     };
     
-    // Increased delay to ensure auth state is properly loaded
-    const timer = setTimeout(checkAuth, 300);
-    return () => clearTimeout(timer);
+    checkAuth();
   }, [navigate]);
 
   // Show loading state while checking authentication
@@ -68,6 +71,7 @@ const SellItemPage = () => {
     );
   }
 
+  // Show loading state while form is initializing
   if (!register || !handleSubmit || !onSubmit) {
     return (
       <MainLayout>
