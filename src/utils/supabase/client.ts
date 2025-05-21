@@ -11,13 +11,10 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    // Add CORS headers via fetch options
     flowType: 'implicit'
   },
   global: {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-    },
+    // No headers property in SupabaseClientOptions, so we remove it
   }
 });
 

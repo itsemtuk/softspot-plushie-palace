@@ -15,6 +15,7 @@ const SellItemPage = () => {
   const navigate = useNavigate();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   
+  // Use optional chaining for form values to prevent null errors
   const { 
     imageUrl, 
     isSubmitting, 
@@ -24,25 +25,35 @@ const SellItemPage = () => {
     onSubmit, 
     handleImageSelect,
     handleSelectChange 
-  } = useSellItemForm();
+  } = useSellItemForm() || {}; // Provide fallback empty object
 
   // Check if user is authenticated
   useEffect(() => {
-    const checkAuth = () => {
-      const auth = isAuthenticated();
-      setIsAuthChecking(false);
-      
-      if (!auth) {
+    const checkAuth = async () => {
+      try {
+        const auth = isAuthenticated();
+        setIsAuthChecking(false);
+        
+        if (!auth) {
+          toast({
+            title: "Authentication Required",
+            description: "You must be signed in to sell items."
+          });
+          navigate('/sign-in');
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setIsAuthChecking(false);
         toast({
-          title: "Authentication Required",
-          description: "You must be signed in to sell items."
+          title: "Authentication Error",
+          description: "There was a problem checking your authentication status.",
+          variant: "destructive"
         });
-        navigate('/sign-in');
       }
     };
     
-    // Add a small delay to ensure auth state is properly loaded
-    const timer = setTimeout(checkAuth, 100);
+    // Increased delay to ensure auth state is properly loaded
+    const timer = setTimeout(checkAuth, 300);
     return () => clearTimeout(timer);
   }, [navigate]);
 
@@ -57,6 +68,17 @@ const SellItemPage = () => {
     );
   }
 
+  if (!register || !handleSubmit || !onSubmit) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center items-center h-[60vh] flex-col">
+          <Spinner size="lg" />
+          <p className="mt-4 text-gray-500">Loading form...</p>
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="max-w-2xl mx-auto py-6">
@@ -66,17 +88,17 @@ const SellItemPage = () => {
           <CardContent className="pt-6">
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <SellItemImageUploader 
-                imageUrl={imageUrl} 
-                onImageSelect={handleImageSelect} 
+                imageUrl={imageUrl || ""} 
+                onImageSelect={handleImageSelect || (() => {})} 
               />
 
               <SellItemFormFields
                 register={register}
-                errors={errors}
-                onSelectChange={handleSelectChange}
+                errors={errors || {}}
+                onSelectChange={handleSelectChange || (() => {})}
               />
 
-              <SellItemFormActions isSubmitting={isSubmitting} />
+              <SellItemFormActions isSubmitting={isSubmitting || false} />
             </form>
           </CardContent>
         </Card>

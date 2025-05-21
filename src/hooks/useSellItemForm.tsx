@@ -31,122 +31,139 @@ export interface SellItemFormData {
 }
 
 export const useSellItemForm = () => {
-  const navigate = useNavigate();
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<SellItemFormData>();
+  try {
+    const navigate = useNavigate();
+    const [imageUrl, setImageUrl] = useState<string>("");
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    
+    const { register, handleSubmit, setValue, formState: { errors } } = useForm<SellItemFormData>({
+      defaultValues: {
+        title: '',
+        price: 0,
+        description: '',
+        deliveryCost: 0,
+        color: ''
+      }
+    });
 
-  // Get current user ID safely
-  const currentUserId = getCurrentUserId();
-  
-  // Store current user ID for syncing if available
-  if (currentUserId) {
-    setCurrentUserId(currentUserId);
+    // Get current user ID safely
+    const currentUserId = getCurrentUserId();
+    
+    // Store current user ID for syncing if available
+    if (currentUserId) {
+      setCurrentUserId(currentUserId);
+    }
+
+    const handleImageSelect = (result: ImageUploadResult) => {
+      if (result?.success && result?.url) {
+        setImageUrl(result.url);
+      } else {
+        toast({
+          title: "Upload failed",
+          description: (result?.error) || "Failed to upload image",
+          variant: "destructive"
+        });
+      }
+    };
+
+    const handleSelectChange = (field: keyof SellItemFormData, value: any) => {
+      if (setValue) {
+        setValue(field, value);
+      }
+    };
+
+    const onSubmit = async (data: SellItemFormData) => {
+      // Set submission state to prevent multiple clicks
+      setIsSubmitting(true);
+      
+      try {
+        // Check for required image
+        if (!imageUrl) {
+          toast({
+            title: "Image required",
+            description: "Please upload an image of your plushie.",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        // Add the image URL to the form data
+        const listingData = { ...data, image: imageUrl };
+        
+        // Get existing listings
+        const listings = getMarketplaceListings() || [];
+        
+        // Get user info safely
+        const userId = currentUserId || 'anonymous-user';
+        const username = 'Anonymous User';
+        const timestamp = new Date().toISOString();
+        
+        const newListing: ExtendedPost = {
+          ...listingData,
+          id: `listing-${Date.now()}`,
+          userId: userId,
+          username: username,
+          likes: 0,
+          comments: 0,
+          timestamp: timestamp,
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          location: "",
+          forSale: true,
+          tags: [],
+          condition: data.condition,
+          material: data.material,
+          color: data.color || '',
+          deliveryCost: data.deliveryCost || 0
+        };
+        
+        console.log("Creating new listing:", newListing);
+        
+        // Add the new listing and save
+        listings.unshift(newListing as any); // Use type assertion to bypass the type check
+        saveMarketplaceListings(listings);
+        
+        // Also add to regular posts to make it appear in profile
+        await addPost({
+          ...newListing,
+          id: `post-${Date.now()}`,
+        });
+        
+        // Show success message
+        toast({
+          title: "Listing created!",
+          description: "Your item has been listed for sale.",
+        });
+        
+        // Navigate after a short delay
+        setTimeout(() => {
+          navigate('/marketplace');
+        }, 100);
+      } catch (error) {
+        console.error("Error creating listing:", error);
+        toast({
+          title: "Error",
+          description: "There was a problem creating your listing. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    return {
+      imageUrl,
+      isSubmitting,
+      register,
+      errors,
+      handleSubmit,
+      onSubmit,
+      handleImageSelect,
+      handleSelectChange
+    };
+  } catch (error) {
+    console.error("Error in useSellItemForm:", error);
+    return null; // Return null if hook initialization fails
   }
-
-  const handleImageSelect = (result: ImageUploadResult) => {
-    if (result.success && result.url) {
-      setImageUrl(result.url);
-    } else {
-      toast({
-        title: "Upload failed",
-        description: result.error || "Failed to upload image",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleSelectChange = (field: keyof SellItemFormData, value: any) => {
-    setValue(field, value);
-  };
-
-  const onSubmit = async (data: SellItemFormData) => {
-    // Set submission state to prevent multiple clicks
-    setIsSubmitting(true);
-    
-    // Check for required image
-    if (!imageUrl) {
-      toast({
-        title: "Image required",
-        description: "Please upload an image of your plushie.",
-        variant: "destructive"
-      });
-      setIsSubmitting(false);
-      return;
-    }
-    
-    try {
-      // Add the image URL to the form data
-      const listingData = { ...data, image: imageUrl };
-      
-      // Get existing listings
-      const listings = getMarketplaceListings();
-      
-      // Get user info safely
-      const userId = currentUserId || 'anonymous-user';
-      const username = 'Anonymous User';
-      const timestamp = new Date().toISOString();
-      
-      const newListing: ExtendedPost = {
-        ...listingData,
-        id: `listing-${Date.now()}`,
-        userId: userId,
-        username: username,
-        likes: 0,
-        comments: 0,
-        timestamp: timestamp,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        location: "",
-        forSale: true,
-        tags: [],
-        condition: data.condition,
-        material: data.material,
-        color: data.color,
-        deliveryCost: data.deliveryCost || 0
-      };
-      
-      console.log("Creating new listing:", newListing);
-      
-      // Add the new listing and save
-      listings.unshift(newListing as any); // Use type assertion to bypass the type check
-      saveMarketplaceListings(listings);
-      
-      // Also add to regular posts to make it appear in profile
-      await addPost({
-        ...newListing,
-        id: `post-${Date.now()}`,
-      });
-      
-      // Show success message
-      toast({
-        title: "Listing created!",
-        description: "Your item has been listed for sale.",
-      });
-      
-      // Directly navigate instead of using setTimeout
-      navigate('/marketplace');
-    } catch (error) {
-      console.error("Error creating listing:", error);
-      toast({
-        title: "Error",
-        description: "There was a problem creating your listing. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return {
-    imageUrl,
-    isSubmitting,
-    register,
-    errors,
-    handleSubmit,
-    onSubmit,
-    handleImageSelect,
-    handleSelectChange
-  };
 };

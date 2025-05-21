@@ -16,6 +16,11 @@ export const SellItemFormFields = ({
   const [selectedBrand, setSelectedBrand] = useState("");
   const [otherBrandValue, setOtherBrandValue] = useState("");
   
+  // Guard against null props
+  if (!register || !onSelectChange) {
+    return <div>Loading form fields...</div>;
+  }
+  
   const handleBrandChange = (value: string) => {
     setSelectedBrand(value);
     if (value !== "other") {
@@ -26,18 +31,19 @@ export const SellItemFormFields = ({
   };
   
   const handleOtherBrandChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setOtherBrandValue(e.target.value);
+    const value = e?.target?.value || "";
+    setOtherBrandValue(value);
     if (selectedBrand === "other") {
-      onSelectChange("brand", e.target.value || "Other");
+      onSelectChange("brand", value || "Other");
     }
   };
   
   return (
     <>
       <div className="space-y-4">
-        <BasicInfoFields register={register} errors={errors} />
+        <BasicInfoFields register={register} errors={errors || {}} />
         
-        <DescriptionField register={register} errors={errors} />
+        <DescriptionField register={register} errors={errors || {}} />
         
         <ConditionBrandFields 
           onSelectChange={onSelectChange} 
