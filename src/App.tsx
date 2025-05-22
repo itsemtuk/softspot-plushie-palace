@@ -8,7 +8,7 @@ import Index from "@/pages/Index";
 import Feed from "@/pages/Feed";
 import Discover from "@/pages/Discover";
 import Profile from "@/pages/Profile";
-import UserProfile from "@/pages/UserProfile";  // Changed from UserProfilePage to UserProfile
+import UserProfile from "@/pages/UserProfile";  
 import EditProfile from "@/pages/EditProfile";
 import NotFound from "@/pages/NotFound";
 import Settings from "@/pages/Settings";
@@ -16,6 +16,8 @@ import Messaging from "@/pages/Messaging";
 import SellItemPage from "@/pages/SellItemPage";
 import Marketplace from "@/pages/Marketplace";
 import CheckoutPage from "@/pages/CheckoutPage";
+import NotificationsPage from "@/pages/NotificationsPage";
+import WishlistPage from "@/pages/WishlistPage";
 
 const router = createBrowserRouter(
   [
@@ -38,7 +40,7 @@ const router = createBrowserRouter(
     },
     {
       path: "/user/:userId",
-      element: <UserProfile />,  // Changed from UserProfilePage to UserProfile
+      element: <UserProfile />,  
     },
     {
       path: "/edit-profile",
@@ -53,6 +55,10 @@ const router = createBrowserRouter(
       element: <Messaging />,
     },
     {
+      path: "/messages",
+      element: <Messaging />,
+    },
+    {
       path: "/sell",
       element: <SellItemPage />,
     },
@@ -63,6 +69,14 @@ const router = createBrowserRouter(
     {
       path: "/checkout",
       element: <CheckoutPage />,
+    },
+    {
+      path: "/notifications",
+      element: <NotificationsPage />,
+    },
+    {
+      path: "/wishlist",
+      element: <WishlistPage />,
     },
   ],
   {

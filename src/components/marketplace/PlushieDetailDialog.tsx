@@ -41,7 +41,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
   const hasDiscount = plushie.discount && plushie.discount > 0;
   
   const handleContactSeller = () => {
-    navigate(`/messages`);
+    navigate(`/messaging`);
     toast({
       title: "Contact initiated",
       description: "Redirecting to messages to contact the seller."
@@ -82,7 +82,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto">
+      <DialogContent className="sm:max-w-3xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto bg-white">
         <DialogClose className="absolute top-2 right-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
           <X className="h-4 w-4" />
           <span className="sr-only">Close</span>
@@ -240,7 +240,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
             <div className="flex flex-wrap gap-2 mt-6">
               <Button 
                 onClick={handleAddToCart} 
-                className="flex-1 bg-softspot-500 hover:bg-softspot-600"
+                className="flex-1 bg-softspot-500 hover:bg-softspot-600 text-white rounded-md"
                 disabled={isAddingToCart}
               >
                 {isAddingToCart ? (
@@ -259,7 +259,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
               <Button 
                 onClick={handleContactSeller} 
                 variant="outline"
-                className="flex-1"
+                className="flex-1 rounded-md"
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Contact Seller
@@ -269,7 +269,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
                 onClick={handleToggleWishlist}
                 variant="ghost"
                 size="icon"
-                className={isWishlisted ? 'text-red-500' : ''}
+                className={isWishlisted ? 'text-red-500 rounded-md' : 'rounded-md'}
               >
                 <Heart className={isWishlisted ? 'fill-current' : ''} />
               </Button>
@@ -278,6 +278,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
                 onClick={handleShare}
                 variant="ghost"
                 size="icon"
+                className="rounded-md"
               >
                 <Share2 />
               </Button>

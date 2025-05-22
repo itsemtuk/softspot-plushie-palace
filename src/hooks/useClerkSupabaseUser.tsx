@@ -24,13 +24,13 @@ export function useClerkSupabaseUser(clerkUser: any | null | undefined) {
         // Transform Clerk user to format needed by sync function
         const formattedUser = {
           id: clerkUser.id,
-          username: clerkUser.username,
-          firstName: clerkUser.firstName,
-          lastName: clerkUser.lastName,
+          username: clerkUser.username || '',
+          firstName: clerkUser.firstName || '',
+          lastName: clerkUser.lastName || '',
           emailAddresses: clerkUser.emailAddresses?.map(email => ({
-            emailAddress: email.emailAddress
-          })),
-          imageUrl: clerkUser.imageUrl
+            emailAddress: email.emailAddress || ''
+          })) || [],
+          imageUrl: clerkUser.imageUrl || ''
         };
         
         // Sync user to Supabase
