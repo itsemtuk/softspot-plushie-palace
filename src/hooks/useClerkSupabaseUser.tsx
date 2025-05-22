@@ -1,10 +1,10 @@
 
 import { useState, useEffect } from "react";
-import { User } from "@clerk/clerk-react";
+import type { UserResource } from "@clerk/types";
 import { syncClerkUserToSupabase, getSupabaseUserIdFromClerk } from "@/utils/auth/clerkSupabaseSync";
 import { toast } from "@/components/ui/use-toast";
 
-export function useClerkSupabaseUser(clerkUser: User | null | undefined) {
+export function useClerkSupabaseUser(clerkUser: UserResource | null | undefined) {
   const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
