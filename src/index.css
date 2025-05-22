@@ -87,6 +87,17 @@
   border-radius: 0.5rem !important;
 }
 
+/* Dropdown menu specific fix for navbar */
+[role="menu"] {
+  @apply bg-white rounded-md shadow-md border border-gray-200;
+  min-width: 180px !important;
+}
+
+/* Fix dropdown item styling */
+[role="menuitem"] {
+  @apply hover:bg-gray-50;
+}
+
 /* Consistent button styling */
 .btn-primary {
   @apply bg-softspot-500 hover:bg-softspot-600 text-white rounded-md;
@@ -108,4 +119,16 @@
 
 [role="dialog"] {
   @apply bg-white rounded-lg overflow-hidden;
+}
+
+/* Fix for dropdown menus in navigation */
+.navigation-dropdown {
+  @apply bg-white !important;
+  @apply rounded-md shadow-lg border border-gray-200 !important;
+}
+
+/* Ensure proper background in dropdown menus */
+.dropdown-menu-content {
+  @apply bg-white !important; 
+  @apply rounded-md shadow-lg border border-gray-200 !important;
 }

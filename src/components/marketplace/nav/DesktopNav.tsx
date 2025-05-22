@@ -13,8 +13,7 @@ import {
   Package, 
   Tag, 
   Star, 
-  PawPrint,
-  ChevronDown
+  PawPrint
 } from "lucide-react";
 import { brandData, speciesData } from "./data";
 
@@ -49,8 +48,8 @@ export function DesktopNav({ selectedCategory, onCategoryChange }: DesktopNavPro
                 <span>Featured</span>
               </div>
             </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="grid w-[400px] gap-2 p-4">
+            <NavigationMenuContent className="navigation-dropdown">
+              <div className="grid w-[400px] gap-2 p-4 bg-white">
                 <Link to="/marketplace?featured=new" className="block p-2 hover:bg-gray-50 rounded-md">
                   <div className="font-medium">New Arrivals</div>
                   <div className="text-sm text-muted-foreground">The latest plushies on SoftSpot</div>
@@ -74,8 +73,8 @@ export function DesktopNav({ selectedCategory, onCategoryChange }: DesktopNavPro
                 <span>Brands</span>
               </div>
             </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="grid grid-cols-2 w-[400px] gap-2 p-4">
+            <NavigationMenuContent className="navigation-dropdown">
+              <div className="grid grid-cols-2 w-[400px] gap-2 p-4 bg-white">
                 {brandData.map(brand => (
                   <Link 
                     key={brand.id}
@@ -99,8 +98,8 @@ export function DesktopNav({ selectedCategory, onCategoryChange }: DesktopNavPro
                 <span>Animals</span>
               </div>
             </NavigationMenuTrigger>
-            <NavigationMenuContent>
-              <div className="grid grid-cols-2 w-[400px] gap-2 p-4">
+            <NavigationMenuContent className="navigation-dropdown">
+              <div className="grid grid-cols-2 w-[400px] gap-2 p-4 bg-white">
                 {speciesData.map(animal => (
                   <Button 
                     key={animal.id}

@@ -57,7 +57,7 @@ export class ErrorBoundary extends Component<Props, State> {
                 <details className="mt-2 text-xs">
                   <summary>View details</summary>
                   <pre className="overflow-auto p-2 bg-gray-100 rounded mt-2 max-h-40">
-                    {this.state.errorInfo.componentStack}
+                    {this.state.errorInfo.componentStack || "No stack trace available"}
                   </pre>
                 </details>
               )}

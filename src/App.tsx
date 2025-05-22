@@ -18,6 +18,7 @@ import Marketplace from "@/pages/Marketplace";
 import CheckoutPage from "@/pages/CheckoutPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import WishlistPage from "@/pages/WishlistPage";
+import BrandPage from "@/pages/BrandPage";
 
 const router = createBrowserRouter(
   [
@@ -77,6 +78,10 @@ const router = createBrowserRouter(
     {
       path: "/wishlist",
       element: <WishlistPage />,
+    },
+    {
+      path: "/brand/:brandName",
+      element: <BrandPage />,
     },
   ],
   {

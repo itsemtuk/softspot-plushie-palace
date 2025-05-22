@@ -84,7 +84,7 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
           <span>Create</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[220px] bg-white">
+      <DropdownMenuContent align="end" className="w-[220px] bg-white dropdown-menu-content">
         <DropdownMenuLabel>Create New</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer">

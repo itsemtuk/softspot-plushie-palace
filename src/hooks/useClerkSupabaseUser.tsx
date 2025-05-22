@@ -21,14 +21,14 @@ export function useClerkSupabaseUser(clerkUser: any | null | undefined) {
         setIsLoading(true);
         setError(null);
         
-        // Transform Clerk user to format needed by sync function
+        // Make sure we have all required user properties with fallbacks
         const formattedUser = {
-          id: clerkUser.id,
+          id: clerkUser.id || '',
           username: clerkUser.username || '',
           firstName: clerkUser.firstName || '',
           lastName: clerkUser.lastName || '',
-          emailAddresses: clerkUser.emailAddresses?.map(email => ({
-            emailAddress: email.emailAddress || ''
+          emailAddresses: clerkUser.emailAddresses?.map((email: any) => ({
+            emailAddress: email?.emailAddress || ''
           })) || [],
           imageUrl: clerkUser.imageUrl || ''
         };
