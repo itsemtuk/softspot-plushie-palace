@@ -89,9 +89,10 @@ const SellItemPage = () => {
     );
   }
 
-  // Create a type-safe wrapper for the form submit handler
-  const formSubmitHandler = (e: React.FormEvent<HTMLFormElement>) => {
+  // Create a properly typed form submit handler with explicit React.FormEventHandler type
+  const formSubmitHandler: React.FormEventHandler<HTMLFormElement> = (e) => {
     if (handleSubmit && onSubmit) {
+      // Call the handleSubmit function with onSubmit as its argument, then call the resulting function with the event
       handleSubmit(onSubmit)(e);
     } else {
       e.preventDefault();
