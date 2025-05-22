@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import type { UserResource } from "@clerk/types";
+import type { UserResource } from "@clerk/clerk-react";
 import { syncClerkUserToSupabase, getSupabaseUserIdFromClerk } from "@/utils/auth/clerkSupabaseSync";
 import { toast } from "@/components/ui/use-toast";
 
