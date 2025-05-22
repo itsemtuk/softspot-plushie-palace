@@ -8,15 +8,21 @@ import { MaterialFillingFields } from "./form-fields/MaterialFillingFields";
 import { SpeciesDeliveryFields } from "./form-fields/SpeciesDeliveryFields";
 import { ShippingCostField } from "./form-fields/ShippingCostField";
 import { Spinner } from "@/components/ui/spinner";
+import ErrorBoundary from "@/components/ui/error-boundary";
+
+interface SellItemFormFieldsProps {
+  register: any;
+  errors?: Record<string, any>;
+  onSelectChange: (field: string, value: string) => void;
+}
 
 export const SellItemFormFields = ({ 
   register, 
   errors = {}, 
   onSelectChange 
-}) => {
+}: SellItemFormFieldsProps) => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [otherBrandValue, setOtherBrandValue] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
   
   // Guard against null props with more explicit loading state
   if (!register || !onSelectChange) {
@@ -50,7 +56,7 @@ export const SellItemFormFields = ({
   };
   
   return (
-    <>
+    <ErrorBoundary>
       <div className="space-y-4">
         <BasicInfoFields register={register} errors={errors} />
         
@@ -75,6 +81,6 @@ export const SellItemFormFields = ({
         
         <ShippingCostField register={register} />
       </div>
-    </>
+    </ErrorBoundary>
   );
 };

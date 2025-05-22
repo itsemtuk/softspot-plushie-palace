@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { isAuthenticated } from '@/utils/auth/authState';
 import { useUser } from '@clerk/clerk-react';
 import { Navigate, useNavigate } from 'react-router-dom';
+import ErrorBoundary from '@/components/ui/error-boundary';
+import { Spinner } from '@/components/ui/spinner';
 
 interface AuthWrapperProps {
   children: React.ReactNode;
@@ -67,9 +69,11 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
   
   // Show loading state if Clerk is still loading
   if (isClerkConfigured && !isClerkLoaded) {
-    return <div className="flex justify-center items-center h-24">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500"></div>
-    </div>;
+    return (
+      <div className="flex justify-center items-center h-24">
+        <Spinner className="h-8 w-8" />
+      </div>
+    );
   }
   
   console.log(`AuthWrapper rendering: requiresAuth=${requiresAuth}, isUserAuthenticated=${isUserAuthenticated}`);
@@ -77,7 +81,7 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
   // If auth is required but user is not authenticated, show fallback or redirect
   if (requiresAuth && !isUserAuthenticated) {
     if (fallback) {
-      return <>{fallback}</>;
+      return <ErrorBoundary>{fallback}</ErrorBoundary>;
     } else {
       console.log("Redirecting to sign-in page due to missing authentication");
       return <Navigate to="/sign-in" replace />;
@@ -87,13 +91,13 @@ export const AuthWrapper: React.FC<AuthWrapperProps> = ({
   // If auth is not required but user is authenticated, show fallback or redirect
   if (!requiresAuth && isUserAuthenticated) {
     if (fallback) {
-      return <>{fallback}</>;
+      return <ErrorBoundary>{fallback}</ErrorBoundary>;
     } else {
       console.log("Already authenticated, redirecting to feed");
       return <Navigate to="/feed" replace />;
     }
   }
   
-  // Otherwise show the children
-  return <>{children}</>;
+  // Otherwise show the children wrapped in error boundary
+  return <ErrorBoundary>{children}</ErrorBoundary>;
 };

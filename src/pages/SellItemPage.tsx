@@ -10,11 +10,20 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { waitForAuth, safeCheckAuth } from "@/utils/auth/authHelpers";
+import ErrorBoundary from "@/components/ui/error-boundary";
+import { useUser } from "@clerk/clerk-react";
+import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 
 const SellItemPage = () => {
   const navigate = useNavigate();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isFormLoaded, setIsFormLoaded] = useState(false);
+  
+  // Get Clerk user
+  const { user: clerkUser } = useUser();
+  
+  // Sync Clerk user to Supabase and get Supabase user ID
+  const { supabaseUserId, isLoading: isUserSyncLoading } = useClerkSupabaseUser(clerkUser);
   
   // Get form values with null safety
   const formValues = useSellItemForm();
@@ -65,13 +74,15 @@ const SellItemPage = () => {
     checkAuth();
   }, [navigate]);
 
-  // Show loading state while checking authentication
-  if (isAuthChecking) {
+  // Show loading state while checking authentication or syncing user
+  if (isAuthChecking || isUserSyncLoading) {
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh]">
           <Spinner size="lg" />
-          <p className="ml-3 text-gray-600">Checking authentication...</p>
+          <p className="ml-3 text-gray-600">
+            {isAuthChecking ? "Checking authentication..." : "Preparing your account..."}
+          </p>
         </div>
       </MainLayout>
     );
@@ -107,28 +118,33 @@ const SellItemPage = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-2xl mx-auto py-6">
-        <h1 className="text-3xl font-bold mb-6">Sell Your Plushie</h1>
-        
-        <Card>
-          <CardContent className="pt-6">
-            <form onSubmit={formSubmitHandler} className="space-y-6">
-              <SellItemImageUploader 
-                imageUrl={imageUrl} 
-                onImageSelect={handleImageSelect || (() => {})} 
-              />
+      <ErrorBoundary>
+        <div className="max-w-2xl mx-auto py-6">
+          <h1 className="text-3xl font-bold mb-6">Sell Your Plushie</h1>
+          
+          <Card>
+            <CardContent className="pt-6">
+              <form onSubmit={formSubmitHandler} className="space-y-6">
+                <SellItemImageUploader 
+                  imageUrl={imageUrl} 
+                  onImageSelect={handleImageSelect || (() => {})} 
+                />
 
-              <SellItemFormFields
-                register={register}
-                errors={errors}
-                onSelectChange={handleSelectChange || (() => {})}
-              />
+                <SellItemFormFields
+                  register={register}
+                  errors={errors}
+                  onSelectChange={handleSelectChange || (() => {})}
+                />
 
-              <SellItemFormActions isSubmitting={isSubmitting} />
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+                <SellItemFormActions 
+                  isSubmitting={isSubmitting} 
+                  supabaseUserId={supabaseUserId}
+                />
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      </ErrorBoundary>
     </MainLayout>
   );
 };
