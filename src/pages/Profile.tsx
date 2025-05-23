@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -166,16 +167,42 @@ const Profile = () => {
   return (
     <MainLayout noPadding>
       <div className="flex-grow">
+        {/* Profile Header Box */}
         <UserProfileHeader
           username={username}
           isOwnProfile={true}
           profileData={profileData}
         />
 
-        <div className="container mx-auto px-4 py-4 mb-16">
+        {/* Content Tabs - Outside of the profile box */}
+        <div className="container mx-auto px-4 py-2 max-w-4xl">
           <Tabs defaultValue="posts" className="w-full">
+            <TabsList className="bg-white shadow-sm mb-6 rounded-full w-full flex justify-center p-1">
+              <TabsTrigger 
+                value="posts" 
+                className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
+              >
+                <Grid3X3 className="h-4 w-4 mr-2" />
+                <span>Posts</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="collections" 
+                className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
+              >
+                <BookMarked className="h-4 w-4 mr-2" />
+                <span>Collections</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="sales" 
+                className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
+              >
+                <ShoppingBag className="h-4 w-4 mr-2" />
+                <span>For Sale</span>
+              </TabsTrigger>
+            </TabsList>
+            
             <TabsContent value="posts">
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden bg-transparent shadow-none">
                 <ProfilePostsGrid 
                   posts={regularPosts} 
                   onPostClick={handlePostClick} 
@@ -187,7 +214,7 @@ const Profile = () => {
             </TabsContent>
             
             <TabsContent value="collections">
-              <Card>
+              <Card className="shadow-sm">
                 <div className="text-center py-16">
                   <h3 className="text-lg font-medium">Collection Coming Soon</h3>
                   <p className="text-gray-500 mt-2">
@@ -198,7 +225,7 @@ const Profile = () => {
             </TabsContent>
             
             <TabsContent value="sales">
-              <Card className="overflow-hidden">
+              <Card className="overflow-hidden bg-transparent shadow-none">
                 <ProfilePostsGrid 
                   posts={salesPosts} 
                   onPostClick={handlePostClick} 

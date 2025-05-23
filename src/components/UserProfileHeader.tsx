@@ -13,7 +13,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { MarketplaceReviews } from "./profile/MarketplaceReviews";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "./ui/progress";
-import { Lock } from "lucide-react";
+import { Lock, Pencil } from "lucide-react";
 
 interface UserProfileHeaderProps {
   username: string;
@@ -54,7 +54,7 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
   );
   
   return (
-    <div className="bg-white shadow-sm">
+    <div className="bg-white shadow-sm rounded-xl mb-6">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-shrink-0 flex justify-center">
@@ -63,7 +63,10 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
           
           <div className="flex-grow">
             <div className="flex justify-between items-center flex-wrap gap-2">
-              <h1 className="text-2xl font-bold">{username}</h1>
+              <div>
+                <h1 className="text-2xl font-bold">{username}</h1>
+                <p className="text-gray-500 text-sm">Plushie collector</p>
+              </div>
               
               <div className="flex gap-2">
                 {isOwnProfile ? (
@@ -71,8 +74,9 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
                     variant="outline"
                     size={isMobile ? "sm" : "default"}
                     onClick={handleEditProfileClick}
-                    className="rounded-md"
+                    className="rounded-full px-6"
                   >
+                    <Pencil className="mr-2 h-4 w-4" />
                     Edit Profile
                   </Button>
                 ) : (
@@ -108,7 +112,7 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
               </TabsContent>
               
               <TabsContent value="badges" className="mt-4">
-                <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="bg-white rounded-lg">
                   <h2 className="text-lg font-semibold mb-4">Badges</h2>
                   
                   <div className="mb-6">

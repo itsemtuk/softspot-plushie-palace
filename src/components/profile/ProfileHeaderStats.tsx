@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React from 'react';
+import { User, Award, MessageSquare } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
-import { Award, MessageSquare, User } from "lucide-react";
 
 interface ProfileHeaderStatsProps {
   postsCount: number;
@@ -14,10 +14,8 @@ export function ProfileHeaderStats({
   followersCount, 
   followingCount 
 }: ProfileHeaderStatsProps) {
-  const [activeTab, setActiveTab] = useState<'posts' | 'collections' | 'sales'>('posts');
-  
   return (
-    <div className="mt-4 border-b border-gray-100">
+    <div className="mt-4 mb-6">
       {/* Stats row */}
       <div className="flex justify-around mb-6">
         <div className="text-center">
@@ -34,10 +32,10 @@ export function ProfileHeaderStats({
         </div>
       </div>
       
-      {/* About/Badges/Reviews tabs (similar to the reference image) */}
-      <div className="mt-6 mb-2">
+      {/* About/Badges/Reviews tabs */}
+      <div className="mt-4">
         <Tabs defaultValue="about" className="w-full">
-          <TabsList className="w-full grid grid-cols-3 bg-gray-50 rounded-lg">
+          <TabsList className="w-full grid grid-cols-3 bg-gray-50 rounded-lg mb-4">
             <TabsTrigger 
               value="about" 
               className="flex items-center justify-center data-[state=active]:bg-white rounded-md data-[state=active]:shadow-sm"
