@@ -55,7 +55,12 @@
   animation: fadeIn 0.3s ease-in-out forwards;
 }
 
-/* Fix card backgrounds */
+/* Profile header background with purple gradient */
+.profile-header {
+  @apply bg-gradient-to-r from-purple-100 to-softspot-100 rounded-xl;
+}
+
+/* Card styling */
 .card:not([class*="bg-"]) {
   @apply bg-white rounded-lg shadow-sm;
 }
@@ -64,12 +69,12 @@
   @apply bg-white rounded-lg;
 }
 
-/* Ensure proper background colors for different containers */
+/* Content area background */
 .main-content-area {
   @apply bg-white min-h-screen;
 }
 
-/* Fix form elements appearance */
+/* Form elements styling */
 .form-group {
   @apply space-y-1;
 }
@@ -83,7 +88,7 @@
   @apply shadow-sm hover:shadow-md transition-shadow duration-200;
 }
 
-/* Fix dropdown styling - ENHANCED VERSION */
+/* Fix dropdown styling */
 [data-radix-popper-content-wrapper] {
   background-color: white !important;
   z-index: 50 !important;
@@ -107,7 +112,7 @@
   @apply hover:bg-gray-50;
 }
 
-/* Consistent button styling */
+/* Button styling */
 .btn-primary {
   @apply bg-softspot-500 hover:bg-softspot-600 text-white rounded-md;
 }
@@ -116,7 +121,7 @@
   @apply bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md;
 }
 
-/* Fix switch coloring */
+/* Switch styling */
 .switch-track {
   @apply bg-softspot-500;
 }
@@ -130,13 +135,12 @@
   @apply bg-white rounded-lg overflow-hidden;
 }
 
-/* Fix for dropdown menus in navigation */
+/* Navigation dropdown fixes */
 .navigation-dropdown {
   @apply bg-white !important;
   @apply rounded-md shadow-lg border border-gray-200 !important;
 }
 
-/* Ensure proper background in dropdown menus */
 .dropdown-menu-content {
   @apply bg-white !important; 
   @apply rounded-md shadow-lg border border-gray-200 !important;
@@ -189,7 +193,7 @@ button,
   @apply rounded-md overflow-hidden;
 }
 
-/* Profile page specific styles */
+/* Profile tabs styling */
 .profile-tab-outer {
   @apply rounded-full !important;
 }
@@ -199,20 +203,35 @@ button,
   @apply bg-softspot-500 !important;
 }
 
+/* Tabs styling for the profile */
 .tabs-list [data-state="active"] {
-  @apply bg-white shadow-sm;
+  @apply bg-softspot-100 shadow-none rounded-full;
 }
 
-/* Fix mobile create button popup */
-[data-radix-popper-content-wrapper] [role="dialog"] {
-  @apply bg-white !important;
-  @apply rounded-lg !important;
-  @apply shadow-lg !important;
+/* Improved badge styling for profile */
+.badge-grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4;
 }
 
-/* Mobile create button popup */
-div[data-radix-popper-content-wrapper] {
-  @apply bg-transparent !important;
+.badge-item {
+  @apply p-4 bg-white border border-gray-100 rounded-lg text-center;
+}
+
+.badge-item-locked {
+  @apply p-4 bg-gray-100 border border-gray-200 rounded-lg text-center opacity-80;
+}
+
+/* Improved tabs styling */
+.profile-tabs-list {
+  @apply bg-gray-100 rounded-full p-1 grid grid-cols-3 w-full;
+}
+
+.profile-tab {
+  @apply rounded-full text-gray-700 transition-colors;
+}
+
+.profile-tab[data-state="active"] {
+  @apply bg-softspot-100 text-softspot-800;
 }
 
 /* Fix popup contents */
@@ -246,12 +265,20 @@ textarea,
   @apply rounded-md !important;
 }
 
-/* Profile page custom styling */
+/* Profile header styling with gradient */
 .profile-header {
   @apply bg-gradient-to-r from-purple-100 to-softspot-100 rounded-xl;
 }
 
-/* Style for outer profile tabs */
-.profile-content-tab {
-  @apply data-[state=active]:bg-softspot-100 rounded-full;
+/* Support for badge UI elements */
+.badge-grid-item {
+  @apply p-4 rounded-lg shadow-sm text-center transition-all;
+}
+
+.badge-earned {
+  @apply bg-white border-2 border-softspot-200;
+}
+
+.badge-locked {
+  @apply bg-gray-100 border border-gray-200 opacity-75;
 }

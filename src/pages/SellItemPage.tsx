@@ -18,15 +18,18 @@ const SellItemPage = () => {
   const navigate = useNavigate();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isFormLoaded, setIsFormLoaded] = useState(false);
+  const [loading, setLoading] = useState(true);
   
-  // Get Clerk user
+  // Get Clerk user with proper null handling
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
   
-  // Sync Clerk user to Supabase and get Supabase user ID
+  // Sync Clerk user to Supabase and get Supabase user ID with null safety
   const { supabaseUserId, isLoading: isUserSyncLoading } = useClerkSupabaseUser(clerkUser);
   
   // Get form values with null safety
   const formValues = useSellItemForm();
+  
+  // Check if formValues exists before destructuring
   const { 
     imageUrl = "", 
     isSubmitting = false, 
@@ -44,6 +47,17 @@ const SellItemPage = () => {
       try {
         // Wait for Clerk to load first
         if (!isClerkLoaded) {
+          return;
+        }
+        
+        // Check if user exists
+        if (!clerkUser) {
+          toast({
+            title: "Authentication Required",
+            description: "Please sign in to continue.",
+            variant: "destructive"
+          });
+          navigate('/sign-in');
           return;
         }
         
@@ -73,14 +87,15 @@ const SellItemPage = () => {
       } finally {
         // Always set auth checking to false when done
         setIsAuthChecking(false);
+        setLoading(false);
       }
     };
     
     checkAuth();
-  }, [navigate, isClerkLoaded]);
+  }, [navigate, isClerkLoaded, clerkUser]);
 
   // Show loading state while checking authentication or syncing user
-  if (isAuthChecking || isUserSyncLoading || !isClerkLoaded) {
+  if (isAuthChecking || isUserSyncLoading || !isClerkLoaded || loading) {
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh]">
@@ -88,6 +103,26 @@ const SellItemPage = () => {
           <p className="ml-3 text-gray-600">
             {isAuthChecking ? "Checking authentication..." : "Preparing your account..."}
           </p>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Check if user is authenticated
+  if (!clerkUser) {
+    return (
+      <MainLayout>
+        <div className="flex justify-center items-center h-[60vh] flex-col">
+          <div className="bg-white p-6 rounded-lg shadow-sm text-center max-w-md">
+            <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+            <p className="mb-4">Please sign in to list your items for sale.</p>
+            <button 
+              className="bg-softspot-500 text-white px-4 py-2 rounded-md"
+              onClick={() => navigate('/sign-in')}
+            >
+              Sign In
+            </button>
+          </div>
         </div>
       </MainLayout>
     );
@@ -125,8 +160,8 @@ const SellItemPage = () => {
     <MainLayout>
       <ErrorBoundary>
         <div className="max-w-2xl mx-auto py-6">
-          <Card className="rounded-xl shadow-sm overflow-hidden">
-            <CardHeader className="bg-gray-50">
+          <Card className="rounded-xl bg-white shadow-sm overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100">
               <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
             </CardHeader>
             

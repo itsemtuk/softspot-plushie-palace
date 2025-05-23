@@ -37,8 +37,8 @@ export const useSellItemForm = () => {
     const [imageUrl, setImageUrl] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFormInitialized, setIsFormInitialized] = useState(false);
-    // Add Clerk user to fix the L2() is null error
-    const { user: clerkUser } = useUser();
+    // Add Clerk user
+    const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
     
     // Initialize form with safe defaults
     const form = useForm<SellItemFormData>({
@@ -62,6 +62,11 @@ export const useSellItemForm = () => {
     const errors = formState?.errors || {};
     
     useEffect(() => {
+      // Wait for Clerk to load before initializing form
+      if (!isClerkLoaded) {
+        return;
+      }
+      
       // Mark form as initialized after first render
       setIsFormInitialized(true);
       
@@ -72,10 +77,10 @@ export const useSellItemForm = () => {
       if (currentUserId) {
         setCurrentUserId(currentUserId);
       }
-    }, [clerkUser]);
+    }, [clerkUser, isClerkLoaded]);
 
-    // If form is not initialized, return empty object with defaults
-    if (!isFormInitialized) {
+    // If form is not initialized or Clerk is not loaded, return empty object with defaults
+    if (!isFormInitialized || !isClerkLoaded) {
       return {
         imageUrl: "",
         isSubmitting: false,
@@ -120,6 +125,18 @@ export const useSellItemForm = () => {
             variant: "destructive"
           });
           setIsSubmitting(false);
+          return;
+        }
+        
+        // Check for authenticated user
+        if (!clerkUser) {
+          toast({
+            title: "Authentication required",
+            description: "Please sign in to create a listing.",
+            variant: "destructive"
+          });
+          setIsSubmitting(false);
+          navigate('/sign-in');
           return;
         }
         

@@ -14,6 +14,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { Card } from "@/components/ui/card";
+import ErrorBoundary from "@/components/ui/error-boundary";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -29,7 +30,7 @@ const Profile = () => {
   const { openPostDialog } = usePostDialog();
 
   // Check authentication status
-  const isAuthenticated = isClerkConfigured ? isSignedIn : !!localStorage.getItem('currentUserId');
+  const userIsAuthenticated = isClerkConfigured ? isSignedIn : !!localStorage.getItem('currentUserId');
 
   // Only fetch posts when user is authenticated
   useEffect(() => {
@@ -166,78 +167,80 @@ const Profile = () => {
 
   return (
     <MainLayout noPadding>
-      <div className="flex-grow">
-        {/* Profile Header Box */}
-        <UserProfileHeader
-          username={username}
-          isOwnProfile={true}
-          profileData={profileData}
-        />
+      <ErrorBoundary>
+        <div className="flex-grow">
+          {/* Profile Header Box - Inside this box should be avatar, username, stats, bio */}
+          <UserProfileHeader
+            username={username}
+            isOwnProfile={true}
+            profileData={profileData}
+          />
 
-        {/* Content Tabs - Outside of the profile box */}
-        <div className="container mx-auto px-4 py-2 max-w-4xl">
-          <Tabs defaultValue="posts" className="w-full">
-            <TabsList className="bg-white shadow-sm mb-6 rounded-full w-full flex justify-center p-1">
-              <TabsTrigger 
-                value="posts" 
-                className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
-              >
-                <Grid3X3 className="h-4 w-4 mr-2" />
-                <span>Posts</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="collections" 
-                className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
-              >
-                <BookMarked className="h-4 w-4 mr-2" />
-                <span>Collections</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="sales" 
-                className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
-              >
-                <ShoppingBag className="h-4 w-4 mr-2" />
-                <span>For Sale</span>
-              </TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="posts">
-              <Card className="overflow-hidden bg-transparent shadow-none">
-                <ProfilePostsGrid 
-                  posts={regularPosts} 
-                  onPostClick={handlePostClick} 
-                  onDeletePost={handleDeletePost}
-                  isOwnProfile={true}
-                  showCreateButton={true}
-                />
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="collections">
-              <Card className="shadow-sm">
-                <div className="text-center py-16">
-                  <h3 className="text-lg font-medium">Collection Coming Soon</h3>
-                  <p className="text-gray-500 mt-2">
-                    This feature will be available in a future update.
-                  </p>
-                </div>
-              </Card>
-            </TabsContent>
-            
-            <TabsContent value="sales">
-              <Card className="overflow-hidden bg-transparent shadow-none">
-                <ProfilePostsGrid 
-                  posts={salesPosts} 
-                  onPostClick={handlePostClick} 
-                  onDeletePost={handleDeletePost}
-                  isOwnProfile={true}
-                  showCreateButton={false}
-                />
-              </Card>
-            </TabsContent>
-          </Tabs>
+          {/* Content Tabs - Outside of the profile box */}
+          <div className="container mx-auto px-4 py-2 max-w-4xl">
+            <Tabs defaultValue="posts" className="w-full">
+              <TabsList className="bg-white shadow-sm mb-6 rounded-full w-full flex justify-center p-1">
+                <TabsTrigger 
+                  value="posts" 
+                  className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
+                >
+                  <Grid3X3 className="h-4 w-4 mr-2" />
+                  <span>Posts</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="collections" 
+                  className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
+                >
+                  <BookMarked className="h-4 w-4 mr-2" />
+                  <span>Collections</span>
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="sales" 
+                  className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
+                >
+                  <ShoppingBag className="h-4 w-4 mr-2" />
+                  <span>For Sale</span>
+                </TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="posts">
+                <Card className="overflow-hidden bg-transparent shadow-none">
+                  <ProfilePostsGrid 
+                    posts={regularPosts} 
+                    onPostClick={handlePostClick} 
+                    onDeletePost={handleDeletePost}
+                    isOwnProfile={true}
+                    showCreateButton={true}
+                  />
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="collections">
+                <Card className="shadow-sm">
+                  <div className="text-center py-16">
+                    <h3 className="text-lg font-medium">Collection Coming Soon</h3>
+                    <p className="text-gray-500 mt-2">
+                      This feature will be available in a future update.
+                    </p>
+                  </div>
+                </Card>
+              </TabsContent>
+              
+              <TabsContent value="sales">
+                <Card className="overflow-hidden bg-transparent shadow-none">
+                  <ProfilePostsGrid 
+                    posts={salesPosts} 
+                    onPostClick={handlePostClick} 
+                    onDeletePost={handleDeletePost}
+                    isOwnProfile={true}
+                    showCreateButton={false}
+                  />
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
         </div>
-      </div>
+      </ErrorBoundary>
     </MainLayout>
   );
 };
