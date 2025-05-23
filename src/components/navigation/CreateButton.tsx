@@ -37,7 +37,13 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
     }
 
     setIsDropdownOpen(false);
+    console.log("Opening post creation dialog");
     setIsPostCreationOpen(true);
+    
+    // If there's a custom handler passed, call it too
+    if (onCreatePost) {
+      onCreatePost();
+    }
   };
 
   const handleSellItem = () => {
@@ -84,7 +90,7 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
           <span>Create</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[220px] bg-white dropdown-menu-content">
+      <DropdownMenuContent align="end" className="w-[220px] bg-white shadow-lg rounded-md border border-gray-200">
         <DropdownMenuLabel>Create New</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer">

@@ -43,6 +43,11 @@ export class ErrorBoundary extends Component<Props, State> {
       error: null,
       errorInfo: null
     });
+    
+    // Force a reload of the page when specific errors occur
+    if (this.state.error?.message?.includes("is null")) {
+      window.location.reload();
+    }
   };
 
   public render(): ReactNode {

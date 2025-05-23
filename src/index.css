@@ -74,12 +74,12 @@
   @apply shadow-sm hover:shadow-md transition-shadow duration-200;
 }
 
-/* Fix dropdown styling */
+/* Fix dropdown styling - ENHANCED VERSION */
 [data-radix-popper-content-wrapper] {
   background-color: white !important;
   z-index: 50 !important;
   border-radius: 0.5rem !important;
-  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important;
 }
 
 [data-radix-select-content] {
@@ -131,4 +131,40 @@
 .dropdown-menu-content {
   @apply bg-white !important; 
   @apply rounded-md shadow-lg border border-gray-200 !important;
+}
+
+/* Fix rounded corners globally */
+.rounded, .rounded-md, .rounded-lg, .rounded-xl, .rounded-full {
+  overflow: hidden;
+}
+
+/* Fix radix sheet backgrounds */
+[data-radix-sheet-content] {
+  @apply bg-white !important;
+}
+
+/* Fix all popups and overlays */
+.sheet-content,
+.dropdown-content,
+[data-state="open"].sheet-content,
+[data-state="open"].dropdown-content {
+  @apply bg-white !important;
+}
+
+/* Fix button UI defaults */
+button, 
+.button,
+[type="button"],
+[type="submit"],
+[type="reset"] {
+  @apply rounded-md overflow-hidden;
+}
+
+/* Fix switch component colors */
+[data-state="checked"].switch-thumb {
+  @apply bg-softspot-500 !important;
+}
+
+.tabs-list [data-state="active"] {
+  @apply bg-white shadow-sm;
 }

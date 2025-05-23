@@ -35,7 +35,10 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
   const handleCreatePost = () => {
     handleAuthentication("create posts", () => {
       onOpenChange(false);
-      setIsPostCreationOpen(true);
+      console.log("Opening post creation dialog (mobile)");
+      setTimeout(() => {
+        setIsPostCreationOpen(true);
+      }, 100);
     });
   };
   
@@ -59,7 +62,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
   
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="bottom" className="w-full p-0">
+      <SheetContent side="bottom" className="w-full p-0 bg-white">
         <div className="flex flex-col h-full">
           <SheetHeader className="px-4 pt-4 pb-2">
             <SheetTitle>Create new</SheetTitle>
@@ -68,7 +71,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
           <div className="p-4 space-y-4">
             <Button 
               variant="outline" 
-              className="flex items-center gap-3 justify-start w-full py-6 bg-white"
+              className="flex items-center gap-3 justify-start w-full py-6 bg-white rounded-md"
               onClick={handleCreatePost}
             >
               <ImageIcon className="h-5 w-5" />
@@ -77,7 +80,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             
             <Button 
               variant="outline" 
-              className="flex items-center gap-3 justify-start w-full py-6 bg-white"
+              className="flex items-center gap-3 justify-start w-full py-6 bg-white rounded-md"
               onClick={handleTradeRequest}
             >
               <Handshake className="h-5 w-5" />
@@ -86,7 +89,7 @@ export const CreatePostSheet = ({ open, onOpenChange }: CreatePostSheetProps) =>
             
             <Button 
               variant="outline" 
-              className="flex items-center gap-3 justify-start w-full py-6 bg-white"
+              className="flex items-center gap-3 justify-start w-full py-6 bg-white rounded-md"
               onClick={() => navigateToPage('/sell', 'sell items')}
             >
               <ShoppingCart className="h-5 w-5" />
