@@ -14,6 +14,7 @@ import {
 } from "@/types/marketplace";
 import { saveMarketplaceListings, getMarketplaceListings, getCurrentUserId, setCurrentUserId } from "@/utils/storage/localStorageUtils";
 import { addPost } from "@/utils/posts/postManagement";
+import { useUser } from "@clerk/clerk-react";
 
 export interface SellItemFormData {
   title: string;
@@ -36,6 +37,8 @@ export const useSellItemForm = () => {
     const [imageUrl, setImageUrl] = useState<string>("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isFormInitialized, setIsFormInitialized] = useState(false);
+    // Add Clerk user to fix the L2() is null error
+    const { user: clerkUser } = useUser();
     
     // Initialize form with safe defaults
     const form = useForm<SellItemFormData>({
@@ -62,14 +65,14 @@ export const useSellItemForm = () => {
       // Mark form as initialized after first render
       setIsFormInitialized(true);
       
-      // Get current user ID safely
-      const currentUserId = getCurrentUserId();
+      // Get current user ID safely - prefer Clerk user ID if available
+      const currentUserId = clerkUser?.id || getCurrentUserId();
       
       // Store current user ID for syncing if available
       if (currentUserId) {
         setCurrentUserId(currentUserId);
       }
-    }, []);
+    }, [clerkUser]);
 
     // If form is not initialized, return empty object with defaults
     if (!isFormInitialized) {
@@ -126,16 +129,16 @@ export const useSellItemForm = () => {
         // Get existing listings
         const listings = getMarketplaceListings() || [];
         
-        // Get user info safely
-        const userId = getCurrentUserId() || 'anonymous-user';
-        const username = 'Anonymous User';
+        // Get user info safely - prefer Clerk user if available
+        const userId = clerkUser?.id || getCurrentUserId() || 'anonymous-user';
+        const username = clerkUser?.username || clerkUser?.firstName || 'Anonymous User';
         const timestamp = new Date().toISOString();
         
         const newListing: ExtendedPost = {
           ...listingData,
           id: `listing-${Date.now()}`,
           userId: userId,
-          username: username,
+          username: username as string,
           likes: 0,
           comments: 0,
           timestamp: timestamp,

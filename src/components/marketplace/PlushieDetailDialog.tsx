@@ -82,31 +82,32 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-3xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto bg-white">
-        <DialogClose className="absolute top-2 right-2 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-10">
-          <X className="h-4 w-4" />
+      <DialogContent className="sm:max-w-3xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto bg-white rounded-lg">
+        {/* Single close button in top right */}
+        <DialogClose className="absolute top-4 right-4 rounded-full hover:bg-gray-100 p-1 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none z-10">
+          <X className="h-5 w-5" />
           <span className="sr-only">Close</span>
         </DialogClose>
         
         <div className="grid md:grid-cols-2 grid-cols-1 gap-0">
           {/* Image Section */}
-          <div className="relative h-[250px] md:h-full bg-gray-100 flex items-center justify-center">
+          <div className="relative h-[300px] md:h-full bg-gray-50 flex items-center justify-center">
             {!imageLoaded && (
-              <Skeleton className="w-full h-full absolute inset-0" />
+              <Skeleton className="w-full h-full absolute inset-0 rounded-l-lg" />
             )}
             <img 
               src={plushie.image} 
               alt={plushie.title || "Plushie"} 
-              className={`h-full w-full object-contain ${!imageLoaded ? 'opacity-0' : 'opacity-100'}`}
+              className={`h-full w-full object-contain p-4 ${!imageLoaded ? 'opacity-0' : 'opacity-100'}`}
               onLoad={() => setImageLoaded(true)}
               onError={(e) => {
                 console.error("Image failed to load:", e);
-                (e.target as HTMLImageElement).src = "https://images.unsplash.com/photo-1516067154453-6194ba34d121";
+                (e.target as HTMLImageElement).src = "https://via.placeholder.com/400x400?text=No+Image";
                 setImageLoaded(true);
               }}
             />
             {hasDiscount && (
-              <Badge className="absolute top-4 left-4 bg-red-500">
+              <Badge className="absolute top-4 left-4 bg-red-500 rounded-md">
                 {plushie.discount}% OFF
               </Badge>
             )}
@@ -145,9 +146,9 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
             </div>
             
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="mb-4">
-              <TabsList className="grid grid-cols-2">
-                <TabsTrigger value="details">Details</TabsTrigger>
-                <TabsTrigger value="shipping">Shipping</TabsTrigger>
+              <TabsList className="grid grid-cols-2 bg-gray-50 rounded-lg">
+                <TabsTrigger value="details" className="rounded-md">Details</TabsTrigger>
+                <TabsTrigger value="shipping" className="rounded-md">Shipping</TabsTrigger>
               </TabsList>
               
               <TabsContent value="details" className="space-y-3 pt-2">
@@ -200,7 +201,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
                 {plushie.tags && plushie.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mt-3">
                     {plushie.tags.map((tag, i) => (
-                      <Badge key={i} variant="secondary" className="cursor-pointer">
+                      <Badge key={i} variant="secondary" className="cursor-pointer rounded-md">
                         {tag}
                       </Badge>
                     ))}
@@ -236,11 +237,11 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
               </TabsContent>
             </Tabs>
             
-            {/* Action Buttons */}
-            <div className="flex flex-wrap gap-2 mt-6">
+            {/* Action Buttons - Improved layout */}
+            <div className="mt-6 grid grid-cols-4 gap-2">
               <Button 
                 onClick={handleAddToCart} 
-                className="flex-1 bg-softspot-500 hover:bg-softspot-600 text-white rounded-md"
+                className="col-span-2 bg-softspot-500 hover:bg-softspot-600 text-white rounded-md"
                 disabled={isAddingToCart}
               >
                 {isAddingToCart ? (
@@ -259,7 +260,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
               <Button 
                 onClick={handleContactSeller} 
                 variant="outline"
-                className="flex-1 rounded-md"
+                className="col-span-2 rounded-md"
               >
                 <MessageSquare className="mr-2 h-4 w-4" />
                 Contact Seller
@@ -268,8 +269,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
               <Button
                 onClick={handleToggleWishlist}
                 variant="ghost"
-                size="icon"
-                className={isWishlisted ? 'text-red-500 rounded-md' : 'rounded-md'}
+                className={`flex justify-center items-center rounded-md ${isWishlisted ? 'text-red-500' : ''}`}
               >
                 <Heart className={isWishlisted ? 'fill-current' : ''} />
               </Button>
@@ -277,8 +277,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
               <Button
                 onClick={handleShare}
                 variant="ghost"
-                size="icon"
-                className="rounded-md"
+                className="flex justify-center items-center rounded-md"
               >
                 <Share2 />
               </Button>

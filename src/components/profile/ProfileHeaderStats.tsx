@@ -34,59 +34,27 @@ export function ProfileHeaderStats({
         </div>
       </div>
       
-      {/* Content Tabs for Posts/Collections/Sales */}
-      <div className="bg-gray-50 rounded-lg overflow-hidden">
-        <Tabs defaultValue="posts" className="w-full">
-          <TabsList className="w-full grid grid-cols-3">
-            <TabsTrigger 
-              value="posts" 
-              className="data-[state=active]:bg-white rounded-none data-[state=active]:shadow-none"
-            >
-              <div className="flex items-center">
-                <span>Posts</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="collections" 
-              className="data-[state=active]:bg-white rounded-none data-[state=active]:shadow-none"
-            >
-              <div className="flex items-center">
-                <span>Collections</span>
-              </div>
-            </TabsTrigger>
-            <TabsTrigger 
-              value="sales" 
-              className="data-[state=active]:bg-white rounded-none data-[state=active]:shadow-none"
-            >
-              <div className="flex items-center">
-                <span>For Sale</span>
-              </div>
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
-      
       {/* About/Badges/Reviews tabs (similar to the reference image) */}
       <div className="mt-6 mb-2">
         <Tabs defaultValue="about" className="w-full">
-          <TabsList className="w-full grid grid-cols-3 rounded-lg bg-gray-50">
+          <TabsList className="w-full grid grid-cols-3 bg-gray-50 rounded-lg">
             <TabsTrigger 
               value="about" 
-              className="flex items-center justify-center data-[state=active]:bg-white rounded-none data-[state=active]:shadow-none"
+              className="flex items-center justify-center data-[state=active]:bg-white rounded-md data-[state=active]:shadow-sm"
             >
               <User className="h-4 w-4 mr-2" />
               <span>About</span>
             </TabsTrigger>
             <TabsTrigger 
               value="badges" 
-              className="flex items-center justify-center data-[state=active]:bg-white rounded-none data-[state=active]:shadow-none"
+              className="flex items-center justify-center data-[state=active]:bg-white rounded-md data-[state=active]:shadow-sm"
             >
               <Award className="h-4 w-4 mr-2" />
               <span>Badges</span>
             </TabsTrigger>
             <TabsTrigger 
               value="reviews" 
-              className="flex items-center justify-center data-[state=active]:bg-white rounded-none data-[state=active]:shadow-none"
+              className="flex items-center justify-center data-[state=active]:bg-white rounded-md data-[state=active]:shadow-sm"
             >
               <MessageSquare className="h-4 w-4 mr-2" />
               <span>Reviews</span>

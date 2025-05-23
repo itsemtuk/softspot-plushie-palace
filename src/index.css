@@ -52,7 +52,7 @@
 }
 
 .dialog-content {
-  @apply bg-white;
+  @apply bg-white rounded-lg;
 }
 
 /* Ensure proper background colors for different containers */
@@ -149,6 +149,26 @@
 [data-state="open"].sheet-content,
 [data-state="open"].dropdown-content {
   @apply bg-white !important;
+  @apply rounded-lg !important;
+}
+
+/* Fix all popovers and popups */
+div[data-radix-popper-content-wrapper],
+[role="menu"],
+[role="listbox"],
+[role="dialog"],
+[data-state="open"],
+.DropdownMenuContent,
+.DropdownMenuSubContent,
+.ContextMenuContent,
+.ContextMenuSubContent,
+.PopoverContent,
+.TooltipContent,
+.SelectContent,
+.sheet-content,
+.AccordionContent {
+  @apply bg-white !important;
+  @apply rounded-lg !important;
 }
 
 /* Fix button UI defaults */
@@ -167,4 +187,47 @@ button,
 
 .tabs-list [data-state="active"] {
   @apply bg-white shadow-sm;
+}
+
+/* Fix mobile create button popup */
+[data-radix-popper-content-wrapper] [role="dialog"] {
+  @apply bg-white !important;
+  @apply rounded-lg !important;
+  @apply shadow-lg !important;
+}
+
+/* Mobile create button popup */
+div[data-radix-popper-content-wrapper] {
+  @apply bg-transparent !important;
+}
+
+/* Fix popup contents */
+div[data-radix-popper-content-wrapper] > * {
+  @apply bg-white !important;
+  @apply rounded-lg !important;
+  @apply shadow-lg !important;
+}
+
+/* Fix all sheet content */
+div[role="dialog"].fixed.inset-0,
+div[role="dialog"] > div,
+[data-radix-portal] > div,
+[data-radix-portal] > div > div {
+  @apply bg-white !important;
+}
+
+/* Ensure all interactive components have proper radius */
+.SelectTrigger,
+.SelectContent,
+.DropdownMenuContent,
+.DropdownMenuSubContent,
+.PopoverContent,
+input,
+select,
+textarea,
+.Input,
+.Select,
+.Textarea,
+.Button {
+  @apply rounded-md !important;
 }

@@ -7,7 +7,7 @@ import { useSellItemForm } from "@/hooks/useSellItemForm";
 import { toast } from "@/components/ui/use-toast";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { waitForAuth, safeCheckAuth } from "@/utils/auth/authHelpers";
 import ErrorBoundary from "@/components/ui/error-boundary";
@@ -20,7 +20,7 @@ const SellItemPage = () => {
   const [isFormLoaded, setIsFormLoaded] = useState(false);
   
   // Get Clerk user
-  const { user: clerkUser } = useUser();
+  const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
   
   // Sync Clerk user to Supabase and get Supabase user ID
   const { supabaseUserId, isLoading: isUserSyncLoading } = useClerkSupabaseUser(clerkUser);
@@ -42,6 +42,11 @@ const SellItemPage = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        // Wait for Clerk to load first
+        if (!isClerkLoaded) {
+          return;
+        }
+        
         // Wait for auth to be ready with a timeout
         const isAuthReady = await waitForAuth(2000);
         
@@ -72,10 +77,10 @@ const SellItemPage = () => {
     };
     
     checkAuth();
-  }, [navigate]);
+  }, [navigate, isClerkLoaded]);
 
   // Show loading state while checking authentication or syncing user
-  if (isAuthChecking || isUserSyncLoading) {
+  if (isAuthChecking || isUserSyncLoading || !isClerkLoaded) {
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh]">
@@ -120,9 +125,11 @@ const SellItemPage = () => {
     <MainLayout>
       <ErrorBoundary>
         <div className="max-w-2xl mx-auto py-6">
-          <h1 className="text-3xl font-bold mb-6">Sell Your Plushie</h1>
-          
-          <Card>
+          <Card className="rounded-xl shadow-sm overflow-hidden">
+            <CardHeader className="bg-gray-50">
+              <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
+            </CardHeader>
+            
             <CardContent className="pt-6">
               <form onSubmit={formSubmitHandler} className="space-y-6">
                 <SellItemImageUploader 
