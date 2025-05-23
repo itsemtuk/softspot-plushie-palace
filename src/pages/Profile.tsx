@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -175,21 +174,6 @@ const Profile = () => {
 
         <div className="container mx-auto px-4 py-4 mb-16">
           <Tabs defaultValue="posts" className="w-full">
-            <TabsList className="grid grid-cols-3 w-full mb-4">
-              <TabsTrigger value="posts" className="flex items-center">
-                <Grid3X3 className="h-4 w-4 mr-2" />
-                Posts
-              </TabsTrigger>
-              <TabsTrigger value="collections" className="flex items-center">
-                <BookMarked className="h-4 w-4 mr-2" />
-                Collections
-              </TabsTrigger>
-              <TabsTrigger value="sales" className="flex items-center">
-                <ShoppingBag className="h-4 w-4 mr-2" />
-                Sales
-              </TabsTrigger>
-            </TabsList>
-            
             <TabsContent value="posts">
               <Card className="overflow-hidden">
                 <ProfilePostsGrid 
