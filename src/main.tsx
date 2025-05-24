@@ -1,19 +1,26 @@
 
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import App from './App.tsx'
-import './index.css'
-import './components/marketplace/marketplace-styles.css'
-import './components/marketplace-styles.css'
-import { ClerkProvider } from '@clerk/clerk-react'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { ClerkProvider } from "@clerk/clerk-react";
+import App from "./App.tsx";
+import "./index.css";
+import { Toaster } from "@/components/ui/toaster";
 
-// Use the provided publishable key
-const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
+// Import your publishable key
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Publishable Key");
+}
+
+ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+    <ClerkProvider 
+      publishableKey={PUBLISHABLE_KEY}
+      navigate={(to) => window.location.href = to}
+    >
       <App />
+      <Toaster />
     </ClerkProvider>
-  </React.StrictMode>,
-)
+  </React.StrictMode>
+);

@@ -19,6 +19,8 @@ import CheckoutPage from "@/pages/CheckoutPage";
 import NotificationsPage from "@/pages/NotificationsPage";
 import WishlistPage from "@/pages/WishlistPage";
 import BrandPage from "@/pages/BrandPage";
+import SignIn from "@/pages/SignIn";
+import SignUp from "@/pages/SignUp";
 
 const router = createBrowserRouter(
   [
@@ -26,6 +28,14 @@ const router = createBrowserRouter(
       path: "/",
       element: <Index />,
       errorElement: <NotFound />,
+    },
+    {
+      path: "/sign-in",
+      element: <SignIn />,
+    },
+    {
+      path: "/sign-up",
+      element: <SignUp />,
     },
     {
       path: "/feed",

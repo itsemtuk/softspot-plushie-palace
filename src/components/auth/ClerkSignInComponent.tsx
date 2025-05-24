@@ -7,7 +7,8 @@ export const ClerkSignInComponent = () => {
       routing="path"
       path="/sign-in"
       signUpUrl="/sign-up"
-      afterSignInUrl="/"
+      afterSignInUrl="/feed"
+      fallbackRedirectUrl="/feed"
       appearance={{
         elements: {
           rootBox: "mx-auto w-full",

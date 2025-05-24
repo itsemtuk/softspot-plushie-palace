@@ -4,8 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { isAuthenticated } from '@/utils/auth/authState';
-import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/utils/supabase/client';
 import { SignInCard } from '@/components/auth/SignInCard';
 import { SignInPromotional } from '@/components/auth/SignInPromotional';
 
@@ -33,22 +31,6 @@ const SignIn = () => {
         setIsLoading(false);
         console.log("SignIn page - showing authentication UI");
       }, 500);
-    }
-    
-    // Set up Supabase auth listener
-    if (!isUsingClerk) {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-        console.log("Supabase auth state change:", event);
-        if (event === 'SIGNED_IN' && session) {
-          // Redirect after successful sign-in
-          navigate('/feed', { replace: true });
-        }
-      });
-      
-      return () => {
-        // Clean up subscription when component unmounts
-        subscription.unsubscribe();
-      };
     }
     
     // Listen for auth state changes
