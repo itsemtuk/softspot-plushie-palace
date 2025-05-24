@@ -35,10 +35,9 @@ export const useSellItemFormFixed = () => {
   const navigate = useNavigate();
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isFormInitialized, setIsFormInitialized] = useState(false);
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
   
-  // Initialize form with proper error handling
+  // Initialize form immediately - don't wait for user
   const form = useForm<SellItemFormData>({
     mode: "onChange",
     defaultValues: {
@@ -61,61 +60,26 @@ export const useSellItemFormFixed = () => {
   const errors = formState?.errors || {};
   
   useEffect(() => {
-    // Wait for Clerk to load and initialize form properly
-    if (!isClerkLoaded) {
-      return;
-    }
+    console.log("SellItemForm: Initializing form, user loaded:", isClerkLoaded, "user:", clerkUser?.id);
     
     try {
-      // Reset form to ensure clean state
-      reset({
-        title: '',
-        price: 0,
-        description: '',
-        deliveryCost: 0,
-        color: '',
-        condition: 'new' as PlushieCondition,
-        material: 'plush' as PlushieMaterial,
-        filling: 'polyester' as PlushieFilling,
-        species: 'bear' as PlushieSpecies,
-        brand: 'other',
-        deliveryMethod: 'shipping' as DeliveryMethod,
-        image: '',
-      });
-      
-      // Mark form as initialized
-      setIsFormInitialized(true);
-      
-      // Handle user ID
+      // Handle user ID when available
       const currentUserId = clerkUser?.id || getCurrentUserId();
       if (currentUserId) {
         setCurrentUserId(currentUserId);
       }
     } catch (error) {
-      console.error("Error initializing form:", error);
+      console.error("Error in form initialization:", error);
       toast({
         variant: "destructive",
         title: "Form Error",
         description: "There was an issue initializing the form. Please refresh the page.",
       });
     }
-  }, [clerkUser, isClerkLoaded, reset]);
-
-  // Return loading state if not ready
-  if (!isFormInitialized || !isClerkLoaded) {
-    return {
-      imageUrl: "",
-      isSubmitting: false,
-      register: null,
-      errors: {},
-      handleSubmit: null, 
-      onSubmit: null,
-      handleImageSelect: null,
-      handleSelectChange: null
-    };
-  }
+  }, [clerkUser, isClerkLoaded]);
 
   const handleImageSelect = (result: ImageUploadResult) => {
+    console.log("SellItemForm: Image selected:", result);
     if (!result) return;
     
     if (result?.success && result?.url) {
@@ -130,6 +94,7 @@ export const useSellItemFormFixed = () => {
   };
 
   const handleSelectChange = (field: keyof SellItemFormData, value: any) => {
+    console.log("SellItemForm: Select change:", field, value);
     if (!setValue || !field || value === undefined) return;
     
     try {
@@ -140,6 +105,7 @@ export const useSellItemFormFixed = () => {
   };
 
   const onSubmit = async (data: SellItemFormData) => {
+    console.log("SellItemForm: Submit started", data);
     if (isSubmitting) return;
     
     setIsSubmitting(true);
@@ -227,12 +193,13 @@ export const useSellItemFormFixed = () => {
     }
   };
 
+  // Always return valid form methods - never null
   return {
     imageUrl,
     isSubmitting,
-    register,
+    register: register || (() => {}),
     errors,
-    handleSubmit,
+    handleSubmit: handleSubmit || (() => () => {}),
     onSubmit,
     handleImageSelect,
     handleSelectChange

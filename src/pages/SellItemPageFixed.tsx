@@ -10,35 +10,44 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import { waitForAuth, safeCheckAuth } from "@/utils/auth/authHelpers";
-import ErrorBoundary from "@/components/ui/error-boundary";
+import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 
 const SellItemPageFixed = () => {
   const navigate = useNavigate();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const [isFormLoaded, setIsFormLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
   
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
   const { supabaseUserId, isLoading: isUserSyncLoading } = useClerkSupabaseUser(clerkUser);
   
+  console.log("SellItemPageFixed: Rendering, user loaded:", isClerkLoaded, "user:", clerkUser?.id);
+  
+  // Get form data - this should never return null values now
   const formValues = useSellItemFormFixed();
   
   const { 
     imageUrl = "", 
     isSubmitting = false, 
-    register = null, 
+    register, 
     errors = {}, 
-    handleSubmit = null,
-    onSubmit = null, 
-    handleImageSelect = null,
-    handleSelectChange = null 
+    handleSubmit,
+    onSubmit, 
+    handleImageSelect,
+    handleSelectChange 
   } = formValues || {};
+
+  console.log("SellItemPageFixed: Form values:", { 
+    register: !!register, 
+    handleSubmit: !!handleSubmit, 
+    onSubmit: !!onSubmit 
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log("SellItemPageFixed: Starting auth check");
         if (!isClerkLoaded) return;
         
         if (!clerkUser?.id) {
@@ -61,7 +70,7 @@ const SellItemPageFixed = () => {
           if (!isAuthenticated) return;
         }
         
-        setIsFormLoaded(true);
+        console.log("SellItemPageFixed: Auth check complete");
       } catch (error) {
         console.error("Auth check error:", error);
         toast({
@@ -110,26 +119,40 @@ const SellItemPageFixed = () => {
     );
   }
 
-  if (!isFormLoaded || !register || !handleSubmit || !onSubmit) {
+  // Enhanced form validation
+  if (!register || !handleSubmit || !onSubmit) {
+    console.error("SellItemPageFixed: Form methods not ready", { register: !!register, handleSubmit: !!handleSubmit, onSubmit: !!onSubmit });
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh] flex-col">
           <Spinner size="lg" />
-          <p className="mt-4 text-gray-500">Loading form...</p>
+          <p className="mt-4 text-gray-500">Initializing form...</p>
         </div>
       </MainLayout>
     );
   }
 
   const formSubmitHandler: React.FormEventHandler<HTMLFormElement> = (e) => {
+    console.log("SellItemPageFixed: Form submit triggered");
     e.preventDefault();
-    if (handleSubmit && onSubmit) {
-      handleSubmit(onSubmit)(e);
-    } else {
-      console.error("Form submission failed: handleSubmit or onSubmit is not initialized");
+    
+    if (!handleSubmit || !onSubmit) {
+      console.error("Form submission failed: methods not available");
       toast({
         title: "Error",
-        description: "Unable to process form submission at this time. Please try again later.",
+        description: "Form is not ready. Please try again.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      handleSubmit(onSubmit)(e);
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast({
+        title: "Error",
+        description: "Unable to process form submission. Please try again.",
         variant: "destructive"
       });
     }
@@ -137,7 +160,7 @@ const SellItemPageFixed = () => {
 
   return (
     <MainLayout>
-      <ErrorBoundary>
+      <EnhancedErrorBoundary>
         <div className="max-w-2xl mx-auto py-6">
           <Card className="rounded-xl bg-white shadow-sm overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100">
@@ -165,7 +188,7 @@ const SellItemPageFixed = () => {
             </CardContent>
           </Card>
         </div>
-      </ErrorBoundary>
+      </EnhancedErrorBoundary>
     </MainLayout>
   );
 };

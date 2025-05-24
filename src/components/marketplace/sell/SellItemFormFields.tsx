@@ -24,34 +24,57 @@ export const SellItemFormFields = ({
   const [selectedBrand, setSelectedBrand] = useState("");
   const [otherBrandValue, setOtherBrandValue] = useState("");
   
-  // Guard against null props with more explicit loading state
-  if (!register || !onSelectChange) {
+  console.log("SellItemFormFields: Rendering with props:", { register: !!register, onSelectChange: !!onSelectChange });
+  
+  // Guard against null props with more explicit error logging
+  if (!register) {
+    console.error("SellItemFormFields: register is null/undefined");
     return (
       <div className="flex justify-center items-center p-8">
         <Spinner size="md" />
-        <span className="ml-3 text-sm text-gray-500">Loading form fields...</span>
+        <span className="ml-3 text-sm text-gray-500">Loading form...</span>
+      </div>
+    );
+  }
+
+  if (!onSelectChange) {
+    console.error("SellItemFormFields: onSelectChange is null/undefined");
+    return (
+      <div className="flex justify-center items-center p-8">
+        <Spinner size="md" />
+        <span className="ml-3 text-sm text-gray-500">Loading form handlers...</span>
       </div>
     );
   }
   
   const handleBrandChange = (value: string) => {
+    console.log("SellItemFormFields: Brand change:", value);
     if (!value) return;
     
-    setSelectedBrand(value);
-    if (value !== "other") {
-      onSelectChange("brand", value);
-    } else {
-      onSelectChange("brand", otherBrandValue || "Other");
+    try {
+      setSelectedBrand(value);
+      if (value !== "other") {
+        onSelectChange("brand", value);
+      } else {
+        onSelectChange("brand", otherBrandValue || "Other");
+      }
+    } catch (error) {
+      console.error("Error in handleBrandChange:", error);
     }
   };
   
   const handleOtherBrandChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log("SellItemFormFields: Other brand change:", e?.target?.value);
     if (!e || !e.target) return;
     
-    const value = e.target.value || "";
-    setOtherBrandValue(value);
-    if (selectedBrand === "other") {
-      onSelectChange("brand", value || "Other");
+    try {
+      const value = e.target.value || "";
+      setOtherBrandValue(value);
+      if (selectedBrand === "other") {
+        onSelectChange("brand", value || "Other");
+      }
+    } catch (error) {
+      console.error("Error in handleOtherBrandChange:", error);
     }
   };
   
