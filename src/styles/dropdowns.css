@@ -1,0 +1,57 @@
+
+/* Fix dropdown styling */
+[data-radix-popper-content-wrapper] {
+  background-color: white !important;
+  z-index: 50 !important;
+  border-radius: 0.5rem !important;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-radix-select-content] {
+  background-color: white !important;
+  border-radius: 0.5rem !important;
+}
+
+[role="menu"] {
+  @apply bg-white rounded-md shadow-md border border-gray-200;
+  min-width: 180px !important;
+}
+
+[role="menuitem"] {
+  @apply hover:bg-gray-50;
+}
+
+.navigation-dropdown {
+  @apply bg-white !important;
+  @apply rounded-md shadow-lg border border-gray-200 !important;
+}
+
+.dropdown-menu-content {
+  @apply bg-white !important; 
+  @apply rounded-md shadow-lg border border-gray-200 !important;
+}
+
+/* Fix all popups and overlays */
+div[data-radix-popper-content-wrapper],
+[role="menu"],
+[role="listbox"],
+[role="dialog"],
+[data-state="open"],
+.DropdownMenuContent,
+.DropdownMenuSubContent,
+.ContextMenuContent,
+.ContextMenuSubContent,
+.PopoverContent,
+.TooltipContent,
+.SelectContent,
+.sheet-content,
+.AccordionContent {
+  @apply bg-white !important;
+  @apply rounded-lg !important;
+}
+
+div[data-radix-popper-content-wrapper] > * {
+  @apply bg-white !important;
+  @apply rounded-lg !important;
+  @apply shadow-lg !important;
+}

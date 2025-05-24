@@ -1,0 +1,57 @@
+
+/* Profile page specific styling */
+.profile-stats-tab {
+  @apply bg-softspot-100 text-softspot-800 hover:bg-softspot-200 rounded-full;
+}
+
+.profile-stats-tab[data-state="active"] {
+  @apply bg-softspot-200 font-medium;
+}
+
+.profile-header {
+  @apply bg-gradient-to-r from-purple-100 to-softspot-100 rounded-xl;
+}
+
+.profile-tab-outer {
+  @apply rounded-full !important;
+}
+
+.tabs-list [data-state="active"] {
+  @apply bg-softspot-100 shadow-none rounded-full;
+}
+
+.profile-tabs-list {
+  @apply bg-gray-100 rounded-full p-1 grid grid-cols-3 w-full;
+}
+
+.profile-tab {
+  @apply rounded-full text-gray-700 transition-colors;
+}
+
+.profile-tab[data-state="active"] {
+  @apply bg-softspot-100 text-softspot-800;
+}
+
+.badge-grid {
+  @apply grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4;
+}
+
+.badge-item {
+  @apply p-4 bg-white border border-gray-100 rounded-lg text-center;
+}
+
+.badge-item-locked {
+  @apply p-4 bg-gray-100 border border-gray-200 rounded-lg text-center opacity-80;
+}
+
+.badge-grid-item {
+  @apply p-4 rounded-lg shadow-sm text-center transition-all;
+}
+
+.badge-earned {
+  @apply bg-white border-2 border-softspot-200;
+}
+
+.badge-locked {
+  @apply bg-gray-100 border border-gray-200 opacity-75;
+}

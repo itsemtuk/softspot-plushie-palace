@@ -1,0 +1,49 @@
+
+/* Card styling */
+.card:not([class*="bg-"]) {
+  @apply bg-white rounded-lg shadow-sm;
+}
+
+.dialog-content {
+  @apply bg-white rounded-lg;
+}
+
+.main-content-area {
+  @apply bg-white min-h-screen;
+}
+
+.form-group {
+  @apply space-y-1;
+}
+
+.form-label {
+  @apply text-sm font-medium text-gray-700;
+}
+
+.plushie-shadow {
+  @apply shadow-sm hover:shadow-md transition-shadow duration-200;
+}
+
+.btn-primary {
+  @apply bg-softspot-500 hover:bg-softspot-600 text-white rounded-md;
+}
+
+.btn-secondary {
+  @apply bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-md;
+}
+
+.switch-track {
+  @apply bg-softspot-500;
+}
+
+[data-state="checked"].switch-thumb {
+  @apply bg-softspot-500 !important;
+}
+
+.dialog-overlay {
+  @apply bg-black bg-opacity-50;
+}
+
+[role="dialog"] {
+  @apply bg-white rounded-lg overflow-hidden;
+}

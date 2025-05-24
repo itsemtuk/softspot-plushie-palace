@@ -1,0 +1,36 @@
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply antialiased;
+  }
+  body {
+    @apply bg-background text-foreground bg-gray-50;
+  }
+  
+  button {
+    @apply rounded-md;
+  }
+
+  [data-radix-popper-content-wrapper] {
+    @apply bg-white !important;
+    @apply z-50 !important;
+  }
+}
+
+.dark {
+  --background: 0 0% 5%;
+  --foreground: 0 0% 95%;
+  --muted: 0 0% 15%;
+  --muted-foreground: 0 0% 60%;
+  --popover: 0 0% 10%;
+  --popover-foreground: 0 0% 90%;
+  --card: 0 0% 10%;
+  --card-foreground: 0 0% 90%;
+  --border: 0 0% 20%;
+  --input: 0 0% 15%;
+  --ring: 324 90% 55%;
+}

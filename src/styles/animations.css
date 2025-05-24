@@ -1,0 +1,38 @@
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+/* Fix rounded corners globally */
+.rounded, .rounded-md, .rounded-lg, .rounded-xl, .rounded-full {
+  overflow: hidden;
+}
+
+/* Ensure all interactive components have proper radius */
+.SelectTrigger,
+.SelectContent,
+.DropdownMenuContent,
+.DropdownMenuSubContent,
+.PopoverContent,
+input,
+select,
+textarea,
+.Input,
+.Select,
+.Textarea,
+.Button {
+  @apply rounded-md !important;
+}
+
+button, 
+.button,
+[type="button"],
+[type="submit"],
+[type="reset"] {
+  @apply rounded-md overflow-hidden;
+}
