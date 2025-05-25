@@ -4,10 +4,8 @@ import { SignIn as ClerkSignIn } from '@clerk/clerk-react';
 export const ClerkSignInComponent = () => {
   return (
     <ClerkSignIn 
-      routing="path"
       path="/sign-in"
       signUpUrl="/sign-up"
-      afterSignInUrl="/feed"
       fallbackRedirectUrl="/feed"
       appearance={{
         elements: {
