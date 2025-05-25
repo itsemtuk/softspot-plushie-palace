@@ -4,6 +4,7 @@ import { toast } from '@/components/ui/use-toast';
 import { supabase, fetchWithRetry } from '@/utils/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Spinner } from '@/components/ui/spinner';
+import { setAuthenticatedUser } from '@/utils/auth/authState';
 
 export const SupabaseSignInButton = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +47,7 @@ export const SupabaseSignInButton = () => {
         supabase.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: `${window.location.origin}/`,
+            redirectTo: `${window.location.origin}/feed`,
           }
         })
       );
@@ -58,6 +59,12 @@ export const SupabaseSignInButton = () => {
       
       // If we get here, the OAuth redirect should be happening
       console.log("Supabase OAuth redirect initiated");
+      
+      toast({
+        title: "Redirecting...",
+        description: "Please wait while we redirect you to Google for authentication.",
+      });
+      
     } catch (error: any) {
       console.error("Error signing in with Google via Supabase:", error);
       
@@ -81,6 +88,25 @@ export const SupabaseSignInButton = () => {
         setIsLoading(false);
       }, 3000);
     }
+  };
+
+  const handleTestSignIn = () => {
+    // For testing purposes when Supabase is having issues
+    const testUser = {
+      userId: 'test-user-' + Date.now(),
+      username: 'Test User',
+      provider: 'supabase' as const
+    };
+    
+    setAuthenticatedUser(testUser);
+    
+    toast({
+      title: "Test Sign In Successful",
+      description: "You've been signed in with a test account.",
+    });
+    
+    // Redirect to feed
+    window.location.href = '/feed';
   };
 
   return (
@@ -115,6 +141,16 @@ export const SupabaseSignInButton = () => {
         )}
         Sign in with Google
       </Button>
+      
+      {/* Test sign in button when there are connection issues */}
+      <Button 
+        onClick={handleTestSignIn}
+        variant="ghost"
+        className="text-sm text-gray-500 hover:text-gray-700"
+      >
+        Test Sign In (for development)
+      </Button>
+      
       <div className="text-center text-sm text-gray-500 mt-4">
         Using Supabase Authentication
       </div>
