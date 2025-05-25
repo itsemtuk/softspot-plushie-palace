@@ -1,7 +1,7 @@
 
 import { toast } from "@/components/ui/use-toast";
 import { isAuthenticated, getCurrentUser } from "./authState";
-import { safeQueryWithRetry, supabase } from "../supabase/client";
+import { safeQueryWithRetry, supabase, testSupabaseConnection } from "../supabase/client";
 
 /**
  * Helper to safely check authentication with better error handling
@@ -65,13 +65,20 @@ export const safeCheckAuth = async (
 };
 
 /**
- * Check if user is authenticated with Supabase
+ * Check if user is authenticated with Supabase with better error handling
  * @returns Promise resolving to boolean indicating auth status
  */
 export const checkSupabaseAuth = async (): Promise<boolean> => {
   try {
     if (!supabase) {
       console.error("Supabase client not initialized");
+      return false;
+    }
+    
+    // Test connection first
+    const connectionWorking = await testSupabaseConnection();
+    if (!connectionWorking) {
+      console.warn("Supabase connection failed, skipping auth check");
       return false;
     }
     
@@ -84,12 +91,12 @@ export const checkSupabaseAuth = async (): Promise<boolean> => {
 };
 
 /**
- * Wait for authentication to be ready
+ * Wait for authentication to be ready with improved timeout handling
  * Useful for components that need to wait for auth before rendering
  * @param maxWaitMs Maximum time to wait in milliseconds
  * @returns Promise resolving when auth check is complete
  */
-export const waitForAuth = async (maxWaitMs = 2000): Promise<boolean> => {
+export const waitForAuth = async (maxWaitMs = 3000): Promise<boolean> => {
   const startTime = Date.now();
   
   // Check initially
@@ -97,9 +104,12 @@ export const waitForAuth = async (maxWaitMs = 2000): Promise<boolean> => {
     return true;
   }
   
-  // Check Supabase auth as a backup
+  // Check Supabase auth as a backup (but don't wait too long)
   try {
-    const hasSupabaseSession = await checkSupabaseAuth();
+    const hasSupabaseSession = await Promise.race([
+      checkSupabaseAuth(),
+      new Promise<boolean>(resolve => setTimeout(() => resolve(false), 2000))
+    ]);
     if (hasSupabaseSession) return true;
   } catch (err) {
     console.log("Supabase auth check failed, continuing with local checks");
@@ -117,4 +127,27 @@ export const waitForAuth = async (maxWaitMs = 2000): Promise<boolean> => {
       }
     }, 100);
   });
+};
+
+/**
+ * Initialize auth state and check for existing sessions
+ */
+export const initializeAuth = async (): Promise<void> => {
+  try {
+    // Check local auth first
+    const localAuth = isAuthenticated();
+    if (localAuth) {
+      console.log("Local authentication found");
+      return;
+    }
+    
+    // Try to restore from Supabase if available
+    const supabaseAuth = await checkSupabaseAuth();
+    if (supabaseAuth) {
+      console.log("Supabase session found, syncing to local state");
+      // Here you could sync the Supabase session to local state if needed
+    }
+  } catch (error) {
+    console.error("Error initializing auth:", error);
+  }
 };
