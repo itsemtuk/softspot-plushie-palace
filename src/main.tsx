@@ -6,8 +6,8 @@ import App from "./App.tsx";
 import "./index.css";
 import { Toaster } from "@/components/ui/toaster";
 
-// Import your publishable key - use VITE_ prefix for Vite projects
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
+// Use your actual Clerk publishable key
+const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 if (!PUBLISHABLE_KEY) {
   throw new Error("Missing Publishable Key");
