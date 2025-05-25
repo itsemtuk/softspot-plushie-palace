@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -68,8 +69,7 @@ export function FallbackSignIn() {
       setAuthenticatedUser({
         userId: 'demo-user-id',
         username: email.split('@')[0],
-        status: 'online',
-        provider: 'email'
+        provider: isClerkConfigured ? 'clerk' : 'supabase'
       });
       
       toast({
@@ -100,8 +100,7 @@ export function FallbackSignIn() {
       setAuthenticatedUser({
         userId: `${provider}-user-id`,
         username: `${provider}User`,
-        status: 'online',
-        provider: provider.toLowerCase() as any
+        provider: isClerkConfigured ? 'clerk' : 'supabase'
       });
       
       toast({

@@ -36,7 +36,7 @@ export const safeCheckAuth = async (
     // Get current user info
     const user = getCurrentUser();
     
-    if (!user || !user.id) {
+    if (!user || !user.userId) {
       if (showToast) {
         toast({
           title: "User Profile Error",

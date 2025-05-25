@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -45,8 +46,7 @@ export function FallbackSignUp() {
       setAuthenticatedUser({
         userId: 'demo-user-id',
         username: name,
-        status: 'online',
-        provider: 'email'
+        provider: isClerkConfigured ? 'clerk' : 'supabase'
       });
       
       toast({
@@ -83,8 +83,7 @@ export function FallbackSignUp() {
       setAuthenticatedUser({
         userId: `${provider.toLowerCase()}-user-id`,
         username: `${provider}User`,
-        status: 'online',
-        provider: provider.toLowerCase() as any
+        provider: 'supabase'
       });
       
       toast({

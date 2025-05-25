@@ -1,4 +1,3 @@
-
 // Enhanced authentication state management with better error handling
 let currentAuthState = {
   isAuthenticated: false,
@@ -93,8 +92,8 @@ export const setAuthenticatedUser = (user: {
   }
 };
 
-// Enhanced sign out with proper cleanup
-export const signOut = () => {
+// Enhanced sign out with proper cleanup - renamed from signOut to clearAuthState
+export const clearAuthState = () => {
   try {
     // Clear cached state
     currentAuthState = {
@@ -121,6 +120,9 @@ export const signOut = () => {
     console.error('Error during sign out:', error);
   }
 };
+
+// Keep the signOut function for backward compatibility
+export const signOut = clearAuthState;
 
 // Get current user info with fallback
 export const getCurrentUser = () => {
