@@ -29,8 +29,8 @@ export const useConnectionStatus = () => {
     // Initial check
     checkConnections();
 
-    // Set up periodic checks
-    const interval = setInterval(checkConnections, 30000); // Check every 30 seconds
+    // Set up periodic checks every 30 seconds
+    const interval = setInterval(checkConnections, 30000);
 
     // Listen for online/offline events
     const handleOnline = () => {

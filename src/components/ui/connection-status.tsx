@@ -1,7 +1,7 @@
 
 import { useConnectionStatus } from '@/hooks/useConnectionStatus';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Wifi, WifiOff, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Wifi, WifiOff, AlertTriangle } from 'lucide-react';
 
 export const ConnectionStatusIndicator = () => {
   const { isOnline, supabaseConnected } = useConnectionStatus();
@@ -17,9 +17,7 @@ export const ConnectionStatusIndicator = () => {
           <WifiOff className="h-4 w-4" />
         ) : !supabaseConnected ? (
           <AlertTriangle className="h-4 w-4" />
-        ) : (
-          <CheckCircle className="h-4 w-4" />
-        )}
+        ) : null}
         <AlertDescription>
           {!isOnline 
             ? "You're offline. Changes will be saved locally." 
