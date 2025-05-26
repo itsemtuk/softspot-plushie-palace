@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -12,6 +11,7 @@ import { SearchBar } from "@/components/navigation/SearchBar";
 import { UserMenu } from "@/components/navigation/UserMenu";
 import { ConnectionStatusIndicator } from "@/components/ui/connection-status";
 import { isAuthenticated } from "@/utils/auth/authState";
+import { OfflineNotification } from "@/components/ui/offline-notification";
 
 export function Navbar() {
   const isMobile = useIsMobile();
@@ -84,10 +84,8 @@ export function Navbar() {
         </div>
       </nav>
       
-      {/* Connection status indicator */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <ConnectionStatusIndicator />
-      </div>
+      {/* Enhanced offline notification */}
+      <OfflineNotification />
       
       <PostCreationFlow
         isOpen={isPostCreationOpen}

@@ -10,13 +10,24 @@ export const ConnectionStatusIndicator = () => {
     return null; // Don't show anything when everything is working
   }
 
+  const getAriaLabel = () => {
+    if (!isOnline) return "Device is offline";
+    if (!supabaseConnected) return "Database connection issues";
+    return "Connection status";
+  };
+
   return (
-    <Alert variant={!isOnline ? "destructive" : "warning"} className="mb-4">
+    <Alert 
+      variant={!isOnline ? "destructive" : "warning"} 
+      className="mb-4"
+      role="alert"
+      aria-label={getAriaLabel()}
+    >
       <div className="flex items-center gap-2">
         {!isOnline ? (
-          <WifiOff className="h-4 w-4" />
+          <WifiOff className="h-4 w-4" aria-hidden="true" />
         ) : !supabaseConnected ? (
-          <AlertTriangle className="h-4 w-4" />
+          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
         ) : null}
         <AlertDescription>
           {!isOnline 
