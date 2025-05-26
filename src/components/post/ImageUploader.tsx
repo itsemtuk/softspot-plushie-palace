@@ -1,8 +1,9 @@
 
 import { useState, ChangeEvent, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, X, Image as ImageIcon } from 'lucide-react';
+import { Upload, X } from 'lucide-react';
 import { ImageUploadResult } from '@/types/marketplace';
+import { RobustImage } from '@/components/ui/robust-image';
 
 interface ImageUploaderProps {
   onImageSelected: (result: ImageUploadResult) => void;
@@ -119,10 +120,11 @@ export const ImageUploader = ({
       
       {previewUrl ? (
         <div className="relative rounded-md overflow-hidden">
-          <img 
+          <RobustImage 
             src={previewUrl} 
             alt="Preview" 
-            className={`w-full object-cover ${aspectRatio ? 'aspect-[' + aspectRatio + ']' : 'max-h-[300px]'}`} 
+            className={`w-full object-cover ${aspectRatio ? 'aspect-[' + aspectRatio + ']' : 'max-h-[300px]'}`}
+            showLoadingSpinner={true}
           />
           <Button
             variant="destructive"

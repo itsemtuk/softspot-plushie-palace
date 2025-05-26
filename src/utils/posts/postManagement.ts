@@ -1,8 +1,8 @@
-
 import { ExtendedPost } from "@/types/marketplace";
-import { supabase, isSupabaseConfigured } from '../supabase/client';
+import { supabase, isSupabaseConfigured, safeQueryWithRetry } from '../supabase/client';
 import { getLocalPosts, savePosts, getCurrentUserId, updateSyncTimestamp } from '../storage/localStorageUtils';
 import { uploadImage, deleteImage } from '../storage/imageStorage';
+import { withRetry } from '../retry';
 
 const POSTS_TABLE = 'posts';
 
@@ -14,7 +14,7 @@ export const getStorage = (): ExtendedPost[] => {
 };
 
 /**
- * Saves a post to storage
+ * Saves a post to storage with retry logic
  */
 export const savePost = async (post: ExtendedPost | ExtendedPost[]): Promise<{ success: boolean, error?: any }> => {
   // Handle both single post and array of posts
@@ -54,27 +54,50 @@ export const savePost = async (post: ExtendedPost | ExtendedPost[]): Promise<{ s
   }
 
   try {
-    const { error } = await supabase!
-      .from(POSTS_TABLE)
-      .upsert({
-        id: post.id,
-        userId: post.userId || getCurrentUserId(),
-        image: post.image,
-        title: post.title,
-        username: post.username,
-        likes: post.likes,
-        comments: post.comments,
-        description: post.description || '',
-        tags: post.tags || [],
-        timestamp: post.timestamp || new Date().toISOString(), // Ensure timestamp exists
-      }, { onConflict: 'id' }); // Specify conflict handling
-      
-    if (error) throw error;
-    updateSyncTimestamp(); // Update timestamp after successful cloud save
-    return { success: true };
+    const result = await withRetry(async () => {
+      const { error } = await supabase!
+        .from(POSTS_TABLE)
+        .upsert({
+          id: post.id,
+          userId: post.userId || getCurrentUserId(),
+          image: post.image,
+          title: post.title,
+          username: post.username,
+          likes: post.likes,
+          comments: post.comments,
+          description: post.description || '',
+          tags: post.tags || [],
+          timestamp: post.timestamp || new Date().toISOString(),
+        }, { onConflict: 'id' });
+        
+      if (error) throw error;
+      return { success: true };
+    }, {
+      maxAttempts: 3,
+      delayMs: 1000,
+      shouldRetry: (error) => !error.message?.includes('CORS')
+    });
+    
+    updateSyncTimestamp();
+    return result;
   } catch (error) {
     console.error('Error saving post to Supabase:', error);
-    return { success: false, error };
+    
+    // Fallback to localStorage on failure
+    try {
+      const existingPosts = getLocalPosts();
+      const postWithUser = {
+        ...post,
+        userId: post.userId || getCurrentUserId()
+      };
+      const updatedPosts = existingPosts.filter(p => p.id !== post.id);
+      updatedPosts.unshift(postWithUser);
+      savePosts(updatedPosts);
+      updateSyncTimestamp();
+      return { success: true };
+    } catch (localError) {
+      return { success: false, error: localError };
+    }
   }
 };
 

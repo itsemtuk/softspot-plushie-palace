@@ -1,5 +1,5 @@
-
 import { createClient } from '@supabase/supabase-js';
+import { withRetry } from '../retry';
 
 // Initialize Supabase client with the provided credentials
 const supabaseUrl = 'https://evsamjzmqzbynwkuzsm.supabase.co';
@@ -69,18 +69,12 @@ export const fetchWithRetry = async <T>(
   retries = 2, 
   delay = 1000
 ): Promise<T> => {
-  try {
-    return await fn();
-  } catch (err: any) {
-    if (retries > 0 && !err.message?.includes('CORS')) {
-      console.log(`Request failed, retrying... (${retries} attempts left)`);
-      await new Promise(resolve => setTimeout(resolve, delay));
-      return fetchWithRetry(fn, retries - 1, delay * 1.5);
-    }
-    
-    console.error('Request failed after retries:', err);
-    throw err;
-  }
+  return withRetry(fn, {
+    maxAttempts: retries + 1,
+    delayMs: delay,
+    backoffMultiplier: 1.5,
+    shouldRetry: (error) => !error.message?.includes('CORS')
+  });
 };
 
 // Helper to safely execute Supabase queries with better error handling
@@ -89,11 +83,8 @@ export const safeQueryWithRetry = async <T>(
   fallbackData: T | null = null
 ): Promise<{data: T | null, error: any}> => {
   try {
-    // For CORS issues, fail fast instead of retrying
-    const result = await queryFn();
-    return result;
+    return await fetchWithRetry(queryFn);
   } catch (error: any) {
-    // Handle error and provide fallback
     const handledError = handleSupabaseError(error);
     
     return {
