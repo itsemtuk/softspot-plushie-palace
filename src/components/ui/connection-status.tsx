@@ -1,13 +1,44 @@
 
 import { useConnectionStatus } from '@/hooks/useConnectionStatus';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Wifi, WifiOff, AlertTriangle } from 'lucide-react';
+import { Wifi, WifiOff, AlertTriangle, CheckCircle } from 'lucide-react';
 
 export const ConnectionStatusIndicator = () => {
   const { isOnline, supabaseConnected } = useConnectionStatus();
 
-  if (isOnline && supabaseConnected) {
-    return null; // Don't show anything when everything is working
+  // Show different states based on connection status
+  const getConnectionState = () => {
+    if (!isOnline) {
+      return {
+        variant: "destructive" as const,
+        icon: <WifiOff className="h-4 w-4" aria-hidden="true" />,
+        message: "You're offline. Changes will be saved locally and synced when you reconnect.",
+        show: true
+      };
+    }
+    
+    if (!supabaseConnected) {
+      return {
+        variant: "warning" as const,
+        icon: <AlertTriangle className="h-4 w-4" aria-hidden="true" />,
+        message: "Database connection issues detected. Using local storage - changes will sync when connection is restored.",
+        show: true
+      };
+    }
+
+    // Only show "connected" status briefly after reconnection
+    return {
+      variant: "default" as const,
+      icon: <CheckCircle className="h-4 w-4" aria-hidden="true" />,
+      message: "Connected and syncing",
+      show: false // Don't show when everything is working
+    };
+  };
+
+  const connectionState = getConnectionState();
+
+  if (!connectionState.show) {
+    return null;
   }
 
   const getAriaLabel = () => {
@@ -18,24 +49,15 @@ export const ConnectionStatusIndicator = () => {
 
   return (
     <Alert 
-      variant={!isOnline ? "destructive" : "warning"} 
-      className="mb-4"
+      variant={connectionState.variant} 
+      className="mb-4 border-l-4"
       role="alert"
       aria-label={getAriaLabel()}
     >
       <div className="flex items-center gap-2">
-        {!isOnline ? (
-          <WifiOff className="h-4 w-4" aria-hidden="true" />
-        ) : !supabaseConnected ? (
-          <AlertTriangle className="h-4 w-4" aria-hidden="true" />
-        ) : null}
-        <AlertDescription>
-          {!isOnline 
-            ? "You're offline. Changes will be saved locally." 
-            : !supabaseConnected 
-            ? "Database connection issues. Using local storage." 
-            : "Connected"
-          }
+        {connectionState.icon}
+        <AlertDescription className="font-medium">
+          {connectionState.message}
         </AlertDescription>
       </div>
     </Alert>

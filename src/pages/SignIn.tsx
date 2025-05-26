@@ -6,20 +6,28 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { isAuthenticated } from '@/utils/auth/authState';
 import { SignInCard } from '@/components/auth/SignInCard';
 import { SignInPromotional } from '@/components/auth/SignInPromotional';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle } from 'lucide-react';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
   const [isLoading, setIsLoading] = useState(true);
+  const [hasClerkError, setHasClerkError] = useState(false);
   const navigate = useNavigate();
   const [isUsingClerk, setIsUsingClerk] = useState(localStorage.getItem('usingClerk') === 'true');
   
   // Check if already authenticated and redirect if needed
   useEffect(() => {
     const checkAuthAndRedirect = () => {
-      if (isAuthenticated()) {
-        console.log("User is already authenticated, redirecting to feed");
-        navigate('/feed', { replace: true });
-        return true;
+      try {
+        if (isAuthenticated()) {
+          console.log("User is already authenticated, redirecting to feed");
+          navigate('/feed', { replace: true });
+          return true;
+        }
+      } catch (error) {
+        console.error("Auth check error:", error);
+        setHasClerkError(true);
       }
       return false;
     };
@@ -35,7 +43,12 @@ const SignIn = () => {
     
     // Listen for auth state changes
     const handleAuthChange = () => {
-      checkAuthAndRedirect();
+      try {
+        checkAuthAndRedirect();
+      } catch (error) {
+        console.error("Auth change error:", error);
+        setHasClerkError(true);
+      }
     };
     
     window.addEventListener('clerk-auth-change', handleAuthChange);
@@ -49,8 +62,13 @@ const SignIn = () => {
 
   // Toggle between auth providers
   const toggleAuthProvider = (newValue: boolean) => {
-    localStorage.setItem('usingClerk', newValue.toString());
-    setIsUsingClerk(newValue);
+    try {
+      localStorage.setItem('usingClerk', newValue.toString());
+      setIsUsingClerk(newValue);
+      setHasClerkError(false); // Reset error when switching
+    } catch (error) {
+      console.error("Error switching auth provider:", error);
+    }
   };
   
   // Show loading state while checking auth systems
@@ -58,8 +76,9 @@ const SignIn = () => {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
-        <div className="max-w-md mx-auto pt-16 pb-24 px-4 flex justify-center">
+        <div className="max-w-md mx-auto pt-16 pb-24 px-4 flex justify-center items-center flex-col">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-600"></div>
+          <p className="mt-4 text-gray-600">Checking authentication status...</p>
         </div>
       </div>
     );
@@ -69,6 +88,15 @@ const SignIn = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       <div className={`max-w-md mx-auto pt-16 pb-24 ${isMobile ? 'px-0' : 'px-4'}`}>
+        {hasClerkError && (
+          <Alert variant="warning" className="mb-4 mx-4">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Authentication service is experiencing issues. You may need to refresh the page or clear your browser cookies.
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <SignInCard 
           isUsingClerk={isUsingClerk}
           onToggleAuth={toggleAuthProvider}

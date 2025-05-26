@@ -13,6 +13,8 @@ import { waitForAuth, safeCheckAuth } from "@/utils/auth/authHelpers";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
 
 const SellItemPageFixed = () => {
   const navigate = useNavigate();
@@ -24,9 +26,10 @@ const SellItemPageFixed = () => {
   
   console.log("SellItemPageFixed: Rendering, user loaded:", isClerkLoaded, "user:", clerkUser?.id);
   
-  // Get form data - this should never return null values now
+  // Get form data with comprehensive null checking
   const formValues = useSellItemFormFixed();
   
+  // Destructure with safe defaults and null checks
   const { 
     imageUrl = "", 
     isSubmitting = false, 
@@ -39,9 +42,10 @@ const SellItemPageFixed = () => {
   } = formValues || {};
 
   console.log("SellItemPageFixed: Form values:", { 
-    register: !!register, 
-    handleSubmit: !!handleSubmit, 
-    onSubmit: !!onSubmit 
+    hasRegister: !!register, 
+    hasHandleSubmit: !!handleSubmit, 
+    hasOnSubmit: !!onSubmit,
+    formValues: !!formValues
   });
 
   useEffect(() => {
@@ -87,6 +91,7 @@ const SellItemPageFixed = () => {
     checkAuth();
   }, [navigate, isClerkLoaded, clerkUser]);
 
+  // Show loading while checking auth or syncing user
   if (isAuthChecking || isUserSyncLoading || !isClerkLoaded || loading) {
     return (
       <MainLayout>
@@ -100,33 +105,54 @@ const SellItemPageFixed = () => {
     );
   }
 
+  // Check if user exists - critical null check
   if (!clerkUser?.id) {
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh] flex-col">
-          <div className="bg-white p-6 rounded-lg shadow-sm text-center max-w-md">
-            <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-            <p className="mb-4">Please sign in to list your items for sale.</p>
-            <button 
-              className="bg-softspot-500 text-white px-4 py-2 rounded-md"
-              onClick={() => navigate('/sign-in')}
-            >
-              Sign In
-            </button>
-          </div>
+          <Alert variant="destructive" className="max-w-md">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="text-center">
+                <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
+                <p className="mb-4">Please sign in to list your items for sale.</p>
+                <button 
+                  className="bg-softspot-500 text-white px-4 py-2 rounded-md hover:bg-softspot-600 transition-colors"
+                  onClick={() => navigate('/sign-in')}
+                >
+                  Sign In
+                </button>
+              </div>
+            </AlertDescription>
+          </Alert>
         </div>
       </MainLayout>
     );
   }
 
-  // Enhanced form validation
-  if (!register || !handleSubmit || !onSubmit) {
-    console.error("SellItemPageFixed: Form methods not ready", { register: !!register, handleSubmit: !!handleSubmit, onSubmit: !!onSubmit });
+  // Check if form data is available - prevent null reference errors
+  if (!formValues || !register || !handleSubmit || !onSubmit) {
+    console.error("SellItemPageFixed: Form methods not ready", { 
+      hasFormValues: !!formValues,
+      hasRegister: !!register, 
+      hasHandleSubmit: !!handleSubmit, 
+      hasOnSubmit: !!onSubmit 
+    });
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh] flex-col">
-          <Spinner size="lg" />
-          <p className="mt-4 text-gray-500">Initializing form...</p>
+          <Alert variant="warning" className="max-w-md">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="text-center">
+                <Spinner size="lg" className="mx-auto mb-4" />
+                <p className="text-gray-500">Initializing form...</p>
+                <p className="text-sm text-gray-400 mt-2">
+                  If this persists, please refresh the page.
+                </p>
+              </div>
+            </AlertDescription>
+          </Alert>
         </div>
       </MainLayout>
     );
@@ -151,7 +177,7 @@ const SellItemPageFixed = () => {
     } catch (error) {
       console.error("Form submission error:", error);
       toast({
-        title: "Error",
+        title: "Error", 
         description: "Unable to process form submission. Please try again.",
         variant: "destructive"
       });
