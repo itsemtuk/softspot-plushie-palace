@@ -17,21 +17,17 @@ const SignIn = () => {
   const [isUsingClerk, setIsUsingClerk] = useState(localStorage.getItem('usingClerk') === 'true');
   const { isLoaded, isSignedIn } = useUser();
   
-  // Check if already authenticated and redirect if needed
   useEffect(() => {
     if (!isLoaded) return;
 
     if (isSignedIn) {
-      console.log("User is already authenticated, redirecting to feed");
       navigate('/feed', { replace: true });
       return;
     }
 
-    // Show the sign-in form if not authenticated
     setIsLoading(false);
   }, [isLoaded, isSignedIn, navigate]);
 
-  // Toggle between auth providers
   const toggleAuthProvider = (newValue: boolean) => {
     try {
       localStorage.setItem('usingClerk', newValue.toString());
@@ -42,7 +38,6 @@ const SignIn = () => {
     }
   };
   
-  // Show loading state while checking auth
   if (!isLoaded || isLoading) {
     return (
       <div className="min-h-screen bg-background">

@@ -2,23 +2,30 @@
 import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect, useState } from 'react';
+import { useUser } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
   const [isLoading, setIsLoading] = useState(true);
+  const { isLoaded, isSignedIn } = useUser();
+  const navigate = useNavigate();
   
-  // Force scroll to top when page loads
   useEffect(() => {
     window.scrollTo(0, 0);
     
-    // Small delay to ensure Clerk has time to initialize
+    if (!isLoaded) return;
+
+    if (isSignedIn) {
+      navigate('/feed', { replace: true });
+      return;
+    }
+
     setTimeout(() => {
       setIsLoading(false);
-      console.log("SignUp page - showing Clerk UI");
     }, 500);
-  }, []);
+  }, [isLoaded, isSignedIn, navigate]);
   
-  // Show loading state while checking Clerk
-  if (isLoading) {
+  if (!isLoaded || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
         <Navbar />
@@ -44,11 +51,11 @@ const SignUp = () => {
                 footer: "text-softspot-500",
                 socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
                 socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
-                socialButtonsProviderIcon: "w-8 h-8", // Increased icon size
+                socialButtonsProviderIcon: "w-8 h-8",
                 formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
                 formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
                 socialButtonsBlockButtonText: "text-base font-medium",
-                formField: "mb-6" // Add more spacing between fields
+                formField: "mb-6"
               },
               variables: {
                 colorPrimary: "#7e69ab",
