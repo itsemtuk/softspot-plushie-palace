@@ -4,6 +4,7 @@ import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
 import Index from "@/pages/Index";
 import Feed from "@/pages/Feed";
 import Discover from "@/pages/Discover";
@@ -14,6 +15,7 @@ import NotFound from "@/pages/NotFound";
 import Settings from "@/pages/Settings";
 import Messaging from "@/pages/Messaging";
 import SellItemPage from "@/pages/SellItemPage";
+import SellItemPageFixed from "@/pages/SellItemPageFixed";
 import Marketplace from "@/pages/Marketplace";
 import CheckoutPage from "@/pages/CheckoutPage";
 import NotificationsPage from "@/pages/NotificationsPage";
@@ -31,47 +33,47 @@ const router = createBrowserRouter(
     },
     {
       path: "/sign-in",
-      element: <SignIn />,
+      element: <ProtectedRoute requireAuth={false}><SignIn /></ProtectedRoute>,
     },
     {
       path: "/sign-up",
-      element: <SignUp />,
+      element: <ProtectedRoute requireAuth={false}><SignUp /></ProtectedRoute>,
     },
     {
       path: "/feed",
-      element: <Feed />,
+      element: <ProtectedRoute><Feed /></ProtectedRoute>,
     },
     {
       path: "/discover",
-      element: <Discover />,
+      element: <ProtectedRoute><Discover /></ProtectedRoute>,
     },
     {
       path: "/profile",
-      element: <Profile />,
+      element: <ProtectedRoute><Profile /></ProtectedRoute>,
     },
     {
       path: "/user/:userId",
-      element: <UserProfile />,  
+      element: <ProtectedRoute><UserProfile /></ProtectedRoute>,  
     },
     {
       path: "/edit-profile",
-      element: <EditProfile />,
+      element: <ProtectedRoute><EditProfile /></ProtectedRoute>,
     },
     {
       path: "/settings",
-      element: <Settings />,
+      element: <ProtectedRoute><Settings /></ProtectedRoute>,
     },
     {
       path: "/messaging",
-      element: <Messaging />,
+      element: <ProtectedRoute><Messaging /></ProtectedRoute>,
     },
     {
       path: "/messages",
-      element: <Messaging />,
+      element: <ProtectedRoute><Messaging /></ProtectedRoute>,
     },
     {
       path: "/sell",
-      element: <SellItemPage />,
+      element: <ProtectedRoute><SellItemPageFixed /></ProtectedRoute>,
     },
     {
       path: "/marketplace",
@@ -79,15 +81,15 @@ const router = createBrowserRouter(
     },
     {
       path: "/checkout",
-      element: <CheckoutPage />,
+      element: <ProtectedRoute><CheckoutPage /></ProtectedRoute>,
     },
     {
       path: "/notifications",
-      element: <NotificationsPage />,
+      element: <ProtectedRoute><NotificationsPage /></ProtectedRoute>,
     },
     {
       path: "/wishlist",
-      element: <WishlistPage />,
+      element: <ProtectedRoute><WishlistPage /></ProtectedRoute>,
     },
     {
       path: "/brand/:brandName",

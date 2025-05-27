@@ -8,6 +8,7 @@ import { SignInCard } from '@/components/auth/SignInCard';
 import { SignInPromotional } from '@/components/auth/SignInPromotional';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
+import { useUser } from '@clerk/clerk-react';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
@@ -15,15 +16,26 @@ const SignIn = () => {
   const [hasClerkError, setHasClerkError] = useState(false);
   const navigate = useNavigate();
   const [isUsingClerk, setIsUsingClerk] = useState(localStorage.getItem('usingClerk') === 'true');
+  const { isLoaded, isSignedIn } = useUser();
   
   // Check if already authenticated and redirect if needed
   useEffect(() => {
     const checkAuthAndRedirect = () => {
       try {
-        if (isAuthenticated()) {
-          console.log("User is already authenticated, redirecting to feed");
-          navigate('/feed', { replace: true });
-          return true;
+        // Check Clerk auth if configured
+        if (isUsingClerk && isLoaded) {
+          if (isSignedIn) {
+            console.log("Clerk user is already authenticated, redirecting to feed");
+            navigate('/feed', { replace: true });
+            return true;
+          }
+        } else if (!isUsingClerk) {
+          // Check local auth
+          if (isAuthenticated()) {
+            console.log("User is already authenticated, redirecting to feed");
+            navigate('/feed', { replace: true });
+            return true;
+          }
         }
       } catch (error) {
         console.error("Auth check error:", error);
@@ -58,7 +70,7 @@ const SignIn = () => {
       window.removeEventListener('clerk-auth-change', handleAuthChange);
       window.removeEventListener('storage', handleAuthChange);
     };
-  }, [navigate, isUsingClerk]);
+  }, [navigate, isUsingClerk, isLoaded, isSignedIn]);
 
   // Toggle between auth providers
   const toggleAuthProvider = (newValue: boolean) => {
@@ -72,7 +84,7 @@ const SignIn = () => {
   };
   
   // Show loading state while checking auth systems
-  if (isLoading) {
+  if (isLoading || (isUsingClerk && !isLoaded)) {
     return (
       <div className="min-h-screen bg-background">
         <Navbar />
