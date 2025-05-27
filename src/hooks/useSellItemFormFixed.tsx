@@ -35,9 +35,10 @@ export const useSellItemFormFixed = () => {
   const navigate = useNavigate();
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [formInitialized, setFormInitialized] = useState(false);
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
   
-  // Initialize form immediately - don't wait for user
+  // Initialize form with error handling
   const form = useForm<SellItemFormData>({
     mode: "onChange",
     defaultValues: {
@@ -68,6 +69,12 @@ export const useSellItemFormFixed = () => {
       if (currentUserId) {
         setCurrentUserId(currentUserId);
       }
+      
+      // Mark form as initialized after a brief delay to ensure all hooks are ready
+      setTimeout(() => {
+        setFormInitialized(true);
+      }, 100);
+      
     } catch (error) {
       console.error("Error in form initialization:", error);
       toast({
@@ -193,7 +200,17 @@ export const useSellItemFormFixed = () => {
     }
   };
 
-  // Always return valid form methods - never null
+  // Enhanced return with null safety and form initialization check
+  if (!formInitialized || !register || !handleSubmit) {
+    console.log("SellItemForm: Form not yet initialized", { 
+      formInitialized, 
+      hasRegister: !!register, 
+      hasHandleSubmit: !!handleSubmit 
+    });
+    return null; // This will trigger the loading state in the component
+  }
+
+  // Always return valid form methods with proper type checking
   return {
     imageUrl,
     isSubmitting,
