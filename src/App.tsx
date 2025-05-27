@@ -14,7 +14,6 @@ import EditProfile from "@/pages/EditProfile";
 import NotFound from "@/pages/NotFound";
 import Settings from "@/pages/Settings";
 import Messaging from "@/pages/Messaging";
-import SellItemPage from "@/pages/SellItemPage";
 import SellItemPageFixed from "@/pages/SellItemPageFixed";
 import Marketplace from "@/pages/Marketplace";
 import CheckoutPage from "@/pages/CheckoutPage";
