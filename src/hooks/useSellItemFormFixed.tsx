@@ -36,9 +36,10 @@ export const useSellItemFormFixed = () => {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formInitialized, setFormInitialized] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
   
-  // Initialize form with error handling
+  // Initialize form with enhanced error handling
   const form = useForm<SellItemFormData>({
     mode: "onChange",
     defaultValues: {
@@ -65,25 +66,37 @@ export const useSellItemFormFixed = () => {
     
     try {
       // Handle user ID when available
-      const currentUserId = clerkUser?.id || getCurrentUserId();
-      if (currentUserId) {
-        setCurrentUserId(currentUserId);
+      if (clerkUser?.id) {
+        setCurrentUserId(clerkUser.id);
       }
       
-      // Mark form as initialized after a brief delay to ensure all hooks are ready
+      // Validate form methods are available
+      if (!register || !handleSubmit || !setValue) {
+        console.error("SellItemForm: Form methods not available");
+        setFormError("Form initialization failed");
+        return;
+      }
+      
+      // Mark form as initialized after ensuring everything is ready
       setTimeout(() => {
-        setFormInitialized(true);
-      }, 100);
+        if (register && handleSubmit && setValue) {
+          setFormInitialized(true);
+          setFormError(null);
+        } else {
+          setFormError("Form methods not properly initialized");
+        }
+      }, 200);
       
     } catch (error) {
       console.error("Error in form initialization:", error);
+      setFormError("Form initialization error occurred");
       toast({
         variant: "destructive",
         title: "Form Error",
         description: "There was an issue initializing the form. Please refresh the page.",
       });
     }
-  }, [clerkUser, isClerkLoaded]);
+  }, [clerkUser, isClerkLoaded, register, handleSubmit, setValue]);
 
   const handleImageSelect = (result: ImageUploadResult) => {
     console.log("SellItemForm: Image selected:", result);
@@ -200,23 +213,29 @@ export const useSellItemFormFixed = () => {
     }
   };
 
-  // Enhanced return with null safety and form initialization check
-  if (!formInitialized || !register || !handleSubmit) {
+  // Enhanced return with comprehensive validation
+  if (formError) {
+    console.error("SellItemForm: Form error:", formError);
+    return null;
+  }
+
+  if (!formInitialized || !register || !handleSubmit || !setValue) {
     console.log("SellItemForm: Form not yet initialized", { 
       formInitialized, 
       hasRegister: !!register, 
-      hasHandleSubmit: !!handleSubmit 
+      hasHandleSubmit: !!handleSubmit,
+      hasSetValue: !!setValue
     });
-    return null; // This will trigger the loading state in the component
+    return null;
   }
 
-  // Always return valid form methods with proper type checking
+  // Return form methods with type safety
   return {
     imageUrl,
     isSubmitting,
-    register: register || (() => {}),
+    register,
     errors,
-    handleSubmit: handleSubmit || (() => () => {}),
+    handleSubmit,
     onSubmit,
     handleImageSelect,
     handleSelectChange

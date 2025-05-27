@@ -15,7 +15,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Wifi, WifiOff } from "lucide-react";
-import { ConnectionStatusIndicator } from "@/components/ui/connection-status";
+import { SimpleConnectionStatus } from "@/components/ui/simple-connection-status";
 
 const SellItemPageFixed = () => {
   const navigate = useNavigate();
@@ -30,27 +30,32 @@ const SellItemPageFixed = () => {
   
   // Get form data with comprehensive error handling
   const formValues = useSellItemFormFixed();
-  
+
+  // Enhanced null checking with specific guards
+  const isFormReady = formValues && 
+                     typeof formValues.register === 'function' && 
+                     typeof formValues.handleSubmit === 'function' && 
+                     typeof formValues.onSubmit === 'function';
+
+  console.log("SellItemPageFixed: Form readiness check:", { 
+    hasFormValues: !!formValues,
+    isFormReady,
+    registerType: formValues ? typeof formValues.register : 'null',
+    handleSubmitType: formValues ? typeof formValues.handleSubmit : 'null',
+    onSubmitType: formValues ? typeof formValues.onSubmit : 'null'
+  });
+
   // Safe destructuring with extensive null checks
   const { 
     imageUrl = "", 
     isSubmitting = false, 
-    register, 
+    register,
     errors = {}, 
     handleSubmit,
     onSubmit, 
     handleImageSelect,
     handleSelectChange 
   } = formValues || {};
-
-  console.log("SellItemPageFixed: Form values:", { 
-    hasRegister: !!register, 
-    hasHandleSubmit: !!handleSubmit, 
-    hasOnSubmit: !!onSubmit,
-    formValues: !!formValues,
-    registerType: typeof register,
-    handleSubmitType: typeof handleSubmit
-  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -135,94 +140,20 @@ const SellItemPageFixed = () => {
     );
   }
 
-  // Enhanced form validation with detailed error logging
-  if (!formValues) {
-    console.error("SellItemPageFixed: formValues is null/undefined");
-    setFormError("Form initialization failed. Please refresh the page.");
+  // Enhanced form validation - wait for form to be completely ready
+  if (!isFormReady) {
+    console.log("SellItemPageFixed: Form not ready, showing loading state");
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh] flex-col">
-          <Alert variant="destructive" className="max-w-md">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              <div className="text-center">
-                <h2 className="text-xl font-semibold mb-2">Form Error</h2>
-                <p className="mb-4">Unable to initialize the form. Please refresh the page and try again.</p>
-                <button 
-                  className="bg-softspot-500 text-white px-4 py-2 rounded-md hover:bg-softspot-600 transition-colors"
-                  onClick={() => window.location.reload()}
-                >
-                  Refresh Page
-                </button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (!register || typeof register !== 'function') {
-    console.error("SellItemPageFixed: register is not a function", { register, type: typeof register });
-    return (
-      <MainLayout>
-        <div className="flex justify-center items-center h-[60vh] flex-col">
-          <Alert variant="warning" className="max-w-md">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              <div className="text-center">
-                <Spinner size="lg" className="mx-auto mb-4" />
-                <p className="text-gray-500">Initializing form registration...</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  If this persists, please refresh the page.
-                </p>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (!handleSubmit || typeof handleSubmit !== 'function') {
-    console.error("SellItemPageFixed: handleSubmit is not a function", { handleSubmit, type: typeof handleSubmit });
-    return (
-      <MainLayout>
-        <div className="flex justify-center items-center h-[60vh] flex-col">
-          <Alert variant="warning" className="max-w-md">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              <div className="text-center">
-                <Spinner size="lg" className="mx-auto mb-4" />
-                <p className="text-gray-500">Initializing form handlers...</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  If this persists, please refresh the page.
-                </p>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (!onSubmit || typeof onSubmit !== 'function') {
-    console.error("SellItemPageFixed: onSubmit is not a function", { onSubmit, type: typeof onSubmit });
-    return (
-      <MainLayout>
-        <div className="flex justify-center items-center h-[60vh] flex-col">
-          <Alert variant="warning" className="max-w-md">
-            <AlertTriangle className="h-4 w-4" />
-            <AlertDescription>
-              <div className="text-center">
-                <Spinner size="lg" className="mx-auto mb-4" />
-                <p className="text-gray-500">Initializing submission handler...</p>
-                <p className="text-sm text-gray-400 mt-2">
-                  If this persists, please refresh the page.
-                </p>
-              </div>
-            </AlertDescription>
-          </Alert>
+          <Spinner size="lg" className="mb-4" />
+          <p className="text-gray-500 text-center">
+            Initializing form...
+            <br />
+            <span className="text-sm text-gray-400">
+              If this persists, please refresh the page
+            </span>
+          </p>
         </div>
       </MainLayout>
     );
@@ -234,7 +165,7 @@ const SellItemPageFixed = () => {
     e.preventDefault();
     
     try {
-      // Double-check all required functions exist before calling
+      // Triple-check all required functions exist before calling
       if (!handleSubmit || typeof handleSubmit !== 'function') {
         throw new Error("Form submission handler not available");
       }
@@ -266,7 +197,7 @@ const SellItemPageFixed = () => {
       <EnhancedErrorBoundary>
         <div className="max-w-2xl mx-auto py-6">
           {/* Connection status indicator */}
-          <ConnectionStatusIndicator />
+          <SimpleConnectionStatus />
           
           {/* Form error display */}
           {formError && (
