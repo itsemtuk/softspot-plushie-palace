@@ -41,6 +41,11 @@ export const useSellItemFormSetup = () => {
     console.log("SellItemForm: Initializing form, user loaded:", isClerkLoaded, "user:", clerkUser?.id);
     
     try {
+      // Wait for Clerk to load
+      if (!isClerkLoaded) {
+        return;
+      }
+      
       // Handle user ID when available
       if (clerkUser?.id) {
         setCurrentUserId(clerkUser.id);
@@ -61,7 +66,7 @@ export const useSellItemFormSetup = () => {
         } else {
           setFormError("Form methods not properly initialized");
         }
-      }, 200);
+      }, 100);
       
     } catch (error) {
       console.error("Error in form initialization:", error);

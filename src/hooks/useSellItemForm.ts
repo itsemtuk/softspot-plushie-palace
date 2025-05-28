@@ -5,6 +5,16 @@ import { useSellItemSubmission } from "./sell-item/useSellItemSubmission";
 import { SellItemFormData } from "@/types/sellItemForm";
 
 export const useSellItemForm = () => {
+  const setupResult = useSellItemFormSetup();
+  const imageResult = useSellItemImage();
+  const submissionResult = useSellItemSubmission();
+
+  // Early return with null check
+  if (!setupResult || !imageResult || !submissionResult) {
+    console.log("useSellItemForm: One or more hooks not ready");
+    return null;
+  }
+
   const {
     formInitialized,
     formError,
@@ -12,10 +22,10 @@ export const useSellItemForm = () => {
     handleSubmit,
     errors,
     handleSelectChange
-  } = useSellItemFormSetup();
+  } = setupResult;
 
-  const { imageUrl, handleImageSelect } = useSellItemImage();
-  const { isSubmitting, handleSubmit: submitForm } = useSellItemSubmission();
+  const { imageUrl, handleImageSelect } = imageResult;
+  const { isSubmitting, handleSubmit: submitForm } = submissionResult;
 
   // Return null/loading state if form is not ready
   if (!formInitialized || formError || !register || !handleSubmit) {
@@ -37,7 +47,7 @@ export const useSellItemForm = () => {
       imageUrl: imageUrl || data.imageUrl || '',
       price: data.price || 0,
       deliveryCost: data.deliveryCost || 0,
-      condition: data.condition || 'good',
+      condition: data.condition || 'new',
       material: data.material || 'plush',
       color: data.color || '',
       brand: data.brand || '',

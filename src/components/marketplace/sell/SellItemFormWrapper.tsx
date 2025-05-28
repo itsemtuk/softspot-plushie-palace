@@ -43,6 +43,23 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
     handleSelectChange 
   } = formValues;
 
+  // Additional null checks for safety
+  if (!register || !handleSubmit || !onSubmit) {
+    return (
+      <Card className="rounded-xl bg-white shadow-sm overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100">
+          <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
+        </CardHeader>
+        
+        <CardContent className="pt-6">
+          <SellItemErrorDisplay 
+            error="Form is not properly initialized. Please refresh the page and try again." 
+          />
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Safe form submit handler
   const formSubmitHandler: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
