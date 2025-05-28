@@ -74,6 +74,7 @@ export interface ExtendedPost {
   color?: string;
   deliveryCost?: number;
   price?: number; // Added for marketplace posts
+  sold?: boolean; // Added for marketplace functionality
 }
 
 export interface PostCreationData {
@@ -157,6 +158,9 @@ export interface UserProfile {
   joinDate?: string;
   followersCount?: number;
   followingCount?: number; // Added missing property
+  postsCount?: number; // Added missing property
+  collectionsCount?: number; // Added missing property
+  marketplaceListingsCount?: number; // Added missing property
 }
 
 // Enum types for form validation
@@ -189,6 +193,17 @@ export interface Badge {
   icon: string;
   earned: boolean;
   earnedAt?: string;
+  imagePath?: string; // Added missing property
+  progress?: number; // Added missing property
+}
+
+// Badge-related types
+export type BadgeType = 'social' | 'collection' | 'marketplace' | 'engagement';
+
+export interface BadgeCriteria {
+  type: BadgeType;
+  threshold: number;
+  description: string;
 }
 
 // Wishlist interfaces
@@ -233,4 +248,9 @@ export interface UserPrivacySettings {
   allowMessages: boolean;
   allowFriendRequests: boolean;
   messagePermission?: boolean; // Added missing property
+  showActivity?: boolean; // Added missing property
+  hideFromSearch?: boolean; // Added missing property
+  allowComments?: boolean; // Added missing property
+  showCollections?: boolean; // Added missing property
+  showWishlist?: boolean; // Added missing property
 }

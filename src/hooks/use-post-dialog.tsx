@@ -161,8 +161,9 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
       id: `comment-${Date.now()}`,
       userId: currentUserId,
       username: currentUsername,
-      text: text,
+      content: text,
       timestamp: new Date().toISOString(),
+      postId: currentPostData.id,
       likes: 0
     };
     
@@ -192,8 +193,7 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
           const currentUserId = localStorage.getItem('currentUserId') || 'user-1';
           
           // Convert any likes format to a number for consistency
-          let likesCount = typeof comment.likes === 'number' ? comment.likes : 
-                       Array.isArray(comment.likes) ? comment.likes.length : 0;
+          let likesCount = typeof comment.likes === 'number' ? comment.likes : 0;
                        
           if (comment.isLiked) {
             // User already liked it, remove the like
@@ -221,8 +221,7 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
           const currentUserId = localStorage.getItem('currentUserId') || 'user-1';
           const isLiked = c.likedBy?.includes(currentUserId) || false;
           
-          let likesCount = typeof c.likes === 'number' ? c.likes : 
-                        Array.isArray(c.likes) ? c.likes.length : 0;
+          let likesCount = typeof c.likes === 'number' ? c.likes : 0;
                         
           // Toggle like
           if (isLiked) {
