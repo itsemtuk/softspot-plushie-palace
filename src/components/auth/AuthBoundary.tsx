@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { setCurrentUserContext } from '@/utils/supabase/rls';
+import LoadingSpinner from '@/components/LoadingSpinner';
 
 interface AuthBoundaryProps {
   children: React.ReactNode;
@@ -29,12 +30,7 @@ export default function AuthBoundary({ children }: AuthBoundaryProps) {
   }, [user, isLoaded, navigate]);
 
   if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-softspot-600"></div>
-        <p className="ml-4 text-gray-600">Loading authentication...</p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
   
   if (!user) return null; // Already redirected

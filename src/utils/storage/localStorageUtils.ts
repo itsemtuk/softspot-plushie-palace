@@ -37,7 +37,9 @@ export const savePosts = (posts: ExtendedPost[]): void => {
     // Update sync timestamp
     updateSyncTimestamp();
   } catch (error) {
-    console.error('Error saving posts to local storage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error saving posts to local storage:', error);
+    }
   }
 };
 
@@ -96,7 +98,9 @@ export const getLocalPosts = (): ExtendedPost[] => {
       return dateB - dateA; // Descending order (newest first)
     });
   } catch (error) {
-    console.error('Error retrieving posts from local storage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error retrieving posts from local storage:', error);
+    }
     return [];
   }
 };
@@ -121,7 +125,9 @@ export const saveMarketplaceListings = (listings: MarketplacePlushie[]): void =>
     // Also store in sessionStorage for cross-tab syncing
     sessionStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(uniqueListings));
   } catch (error) {
-    console.error('Error saving marketplace listings to local storage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error saving marketplace listings to local storage:', error);
+    }
   }
 };
 
@@ -154,7 +160,9 @@ export const getMarketplaceListings = (): MarketplacePlushie[] => {
     const storedListings = sessionListings || localListings;
     
     if (!storedListings) {
-      console.log("No marketplace listings found in storage");
+      if (import.meta.env.DEV) {
+        console.log("No marketplace listings found in storage");
+      }
       return [];
     }
     
@@ -162,12 +170,16 @@ export const getMarketplaceListings = (): MarketplacePlushie[] => {
     try {
       listings = JSON.parse(storedListings);
     } catch (parseError) {
-      console.error("Error parsing marketplace listings:", parseError);
+      if (import.meta.env.DEV) {
+        console.error("Error parsing marketplace listings:", parseError);
+      }
       return [];
     }
     
     if (!Array.isArray(listings)) {
-      console.error("Marketplace listings is not an array:", listings);
+      if (import.meta.env.DEV) {
+        console.error("Marketplace listings is not an array:", listings);
+      }
       return [];
     }
     
@@ -181,7 +193,9 @@ export const getMarketplaceListings = (): MarketplacePlushie[] => {
       return dateB - dateA;
     });
   } catch (error) {
-    console.error('Error retrieving marketplace listings from local storage:', error);
+    if (import.meta.env.DEV) {
+      console.error('Error retrieving marketplace listings from local storage:', error);
+    }
     return [];
   }
 };
