@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   createBrowserRouter,
@@ -47,57 +48,52 @@ const router = createBrowserRouter(
       element: <BrandPage />,
     },
     {
-      element: <AuthBoundary><div /></AuthBoundary>,
-      children: [
-        {
-          path: "/feed",
-          element: <Feed />,
-        },
-        {
-          path: "/discover",
-          element: <Discover />,
-        },
-        {
-          path: "/profile",
-          element: <Profile />,
-        },
-        {
-          path: "/user/:userId",
-          element: <UserProfile />,
-        },
-        {
-          path: "/edit-profile",
-          element: <EditProfile />,
-        },
-        {
-          path: "/settings",
-          element: <Settings />,
-        },
-        {
-          path: "/messaging",
-          element: <Messaging />,
-        },
-        {
-          path: "/messages",
-          element: <Messaging />,
-        },
-        {
-          path: "/sell",
-          element: <SellItemPageFixed />,
-        },
-        {
-          path: "/checkout",
-          element: <CheckoutPage />,
-        },
-        {
-          path: "/notifications",
-          element: <NotificationsPage />,
-        },
-        {
-          path: "/wishlist",
-          element: <WishlistPage />,
-        },
-      ]
+      path: "/feed",
+      element: <AuthBoundary><Feed /></AuthBoundary>,
+    },
+    {
+      path: "/discover",
+      element: <AuthBoundary><Discover /></AuthBoundary>,
+    },
+    {
+      path: "/profile",
+      element: <AuthBoundary><Profile /></AuthBoundary>,
+    },
+    {
+      path: "/user/:userId",
+      element: <AuthBoundary><UserProfile /></AuthBoundary>,
+    },
+    {
+      path: "/edit-profile",
+      element: <AuthBoundary><EditProfile /></AuthBoundary>,
+    },
+    {
+      path: "/settings",
+      element: <AuthBoundary><Settings /></AuthBoundary>,
+    },
+    {
+      path: "/messaging",
+      element: <AuthBoundary><Messaging /></AuthBoundary>,
+    },
+    {
+      path: "/messages",
+      element: <AuthBoundary><Messaging /></AuthBoundary>,
+    },
+    {
+      path: "/sell",
+      element: <AuthBoundary><SellItemPageFixed /></AuthBoundary>,
+    },
+    {
+      path: "/checkout",
+      element: <AuthBoundary><CheckoutPage /></AuthBoundary>,
+    },
+    {
+      path: "/notifications",
+      element: <AuthBoundary><NotificationsPage /></AuthBoundary>,
+    },
+    {
+      path: "/wishlist",
+      element: <AuthBoundary><WishlistPage /></AuthBoundary>,
     },
   ],
   {

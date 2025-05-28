@@ -20,38 +20,43 @@ export default function AuthBoundary({ children }: AuthBoundaryProps) {
 
   useEffect(() => {
     const initializeAuth = async () => {
+      console.log('AuthBoundary: Starting initialization', { isLoaded, user: !!user });
+      
       try {
         setIsInitializing(true);
         setAuthError(null);
 
         if (!isLoaded) {
+          console.log('AuthBoundary: Clerk not loaded yet');
           return;
         }
 
         if (!user) {
-          console.log('No user found, redirecting to sign-in');
+          console.log('AuthBoundary: No user found, redirecting to sign-in');
           navigate('/sign-in');
           return;
         }
 
-        console.log('Initializing auth for user:', user.id);
+        console.log('AuthBoundary: User found, setting up context for:', user.id);
         
         // Try to set user context
         const success = await setCurrentUserContext(user.id);
         
         if (!success) {
-          console.warn('Failed to set user context, using fallback mode');
+          console.warn('AuthBoundary: Failed to set user context, using fallback mode');
           setFallbackAuth(true);
         } else {
+          console.log('AuthBoundary: User context set successfully');
           setFallbackAuth(false);
         }
 
       } catch (error: any) {
-        console.error('Auth initialization error:', error);
+        console.error('AuthBoundary: Auth initialization error:', error);
         setAuthError(error.message || 'Authentication failed');
         setFallbackAuth(true);
       } finally {
         setIsInitializing(false);
+        console.log('AuthBoundary: Initialization complete');
       }
     };
     
@@ -60,6 +65,7 @@ export default function AuthBoundary({ children }: AuthBoundaryProps) {
 
   // Show loading while Clerk is loading or while we're initializing
   if (!isLoaded || isInitializing) {
+    console.log('AuthBoundary: Showing loading spinner');
     return (
       <div className="flex justify-center items-center min-h-screen">
         <LoadingSpinner />
@@ -69,6 +75,7 @@ export default function AuthBoundary({ children }: AuthBoundaryProps) {
   
   // Show error if authentication failed
   if (authError && !fallbackAuth) {
+    console.log('AuthBoundary: Showing auth error');
     return (
       <div className="flex justify-center items-center min-h-screen p-4">
         <Alert variant="destructive" className="max-w-md">
@@ -88,10 +95,14 @@ export default function AuthBoundary({ children }: AuthBoundaryProps) {
   }
 
   // User is not authenticated, redirect handled above
-  if (!user) return null;
+  if (!user) {
+    console.log('AuthBoundary: No user, returning null');
+    return null;
+  }
 
   // Show fallback mode indicator
   if (fallbackAuth || isInFallbackMode()) {
+    console.log('AuthBoundary: Rendering children with fallback mode indicator');
     return (
       <div>
         <Alert className="mb-4 border-yellow-200 bg-yellow-50">
@@ -105,5 +116,6 @@ export default function AuthBoundary({ children }: AuthBoundaryProps) {
     );
   }
 
+  console.log('AuthBoundary: Rendering children normally');
   return <>{children}</>;
 }
