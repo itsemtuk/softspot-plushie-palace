@@ -1,10 +1,9 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
-import { addPost } from "@/utils/posts/postManagement";
+import { usePostActions } from "./usePostActions";
 
 interface UseCreatePostOptions {
   redirectAfterCreate?: boolean;
@@ -18,6 +17,7 @@ export const useCreatePost = (options?: UseCreatePostOptions) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { user } = useUser();
+  const { createPost } = usePostActions();
   
   const onOpenChange = (open: boolean) => {
     setIsSheetOpen(open);
@@ -46,35 +46,18 @@ export const useCreatePost = (options?: UseCreatePostOptions) => {
         return;
       }
       
-      // Create post with Clerk user context
-      const result = await addPost({
-        ...data,
-        id: `post-${Date.now()}`,
-        userId: user.id,
-        username: user.username || user.firstName || 'User',
-        likes: 0,
-        comments: 0,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-      }, user.id);
+      // Use the new centralized createPost function
+      await createPost(data);
       
-      if (result.success) {
-        toast({
-          title: "Success!",
-          description: "Your post has been created."
-        });
-        
-        onClosePostCreation();
-        
-        if (options?.redirectAfterCreate) {
-          navigate(options.redirectPath || '/feed');
-        }
-      } else {
-        toast({
-          title: "Error",
-          description: "Failed to create your post. Please try again.",
-          variant: "destructive"
-        });
+      toast({
+        title: "Success!",
+        description: "Your post has been created."
+      });
+      
+      onClosePostCreation();
+      
+      if (options?.redirectAfterCreate) {
+        navigate(options.redirectPath || '/feed');
       }
     } catch (error) {
       console.error("Error creating post:", error);

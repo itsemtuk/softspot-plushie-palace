@@ -1,4 +1,3 @@
-
 import React from 'react';
 import {
   createBrowserRouter,
@@ -22,6 +21,7 @@ import WishlistPage from "@/pages/WishlistPage";
 import BrandPage from "@/pages/BrandPage";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
+import AuthBoundary from "@/components/auth/AuthBoundary";
 
 const router = createBrowserRouter(
   [
@@ -39,60 +39,65 @@ const router = createBrowserRouter(
       element: <ProtectedRoute requireAuth={false}><SignUp /></ProtectedRoute>,
     },
     {
-      path: "/feed",
-      element: <ProtectedRoute><Feed /></ProtectedRoute>,
-    },
-    {
-      path: "/discover",
-      element: <ProtectedRoute><Discover /></ProtectedRoute>,
-    },
-    {
-      path: "/profile",
-      element: <ProtectedRoute><Profile /></ProtectedRoute>,
-    },
-    {
-      path: "/user/:userId",
-      element: <ProtectedRoute><UserProfile /></ProtectedRoute>,  
-    },
-    {
-      path: "/edit-profile",
-      element: <ProtectedRoute><EditProfile /></ProtectedRoute>,
-    },
-    {
-      path: "/settings",
-      element: <ProtectedRoute><Settings /></ProtectedRoute>,
-    },
-    {
-      path: "/messaging",
-      element: <ProtectedRoute><Messaging /></ProtectedRoute>,
-    },
-    {
-      path: "/messages",
-      element: <ProtectedRoute><Messaging /></ProtectedRoute>,
-    },
-    {
-      path: "/sell",
-      element: <ProtectedRoute><SellItemPageFixed /></ProtectedRoute>,
-    },
-    {
       path: "/marketplace",
       element: <Marketplace />,
     },
     {
-      path: "/checkout",
-      element: <ProtectedRoute><CheckoutPage /></ProtectedRoute>,
-    },
-    {
-      path: "/notifications",
-      element: <ProtectedRoute><NotificationsPage /></ProtectedRoute>,
-    },
-    {
-      path: "/wishlist",
-      element: <ProtectedRoute><WishlistPage /></ProtectedRoute>,
-    },
-    {
       path: "/brand/:brandName",
       element: <BrandPage />,
+    },
+    {
+      element: <AuthBoundary><div /></AuthBoundary>,
+      children: [
+        {
+          path: "/feed",
+          element: <Feed />,
+        },
+        {
+          path: "/discover",
+          element: <Discover />,
+        },
+        {
+          path: "/profile",
+          element: <Profile />,
+        },
+        {
+          path: "/user/:userId",
+          element: <UserProfile />,
+        },
+        {
+          path: "/edit-profile",
+          element: <EditProfile />,
+        },
+        {
+          path: "/settings",
+          element: <Settings />,
+        },
+        {
+          path: "/messaging",
+          element: <Messaging />,
+        },
+        {
+          path: "/messages",
+          element: <Messaging />,
+        },
+        {
+          path: "/sell",
+          element: <SellItemPageFixed />,
+        },
+        {
+          path: "/checkout",
+          element: <CheckoutPage />,
+        },
+        {
+          path: "/notifications",
+          element: <NotificationsPage />,
+        },
+        {
+          path: "/wishlist",
+          element: <WishlistPage />,
+        },
+      ]
     },
   ],
   {
