@@ -70,6 +70,7 @@ export const useSellItemSubmission = () => {
         imageUrl: formData.imageUrl, // Added required imageUrl field
         description: formData.description || '', // Ensure description is required
         condition: formData.condition || '', // Ensure condition is included
+        material: formData.material || '', // Ensure material is included
         species: formData.species || 'other',
         size: formData.size || 'medium',
         filling: formData.filling || 'polyester',
