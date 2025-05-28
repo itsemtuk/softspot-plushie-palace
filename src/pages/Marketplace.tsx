@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Navbar } from "@/components/Navbar";
+import { MobileNav } from "@/components/navigation/MobileNav";
 import { Button } from "@/components/ui/button";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
 import { MarketplaceNav } from "@/components/marketplace/MarketplaceNav";

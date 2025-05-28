@@ -208,6 +208,15 @@ export interface BadgeCriteria {
   type: BadgeType;
   threshold: number;
   description: string;
+  requiresProfilePicture?: boolean;
+  requiresPlushiePreferences?: boolean;
+  requiresCompletedProfile?: boolean;
+  requiresFeedPosts?: boolean;
+  requiresListedItems?: boolean;
+  requiresSoldItems?: boolean;
+  requiresWishlist?: boolean;
+  requiresFollowers?: boolean;
+  specialBadgeType?: string;
 }
 
 // Wishlist interfaces

@@ -1,108 +1,105 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useToast } from "@/hooks/use-toast";
+import { ExtendedPost, MarketplacePlushie } from '@/types/marketplace';
+import { getLocalPosts, saveLocalPosts, getMarketplaceListings, saveMarketplaceListings } from '@/utils/storage/localStorageUtils';
 
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { toast } from "@/components/ui/use-toast";
-import { useUser } from "@clerk/clerk-react";
-import { SellItemFormData } from "@/types/sellItemForm";
-import { ExtendedPost } from "@/types/marketplace";
-import { saveMarketplaceListings, getMarketplaceListings } from "@/utils/storage/localStorageUtils";
-import { addPost } from "@/utils/posts/postManagement";
+interface SellItemFormData {
+  title: string;
+  description: string;
+  imageUrl: string;
+  price: string;
+  deliveryCost: string;
+  condition: string;
+  material: string;
+  color: string;
+  brand: string;
+  species: string;
+  size: string;
+  filling: string;
+  tags: string[];
+  location: string;
+  deliveryMethod: string;
+}
 
 export const useSellItemSubmission = () => {
   const navigate = useNavigate();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user: clerkUser } = useUser();
+  const { toast } = useToast();
 
-  const submitForm = async (data: SellItemFormData, imageUrl: string) => {
-    if (isSubmitting) return;
-    
-    setIsSubmitting(true);
-    
+  const handleSubmit = async (formData: SellItemFormData): Promise<void> => {
     try {
-      // Validate required fields
-      if (!imageUrl) {
-        toast({
-          title: "Image required",
-          description: "Please upload an image of your plushie.",
-          variant: "destructive"
-        });
-        return;
-      }
+      console.log('Submitting sell item form:', formData);
       
-      // Check authentication
-      if (!clerkUser?.id) {
-        toast({
-          title: "Authentication required",
-          description: "Please sign in to create a listing.",
-          variant: "destructive"
-        });
-        navigate('/sign-in');
-        return;
-      }
+      // Create a unique ID for the new post
+      const newId = `post-${Date.now()}`;
       
-      // Create listing data
-      const listingData = { ...data, image: imageUrl };
-      const listings = getMarketplaceListings() || [];
-      
-      const userId = clerkUser.id;
-      const username = clerkUser.username || clerkUser.firstName || 'Anonymous User';
-      const timestamp = new Date().toISOString();
-      
-      const newListing: ExtendedPost = {
-        ...listingData,
-        id: `listing-${Date.now()}`,
-        userId: userId,
-        username: username as string,
+      // Prepare the post data according to ExtendedPost interface
+      const newPost: ExtendedPost = {
+        id: newId,
+        userId: "current-user",
+        user_id: "current-user", // Added for compatibility
+        username: "Current User",
+        content: formData.description || '', // Added required content field
+        image: formData.imageUrl || '',
+        title: formData.title,
+        description: formData.description,
         likes: 0,
         comments: 0,
-        timestamp: timestamp,
-        createdAt: timestamp,
-        updatedAt: timestamp,
-        location: "",
+        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(), // Added for compatibility
+        updatedAt: new Date().toISOString(),
+        location: formData.location || '',
         forSale: true,
-        tags: [],
-        condition: data.condition,
-        material: data.material,
-        color: data.color || '',
-        deliveryCost: data.deliveryCost || 0
+        tags: formData.tags || [],
+        condition: formData.condition || '',
+        material: formData.material || '',
+        color: formData.color || '',
+        price: parseFloat(formData.price) || 0,
+        deliveryCost: parseFloat(formData.deliveryCost) || 0,
+        sold: false // Added marketplace functionality
       };
-      
-      console.log("Creating new listing:", newListing);
-      
-      // Save listing to marketplace
-      listings.unshift(newListing as any);
-      saveMarketplaceListings(listings);
-      
-      // Add to posts with proper user context
-      await addPost({
-        ...newListing,
-        id: `post-${Date.now()}`,
-      }, userId);
-      
+
+      // Create marketplace plushie data
+      const marketplacePlushie: MarketplacePlushie = {
+        ...newPost,
+        name: formData.title, // Added required name field
+        imageUrl: formData.imageUrl, // Added required imageUrl field
+        species: formData.species || 'other',
+        size: formData.size || 'medium',
+        filling: formData.filling || 'polyester',
+        brand: formData.brand || '',
+        deliveryMethod: formData.deliveryMethod || 'shipping'
+      };
+
+      // Save to local storage
+      const existingPosts = getLocalPosts();
+      const updatedPosts = [newPost, ...existingPosts];
+      saveLocalPosts(updatedPosts);
+
+      const existingListings = getMarketplaceListings();
+      const updatedListings = [marketplacePlushie, ...existingListings];
+      saveMarketplaceListings(updatedListings);
+
+      // Show success message
       toast({
-        title: "Listing created!",
-        description: "Your item has been listed for sale.",
+        title: "Success!",
+        description: "Your plushie has been listed in the marketplace.",
       });
-      
+
       // Navigate to marketplace
-      setTimeout(() => {
-        navigate('/marketplace');
-      }, 100);
-      
+      navigate('/marketplace');
     } catch (error) {
-      console.error("Error creating listing:", error);
+      console.error('Error submitting sell item form:', error);
       toast({
         title: "Error",
-        description: "There was a problem creating your listing. Please try again.",
-        variant: "destructive"
+        description: "Failed to list your plushie. Please try again.",
+        variant: "destructive",
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
   return {
-    isSubmitting,
-    submitForm
+    handleSubmit,
   };
 };

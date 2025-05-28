@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Navbar } from "@/components/Navbar";
-import WishlistManager from "@/components/profile/WishlistManager";
+import { WishlistManager } from "@/components/profile/WishlistManager";
 import { Wishlist } from "@/types/marketplace";
 import { useUser } from "@clerk/clerk-react";
 
@@ -37,7 +37,7 @@ const WishlistPage = () => {
       <Navbar />
       <main className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-6">My Wishlists</h1>
-        <WishlistManager wishlist={wishlist} onUpdateWishlist={handleUpdateWishlist} />
+        <WishlistManager />
       </main>
     </div>
   );

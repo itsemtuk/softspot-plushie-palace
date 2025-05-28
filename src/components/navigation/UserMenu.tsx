@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -12,7 +11,7 @@ import { CreateButton } from "./CreateButton";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "../post/PostCreationFlow";
 import { addPost } from "@/utils/posts/postManagement";
-import { PostCreationData } from "@/types/marketplace";
+import { PostCreationData, ExtendedPost } from "@/types/marketplace";
 
 export const UserMenu = () => {
   const [isSignedIn, setIsSignedIn] = useState(false);
@@ -70,12 +69,16 @@ export const UserMenu = () => {
         ...data,
         id: `post-${Date.now()}`,
         userId: userId as string,
+        user_id: userId as string,
         username: username as string,
         timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         likes: 0,
-        comments: 0
+        comments: 0,
+        content: data.description,
+        forSale: false
       });
       
       return Promise.resolve();
@@ -119,6 +122,26 @@ export const UserMenu = () => {
       </div>
     );
   }
+
+  const mockPost: ExtendedPost = {
+    id: 'mock-post-1',
+    userId: 'mock-user',
+    user_id: 'mock-user', // Added for compatibility
+    username: 'CurrentUser',
+    content: 'Check out my new plushie collection!', // Added required content field
+    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
+    title: 'My Plushie Collection',
+    description: 'Just added some new friends to my collection!',
+    tags: ['collection', 'plushies', 'cute'],
+    likes: 15,
+    comments: 3,
+    timestamp: new Date().toISOString(),
+    createdAt: new Date().toISOString(),
+    created_at: new Date().toISOString(), // Added for compatibility
+    updatedAt: new Date().toISOString(),
+    location: 'New York, NY',
+    forSale: false // Added required forSale field
+  };
 
   return (
     <>
