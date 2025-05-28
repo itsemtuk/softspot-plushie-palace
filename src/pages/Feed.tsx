@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FeedHeader } from "@/components/feed/FeedHeader";
@@ -18,16 +19,21 @@ import { toast } from "@/components/ui/use-toast";
 import { QuickPostForm } from "@/components/feed/QuickPostForm";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
+import PostCreationFlow from "@/components/post/PostCreationFlow";
+import { addPost } from "@/utils/posts/postManagement";
+import { PostCreationData } from "@/types/marketplace";
+import { useUser } from '@clerk/clerk-react';
 
 const Feed = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [postText, setPostText] = useState(""); 
+  const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { openPostDialog } = usePostDialog();
-  const { onCreatePost, isPostCreationOpen, setIsPostCreationOpen } = useCreatePost();
+  const { user } = useUser();
   
   useEffect(() => {
     // Check if user is authenticated
@@ -43,7 +49,6 @@ const Feed = () => {
     setLoading(true);
     getPosts()
       .then(fetchedPosts => {
-        // Filter out private posts if needed (for now showing all posts)
         setPosts(fetchedPosts);
         setLoading(false);
       })
@@ -54,6 +59,8 @@ const Feed = () => {
   }, [navigate]);
   
   const handleCreatePostClick = () => {
+    console.log("Create post button clicked on Feed page");
+    
     if (!isAuthenticated()) {
       toast({
         title: "Authentication Required",
@@ -63,7 +70,59 @@ const Feed = () => {
       return;
     }
     
-    onCreatePost();
+    setIsPostCreationOpen(true);
+  };
+
+  const handlePostCreated = async (data: PostCreationData) => {
+    try {
+      console.log("Creating post with data:", data);
+      
+      const username = user?.username || user?.firstName || "Anonymous";
+      const userId = user?.id || getCurrentUserId();
+      
+      if (!userId) {
+        throw new Error("User ID not found");
+      }
+
+      const newPost: ExtendedPost = {
+        ...data,
+        id: `post-${Date.now()}`,
+        userId: userId,
+        user_id: userId,
+        username: username,
+        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        likes: 0,
+        comments: 0,
+        content: data.description,
+        forSale: false
+      };
+
+      const result = await addPost(newPost, userId);
+      
+      if (result.success) {
+        // Add the new post to the local state
+        setPosts(prevPosts => [newPost, ...prevPosts]);
+        
+        toast({
+          title: "Success!",
+          description: "Your post has been created."
+        });
+        
+        setIsPostCreationOpen(false);
+      } else {
+        throw new Error(result.error || "Failed to create post");
+      }
+    } catch (error) {
+      console.error("Error creating post:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create post. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
   
   const handleSellPlushie = () => {
@@ -146,6 +205,13 @@ const Feed = () => {
           </Button>
         </div>
       )}
+
+      {/* Post Creation Flow */}
+      <PostCreationFlow
+        isOpen={isPostCreationOpen}
+        onClose={() => setIsPostCreationOpen(false)}
+        onPostCreated={handlePostCreated}
+      />
       
       <Footer />
     </div>

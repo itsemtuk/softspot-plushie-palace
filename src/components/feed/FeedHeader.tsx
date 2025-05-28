@@ -26,6 +26,8 @@ export const FeedHeader = ({
   const navigate = useNavigate();
   
   const handleCreatePost = () => {
+    console.log("FeedHeader: Create post button clicked");
+    
     if (!isAuthenticated()) {
       toast({
         title: "Authentication Required",
