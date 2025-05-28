@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -30,10 +29,11 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
     formatDistanceToNow(new Date(plushie.timestamp), { addSuffix: true }) : 
     'Recently';
     
-  // Format shipping info
-  const shippingInfo = plushie.deliveryCost === 0 ? 
+  // Format shipping info with proper number handling
+  const deliveryCost = typeof plushie.deliveryCost === 'number' ? plushie.deliveryCost : 0;
+  const shippingInfo = deliveryCost === 0 ? 
     "Free shipping" : 
-    `$${plushie.deliveryCost.toFixed(2)} shipping`;
+    `$${deliveryCost.toFixed(2)} shipping`;
   
   // Format price
   const price = plushie.price || 0;
@@ -213,9 +213,9 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
                 <div>
                   <h4 className="font-medium mb-1">Shipping Details</h4>
                   <p className="text-sm text-gray-700">
-                    {plushie.deliveryCost === 0 
+                    {deliveryCost === 0 
                       ? "This item includes free shipping."
-                      : `Shipping cost: $${plushie.deliveryCost?.toFixed(2)}`
+                      : `Shipping cost: $${deliveryCost.toFixed(2)}`
                     }
                   </p>
                 </div>

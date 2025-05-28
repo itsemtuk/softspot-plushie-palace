@@ -17,7 +17,13 @@ export const ShippingCostField = ({ register }: ShippingCostFieldProps) => {
           step="0.01"
           min="0"
           placeholder="0.00 (free shipping)"
-          {...register("deliveryCost")}
+          {...register("deliveryCost", {
+            valueAsNumber: true,
+            setValueAs: (value: string) => {
+              const num = parseFloat(value);
+              return isNaN(num) ? 0 : num;
+            }
+          })}
         />
       </FormControl>
       <FormDescription>Enter 0 for free shipping</FormDescription>

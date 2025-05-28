@@ -1,4 +1,3 @@
-
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -47,10 +46,11 @@ export const ProductCard = ({
     product.price - (product.price * (product.discount / 100)) : 
     product.price;
   
-  // Format shipping info
-  const shippingInfo = product.deliveryCost === 0 ? 
+  // Format shipping info with proper number handling
+  const deliveryCost = typeof product.deliveryCost === 'number' ? product.deliveryCost : 0;
+  const shippingInfo = deliveryCost === 0 ? 
     "Free shipping" : 
-    `+$${product.deliveryCost.toFixed(2)} shipping`;
+    `+$${deliveryCost.toFixed(2)} shipping`;
     
   const handleProfileClick = (e: React.MouseEvent) => {
     e.stopPropagation();

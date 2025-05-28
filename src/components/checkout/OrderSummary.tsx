@@ -44,22 +44,27 @@ export function OrderSummary({
       
       <div className={collapsible && isCollapsed ? "hidden" : "block"}>
         <div className="p-4 space-y-3 max-h-64 overflow-y-auto">
-          {items.map((item) => (
-            <div key={item.id} className="flex items-center space-x-3">
-              <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
-                <img 
-                  src={item.image} 
-                  alt={item.title} 
-                  className="w-full h-full object-cover"
-                />
+          {items.map((item) => {
+            // Ensure price is a number with fallback
+            const itemPrice = typeof item.price === 'number' ? item.price : 0;
+            
+            return (
+              <div key={item.id} className="flex items-center space-x-3">
+                <div className="w-16 h-16 bg-gray-100 rounded overflow-hidden">
+                  <img 
+                    src={item.image} 
+                    alt={item.title} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium truncate">{item.title}</p>
+                  <p className="text-xs text-gray-500">{item.brand || 'Unknown brand'}</p>
+                </div>
+                <div className="text-sm font-medium">${itemPrice.toFixed(2)}</div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate">{item.title}</p>
-                <p className="text-xs text-gray-500">{item.brand || 'Unknown brand'}</p>
-              </div>
-              <div className="text-sm font-medium">${item.price.toFixed(2)}</div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
       

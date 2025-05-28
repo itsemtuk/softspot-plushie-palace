@@ -19,6 +19,10 @@ export const useSellItemSubmission = () => {
       // Create a unique ID for the new post
       const newId = `post-${Date.now()}`;
       
+      // Ensure numeric values are properly handled
+      const price = typeof formData.price === 'number' ? formData.price : parseFloat(String(formData.price)) || 0;
+      const deliveryCost = typeof formData.deliveryCost === 'number' ? formData.deliveryCost : parseFloat(String(formData.deliveryCost)) || 0;
+      
       // Prepare the post data according to ExtendedPost interface
       const newPost: ExtendedPost = {
         id: newId,
@@ -41,8 +45,8 @@ export const useSellItemSubmission = () => {
         condition: formData.condition || '',
         material: formData.material || '',
         color: formData.color || '',
-        price: formData.price || 0,
-        deliveryCost: formData.deliveryCost || 0,
+        price: price,
+        deliveryCost: deliveryCost,
         sold: false // Added marketplace functionality
       };
 
@@ -59,7 +63,8 @@ export const useSellItemSubmission = () => {
         filling: formData.filling || 'polyester',
         brand: formData.brand || '',
         deliveryMethod: formData.deliveryMethod || 'shipping',
-        price: formData.price || 0 // Ensure price is explicitly set
+        price: price, // Ensure price is explicitly set as number
+        deliveryCost: deliveryCost // Ensure deliveryCost is explicitly set as number
       };
 
       // Save to local storage
