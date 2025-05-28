@@ -2,25 +2,7 @@
 import { useSellItemFormSetup } from "./sell-item/useSellItemFormSetup";
 import { useSellItemImage } from "./sell-item/useSellItemImage";
 import { useSellItemSubmission } from "./sell-item/useSellItemSubmission";
-
-// Unified interface that matches what the submission hook expects
-interface SellItemFormData {
-  title: string;
-  description: string;
-  imageUrl: string;
-  price: string;
-  deliveryCost: string;
-  condition: string;
-  material: string;
-  color: string;
-  brand: string;
-  species: string;
-  size: string;
-  filling: string;
-  tags: string[];
-  location: string;
-  deliveryMethod: string;
-}
+import { SellItemFormData } from "@/types/sellItemForm";
 
 export const useSellItemForm = () => {
   const {
@@ -51,9 +33,10 @@ export const useSellItemForm = () => {
     const submissionData: SellItemFormData = {
       title: data.title || '',
       description: data.description || '',
+      image: imageUrl || data.image || '',
       imageUrl: imageUrl || data.imageUrl || '',
-      price: data.price || '0',
-      deliveryCost: data.deliveryCost || '0',
+      price: data.price || 0,
+      deliveryCost: data.deliveryCost || 0,
       condition: data.condition || 'good',
       material: data.material || 'plush',
       color: data.color || '',

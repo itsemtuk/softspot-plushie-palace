@@ -5,13 +5,6 @@ import { useUser } from "@clerk/clerk-react";
 import { toast } from "@/components/ui/use-toast";
 import { SellItemFormData } from "@/types/sellItemForm";
 import { setCurrentUserId } from "@/utils/storage/localStorageUtils";
-import { 
-  PlushieCondition,
-  PlushieMaterial,
-  PlushieFilling,
-  PlushieSpecies,
-  DeliveryMethod
-} from "@/types/marketplace";
 
 export const useSellItemFormSetup = () => {
   const [formInitialized, setFormInitialized] = useState(false);
@@ -27,13 +20,17 @@ export const useSellItemFormSetup = () => {
       description: '',
       deliveryCost: 0,
       color: '',
-      condition: 'new' as PlushieCondition,
-      material: 'plush' as PlushieMaterial,
-      filling: 'polyester' as PlushieFilling,
-      species: 'bear' as PlushieSpecies,
+      condition: 'new',
+      material: 'plush',
+      filling: 'polyester',
+      species: 'bear',
       brand: 'other',
-      deliveryMethod: 'shipping' as DeliveryMethod,
+      deliveryMethod: 'shipping',
       image: '',
+      imageUrl: '',
+      size: 'medium',
+      tags: [],
+      location: '',
     }
   });
 

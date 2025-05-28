@@ -12,4 +12,8 @@ export interface SellItemFormData {
   deliveryCost: number;
   color: string;
   image: string;
+  imageUrl: string;
+  size: string;
+  tags: string[];
+  location: string;
 }

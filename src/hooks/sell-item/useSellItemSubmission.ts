@@ -3,25 +3,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { ExtendedPost, MarketplacePlushie } from '@/types/marketplace';
+import { SellItemFormData } from '@/types/sellItemForm';
 import { getLocalPosts, getMarketplaceListings, saveMarketplaceListings } from '@/utils/storage/localStorageUtils';
-
-interface SellItemFormData {
-  title: string;
-  description: string;
-  imageUrl: string;
-  price: string;
-  deliveryCost: string;
-  condition: string;
-  material: string;
-  color: string;
-  brand: string;
-  species: string;
-  size: string;
-  filling: string;
-  tags: string[];
-  location: string;
-  deliveryMethod: string;
-}
 
 export const useSellItemSubmission = () => {
   const navigate = useNavigate();
@@ -43,7 +26,7 @@ export const useSellItemSubmission = () => {
         user_id: "current-user", // Added for compatibility
         username: "Current User",
         content: formData.description || '', // Added required content field
-        image: formData.imageUrl || '',
+        image: formData.imageUrl || formData.image || '',
         title: formData.title,
         description: formData.description,
         likes: 0,
@@ -58,8 +41,8 @@ export const useSellItemSubmission = () => {
         condition: formData.condition || '',
         material: formData.material || '',
         color: formData.color || '',
-        price: parseFloat(formData.price) || 0,
-        deliveryCost: parseFloat(formData.deliveryCost) || 0,
+        price: formData.price || 0,
+        deliveryCost: formData.deliveryCost || 0,
         sold: false // Added marketplace functionality
       };
 
@@ -67,7 +50,7 @@ export const useSellItemSubmission = () => {
       const marketplacePlushie: MarketplacePlushie = {
         ...newPost,
         name: formData.title, // Added required name field
-        imageUrl: formData.imageUrl, // Added required imageUrl field
+        imageUrl: formData.imageUrl || formData.image || '', // Added required imageUrl field
         description: formData.description || '', // Ensure description is required
         condition: formData.condition || '', // Ensure condition is included
         material: formData.material || '', // Ensure material is included
@@ -76,7 +59,7 @@ export const useSellItemSubmission = () => {
         filling: formData.filling || 'polyester',
         brand: formData.brand || '',
         deliveryMethod: formData.deliveryMethod || 'shipping',
-        price: parseFloat(formData.price) || 0 // Ensure price is explicitly set
+        price: formData.price || 0 // Ensure price is explicitly set
       };
 
       // Save to local storage
