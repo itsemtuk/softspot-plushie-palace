@@ -109,7 +109,7 @@ export const ImageUploader = ({
   };
 
   return (
-    <div className={className}>
+    <div className={`w-full max-w-lg ${className}`}>
       <input
         type="file"
         accept="image/*"
@@ -139,7 +139,7 @@ export const ImageUploader = ({
         <div
           className={`border-2 border-dashed rounded-md ${
             dragging ? 'border-softspot-400 bg-softspot-50' : 'border-gray-300'
-          } p-8 text-center cursor-pointer transition-colors`}
+          } p-8 text-center cursor-pointer transition-colors min-h-[200px] flex flex-col items-center justify-center`}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}

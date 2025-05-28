@@ -96,12 +96,7 @@ const PostCreationFlow = ({
     try {
       setLocalSubmitting(true);
       await onPostCreated(finalData);
-      toast({
-        title: "Success",
-        description: "Your post has been created."
-      });
       onClose();
-      navigate('/feed');
     } catch (error) {
       console.error("Error creating post:", error);
       toast({
@@ -132,7 +127,7 @@ const PostCreationFlow = ({
     switch (step) {
       case 'upload':
         return (
-          <div className="flex flex-col items-center justify-center h-full bg-white p-4">
+          <div className="flex flex-col items-center justify-center h-full bg-white p-4 max-h-[80vh] overflow-y-auto">
             <ImageUploader 
               onImageSelected={(result) => {
                 if (result.success) {
@@ -151,12 +146,14 @@ const PostCreationFlow = ({
         );
       case 'editor':
         return (
-          <div className="flex flex-col items-center justify-center h-full bg-white p-4">
-            <ImageEditor 
-              imageUrl={postData.image} 
-              onSave={handleImageEdited} 
-              onCancel={handleCancel}
-            />
+          <div className="flex flex-col items-center justify-center h-full bg-white p-4 max-h-[80vh] overflow-y-auto">
+            <div className="w-full max-w-lg">
+              <ImageEditor 
+                imageUrl={postData.image} 
+                onSave={handleImageEdited} 
+                onCancel={handleCancel}
+              />
+            </div>
             <Button 
               variant="ghost" 
               onClick={handleSkipEdit}
@@ -168,7 +165,7 @@ const PostCreationFlow = ({
         );
       case 'info':
         return (
-          <div className="bg-white p-4 rounded-md">
+          <div className="bg-white p-4 rounded-md max-h-[80vh] overflow-y-auto">
             <PostCreationForm 
               onSubmit={handleFormSubmit} 
               onCancel={handleCancel} 
@@ -188,7 +185,7 @@ const PostCreationFlow = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-md bg-white">
+      <DialogContent className="sm:max-w-4xl bg-white max-h-[90vh] overflow-y-auto">
         {renderContent()}
       </DialogContent>
     </Dialog>

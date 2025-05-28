@@ -13,14 +13,13 @@ import { ExtendedPost } from "@/types/marketplace";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import Footer from "@/components/Footer";
-import { useCreatePost } from "@/hooks/use-create-post";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { toast } from "@/components/ui/use-toast";
 import { QuickPostForm } from "@/components/feed/QuickPostForm";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
-import { addPost } from "@/utils/posts/postManagement";
+import { savePost } from "@/utils/posts/postManagement";
 import { PostCreationData } from "@/types/marketplace";
 import { useUser } from '@clerk/clerk-react';
 
@@ -35,6 +34,23 @@ const Feed = () => {
   const { openPostDialog } = usePostDialog();
   const { user } = useUser();
   
+  const fetchPosts = async () => {
+    try {
+      setLoading(true);
+      const fetchedPosts = await getPosts();
+      setPosts(fetchedPosts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      toast({
+        title: "Error",
+        description: "Failed to load posts. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   useEffect(() => {
     // Check if user is authenticated
     if (!isAuthenticated()) {
@@ -46,16 +62,7 @@ const Feed = () => {
       return;
     }
     
-    setLoading(true);
-    getPosts()
-      .then(fetchedPosts => {
-        setPosts(fetchedPosts);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error("Error fetching posts:", error);
-        setLoading(false);
-      });
+    fetchPosts();
   }, [navigate]);
   
   const handleCreatePostClick = () => {
@@ -100,18 +107,19 @@ const Feed = () => {
         forSale: false
       };
 
-      const result = await addPost(newPost, userId);
+      console.log("Saving new post:", newPost);
+      const result = await savePost(newPost, userId);
       
       if (result.success) {
-        // Add the new post to the local state
-        setPosts(prevPosts => [newPost, ...prevPosts]);
-        
         toast({
           title: "Success!",
           description: "Your post has been created."
         });
         
         setIsPostCreationOpen(false);
+        
+        // Refresh the posts to show the new one
+        await fetchPosts();
       } else {
         throw new Error(result.error || "Failed to create post");
       }
@@ -139,16 +147,7 @@ const Feed = () => {
   };
   
   const handleRefresh = () => {
-    setLoading(true);
-    getPosts()
-      .then(fetchedPosts => {
-        setPosts(fetchedPosts);
-        setLoading(false);
-      })
-      .catch(error => {
-        console.error("Error refreshing posts:", error);
-        setLoading(false);
-      });
+    fetchPosts();
   };
 
   const handlePostClick = (post: ExtendedPost) => {

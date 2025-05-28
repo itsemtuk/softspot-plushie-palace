@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -93,8 +94,8 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
     if (!data) return imageUrl;
     
     // Set canvas dimensions to match the cropped area
-    canvas.width = data.width; // Use width instead of naturalWidth
-    canvas.height = data.height; // Use height instead of naturalHeight
+    canvas.width = data.width;
+    canvas.height = data.height;
 
     // Apply filters
     let filterString = "";
@@ -145,40 +146,25 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
     onSave(editedImageUrl);
   };
 
-  const getCurrentFilter = () => {
-    if (activePreset === "Normal" && brightness[0] === 100 && contrast[0] === 100 && saturation[0] === 100) {
-      return "";
-    }
-
-    let filterString = "";
-    const preset = FILTER_PRESETS.find(p => p.name === activePreset);
-    if (preset && preset.filter) {
-      filterString += preset.filter + " ";
-    }
-    
-    filterString += `brightness(${brightness[0]}%) contrast(${contrast[0]}%) saturate(${saturation[0]}%)`;
-    return filterString;
-  };
-
   return (
-    <Card className="p-4 max-w-md mx-auto">
+    <Card className="p-4 w-full max-w-2xl mx-auto">
       <Tabs defaultValue="crop" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="crop" className="flex items-center gap-1">
             <Crop className="h-4 w-4" />
-            <span>Crop</span>
+            <span className="hidden sm:inline">Crop</span>
           </TabsTrigger>
           <TabsTrigger value="adjust" className="flex items-center gap-1">
             <Sliders className="h-4 w-4" />
-            <span>Adjust</span>
+            <span className="hidden sm:inline">Adjust</span>
           </TabsTrigger>
           <TabsTrigger value="filters" className="flex items-center gap-1">
             <Sparkles className="h-4 w-4" />
-            <span>Filters</span>
+            <span className="hidden sm:inline">Filters</span>
           </TabsTrigger>
         </TabsList>
         
-        <div className="aspect-square relative mb-6 overflow-hidden rounded-lg bg-gray-200">
+        <div className="aspect-square relative mb-6 overflow-hidden rounded-lg bg-gray-200 max-h-96">
           {/* Hidden reference image to apply filters preview */}
           <img
             ref={imageRef}
@@ -196,7 +182,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
           />
         </div>
         
-        <TabsContent value="crop">
+        <TabsContent value="crop" className="space-y-4">
           <CropControls
             aspectRatio={aspectRatio}
             handleAspectRatioChange={handleAspectRatioChange}
@@ -206,7 +192,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
           />
         </TabsContent>
         
-        <TabsContent value="adjust">
+        <TabsContent value="adjust" className="space-y-4">
           <AdjustmentControls
             brightness={brightness}
             setBrightness={setBrightness}
@@ -217,7 +203,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
           />
         </TabsContent>
         
-        <TabsContent value="filters">
+        <TabsContent value="filters" className="space-y-4">
           <FilterPresets
             imageUrl={imageUrl}
             activePreset={activePreset}
