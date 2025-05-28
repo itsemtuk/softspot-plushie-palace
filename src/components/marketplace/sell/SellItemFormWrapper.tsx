@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
@@ -6,7 +5,7 @@ import { SellItemImageUploader } from "./SellItemImageUploader";
 import { SellItemFormFields } from "./SellItemFormFields";
 import { SellItemFormActions } from "./SellItemFormActions";
 import { SellItemErrorDisplay } from "./SellItemErrorDisplay";
-import { useSellItemFormFixed } from "@/hooks/useSellItemFormFixed";
+import { useSellItemForm } from "@/hooks/useSellItemForm";
 
 interface SellItemFormWrapperProps {
   supabaseUserId?: string | null;
@@ -15,7 +14,7 @@ interface SellItemFormWrapperProps {
 export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps) => {
   const [formError, setFormError] = useState<string | null>(null);
   
-  const formValues = useSellItemFormFixed();
+  const formValues = useSellItemForm();
 
   // Enhanced null checking with specific guards
   const isFormReady = formValues && 
