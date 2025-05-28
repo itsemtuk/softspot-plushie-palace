@@ -9,7 +9,7 @@ export const setCurrentUserContext = async (userId: string): Promise<boolean> =>
     console.log('Setting user context for RLS:', userId);
     
     const { error } = await supabase.rpc('set_current_user_id', { 
-      user_id_param: userId 
+      current_user_id: userId 
     });
     
     if (error) {
@@ -18,7 +18,8 @@ export const setCurrentUserContext = async (userId: string): Promise<boolean> =>
       // Check if it's a CORS or network error
       if (error.message?.includes('CORS') || 
           error.message?.includes('fetch') || 
-          error.message?.includes('NetworkError')) {
+          error.message?.includes('NetworkError') ||
+          error.message?.includes('Failed to fetch')) {
         console.warn('CORS/Network error detected, using fallback authentication');
         return handleCORSFallback(userId);
       }
@@ -35,6 +36,7 @@ export const setCurrentUserContext = async (userId: string): Promise<boolean> =>
     if (error.message?.includes('CORS') || 
         error.message?.includes('fetch') || 
         error.message?.includes('NetworkError') ||
+        error.message?.includes('Failed to fetch') ||
         error.name === 'TypeError') {
       console.warn('Network error detected, using fallback authentication');
       return handleCORSFallback(userId);
@@ -52,6 +54,7 @@ const handleCORSFallback = async (userId: string): Promise<boolean> => {
     // Store user context in localStorage as fallback
     localStorage.setItem('currentUserContext', userId);
     localStorage.setItem('authFallbackMode', 'true');
+    localStorage.setItem('fallback_user_id', userId);
     
     console.log('Fallback authentication mode activated');
     return true;
@@ -67,7 +70,7 @@ const handleCORSFallback = async (userId: string): Promise<boolean> => {
 export const clearCurrentUserContext = async (): Promise<void> => {
   try {
     const { error } = await supabase.rpc('set_current_user_id', { 
-      user_id_param: null 
+      current_user_id: null 
     });
     
     if (error) {
@@ -79,6 +82,7 @@ export const clearCurrentUserContext = async (): Promise<void> => {
     // Always clear fallback data
     localStorage.removeItem('currentUserContext');
     localStorage.removeItem('authFallbackMode');
+    localStorage.removeItem('fallback_user_id');
   }
 };
 

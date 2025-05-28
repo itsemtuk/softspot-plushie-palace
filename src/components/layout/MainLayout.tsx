@@ -1,30 +1,20 @@
 
-import React from 'react';
+import { ReactNode } from "react";
 import { Navbar } from "@/components/Navbar";
-import { MobileNav } from "@/components/navigation/MobileNav";
-import { useIsMobile } from "@/hooks/use-mobile";
-import Footer from "@/components/Footer";
+import { NetworkStatus } from "@/components/ui/network-status";
 
 interface MainLayoutProps {
-  children: React.ReactNode;
-  className?: string;
-  noPadding?: boolean;
+  children: ReactNode;
 }
 
-export const MainLayout: React.FC<MainLayoutProps> = ({ 
-  children, 
-  className = "", 
-  noPadding = false 
-}) => {
-  const isMobile = useIsMobile();
-
+const MainLayout = ({ children }: MainLayoutProps) => {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      {isMobile ? <MobileNav /> : <Navbar />}
-      <main className={`flex-grow ${!noPadding ? 'container mx-auto px-4 py-8 pt-20' : 'pt-16'} ${className}`}>
+    <div className="min-h-screen bg-gray-50">
+      <Navbar />
+      <NetworkStatus />
+      <main className="container mx-auto px-4 py-6">
         {children}
       </main>
-      <Footer />
     </div>
   );
 };
