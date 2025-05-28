@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
@@ -9,6 +10,25 @@ import { useSellItemForm } from "@/hooks/useSellItemForm";
 
 interface SellItemFormWrapperProps {
   supabaseUserId?: string | null;
+}
+
+// Local interface that matches the form fields exactly
+interface FormData {
+  title: string;
+  description: string;
+  imageUrl: string;
+  price: string;
+  deliveryCost: string;
+  condition: string;
+  material: string;
+  color: string;
+  brand: string;
+  species: string;
+  size: string;
+  filling: string;
+  tags: string[];
+  location: string;
+  deliveryMethod: string;
 }
 
 export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps) => {
@@ -53,8 +73,8 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
         throw new Error("Form submission callback not available");
       }
 
-      // Execute the form submission
-      const submitFunction = handleSubmit(onSubmit);
+      // Execute the form submission - onSubmit already has correct type
+      const submitFunction = handleSubmit(onSubmit as any);
       if (!submitFunction || typeof submitFunction !== 'function') {
         throw new Error("Form submission function creation failed");
       }

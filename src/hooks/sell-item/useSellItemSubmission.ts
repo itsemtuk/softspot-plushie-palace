@@ -63,11 +63,12 @@ export const useSellItemSubmission = () => {
         sold: false // Added marketplace functionality
       };
 
-      // Create marketplace plushie data with required price
+      // Create marketplace plushie data with all required fields
       const marketplacePlushie: MarketplacePlushie = {
         ...newPost,
         name: formData.title, // Added required name field
         imageUrl: formData.imageUrl, // Added required imageUrl field
+        description: formData.description || '', // Ensure description is required
         species: formData.species || 'other',
         size: formData.size || 'medium',
         filling: formData.filling || 'polyester',

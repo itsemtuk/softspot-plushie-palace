@@ -144,7 +144,7 @@ const SellItemPage = () => {
   const formSubmitHandler: React.FormEventHandler<HTMLFormElement> = (e) => {
     if (handleSubmit && onSubmit) {
       // Call the handleSubmit function with onSubmit as its argument, then call the resulting function with the event
-      handleSubmit(onSubmit)(e);
+      handleSubmit(onSubmit as any)(e);
     } else {
       e.preventDefault();
       console.error("Form submission failed: handleSubmit or onSubmit is not initialized");
