@@ -1,5 +1,4 @@
 
-
 export interface MarketplacePlushie {
   id: string;
   name: string;
@@ -55,6 +54,7 @@ export interface MarketplacePlushie {
 export interface ExtendedPost {
   id: string;
   userId: string;
+  user_id: string; // Added for compatibility
   username: string;
   content: string;
   image: string;
@@ -65,6 +65,7 @@ export interface ExtendedPost {
   comments: number;
   timestamp: string;
   createdAt: string;
+  created_at: string; // Added for compatibility
   updatedAt: string;
   location: string;
   forSale: boolean;
@@ -155,6 +156,7 @@ export interface UserProfile {
   location?: string;
   joinDate?: string;
   followersCount?: number;
+  followingCount?: number; // Added missing property
 }
 
 // Enum types for form validation
@@ -195,15 +197,32 @@ export interface WishlistItem {
   plushieId: string;
   userId: string;
   addedAt: string;
+  name: string; // Added missing property
+  title?: string; // Added missing property
+  price?: number; // Added missing property
+  description?: string; // Added missing property
+  imageUrl?: string; // Added missing property
+  image?: string; // Added missing property
+  linkUrl?: string; // Added missing property
+  priority?: 'low' | 'medium' | 'high'; // Added missing property
+  status?: 'wanted' | 'purchased' | 'received'; // Added missing property
+  currencyCode?: string; // Added missing property
+  brand?: string; // Added missing property
+  createdAt?: string; // Added missing property
+  updatedAt?: string; // Added missing property
   plushie: MarketplacePlushie;
 }
 
 export interface Wishlist {
   id: string;
   userId: string;
+  name: string; // Added missing property
+  description?: string; // Added missing property
   items: WishlistItem[];
   createdAt: string;
   updatedAt: string;
+  privacy?: 'public' | 'private' | 'friends'; // Added missing property
+  isPublic?: boolean; // Added missing property
 }
 
 // User privacy settings
@@ -213,5 +232,5 @@ export interface UserPrivacySettings {
   showLocation: boolean;
   allowMessages: boolean;
   allowFriendRequests: boolean;
+  messagePermission?: boolean; // Added missing property
 }
-

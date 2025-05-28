@@ -37,3 +37,6 @@ export function PostCommentItem({ comment, onLikeToggle }: PostCommentItemProps)
     </div>
   );
 }
+
+// Export the Comment type for use in other components
+export type { Comment };
