@@ -1,15 +1,28 @@
+
 export interface MarketplacePlushie {
   id: string;
   name: string;
+  title?: string; // Added for compatibility
   price: number;
   imageUrl: string;
+  image?: string; // Added for compatibility
   description: string;
   condition: string;
   material: string;
   color?: string;
   deliveryCost?: number;
   userId?: string;
+  username?: string; // Added for user display
   timestamp?: string;
+  brand?: string; // Added for brand information
+  originalPrice?: number; // Added for discount calculations
+  discount?: number; // Added for discount functionality
+  reviews?: Array<{ rating: number; comment: string }>; // Added for reviews
+  species?: string; // Added for plushie categorization
+  size?: string; // Added for size information
+  filling?: string; // Added for material details
+  tags?: string[]; // Added for tagging
+  location?: string; // Added for location-based features
 }
 
 /**
@@ -33,6 +46,7 @@ export interface MarketplacePlushie {
  * @property {string} [material] - Material of the item (for plushies)
  * @property {string} [color] - Color of the item
  * @property {number} [deliveryCost] - Cost of delivery for marketplace items
+ * @property {number} [price] - Price of the item if for sale
  */
 export interface ExtendedPost {
   id: string;
@@ -54,6 +68,7 @@ export interface ExtendedPost {
   material?: string;
   color?: string;
   deliveryCost?: number;
+  price?: number; // Added for marketplace posts
 }
 
 export interface PostCreationData {
@@ -69,4 +84,58 @@ export interface PostSummary {
   content: string;
   user_id: string;
   created_at: string;
+}
+
+// Additional interfaces that were missing
+export interface Comment {
+  id: string;
+  content: string;
+  userId: string;
+  username: string;
+  timestamp: string;
+  postId: string;
+}
+
+export interface Post {
+  id: string;
+  content: string;
+  user_id: string;
+  created_at: string;
+  title?: string;
+  image?: string;
+  likes?: number;
+  comments?: number;
+}
+
+export interface PlushieBrand {
+  id: string;
+  name: string;
+  logo?: string;
+  description?: string;
+}
+
+export interface MarketplaceFilters {
+  brand?: string;
+  condition?: string;
+  priceRange?: {
+    min: number;
+    max: number;
+  };
+  material?: string;
+  size?: string;
+  color?: string;
+}
+
+export interface Currency {
+  code: string;
+  symbol: string;
+  rate: number;
+}
+
+export interface UserProfile {
+  id: string;
+  username: string;
+  avatar?: string;
+  bio?: string;
+  location?: string;
 }
