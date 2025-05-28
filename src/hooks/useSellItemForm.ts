@@ -15,10 +15,10 @@ export const useSellItemForm = () => {
   } = useSellItemFormSetup();
 
   const { imageUrl, handleImageSelect } = useSellItemImage();
-  const { isSubmitting, submitForm } = useSellItemSubmission();
+  const { isSubmitting, handleSubmit: submitForm } = useSellItemSubmission();
 
   const onSubmit = async (data: SellItemFormData) => {
-    await submitForm(data, imageUrl);
+    await submitForm(data);
   };
 
   // Enhanced return with comprehensive validation

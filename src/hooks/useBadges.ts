@@ -18,6 +18,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/profile-pic-badge.png",
       earned: false,
       criteria: {
+        type: "achievement" as BadgeType,
+        threshold: 1,
+        description: "Set a profile picture",
         requiresProfilePicture: true
       },
       type: "achievement" as BadgeType
@@ -29,6 +32,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/preferences-badge.png",
       earned: false,
       criteria: {
+        type: "achievement" as BadgeType,
+        threshold: 1,
+        description: "Set plushie preferences",
         requiresPlushiePreferences: true
       },
       type: "achievement" as BadgeType
@@ -40,6 +46,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/complete-profile-badge.png",
       earned: false,
       criteria: {
+        type: "achievement" as BadgeType,
+        threshold: 1,
+        description: "Complete profile information",
         requiresCompletedProfile: true
       },
       type: "achievement" as BadgeType
@@ -51,6 +60,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/first-post-badge.png",
       earned: false,
       criteria: {
+        type: "milestone" as BadgeType,
+        threshold: 1,
+        description: "Share your first post",
         requiresFeedPosts: 1
       },
       progress: 0,
@@ -64,6 +76,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/first-listing-badge.png",
       earned: false,
       criteria: {
+        type: "milestone" as BadgeType,
+        threshold: 1,
+        description: "List your first item",
         requiresListedItems: 1
       },
       progress: 0,
@@ -77,6 +92,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/first-sale-badge.png",
       earned: false,
       criteria: {
+        type: "milestone" as BadgeType,
+        threshold: 1,
+        description: "Complete your first sale",
         requiresSoldItems: 1
       },
       progress: 0,
@@ -90,6 +108,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/wishlist-badge.png",
       earned: false,
       criteria: {
+        type: "achievement" as BadgeType,
+        threshold: 1,
+        description: "Create a wishlist",
         requiresWishlist: true
       },
       type: "achievement" as BadgeType
@@ -101,6 +122,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/10-followers-badge.png",
       earned: false,
       criteria: {
+        type: "milestone" as BadgeType,
+        threshold: 10,
+        description: "Gain 10 followers",
         requiresFollowers: 10
       },
       progress: 0,
@@ -114,6 +138,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/50-followers-badge.png",
       earned: false,
       criteria: {
+        type: "milestone" as BadgeType,
+        threshold: 50,
+        description: "Gain 50 followers",
         requiresFollowers: 50
       },
       progress: 0,
@@ -127,6 +154,9 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/100-followers-badge.png",
       earned: false,
       criteria: {
+        type: "milestone" as BadgeType,
+        threshold: 100,
+        description: "Gain 100 followers",
         requiresFollowers: 100
       },
       progress: 0,
@@ -145,6 +175,9 @@ export const useBadges = () => {
       earned: false,
       isSpecial: true,
       criteria: {
+        type: "special" as BadgeType,
+        threshold: 1,
+        description: "Alpha testing participation",
         specialBadgeType: "alpha_tester"
       },
       type: "special" as BadgeType
@@ -157,6 +190,9 @@ export const useBadges = () => {
       earned: false,
       isSpecial: true,
       criteria: {
+        type: "special" as BadgeType,
+        threshold: 1,
+        description: "Beta testing participation",
         specialBadgeType: "beta_tester"
       },
       type: "special" as BadgeType

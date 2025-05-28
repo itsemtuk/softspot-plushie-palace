@@ -1,4 +1,3 @@
-
 export interface MarketplacePlushie {
   id: string;
   name?: string; // Made optional for compatibility
@@ -26,6 +25,7 @@ export interface MarketplacePlushie {
   forSale?: boolean; // Added for marketplace functionality
   likes?: number; // Added for social features
   comments?: number; // Added for social features
+  deliveryMethod?: string; // Added for delivery method
 }
 
 /**
@@ -211,11 +211,12 @@ export interface BadgeCriteria {
   requiresProfilePicture?: boolean;
   requiresPlushiePreferences?: boolean;
   requiresCompletedProfile?: boolean;
-  requiresFeedPosts?: boolean;
-  requiresListedItems?: boolean;
-  requiresSoldItems?: boolean;
+  requiresFeedPosts?: number;
+  requiresListedItems?: number;
+  requiresSoldItems?: number;
   requiresWishlist?: boolean;
-  requiresFollowers?: boolean;
+  requiresFollowers?: number;
+  specialBadgeType?: string;
   specialBadgeType?: string;
 }
 

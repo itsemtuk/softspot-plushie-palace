@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 import { ExtendedPost, MarketplacePlushie } from '@/types/marketplace';
-import { getLocalPosts, saveLocalPosts, getMarketplaceListings, saveMarketplaceListings } from '@/utils/storage/localStorageUtils';
+import { getLocalPosts, getMarketplaceListings, saveMarketplaceListings } from '@/utils/storage/localStorageUtils';
 
 interface SellItemFormData {
   title: string;
@@ -25,8 +25,10 @@ interface SellItemFormData {
 export const useSellItemSubmission = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (formData: SellItemFormData): Promise<void> => {
+    setIsSubmitting(true);
     try {
       console.log('Submitting sell item form:', formData);
       
@@ -73,10 +75,6 @@ export const useSellItemSubmission = () => {
       };
 
       // Save to local storage
-      const existingPosts = getLocalPosts();
-      const updatedPosts = [newPost, ...existingPosts];
-      saveLocalPosts(updatedPosts);
-
       const existingListings = getMarketplaceListings();
       const updatedListings = [marketplacePlushie, ...existingListings];
       saveMarketplaceListings(updatedListings);
@@ -96,10 +94,14 @@ export const useSellItemSubmission = () => {
         description: "Failed to list your plushie. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return {
     handleSubmit,
+    isSubmitting,
+    submitForm: handleSubmit
   };
 };
