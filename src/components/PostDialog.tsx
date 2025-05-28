@@ -12,17 +12,18 @@ interface PostDialogProps {
   isLoading?: boolean;
 }
 
-// Convert MarketplaceComment to our unified Comment interface
+// Convert any comment format to our unified Comment interface
 function convertToUnifiedComment(comment: Comment | any): Comment {
   // Ensure we have a valid comment object
   if (!comment) return {
     id: `comment-${Date.now()}-${Math.random()}`,
     userId: '',
     username: 'Anonymous',
-    text: '',
+    content: '',
     timestamp: new Date().toISOString(),
-    isLiked: false,
-    likes: 0
+    postId: '',
+    likes: 0,
+    isLiked: false
   };
   
   // Create a unified comment object that satisfies our Comment interface
@@ -30,10 +31,11 @@ function convertToUnifiedComment(comment: Comment | any): Comment {
     id: comment.id || `comment-${Date.now()}-${Math.random()}`,
     userId: comment.userId || "",
     username: comment.username || "Anonymous",
-    text: comment.text || comment.content || "",
+    content: comment.content || comment.text || "",
     timestamp: comment.timestamp || comment.createdAt || new Date().toISOString(),
-    isLiked: Boolean(comment.isLiked),
-    likes: Array.isArray(comment.likes) ? comment.likes : (typeof comment.likes === 'number' ? comment.likes : 0)
+    postId: comment.postId || "",
+    likes: typeof comment.likes === 'number' ? comment.likes : 0,
+    isLiked: Boolean(comment.isLiked)
   };
 }
 

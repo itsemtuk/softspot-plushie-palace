@@ -1,4 +1,5 @@
 
+
 export interface MarketplacePlushie {
   id: string;
   name: string;
@@ -23,6 +24,9 @@ export interface MarketplacePlushie {
   filling?: string; // Added for material details
   tags?: string[]; // Added for tagging
   location?: string; // Added for location-based features
+  forSale?: boolean; // Added for marketplace functionality
+  likes?: number; // Added for social features
+  comments?: number; // Added for social features
 }
 
 /**
@@ -94,6 +98,8 @@ export interface Comment {
   username: string;
   timestamp: string;
   postId: string;
+  likes: number;
+  isLiked?: boolean;
 }
 
 export interface Post {
@@ -103,8 +109,10 @@ export interface Post {
   created_at: string;
   title?: string;
   image?: string;
+  imageUrl?: string;
   likes?: number;
   comments?: number;
+  tags?: string[];
 }
 
 export interface PlushieBrand {
@@ -112,6 +120,11 @@ export interface PlushieBrand {
   name: string;
   logo?: string;
   description?: string;
+  website?: string;
+  status?: string;
+  verified?: boolean;
+  location?: string;
+  founded?: string;
 }
 
 export interface MarketplaceFilters {
@@ -124,6 +137,8 @@ export interface MarketplaceFilters {
   material?: string;
   size?: string;
   color?: string;
+  filling?: string;
+  species?: string;
 }
 
 export interface Currency {
@@ -138,4 +153,65 @@ export interface UserProfile {
   avatar?: string;
   bio?: string;
   location?: string;
+  joinDate?: string;
+  followersCount?: number;
 }
+
+// Enum types for form validation
+export type PlushieCondition = 'new' | 'like-new' | 'good' | 'fair' | 'poor';
+export type PlushieMaterial = 'plush' | 'cotton' | 'polyester' | 'wool' | 'synthetic' | 'other';
+export type PlushieFilling = 'polyester' | 'cotton' | 'memory-foam' | 'beans' | 'other';
+export type PlushieSpecies = 'bear' | 'cat' | 'dog' | 'rabbit' | 'unicorn' | 'dragon' | 'other';
+export type DeliveryMethod = 'shipping' | 'pickup' | 'both';
+
+// Image upload result interface
+export interface ImageUploadResult {
+  success: boolean;
+  url?: string;
+  error?: string;
+}
+
+// Image editor options interface
+export interface ImageEditorOptions {
+  crop?: boolean;
+  resize?: boolean;
+  filters?: boolean;
+  quality?: number;
+}
+
+// Badge interface
+export interface Badge {
+  id: string;
+  name: string;
+  description: string;
+  icon: string;
+  earned: boolean;
+  earnedAt?: string;
+}
+
+// Wishlist interfaces
+export interface WishlistItem {
+  id: string;
+  plushieId: string;
+  userId: string;
+  addedAt: string;
+  plushie: MarketplacePlushie;
+}
+
+export interface Wishlist {
+  id: string;
+  userId: string;
+  items: WishlistItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+// User privacy settings
+export interface UserPrivacySettings {
+  profileVisibility: 'public' | 'friends' | 'private';
+  showEmail: boolean;
+  showLocation: boolean;
+  allowMessages: boolean;
+  allowFriendRequests: boolean;
+}
+
