@@ -27,8 +27,10 @@ export function PlushieCard({
   forSale = false,
   variant = "feed"
 }: PlushieCardProps) {
-  // Ensure price is a number before using toFixed
-  const displayPrice = typeof price === 'number' ? price : 0;
+  // Ensure price is a number with proper fallback and conversion
+  const safePrice = typeof price === 'number' ? price : 
+                    typeof price === 'string' ? parseFloat(price) : 0;
+  const displayPrice = isNaN(safePrice) ? 0 : safePrice;
   
   return (
     <Card className={cn(

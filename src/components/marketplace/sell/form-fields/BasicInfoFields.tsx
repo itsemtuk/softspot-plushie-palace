@@ -35,7 +35,12 @@ export const BasicInfoFields = ({ register, errors }: BasicInfoFieldsProps) => {
               placeholder="0.00"
               {...register("price", { 
                 required: "Price is required",
-                min: { value: 0, message: "Price must be positive" }
+                min: { value: 0, message: "Price must be positive" },
+                valueAsNumber: true,
+                setValueAs: (value: string) => {
+                  const num = parseFloat(value);
+                  return isNaN(num) ? 0 : num;
+                }
               })}
               className={errors.price ? "border-red-500" : ""}
             />

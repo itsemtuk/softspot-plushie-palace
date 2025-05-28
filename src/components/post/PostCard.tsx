@@ -21,9 +21,14 @@ export const PostCard: React.FC<PostCardProps> = ({
   onClick,
   className 
 }) => {
-  const { id, username, image, likes, comments, forSale, createdAt } = post;
+  const { id, username, image, likes, comments, forSale, createdAt, price } = post;
   
   const formattedTime = createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : '';
+  
+  // Safely handle price formatting
+  const safePrice = typeof price === 'number' ? price : 
+                    typeof price === 'string' ? parseFloat(price) : 0;
+  const displayPrice = isNaN(safePrice) ? 0 : safePrice;
   
   return (
     <Card 
@@ -78,9 +83,16 @@ export const PostCard: React.FC<PostCardProps> = ({
           </Button>
         </div>
         {forSale && (
-          <span className="text-xs font-medium bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
-            For Sale
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-medium bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
+              For Sale
+            </span>
+            {price && (
+              <span className="text-xs font-medium text-gray-600">
+                ${displayPrice.toFixed(2)}
+              </span>
+            )}
+          </div>
         )}
       </CardFooter>
     </Card>
