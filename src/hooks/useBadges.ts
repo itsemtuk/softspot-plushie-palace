@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Badge, BadgeCriteria, BadgeType } from "@/types/marketplace";
 import { useUser } from "@clerk/clerk-react";
@@ -17,13 +16,13 @@ export const useBadges = () => {
       description: "Set a profile picture to personalize your account",
       imagePath: "/assets/Badges/profile-pic-badge.png",
       earned: false,
+      icon: "user",
       criteria: {
         type: "achievement" as BadgeType,
         threshold: 1,
         description: "Set a profile picture",
         requiresProfilePicture: true
-      },
-      type: "achievement" as BadgeType
+      }
     },
     {
       id: "preferences",
@@ -31,13 +30,13 @@ export const useBadges = () => {
       description: "Share your plushie preferences with the community",
       imagePath: "/assets/Badges/preferences-badge.png",
       earned: false,
+      icon: "heart",
       criteria: {
         type: "achievement" as BadgeType,
         threshold: 1,
         description: "Set plushie preferences",
         requiresPlushiePreferences: true
-      },
-      type: "achievement" as BadgeType
+      }
     },
     {
       id: "complete-profile",
@@ -45,13 +44,13 @@ export const useBadges = () => {
       description: "Fill out all your profile information",
       imagePath: "/assets/Badges/complete-profile-badge.png",
       earned: false,
+      icon: "check",
       criteria: {
         type: "achievement" as BadgeType,
         threshold: 1,
         description: "Complete profile information",
         requiresCompletedProfile: true
-      },
-      type: "achievement" as BadgeType
+      }
     },
     {
       id: "first-post",
@@ -59,15 +58,14 @@ export const useBadges = () => {
       description: "Share your first post with the community",
       imagePath: "/assets/Badges/first-post-badge.png",
       earned: false,
+      icon: "edit",
       criteria: {
         type: "milestone" as BadgeType,
         threshold: 1,
         description: "Share your first post",
         requiresFeedPosts: 1
       },
-      progress: 0,
-      maxProgress: 1,
-      type: "milestone" as BadgeType
+      progress: 0
     },
     {
       id: "first-listing",
@@ -75,15 +73,14 @@ export const useBadges = () => {
       description: "List your first item for sale",
       imagePath: "/assets/Badges/first-listing-badge.png",
       earned: false,
+      icon: "shopping-cart",
       criteria: {
         type: "milestone" as BadgeType,
         threshold: 1,
         description: "List your first item",
         requiresListedItems: 1
       },
-      progress: 0,
-      maxProgress: 1,
-      type: "milestone" as BadgeType
+      progress: 0
     },
     {
       id: "first-sale",
@@ -91,15 +88,14 @@ export const useBadges = () => {
       description: "Successfully sell your first item",
       imagePath: "/assets/Badges/first-sale-badge.png",
       earned: false,
+      icon: "dollar-sign",
       criteria: {
         type: "milestone" as BadgeType,
         threshold: 1,
         description: "Complete your first sale",
         requiresSoldItems: 1
       },
-      progress: 0,
-      maxProgress: 1,
-      type: "milestone" as BadgeType
+      progress: 0
     },
     {
       id: "wishlist",
@@ -107,13 +103,13 @@ export const useBadges = () => {
       description: "Create a wishlist to track plushies you want",
       imagePath: "/assets/Badges/wishlist-badge.png",
       earned: false,
+      icon: "bookmark",
       criteria: {
         type: "achievement" as BadgeType,
         threshold: 1,
         description: "Create a wishlist",
         requiresWishlist: true
-      },
-      type: "achievement" as BadgeType
+      }
     },
     {
       id: "10-followers",
@@ -121,15 +117,14 @@ export const useBadges = () => {
       description: "Have 10 people follow your profile",
       imagePath: "/assets/Badges/10-followers-badge.png",
       earned: false,
+      icon: "users",
       criteria: {
         type: "milestone" as BadgeType,
         threshold: 10,
         description: "Gain 10 followers",
         requiresFollowers: 10
       },
-      progress: 0,
-      maxProgress: 10,
-      type: "milestone" as BadgeType
+      progress: 0
     },
     {
       id: "50-followers",
@@ -137,15 +132,14 @@ export const useBadges = () => {
       description: "Have 50 people follow your profile",
       imagePath: "/assets/Badges/50-followers-badge.png",
       earned: false,
+      icon: "users",
       criteria: {
         type: "milestone" as BadgeType,
         threshold: 50,
         description: "Gain 50 followers",
         requiresFollowers: 50
       },
-      progress: 0,
-      maxProgress: 50,
-      type: "milestone" as BadgeType
+      progress: 0
     },
     {
       id: "100-followers",
@@ -153,15 +147,14 @@ export const useBadges = () => {
       description: "Have 100 people follow your profile",
       imagePath: "/assets/Badges/100-followers-badge.png",
       earned: false,
+      icon: "users",
       criteria: {
         type: "milestone" as BadgeType,
         threshold: 100,
         description: "Gain 100 followers",
         requiresFollowers: 100
       },
-      progress: 0,
-      maxProgress: 100,
-      type: "milestone" as BadgeType
+      progress: 0
     },
   ];
 
@@ -174,13 +167,13 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/Alpha_Tester.PNG",
       earned: false,
       isSpecial: true,
+      icon: "star",
       criteria: {
         type: "special" as BadgeType,
         threshold: 1,
         description: "Alpha testing participation",
         specialBadgeType: "alpha_tester"
-      },
-      type: "special" as BadgeType
+      }
     },
     {
       id: "beta-tester",
@@ -189,13 +182,13 @@ export const useBadges = () => {
       imagePath: "/assets/Badges/Beta_Tester.PNG",
       earned: false,
       isSpecial: true,
+      icon: "star",
       criteria: {
         type: "special" as BadgeType,
         threshold: 1,
         description: "Beta testing participation",
         specialBadgeType: "beta_tester"
-      },
-      type: "special" as BadgeType
+      }
     }
   ];
 

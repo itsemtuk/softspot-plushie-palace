@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
@@ -62,7 +63,7 @@ export const useSellItemSubmission = () => {
         sold: false // Added marketplace functionality
       };
 
-      // Create marketplace plushie data
+      // Create marketplace plushie data with required price
       const marketplacePlushie: MarketplacePlushie = {
         ...newPost,
         name: formData.title, // Added required name field
@@ -71,7 +72,8 @@ export const useSellItemSubmission = () => {
         size: formData.size || 'medium',
         filling: formData.filling || 'polyester',
         brand: formData.brand || '',
-        deliveryMethod: formData.deliveryMethod || 'shipping'
+        deliveryMethod: formData.deliveryMethod || 'shipping',
+        price: parseFloat(formData.price) || 0 // Ensure price is explicitly set
       };
 
       // Save to local storage

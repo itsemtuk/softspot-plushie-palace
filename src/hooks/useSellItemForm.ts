@@ -2,7 +2,25 @@
 import { useSellItemFormSetup } from "./sell-item/useSellItemFormSetup";
 import { useSellItemImage } from "./sell-item/useSellItemImage";
 import { useSellItemSubmission } from "./sell-item/useSellItemSubmission";
-import { SellItemFormData } from "@/types/sellItemForm";
+
+// Use the interface from marketplace types to match the submission hook
+interface SellItemFormData {
+  title: string;
+  description: string;
+  imageUrl: string;
+  price: string;
+  deliveryCost: string;
+  condition: string;
+  material: string;
+  color: string;
+  brand: string;
+  species: string;
+  size: string;
+  filling: string;
+  tags: string[];
+  location: string;
+  deliveryMethod: string;
+}
 
 export const useSellItemForm = () => {
   const {
@@ -18,7 +36,15 @@ export const useSellItemForm = () => {
   const { isSubmitting, handleSubmit: submitForm } = useSellItemSubmission();
 
   const onSubmit = async (data: SellItemFormData) => {
-    await submitForm(data);
+    // Convert the form data to match the submission interface
+    const submissionData = {
+      ...data,
+      imageUrl: imageUrl || data.imageUrl || '',
+      tags: data.tags || [],
+      location: data.location || '',
+      size: data.size || 'medium'
+    };
+    await submitForm(submissionData);
   };
 
   // Enhanced return with comprehensive validation

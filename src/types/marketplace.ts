@@ -187,7 +187,7 @@ export interface ImageEditorOptions {
   quality?: number;
 }
 
-// Badge interface
+// Badge interface with required properties
 export interface Badge {
   id: string;
   name: string;
@@ -199,10 +199,11 @@ export interface Badge {
   progress?: number; // Added missing property
   criteria?: BadgeCriteria; // Added missing property
   isSpecial?: boolean; // Added missing property
+  type?: BadgeType; // Added type property
 }
 
 // Badge-related types
-export type BadgeType = 'social' | 'collection' | 'marketplace' | 'engagement';
+export type BadgeType = 'social' | 'collection' | 'marketplace' | 'engagement' | 'achievement' | 'milestone' | 'special';
 
 export interface BadgeCriteria {
   type: BadgeType;
@@ -216,7 +217,6 @@ export interface BadgeCriteria {
   requiresSoldItems?: number;
   requiresWishlist?: boolean;
   requiresFollowers?: number;
-  specialBadgeType?: string;
   specialBadgeType?: string;
 }
 
