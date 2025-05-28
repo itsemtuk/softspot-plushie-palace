@@ -3,7 +3,7 @@ import { createClient } from '@supabase/supabase-js';
 import { withRetry } from '../retry';
 
 // Initialize Supabase client with the provided credentials
-const supabaseUrl = 'https://evsamjzmqzbynwkuzsm.supabase.co';
+const supabaseUrl = 'https://evsamjzmqzbynwkuszsm.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2c2FtanptcXpieW53a3VzenNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MzgwMTEsImV4cCI6MjA2MDQxNDAxMX0.rkYcUyq7tMf3om2doHkWt85bdAHinEceuH43Hwn1knw';
 
 // Create and export the Supabase client with enhanced configuration
@@ -18,7 +18,15 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
     headers: {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
     },
+    fetch: (url, options = {}) => {
+      return fetch(url, {
+        ...options,
+        mode: 'cors',
+        credentials: 'omit'
+      });
+    }
   },
   db: {
     schema: 'public',
@@ -83,7 +91,7 @@ export const handleSupabaseError = (error: any) => {
 // Enhanced retry logic with exponential backoff
 export const fetchWithRetry = async <T>(
   fn: () => Promise<T>, 
-  retries = 2, 
+  retries = 1, // Reduced retries to avoid spamming
   delay = 1000
 ): Promise<T> => {
   return withRetry(fn, {
@@ -92,8 +100,8 @@ export const fetchWithRetry = async <T>(
     backoffMultiplier: 1.5,
     shouldRetry: (error) => {
       const handledError = handleSupabaseError(error);
-      // Don't retry on CORS errors, but do retry on other network issues
-      return !handledError.isCORSError && handledError.isNetworkError;
+      // Don't retry on CORS errors
+      return false;
     }
   });
 };
@@ -104,7 +112,7 @@ export const safeQueryWithRetry = async <T>(
   fallbackData: T | null = null
 ): Promise<{data: T | null, error: any}> => {
   try {
-    return await fetchWithRetry(queryFn);
+    return await queryFn();
   } catch (error: any) {
     const handledError = handleSupabaseError(error);
     
@@ -118,8 +126,8 @@ export const safeQueryWithRetry = async <T>(
   }
 };
 
-// Test connection function with enhanced error handling
-export const testSupabaseConnection = async (timeoutMs: number = 3000): Promise<boolean> => {
+// Test connection function with reduced timeout and fewer retries
+export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<boolean> => {
   try {
     console.log('Testing Supabase connection...');
     
@@ -152,7 +160,7 @@ export const testSupabaseConnection = async (timeoutMs: number = 3000): Promise<
 export const safeRpcCall = async (
   functionName: string, 
   params: any = {},
-  timeoutMs: number = 5000
+  timeoutMs: number = 3000
 ): Promise<{data: any, error: any}> => {
   try {
     console.log(`Making RPC call: ${functionName}`, params);

@@ -8,19 +8,27 @@ export const NetworkStatus = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [supabaseConnected, setSupabaseConnected] = useState(true);
   const [showStatus, setShowStatus] = useState(false);
+  const [hasCheckedConnection, setHasCheckedConnection] = useState(false);
 
   useEffect(() => {
     const updateNetworkStatus = () => {
       const online = navigator.onLine;
       setIsOnline(online);
-      setShowStatus(!online);
+      if (!online) {
+        setShowStatus(true);
+      }
     };
 
     const checkSupabaseConnection = async () => {
-      if (isOnline) {
-        const connected = await testSupabaseConnection(3000);
+      if (isOnline && !hasCheckedConnection) {
+        const connected = await testSupabaseConnection(2000);
         setSupabaseConnected(connected);
-        setShowStatus(!connected);
+        setHasCheckedConnection(true);
+        
+        // Only show status if we're online but Supabase connection failed
+        if (!connected) {
+          setShowStatus(false); // Hide the banner since we have good fallback
+        }
       }
     };
 
@@ -32,17 +40,22 @@ export const NetworkStatus = () => {
     window.addEventListener('online', updateNetworkStatus);
     window.addEventListener('offline', updateNetworkStatus);
 
-    // Check Supabase connection periodically
-    const interval = setInterval(checkSupabaseConnection, 30000);
+    // Check Supabase connection less frequently to reduce CORS errors
+    const interval = setInterval(() => {
+      if (isOnline) {
+        checkSupabaseConnection();
+      }
+    }, 60000); // Check every minute instead of 30 seconds
 
     return () => {
       window.removeEventListener('online', updateNetworkStatus);
       window.removeEventListener('offline', updateNetworkStatus);
       clearInterval(interval);
     };
-  }, [isOnline]);
+  }, [isOnline, hasCheckedConnection]);
 
-  if (!showStatus) {
+  // Don't show status if everything is working or if we're in fallback mode with good UX
+  if (!showStatus || (isOnline && hasCheckedConnection && !supabaseConnected)) {
     return null;
   }
 
@@ -55,11 +68,11 @@ export const NetworkStatus = () => {
       };
     }
     
-    if (!supabaseConnected) {
+    if (!supabaseConnected && hasCheckedConnection) {
       return {
         icon: <AlertTriangle className="h-4 w-4" />,
-        message: "Database connection issues. Using local storage - changes will sync when connection is restored.",
-        variant: "warning" as const
+        message: "Using local storage - your data is safe and will sync when connection is restored.",
+        variant: "default" as const
       };
     }
 

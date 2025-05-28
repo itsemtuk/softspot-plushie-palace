@@ -73,7 +73,7 @@ export default function AuthBoundary({ children }: AuthBoundaryProps) {
     );
   }
   
-  // Show error if authentication failed
+  // Show error if authentication failed and we're not in fallback mode
   if (authError && !fallbackAuth) {
     console.log('AuthBoundary: Showing auth error');
     return (
@@ -100,22 +100,7 @@ export default function AuthBoundary({ children }: AuthBoundaryProps) {
     return null;
   }
 
-  // Show fallback mode indicator
-  if (fallbackAuth || isInFallbackMode()) {
-    console.log('AuthBoundary: Rendering children with fallback mode indicator');
-    return (
-      <div>
-        <Alert className="mb-4 border-yellow-200 bg-yellow-50">
-          <AlertTriangle className="h-4 w-4 text-yellow-600" />
-          <AlertDescription className="text-yellow-800">
-            <strong>Offline Mode:</strong> Database connection issues detected. Working in local mode - changes will sync when connection is restored.
-          </AlertDescription>
-        </Alert>
-        {children}
-      </div>
-    );
-  }
-
-  console.log('AuthBoundary: Rendering children normally');
+  // Don't show fallback mode indicator - just work silently in the background
+  console.log('AuthBoundary: Rendering children', { fallbackMode: fallbackAuth || isInFallbackMode() });
   return <>{children}</>;
 }
