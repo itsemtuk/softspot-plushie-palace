@@ -1,5 +1,7 @@
+
 import { ExtendedPost } from "@/types/marketplace";
 import { supabase, isSupabaseConfigured, safeQueryWithRetry } from '../supabase/client';
+import { setCurrentUserContext } from '../supabase/rls';
 import { getLocalPosts, savePosts, getCurrentUserId, updateSyncTimestamp } from '../storage/localStorageUtils';
 import { uploadImage, deleteImage } from '../storage/imageStorage';
 import { withRetry } from '../retry';
@@ -16,7 +18,7 @@ export const getStorage = (): ExtendedPost[] => {
 /**
  * Saves a post to storage with retry logic
  */
-export const savePost = async (post: ExtendedPost | ExtendedPost[]): Promise<{ success: boolean, error?: any }> => {
+export const savePost = async (post: ExtendedPost | ExtendedPost[], userId?: string): Promise<{ success: boolean, error?: any }> => {
   // Handle both single post and array of posts
   if (Array.isArray(post)) {
     try {
@@ -37,15 +39,15 @@ export const savePost = async (post: ExtendedPost | ExtendedPost[]): Promise<{ s
       // Ensure the post has a userId
       const postWithUser = {
         ...post,
-        userId: post.userId || getCurrentUserId()
+        userId: post.userId || userId || getCurrentUserId()
       };
       
       // Update existing post or add as new post
-      const updatedPosts = existingPosts.filter(p => p.id !== post.id); // Remove existing post with same ID
-      updatedPosts.unshift(postWithUser); // Add at the beginning of the array
+      const updatedPosts = existingPosts.filter(p => p.id !== post.id);
+      updatedPosts.unshift(postWithUser);
       
       savePosts(updatedPosts);
-      updateSyncTimestamp(); // Update timestamp to prevent duplication
+      updateSyncTimestamp();
       return { success: true };
     } catch (error) {
       console.error('Error saving post to localStorage:', error);
@@ -54,20 +56,24 @@ export const savePost = async (post: ExtendedPost | ExtendedPost[]): Promise<{ s
   }
 
   try {
+    // Set user context for RLS if userId is provided
+    if (userId) {
+      await setCurrentUserContext(userId);
+    }
+
     const result = await withRetry(async () => {
       const { error } = await supabase!
         .from(POSTS_TABLE)
         .upsert({
           id: post.id,
-          userId: post.userId || getCurrentUserId(),
-          image: post.image,
-          title: post.title,
-          username: post.username,
-          likes: post.likes,
-          comments: post.comments,
-          description: post.description || '',
-          tags: post.tags || [],
-          timestamp: post.timestamp || new Date().toISOString(),
+          user_id: post.userId || userId || getCurrentUserId(),
+          content: JSON.stringify({
+            image: post.image,
+            title: post.title,
+            description: post.description || '',
+            tags: post.tags || [],
+          }),
+          created_at: post.timestamp || new Date().toISOString(),
         }, { onConflict: 'id' });
         
       if (error) throw error;
@@ -88,7 +94,7 @@ export const savePost = async (post: ExtendedPost | ExtendedPost[]): Promise<{ s
       const existingPosts = getLocalPosts();
       const postWithUser = {
         ...post,
-        userId: post.userId || getCurrentUserId()
+        userId: post.userId || userId || getCurrentUserId()
       };
       const updatedPosts = existingPosts.filter(p => p.id !== post.id);
       updatedPosts.unshift(postWithUser);
@@ -104,12 +110,16 @@ export const savePost = async (post: ExtendedPost | ExtendedPost[]): Promise<{ s
 /**
  * Adds a new post
  */
-export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, error?: any, post?: ExtendedPost }> => {
+export const addPost = async (post: ExtendedPost, userId?: string): Promise<{ success: boolean, error?: any, post?: ExtendedPost }> => {
   try {
     // Ensure we have a timestamp
     if (!post.timestamp) {
       post.timestamp = new Date().toISOString();
     }
+    
+    // Ensure we have a userId
+    const finalUserId = userId || post.userId || getCurrentUserId();
+    post = { ...post, userId: finalUserId };
     
     // First, upload the image if it's a data URL
     if (post.image && post.image.startsWith('data:')) {
@@ -121,7 +131,7 @@ export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, e
     }
     
     // Save the post
-    const result = await savePost(post);
+    const result = await savePost(post, finalUserId);
     
     if (!result.success) {
       throw new Error(result.error || 'Failed to save post');
@@ -137,12 +147,17 @@ export const addPost = async (post: ExtendedPost): Promise<{ success: boolean, e
 /**
  * Updates an existing post
  */
-export const updatePost = async (updatedPost: ExtendedPost): Promise<{ success: boolean, error?: any }> => {
+export const updatePost = async (updatedPost: ExtendedPost, userId?: string): Promise<{ success: boolean, error?: any }> => {
   if (!isSupabaseConfigured()) {
-    return savePost(updatedPost);
+    return savePost(updatedPost, userId);
   }
 
   try {
+    // Set user context for RLS
+    if (userId) {
+      await setCurrentUserContext(userId);
+    }
+
     // Check if the image is a data URL and needs to be uploaded
     if (updatedPost.image && updatedPost.image.startsWith('data:')) {
       const { imageUrl, error: uploadError } = await uploadImage(updatedPost.image, updatedPost.id);
@@ -155,7 +170,14 @@ export const updatePost = async (updatedPost: ExtendedPost): Promise<{ success: 
     
     const { error } = await supabase!
       .from(POSTS_TABLE)
-      .update(updatedPost)
+      .update({
+        content: JSON.stringify({
+          image: updatedPost.image,
+          title: updatedPost.title,
+          description: updatedPost.description || '',
+          tags: updatedPost.tags || [],
+        })
+      })
       .eq('id', updatedPost.id);
       
     if (error) throw error;
@@ -169,7 +191,7 @@ export const updatePost = async (updatedPost: ExtendedPost): Promise<{ success: 
 /**
  * Deletes a post by ID
  */
-export const deletePost = async (postId: string): Promise<{ success: boolean, error?: any }> => {
+export const deletePost = async (postId: string, userId?: string): Promise<{ success: boolean, error?: any }> => {
   try {
     // First, delete the image from storage
     try {
@@ -183,6 +205,11 @@ export const deletePost = async (postId: string): Promise<{ success: boolean, er
       const posts = getLocalPosts();
       savePosts(posts.filter(p => p.id !== postId));
       return { success: true };
+    }
+    
+    // Set user context for RLS
+    if (userId) {
+      await setCurrentUserContext(userId);
     }
     
     const { error } = await supabase!
@@ -207,14 +234,37 @@ export const getAllUserPosts = async (userId: string = getCurrentUserId()): Prom
   }
   
   try {
+    // Set user context for RLS
+    await setCurrentUserContext(userId);
+    
     const { data, error } = await supabase!
       .from(POSTS_TABLE)
       .select('*')
-      .eq('userId', userId)
-      .order('timestamp', { ascending: false });
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false });
       
     if (error) throw error;
-    return data as ExtendedPost[];
+    
+    // Transform Supabase data back to ExtendedPost format
+    return (data || []).map(item => {
+      const content = typeof item.content === 'string' ? JSON.parse(item.content) : item.content;
+      return {
+        id: item.id,
+        userId: item.user_id,
+        username: content.username || 'User',
+        image: content.image || '',
+        title: content.title || '',
+        description: content.description || '',
+        tags: content.tags || [],
+        likes: content.likes || 0,
+        comments: content.comments || 0,
+        timestamp: item.created_at,
+        createdAt: item.created_at,
+        updatedAt: item.created_at,
+        location: content.location || "",
+        forSale: content.forSale || false,
+      } as ExtendedPost;
+    });
   } catch (error) {
     console.error('Error retrieving user posts:', error);
     return getLocalPosts().filter(post => post.userId === userId);

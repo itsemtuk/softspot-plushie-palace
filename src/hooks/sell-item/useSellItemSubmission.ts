@@ -5,7 +5,8 @@ import { toast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/clerk-react";
 import { SellItemFormData } from "@/types/sellItemForm";
 import { ExtendedPost } from "@/types/marketplace";
-import { saveMarketplaceListings, getMarketplaceListings, addPost } from "@/utils/storage/localStorageUtils";
+import { saveMarketplaceListings, getMarketplaceListings } from "@/utils/storage/localStorageUtils";
+import { addPost } from "@/utils/posts/postManagement";
 
 export const useSellItemSubmission = () => {
   const navigate = useNavigate();
@@ -68,15 +69,15 @@ export const useSellItemSubmission = () => {
       
       console.log("Creating new listing:", newListing);
       
-      // Save listing
+      // Save listing to marketplace
       listings.unshift(newListing as any);
       saveMarketplaceListings(listings);
       
-      // Add to posts
+      // Add to posts with proper user context
       await addPost({
         ...newListing,
         id: `post-${Date.now()}`,
-      });
+      }, userId);
       
       toast({
         title: "Listing created!",

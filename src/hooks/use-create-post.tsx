@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { ExtendedPost } from "@/types/marketplace";
 import { toast } from "@/components/ui/use-toast";
 import { addPost } from "@/utils/posts/postManagement";
@@ -16,6 +17,7 @@ export const useCreatePost = (options?: UseCreatePostOptions) => {
   const [postToEdit, setPostToEdit] = useState<ExtendedPost | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const { user } = useUser();
   
   const onOpenChange = (open: boolean) => {
     setIsSheetOpen(open);
@@ -33,16 +35,28 @@ export const useCreatePost = (options?: UseCreatePostOptions) => {
   const handlePostCreation = async (data: any) => {
     try {
       setIsSubmitting(true);
+
+      if (!user?.id) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to create posts.",
+          variant: "destructive"
+        });
+        navigate('/sign-in');
+        return;
+      }
       
-      // Create post
+      // Create post with Clerk user context
       const result = await addPost({
         ...data,
         id: `post-${Date.now()}`,
+        userId: user.id,
+        username: user.username || user.firstName || 'User',
         likes: 0,
         comments: 0,
         timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
-      });
+      }, user.id);
       
       if (result.success) {
         toast({
