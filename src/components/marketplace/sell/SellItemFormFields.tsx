@@ -8,7 +8,6 @@ import { MaterialFillingFields } from "./form-fields/MaterialFillingFields";
 import { SpeciesDeliveryFields } from "./form-fields/SpeciesDeliveryFields";
 import { ShippingCostField } from "./form-fields/ShippingCostField";
 import { Spinner } from "@/components/ui/spinner";
-import ErrorBoundary from "@/components/ui/error-boundary";
 
 interface SellItemFormFieldsProps {
   register: any;
@@ -24,86 +23,61 @@ export const SellItemFormFields = ({
   const [selectedBrand, setSelectedBrand] = useState("");
   const [otherBrandValue, setOtherBrandValue] = useState("");
   
-  console.log("SellItemFormFields: Rendering with props:", { register: !!register, onSelectChange: !!onSelectChange });
-  
-  // Guard against null props with more explicit error logging
-  if (!register) {
-    console.error("SellItemFormFields: register is null/undefined");
+  // Guard against null props
+  if (!register || !onSelectChange) {
     return (
       <div className="flex justify-center items-center p-8">
         <Spinner size="md" />
-        <span className="ml-3 text-sm text-gray-500">Loading form...</span>
-      </div>
-    );
-  }
-
-  if (!onSelectChange) {
-    console.error("SellItemFormFields: onSelectChange is null/undefined");
-    return (
-      <div className="flex justify-center items-center p-8">
-        <Spinner size="md" />
-        <span className="ml-3 text-sm text-gray-500">Loading form handlers...</span>
+        <span className="ml-3 text-sm text-gray-500">Loading form fields...</span>
       </div>
     );
   }
   
   const handleBrandChange = (value: string) => {
-    console.log("SellItemFormFields: Brand change:", value);
     if (!value) return;
     
-    try {
-      setSelectedBrand(value);
-      if (value !== "other") {
-        onSelectChange("brand", value);
-      } else {
-        onSelectChange("brand", otherBrandValue || "Other");
-      }
-    } catch (error) {
-      console.error("Error in handleBrandChange:", error);
+    setSelectedBrand(value);
+    if (value !== "other") {
+      onSelectChange("brand", value);
+    } else {
+      onSelectChange("brand", otherBrandValue || "Other");
     }
   };
   
   const handleOtherBrandChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("SellItemFormFields: Other brand change:", e?.target?.value);
-    if (!e || !e.target) return;
+    if (!e?.target) return;
     
-    try {
-      const value = e.target.value || "";
-      setOtherBrandValue(value);
-      if (selectedBrand === "other") {
-        onSelectChange("brand", value || "Other");
-      }
-    } catch (error) {
-      console.error("Error in handleOtherBrandChange:", error);
+    const value = e.target.value || "";
+    setOtherBrandValue(value);
+    if (selectedBrand === "other") {
+      onSelectChange("brand", value || "Other");
     }
   };
   
   return (
-    <ErrorBoundary>
-      <div className="space-y-4">
-        <BasicInfoFields register={register} errors={errors} />
-        
-        <DescriptionField register={register} errors={errors} />
-        
-        <ConditionBrandFields 
-          onSelectChange={onSelectChange} 
-          handleBrandChange={handleBrandChange} 
+    <div className="space-y-4">
+      <BasicInfoFields register={register} errors={errors} />
+      
+      <DescriptionField register={register} errors={errors} />
+      
+      <ConditionBrandFields 
+        onSelectChange={onSelectChange} 
+        handleBrandChange={handleBrandChange} 
+      />
+      
+      {/* Show input field when "Other" brand is selected */}
+      {selectedBrand === "other" && (
+        <OtherBrandInput 
+          otherBrandValue={otherBrandValue} 
+          onOtherBrandChange={handleOtherBrandChange} 
         />
-        
-        {/* Show input field when "Other" brand is selected */}
-        {selectedBrand === "other" && (
-          <OtherBrandInput 
-            otherBrandValue={otherBrandValue} 
-            onOtherBrandChange={handleOtherBrandChange} 
-          />
-        )}
-        
-        <MaterialFillingFields onSelectChange={onSelectChange} />
-        
-        <SpeciesDeliveryFields onSelectChange={onSelectChange} />
-        
-        <ShippingCostField register={register} />
-      </div>
-    </ErrorBoundary>
+      )}
+      
+      <MaterialFillingFields onSelectChange={onSelectChange} />
+      
+      <SpeciesDeliveryFields onSelectChange={onSelectChange} />
+      
+      <ShippingCostField register={register} />
+    </div>
   );
 };

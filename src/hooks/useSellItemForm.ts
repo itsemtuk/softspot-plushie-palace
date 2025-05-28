@@ -35,6 +35,17 @@ export const useSellItemForm = () => {
   const { imageUrl, handleImageSelect } = useSellItemImage();
   const { isSubmitting, handleSubmit: submitForm } = useSellItemSubmission();
 
+  // Return null/loading state if form is not ready
+  if (!formInitialized || formError || !register || !handleSubmit) {
+    console.log("useSellItemForm: Form not ready", { 
+      formInitialized, 
+      formError,
+      hasRegister: !!register, 
+      hasHandleSubmit: !!handleSubmit
+    });
+    return null;
+  }
+
   const onSubmit = async (data: SellItemFormData) => {
     // Ensure all required fields are present with proper defaults
     const submissionData: SellItemFormData = {
@@ -57,21 +68,6 @@ export const useSellItemForm = () => {
     
     await submitForm(submissionData);
   };
-
-  // Enhanced return with comprehensive validation
-  if (formError) {
-    console.error("SellItemForm: Form error:", formError);
-    return null;
-  }
-
-  if (!formInitialized || !register || !handleSubmit) {
-    console.log("SellItemForm: Form not yet initialized", { 
-      formInitialized, 
-      hasRegister: !!register, 
-      hasHandleSubmit: !!handleSubmit
-    });
-    return null;
-  }
 
   // Return form methods with type safety
   return {
