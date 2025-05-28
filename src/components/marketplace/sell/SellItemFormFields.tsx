@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { BasicInfoFields } from "./form-fields/BasicInfoFields";
-import { DescriptionField } from "./form-fields/DescriptionField";
+import { DescriptionFieldSimple } from "./form-fields/DescriptionFieldSimple";
 import { ConditionBrandFields } from "./form-fields/ConditionBrandFields";
 import { OtherBrandInput } from "./form-fields/OtherBrandInput";
 import { MaterialFillingFields } from "./form-fields/MaterialFillingFields";
@@ -58,7 +58,7 @@ export const SellItemFormFields = ({
     <div className="space-y-4">
       <BasicInfoFields register={register} errors={errors} />
       
-      <DescriptionField register={register} errors={errors} />
+      <DescriptionFieldSimple register={register} errors={errors} />
       
       <ConditionBrandFields 
         onSelectChange={onSelectChange} 
