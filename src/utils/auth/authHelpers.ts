@@ -1,153 +1,216 @@
 
-import { toast } from "@/components/ui/use-toast";
-import { isAuthenticated, getCurrentUser } from "./authState";
-import { safeQueryWithRetry, supabase, testSupabaseConnection } from "../supabase/client";
+import { supabase } from '@/utils/supabase/client';
+import { setCurrentUserContext, isInFallbackMode } from '@/utils/supabase/rls';
+
+export interface AuthResult {
+  isAuthenticated: boolean;
+  error?: string;
+  fallbackMode?: boolean;
+}
 
 /**
- * Helper to safely check authentication with better error handling
- * @param redirectCallback Optional callback to handle redirect if not authenticated
- * @param showToast Whether to show a toast message if not authenticated
- * @returns Object containing authentication status and user data
+ * Enhanced authentication check with CORS error handling
  */
 export const safeCheckAuth = async (
   redirectCallback?: () => void,
-  showToast = true
-) => {
+  timeoutMs: number = 5000
+): Promise<AuthResult> => {
   try {
-    const isAuth = isAuthenticated();
+    console.log('Starting authentication check...');
     
-    // If not authenticated and redirect callback provided
-    if (!isAuth) {
-      if (showToast) {
-        toast({
-          title: "Authentication Required",
-          description: "You must be signed in to access this feature.",
-          variant: "destructive"
-        });
-      }
-      
-      if (redirectCallback) {
-        redirectCallback();
-      }
-      
-      return { isAuthenticated: false, user: null };
+    // Check if we're in fallback mode first
+    if (isInFallbackMode()) {
+      console.log('Using fallback authentication mode');
+      return {
+        isAuthenticated: true,
+        fallbackMode: true
+      };
     }
     
-    // Get current user info
-    const user = getCurrentUser();
+    // Create a timeout promise
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Authentication check timeout')), timeoutMs);
+    });
     
-    if (!user || !user.userId) {
-      if (showToast) {
-        toast({
-          title: "User Profile Error",
-          description: "Unable to retrieve your profile information.",
-          variant: "destructive"
-        });
+    // Try to get session with timeout
+    const sessionPromise = supabase.auth.getSession();
+    
+    const { data, error } = await Promise.race([
+      sessionPromise,
+      timeoutPromise
+    ]);
+    
+    if (error) {
+      console.error('Session check failed:', error);
+      
+      // Handle CORS errors
+      if (error.message?.includes('CORS') || 
+          error.message?.includes('fetch') || 
+          error.message?.includes('NetworkError')) {
+        console.warn('CORS/Network error in auth check, checking local state');
+        return checkLocalAuthState(redirectCallback);
       }
       
-      return { isAuthenticated: true, user: null };
+      if (redirectCallback) redirectCallback();
+      return {
+        isAuthenticated: false,
+        error: error.message
+      };
     }
     
-    return { isAuthenticated: true, user };
-  } catch (error) {
-    console.error("Auth check error:", error);
+    const isAuthenticated = !!data.session?.user;
+    console.log(`Authentication check complete: ${isAuthenticated}`);
     
-    if (showToast) {
-      toast({
-        title: "Authentication Error",
-        description: "There was a problem checking your authentication status.",
-        variant: "destructive"
-      });
+    if (!isAuthenticated && redirectCallback) {
+      redirectCallback();
     }
     
-    return { isAuthenticated: false, user: null };
+    return {
+      isAuthenticated,
+      fallbackMode: false
+    };
+    
+  } catch (error: any) {
+    console.error('Authentication check error:', error);
+    
+    // Handle timeout or network errors
+    if (error.message?.includes('timeout') || 
+        error.message?.includes('fetch') || 
+        error.message?.includes('NetworkError') ||
+        error.name === 'TypeError') {
+      console.warn('Network error in auth check, using local fallback');
+      return checkLocalAuthState(redirectCallback);
+    }
+    
+    if (redirectCallback) redirectCallback();
+    return {
+      isAuthenticated: false,
+      error: error.message,
+      fallbackMode: false
+    };
   }
 };
 
 /**
- * Check if user is authenticated with Supabase with better error handling
- * @returns Promise resolving to boolean indicating auth status
+ * Check local authentication state when network is unavailable
  */
-export const checkSupabaseAuth = async (): Promise<boolean> => {
+const checkLocalAuthState = (redirectCallback?: () => void): AuthResult => {
   try {
-    if (!supabase) {
-      console.error("Supabase client not initialized");
-      return false;
+    // Check for Clerk authentication
+    const clerkUserId = localStorage.getItem('currentUserId');
+    const authStatus = localStorage.getItem('authStatus');
+    
+    const isAuthenticated = !!(clerkUserId && authStatus === 'authenticated');
+    
+    console.log(`Local auth state check: ${isAuthenticated}`);
+    
+    if (!isAuthenticated && redirectCallback) {
+      redirectCallback();
     }
     
-    // Test connection first
-    const connectionWorking = await testSupabaseConnection();
-    if (!connectionWorking) {
-      console.warn("Supabase connection failed, skipping auth check");
-      return false;
-    }
-    
-    const { data } = await safeQueryWithRetry(() => supabase.auth.getSession());
-    return !!data?.session;
+    return {
+      isAuthenticated,
+      fallbackMode: true
+    };
   } catch (error) {
-    console.error("Supabase auth error:", error);
-    return false;
+    console.error('Local auth state check failed:', error);
+    if (redirectCallback) redirectCallback();
+    return {
+      isAuthenticated: false,
+      fallbackMode: true
+    };
   }
 };
 
 /**
- * Wait for authentication to be ready with improved timeout handling
- * Useful for components that need to wait for auth before rendering
- * @param maxWaitMs Maximum time to wait in milliseconds
- * @returns Promise resolving when auth check is complete
+ * Enhanced wait for auth with better error handling
  */
-export const waitForAuth = async (maxWaitMs = 3000): Promise<boolean> => {
-  const startTime = Date.now();
+export const waitForAuth = async (
+  timeoutMs: number = 3000,
+  maxRetries: number = 3
+): Promise<boolean> => {
+  console.log(`Waiting for auth (timeout: ${timeoutMs}ms, retries: ${maxRetries})`);
   
-  // Check initially
-  if (isAuthenticated()) {
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`Auth attempt ${attempt}/${maxRetries}`);
+      
+      const result = await safeCheckAuth(undefined, timeoutMs);
+      
+      if (result.isAuthenticated) {
+        console.log(`Auth successful on attempt ${attempt}`);
+        return true;
+      }
+      
+      // If not authenticated but no error, break early
+      if (!result.error) {
+        console.log('User not authenticated (no error)');
+        break;
+      }
+      
+      // Wait before retry (unless it's the last attempt)
+      if (attempt < maxRetries) {
+        console.log(`Retrying auth in 1 second... (attempt ${attempt})`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
+      
+    } catch (error) {
+      console.error(`Auth attempt ${attempt} failed:`, error);
+      
+      // If it's the last attempt, check local state
+      if (attempt === maxRetries) {
+        console.log('Final attempt, checking local auth state');
+        const localResult = checkLocalAuthState();
+        return localResult.isAuthenticated;
+      }
+    }
+  }
+  
+  console.log('Auth wait completed: not authenticated');
+  return false;
+};
+
+/**
+ * Enhanced user context setup with fallback handling
+ */
+export const setupUserContext = async (userId: string): Promise<boolean> => {
+  try {
+    console.log('Setting up user context for:', userId);
+    
+    const success = await setCurrentUserContext(userId);
+    
+    if (!success) {
+      console.warn('User context setup failed, but continuing with fallback');
+      // Don't return false here - allow the app to continue with fallback
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('User context setup error:', error);
+    // Return true to allow fallback authentication to work
     return true;
   }
-  
-  // Check Supabase auth as a backup (but don't wait too long)
-  try {
-    const hasSupabaseSession = await Promise.race([
-      checkSupabaseAuth(),
-      new Promise<boolean>(resolve => setTimeout(() => resolve(false), 2000))
-    ]);
-    if (hasSupabaseSession) return true;
-  } catch (err) {
-    console.log("Supabase auth check failed, continuing with local checks");
-  }
-  
-  // Poll until authenticated or timeout
-  return new Promise(resolve => {
-    const interval = setInterval(() => {
-      if (isAuthenticated()) {
-        clearInterval(interval);
-        resolve(true);
-      } else if (Date.now() - startTime > maxWaitMs) {
-        clearInterval(interval);
-        resolve(false);
-      }
-    }, 100);
-  });
 };
 
 /**
- * Initialize auth state and check for existing sessions
+ * Test Supabase connection with timeout
  */
-export const initializeAuth = async (): Promise<void> => {
+export const testSupabaseConnection = async (timeoutMs: number = 3000): Promise<boolean> => {
   try {
-    // Check local auth first
-    const localAuth = isAuthenticated();
-    if (localAuth) {
-      console.log("Local authentication found");
-      return;
-    }
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Connection test timeout')), timeoutMs);
+    });
     
-    // Try to restore from Supabase if available
-    const supabaseAuth = await checkSupabaseAuth();
-    if (supabaseAuth) {
-      console.log("Supabase session found, syncing to local state");
-      // Here you could sync the Supabase session to local state if needed
-    }
+    const testPromise = supabase.from('posts').select('count').limit(1);
+    
+    const { error } = await Promise.race([testPromise, timeoutPromise]);
+    
+    const isConnected = !error;
+    console.log(`Supabase connection test: ${isConnected ? 'SUCCESS' : 'FAILED'}`);
+    
+    return isConnected;
   } catch (error) {
-    console.error("Error initializing auth:", error);
+    console.warn('Supabase connection test failed:', error);
+    return false;
   }
 };

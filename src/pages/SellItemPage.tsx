@@ -9,16 +9,20 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
-import { waitForAuth, safeCheckAuth } from "@/utils/auth/authHelpers";
+import { safeCheckAuth, setupUserContext, testSupabaseConnection } from "@/utils/auth/authHelpers";
+import { isInFallbackMode } from "@/utils/supabase/rls";
 import ErrorBoundary from "@/components/ui/error-boundary";
 import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle, Wifi, WifiOff } from "lucide-react";
 
 const SellItemPage = () => {
   const navigate = useNavigate();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [isFormLoaded, setIsFormLoaded] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState<'checking' | 'connected' | 'fallback'>('checking');
   
   // Get Clerk user with proper null handling
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
@@ -41,17 +45,21 @@ const SellItemPage = () => {
     handleSelectChange = null 
   } = formValues || {};
 
-  // Check if user is authenticated with improved error handling
+  // Enhanced authentication check with better error handling
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log('SellItemPage: Starting authentication check');
+        
         // Wait for Clerk to load first
         if (!isClerkLoaded) {
+          console.log('SellItemPage: Waiting for Clerk to load');
           return;
         }
         
         // Check if user exists
         if (!clerkUser) {
+          console.log('SellItemPage: No Clerk user found');
           toast({
             title: "Authentication Required",
             description: "Please sign in to continue.",
@@ -61,29 +69,50 @@ const SellItemPage = () => {
           return;
         }
         
-        // Wait for auth to be ready with a timeout
-        const isAuthReady = await waitForAuth(2000);
+        console.log('SellItemPage: Clerk user found, checking connection');
         
-        // If auth is not ready after waiting, do a manual check
-        if (!isAuthReady) {
-          const { isAuthenticated } = await safeCheckAuth(() => {
-            navigate('/sign-in');
-          });
-          
-          if (!isAuthenticated) {
-            return; // Navigate will happen in the callback
-          }
+        // Test Supabase connection
+        const isConnected = await testSupabaseConnection(2000);
+        setConnectionStatus(isConnected ? 'connected' : 'fallback');
+        
+        // Check authentication state
+        const authResult = await safeCheckAuth(() => {
+          navigate('/sign-in');
+        }, 3000);
+        
+        if (!authResult.isAuthenticated) {
+          console.log('SellItemPage: User not authenticated');
+          return; // Navigate will happen in the callback
+        }
+        
+        console.log('SellItemPage: User authenticated, setting up context');
+        
+        // Setup user context (with fallback handling)
+        if (clerkUser.id) {
+          await setupUserContext(clerkUser.id);
         }
         
         // Set form as loaded after auth check is complete
         setIsFormLoaded(true);
+        console.log('SellItemPage: Authentication complete');
+        
       } catch (error) {
-        console.error("Auth check error:", error);
-        toast({
-          title: "Authentication Error",
-          description: "There was a problem checking your authentication status.",
-          variant: "destructive"
-        });
+        console.error("SellItemPage: Auth check error:", error);
+        
+        // Don't show error for network issues - just use fallback
+        if (error.message?.includes('CORS') || 
+            error.message?.includes('fetch') || 
+            error.message?.includes('NetworkError')) {
+          console.warn('SellItemPage: Network error detected, using fallback mode');
+          setConnectionStatus('fallback');
+          setIsFormLoaded(true);
+        } else {
+          toast({
+            title: "Authentication Error",
+            description: "There was a problem checking your authentication status.",
+            variant: "destructive"
+          });
+        }
       } finally {
         // Always set auth checking to false when done
         setIsAuthChecking(false);
@@ -98,11 +127,14 @@ const SellItemPage = () => {
   if (isAuthChecking || isUserSyncLoading || !isClerkLoaded || loading) {
     return (
       <MainLayout>
-        <div className="flex justify-center items-center h-[60vh]">
+        <div className="flex justify-center items-center h-[60vh] flex-col">
           <Spinner size="lg" />
-          <p className="ml-3 text-gray-600">
+          <p className="ml-3 text-gray-600 mt-4">
             {isAuthChecking ? "Checking authentication..." : "Preparing your account..."}
           </p>
+          {connectionStatus === 'checking' && (
+            <p className="text-sm text-gray-500 mt-2">Testing connection...</p>
+          )}
         </div>
       </MainLayout>
     );
@@ -117,7 +149,7 @@ const SellItemPage = () => {
             <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
             <p className="mb-4">Please sign in to list your items for sale.</p>
             <button 
-              className="bg-softspot-500 text-white px-4 py-2 rounded-md"
+              className="bg-softspot-500 text-white px-4 py-2 rounded-md hover:bg-softspot-600 transition-colors"
               onClick={() => navigate('/sign-in')}
             >
               Sign In
@@ -160,6 +192,25 @@ const SellItemPage = () => {
     <MainLayout>
       <ErrorBoundary>
         <div className="max-w-2xl mx-auto py-6">
+          {/* Connection status indicator */}
+          {connectionStatus === 'fallback' && (
+            <Alert className="mb-4 border-yellow-200 bg-yellow-50">
+              <WifiOff className="h-4 w-4 text-yellow-600" />
+              <AlertDescription className="text-yellow-800">
+                <strong>Offline Mode:</strong> You're working offline. Your listing will be saved locally and synced when you reconnect.
+              </AlertDescription>
+            </Alert>
+          )}
+          
+          {isInFallbackMode() && (
+            <Alert className="mb-4 border-blue-200 bg-blue-50">
+              <Wifi className="h-4 w-4 text-blue-600" />
+              <AlertDescription className="text-blue-800">
+                <strong>Fallback Mode:</strong> Using local storage due to connection issues. Data will sync when connection is restored.
+              </AlertDescription>
+            </Alert>
+          )}
+          
           <Card className="rounded-xl bg-white shadow-sm overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100">
               <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
