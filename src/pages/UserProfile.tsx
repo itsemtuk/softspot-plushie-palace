@@ -1,4 +1,3 @@
-
 import React from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useParams } from 'react-router-dom';
@@ -54,17 +53,34 @@ const UserProfile = () => {
         } else {
           // If no user data found, try to get from posts
           const posts = await getUserPosts(userId);
-          setUserPosts(posts);
+          
+          // Ensure all posts have proper numeric values
+          const processedPosts = posts.map(post => ({
+            ...post,
+            price: typeof post.price === 'number' ? post.price : 
+                   typeof post.price === 'string' ? parseFloat(post.price) || 0 : 0,
+            deliveryCost: typeof post.deliveryCost === 'number' ? post.deliveryCost : 
+                         typeof post.deliveryCost === 'string' ? parseFloat(post.deliveryCost) || 0 : 0
+          }));
+          
+          setUserPosts(processedPosts);
           
           // Set username from the first post if available
-          if (posts.length > 0 && posts[0].username) {
-            setUsername(posts[0].username);
+          if (processedPosts.length > 0 && processedPosts[0].username) {
+            setUsername(processedPosts[0].username);
           }
         }
         
         // Get posts regardless
         const posts = await getUserPosts(userId);
-        setUserPosts(posts);
+        const processedPosts = posts.map(post => ({
+          ...post,
+          price: typeof post.price === 'number' ? post.price : 
+                 typeof post.price === 'string' ? parseFloat(post.price) || 0 : 0,
+          deliveryCost: typeof post.deliveryCost === 'number' ? post.deliveryCost : 
+                       typeof post.deliveryCost === 'string' ? parseFloat(post.deliveryCost) || 0 : 0
+        }));
+        setUserPosts(processedPosts);
       } catch (error) {
         console.error('Error loading user data:', error);
         setError("Failed to load user profile data");

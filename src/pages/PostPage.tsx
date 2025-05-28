@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, Navigate, Link, useNavigate } from "react-router-dom";
 import { PostDialog } from "@/components/PostDialog";
@@ -45,7 +44,16 @@ const PostPage = () => {
         const foundPost = await getPostById(postId);
         
         if (foundPost) {
-          setPost(foundPost);
+          // Ensure numeric values are properly converted
+          const processedPost = {
+            ...foundPost,
+            price: typeof foundPost.price === 'number' ? foundPost.price : 
+                   typeof foundPost.price === 'string' ? parseFloat(foundPost.price) || 0 : 0,
+            deliveryCost: typeof foundPost.deliveryCost === 'number' ? foundPost.deliveryCost : 
+                         typeof foundPost.deliveryCost === 'string' ? parseFloat(foundPost.deliveryCost) || 0 : 0
+          };
+          
+          setPost(processedPost);
           // Open dialog after short delay to ensure smooth transition
           setTimeout(() => {
             setDialogOpen(isSignedIn || false);

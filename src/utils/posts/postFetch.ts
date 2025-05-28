@@ -16,7 +16,7 @@ export const getPosts = async (): Promise<ExtendedPost[]> => {
     const { data, error } = await supabase
       .from('posts')
       .select('*')
-      .order('timestamp', { ascending: false });
+      .order('created_at', { ascending: false }); // Fixed: Use created_at instead of timestamp
       
     if (error) {
       const errorDetails = handleSupabaseError(error);
@@ -57,7 +57,7 @@ export const getUserPosts = async (userId: string): Promise<ExtendedPost[]> => {
       .from('posts')
       .select('*')
       .eq('userId', userId)
-      .order('timestamp', { ascending: false });
+      .order('created_at', { ascending: false }); // Fixed: Use created_at instead of timestamp
       
     if (error) {
       const errorDetails = handleSupabaseError(error);

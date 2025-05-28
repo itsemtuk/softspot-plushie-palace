@@ -1,4 +1,3 @@
-
 import { ExtendedPost } from "@/types/marketplace";
 import { supabase, isSupabaseConfigured, safeQueryWithRetry } from '../supabase/client';
 import { setCurrentUserContext } from '../supabase/rls';
@@ -73,7 +72,7 @@ export const savePost = async (post: ExtendedPost | ExtendedPost[], userId?: str
             description: post.description || '',
             tags: post.tags || [],
           }),
-          created_at: post.timestamp || new Date().toISOString(),
+          created_at: post.createdAt || post.timestamp || new Date().toISOString(), // Use createdAt or timestamp
         }, { onConflict: 'id' });
         
       if (error) throw error;
@@ -144,9 +143,6 @@ export const addPost = async (post: ExtendedPost, userId?: string): Promise<{ su
   }
 };
 
-/**
- * Updates an existing post
- */
 export const updatePost = async (updatedPost: ExtendedPost, userId?: string): Promise<{ success: boolean, error?: any }> => {
   if (!isSupabaseConfigured()) {
     return savePost(updatedPost, userId);
@@ -225,9 +221,6 @@ export const deletePost = async (postId: string, userId?: string): Promise<{ suc
   }
 };
 
-/**
- * Gets all posts, including user-specific posts
- */
 export const getAllUserPosts = async (userId: string = getCurrentUserId()): Promise<ExtendedPost[]> => {
   if (!isSupabaseConfigured()) {
     return getLocalPosts().filter(post => post.userId === userId);
@@ -241,7 +234,7 @@ export const getAllUserPosts = async (userId: string = getCurrentUserId()): Prom
       .from(POSTS_TABLE)
       .select('*')
       .eq('user_id', userId)
-      .order('created_at', { ascending: false });
+      .order('created_at', { ascending: false }); // Fixed: Use created_at instead of timestamp
       
     if (error) throw error;
     
