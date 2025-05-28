@@ -12,10 +12,18 @@ interface SellItemFormWrapperProps {
 }
 
 export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps) => {
+  console.log("SellItemFormWrapper: Rendering with supabaseUserId:", supabaseUserId);
+  
   const formValues = useSellItemForm();
+
+  console.log("SellItemFormWrapper: Form values received:", {
+    hasFormValues: !!formValues,
+    formKeys: formValues ? Object.keys(formValues) : []
+  });
 
   // Show loading while form is initializing
   if (!formValues) {
+    console.log("SellItemFormWrapper: No form values, showing loading");
     return (
       <Card className="rounded-xl bg-white shadow-sm overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100">
@@ -43,8 +51,17 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
     handleSelectChange 
   } = formValues;
 
+  console.log("SellItemFormWrapper: Destructured form values:", {
+    hasRegister: !!register,
+    hasHandleSubmit: !!handleSubmit,
+    hasOnSubmit: !!onSubmit,
+    hasErrors: !!errors,
+    imageUrl: imageUrl?.substring(0, 50) + "..."
+  });
+
   // Additional null checks for safety
   if (!register || !handleSubmit || !onSubmit) {
+    console.log("SellItemFormWrapper: Missing critical form methods");
     return (
       <Card className="rounded-xl bg-white shadow-sm overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100">
@@ -63,10 +80,13 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
   // Safe form submit handler
   const formSubmitHandler: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
+    console.log("SellItemFormWrapper: Form submitted");
     
     if (handleSubmit && onSubmit) {
       const submitFunction = handleSubmit(onSubmit);
       submitFunction(e);
+    } else {
+      console.error("SellItemFormWrapper: Missing handleSubmit or onSubmit");
     }
   };
 

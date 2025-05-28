@@ -5,9 +5,17 @@ import { useSellItemSubmission } from "./sell-item/useSellItemSubmission";
 import { SellItemFormData } from "@/types/sellItemForm";
 
 export const useSellItemForm = () => {
+  console.log("useSellItemForm: Initializing main hook");
+  
   const setupResult = useSellItemFormSetup();
   const imageResult = useSellItemImage();
   const submissionResult = useSellItemSubmission();
+
+  console.log("useSellItemForm: Hook results", { 
+    setupResult: !!setupResult, 
+    imageResult: !!imageResult, 
+    submissionResult: !!submissionResult 
+  });
 
   // Early return with null check
   if (!setupResult || !imageResult || !submissionResult) {
@@ -28,10 +36,17 @@ export const useSellItemForm = () => {
   const { isSubmitting, handleSubmit: submitForm } = submissionResult;
 
   // Return null/loading state if form is not ready
-  if (!formInitialized || formError || !register || !handleSubmit) {
+  if (!formInitialized || formError) {
     console.log("useSellItemForm: Form not ready", { 
       formInitialized, 
-      formError,
+      formError
+    });
+    return null;
+  }
+
+  // Additional safety check for form methods
+  if (!register || !handleSubmit) {
+    console.log("useSellItemForm: Form methods not available", { 
       hasRegister: !!register, 
       hasHandleSubmit: !!handleSubmit
     });
@@ -39,6 +54,8 @@ export const useSellItemForm = () => {
   }
 
   const onSubmit = async (data: SellItemFormData) => {
+    console.log("useSellItemForm: Submitting form", data);
+    
     // Ensure all required fields are present with proper defaults
     const submissionData: SellItemFormData = {
       title: data.title || '',
@@ -67,7 +84,7 @@ export const useSellItemForm = () => {
     imageUrl,
     isSubmitting,
     register,
-    errors,
+    errors: errors || {},
     handleSubmit,
     onSubmit,
     handleImageSelect,
