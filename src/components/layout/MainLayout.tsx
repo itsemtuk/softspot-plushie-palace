@@ -5,14 +5,16 @@ import { NetworkStatus } from "@/components/ui/network-status";
 
 interface MainLayoutProps {
   children: ReactNode;
+  noPadding?: boolean;
+  className?: string;
 }
 
-const MainLayout = ({ children }: MainLayoutProps) => {
+const MainLayout = ({ children, noPadding = false, className = "" }: MainLayoutProps) => {
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen bg-gray-50 ${className}`}>
       <Navbar />
       <NetworkStatus />
-      <main className="container mx-auto px-4 py-6">
+      <main className={noPadding ? "" : "container mx-auto px-4 py-6"}>
         {children}
       </main>
     </div>
