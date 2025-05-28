@@ -14,7 +14,6 @@ import { getMarketplaceListings, saveMarketplaceListings } from "@/utils/storage
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { MobileNav } from "@/components/navigation/MobileNav";
 import { useToast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 import { ChevronLeft, ChevronRight, Plus, Sliders, RefreshCw } from "lucide-react";
@@ -59,7 +58,9 @@ const Marketplace = () => {
           {
             id: "plushie-1",
             userId: "default",
+            name: "Teddy Bear", // Added required property
             image: "https://images.unsplash.com/photo-1516067154453-6194ba34d121",
+            imageUrl: "https://images.unsplash.com/photo-1516067154453-6194ba34d121", // Added required property
             title: "Teddy Bear",
             username: "plushielover",
             likes: 42,
@@ -82,7 +83,9 @@ const Marketplace = () => {
           {
             id: "plushie-2",
             userId: "default",
+            name: "Pink Unicorn", // Added required property
             image: "https://images.unsplash.com/photo-1558006510-1e4d1bf38ada",
+            imageUrl: "https://images.unsplash.com/photo-1558006510-1e4d1bf38ada", // Added required property
             title: "Pink Unicorn",
             username: "unicornlover",
             likes: 78,
@@ -107,7 +110,9 @@ const Marketplace = () => {
           {
             id: "plushie-3",
             userId: "default",
+            name: "Jellycat Bunny", // Added required property
             image: "https://images.unsplash.com/photo-1556012018-51c8c387300f",
+            imageUrl: "https://images.unsplash.com/photo-1556012018-51c8c387300f", // Added required property
             title: "Jellycat Bunny",
             username: "bunnylover",
             likes: 120,
@@ -138,6 +143,9 @@ const Marketplace = () => {
         // Make sure we add any missing fields required by the UI
         const plushiesWithRequiredFields = storedPlushies.map((plushie: MarketplacePlushie) => ({
           ...plushie,
+          // Ensure required fields exist
+          name: plushie.name || plushie.title || 'Unnamed Plushie',
+          imageUrl: plushie.imageUrl || plushie.image || '',
           // Ensure price is a number
           price: typeof plushie.price === 'number' ? plushie.price : 0,
           // Ensure deliveryCost is a number

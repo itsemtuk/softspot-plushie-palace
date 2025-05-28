@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +14,7 @@ interface WishlistManagerProps {
 }
 
 export function WishlistManager() {
-  const [newItem, setNewItem] = useState<Partial<WishlistItem>>({
+  const [newItemData, setNewItemData] = useState<Partial<WishlistItem>>({
     name: '',
     title: '',
     price: 0,
@@ -35,17 +36,17 @@ export function WishlistManager() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setNewItem(prev => ({ ...prev, [name]: value }));
+    setNewItemData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSelectPriority = (value: WishlistItem['priority']) => {
     setPriority(value);
-    setNewItem(prev => ({ ...prev, priority: value }));
+    setNewItemData(prev => ({ ...prev, priority: value }));
   };
 
   const handleSelectStatus = (value: WishlistItem['status']) => {
     setStatus(value);
-    setNewItem(prev => ({ ...prev, status: value }));
+    setNewItemData(prev => ({ ...prev, status: value }));
   };
 
   const handleAddToWishlist = () => {
@@ -53,28 +54,28 @@ export function WishlistManager() {
       id: `item-${Date.now()}`,
       plushieId: `plushie-${Date.now()}`,
       userId: "current-user",
-      addedAt: new Date().toISOString(), // Fixed: using addedAt instead of addedDate
-      name: newItem.name,
-      title: newItem.title,
-      price: newItem.price,
-      description: newItem.description,
-      imageUrl: newItem.imageUrl,
-      image: newItem.image,
-      linkUrl: newItem.linkUrl,
-      priority: 'medium',
-      status: 'wanted',
+      addedAt: new Date().toISOString(),
+      name: newItemData.name,
+      title: newItemData.title,
+      price: newItemData.price,
+      description: newItemData.description,
+      imageUrl: newItemData.imageUrl,
+      image: newItemData.image,
+      linkUrl: newItemData.linkUrl,
+      priority: priority,
+      status: status,
       currencyCode: 'USD',
-      brand: newItem.brand,
+      brand: newItemData.brand,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       plushie: {
         id: `plushie-${Date.now()}`,
-        name: newItem.name,
-        title: newItem.title,
-        price: newItem.price || 0,
-        imageUrl: newItem.imageUrl || '',
-        image: newItem.image,
-        description: newItem.description || '',
+        name: newItemData.name,
+        title: newItemData.title,
+        price: newItemData.price || 0,
+        imageUrl: newItemData.imageUrl || '',
+        image: newItemData.image,
+        description: newItemData.description || '',
         condition: 'new',
         material: 'plush',
         species: 'bear',
@@ -89,7 +90,7 @@ export function WishlistManager() {
     };
 
     setWishlistItems(prev => [...prev, newItem]);
-    setNewItem({
+    setNewItemData({
       name: '',
       title: '',
       price: 0,
@@ -120,7 +121,7 @@ export function WishlistManager() {
                 type="text"
                 name="name"
                 placeholder="Item Name"
-                value={newItem.name || ''}
+                value={newItemData.name || ''}
                 onChange={handleInputChange}
               />
             </div>
@@ -129,7 +130,7 @@ export function WishlistManager() {
                 type="text"
                 name="title"
                 placeholder="Item Title"
-                value={newItem.title || ''}
+                value={newItemData.title || ''}
                 onChange={handleInputChange}
               />
             </div>
@@ -138,7 +139,7 @@ export function WishlistManager() {
                 type="number"
                 name="price"
                 placeholder="Price"
-                value={newItem.price || ''}
+                value={newItemData.price || ''}
                 onChange={handleInputChange}
               />
             </div>
@@ -147,7 +148,7 @@ export function WishlistManager() {
                 type="text"
                 name="imageUrl"
                 placeholder="Image URL"
-                value={newItem.imageUrl || ''}
+                value={newItemData.imageUrl || ''}
                 onChange={handleInputChange}
               />
             </div>
@@ -155,7 +156,7 @@ export function WishlistManager() {
           <Textarea
             name="description"
             placeholder="Description"
-            value={newItem.description || ''}
+            value={newItemData.description || ''}
             onChange={handleInputChange}
           />
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

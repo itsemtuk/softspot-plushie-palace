@@ -69,7 +69,9 @@ const mockPlushies: MarketplacePlushie[] = [
   {
     id: "1",
     userId: "user-1",
+    name: "Mint Jellycat Bunny", // Added required property
     image: "https://i.pravatar.cc/300?img=1",
+    imageUrl: "https://i.pravatar.cc/300?img=1", // Added required property
     title: "Mint Jellycat Bunny",
     username: "plushielover",
     likes: 24,
@@ -90,7 +92,9 @@ const mockPlushies: MarketplacePlushie[] = [
   {
     id: "2",
     userId: "user-1",
+    name: "Limited Edition Teddy", // Added required property
     image: "https://i.pravatar.cc/300?img=2",
+    imageUrl: "https://i.pravatar.cc/300?img=2", // Added required property
     title: "Limited Edition Teddy",
     username: "plushielover",
     likes: 42,

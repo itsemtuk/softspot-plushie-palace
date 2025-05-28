@@ -1,10 +1,10 @@
 
 export interface MarketplacePlushie {
   id: string;
-  name: string;
+  name?: string; // Made optional for compatibility
   title?: string; // Added for compatibility
   price: number;
-  imageUrl: string;
+  imageUrl?: string; // Made optional for compatibility
   image?: string; // Added for compatibility
   description: string;
   condition: string;
@@ -130,17 +130,19 @@ export interface PlushieBrand {
 }
 
 export interface MarketplaceFilters {
-  brand?: string;
-  condition?: string;
+  brand?: string[];
+  condition?: string[];
   priceRange?: {
     min: number;
     max: number;
   };
-  material?: string;
-  size?: string;
-  color?: string;
-  filling?: string;
-  species?: string;
+  material?: string[];
+  size?: string[];
+  color?: string[];
+  filling?: string[];
+  species?: string[];
+  price?: [number, number];
+  deliveryMethod?: string[];
 }
 
 export interface Currency {
@@ -195,6 +197,8 @@ export interface Badge {
   earnedAt?: string;
   imagePath?: string; // Added missing property
   progress?: number; // Added missing property
+  criteria?: BadgeCriteria; // Added missing property
+  isSpecial?: boolean; // Added missing property
 }
 
 // Badge-related types
@@ -212,7 +216,7 @@ export interface WishlistItem {
   plushieId: string;
   userId: string;
   addedAt: string;
-  name: string; // Added missing property
+  name?: string; // Added missing property
   title?: string; // Added missing property
   price?: number; // Added missing property
   description?: string; // Added missing property
@@ -231,7 +235,7 @@ export interface WishlistItem {
 export interface Wishlist {
   id: string;
   userId: string;
-  name: string; // Added missing property
+  name?: string; // Added missing property
   description?: string; // Added missing property
   items: WishlistItem[];
   createdAt: string;

@@ -96,19 +96,24 @@ export function FilterPanel({
   setVerifiedSellersOnly,
 }: FilterPanelProps) {
   const handleFilterChange = (category: keyof MarketplaceFilters, value: string, isChecked: boolean) => {
-    const currentValues = filters[category] as string[] || [];
-    
-    let newValues;
-    if (isChecked) {
-      newValues = [...currentValues, value];
-    } else {
-      newValues = currentValues.filter(v => v !== value);
+    // Handle array-type filters
+    if (category === 'brand' || category === 'condition' || category === 'material' || 
+        category === 'filling' || category === 'species' || category === 'color' || 
+        category === 'size' || category === 'deliveryMethod') {
+      const currentValues = (filters[category] as string[]) || [];
+      
+      let newValues: string[];
+      if (isChecked) {
+        newValues = [...currentValues, value];
+      } else {
+        newValues = currentValues.filter(v => v !== value);
+      }
+      
+      onFilterChange({
+        ...filters,
+        [category]: newValues
+      });
     }
-    
-    onFilterChange({
-      ...filters,
-      [category]: newValues
-    });
   };
   
   const handleResetFilters = () => {
@@ -132,8 +137,8 @@ export function FilterPanel({
   };
   
   const isFilterSelected = (category: keyof MarketplaceFilters, value: string) => {
-    const categoryValues = filters[category] as string[] || [];
-    return categoryValues.includes(value);
+    const categoryValues = filters[category] as string[] | undefined;
+    return categoryValues?.includes(value) || false;
   };
   
   return (
