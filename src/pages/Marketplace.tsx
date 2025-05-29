@@ -12,6 +12,7 @@ import { QuickSellBanner } from "@/components/marketplace/QuickSellBanner";
 import { MarketplacePlushie } from '@/types/marketplace';
 import { PlushieDetailDialog } from "@/components/marketplace/PlushieDetailDialog";
 import { getMarketplaceListings, saveMarketplaceListings } from "@/utils/storage/localStorageUtils";
+import { validateMarketplacePlushies } from "@/utils/dataValidation";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -59,9 +60,9 @@ const Marketplace = () => {
           {
             id: "plushie-1",
             userId: "default",
-            name: "Teddy Bear", // Added required property
+            name: "Teddy Bear",
             image: "https://images.unsplash.com/photo-1516067154453-6194ba34d121",
-            imageUrl: "https://images.unsplash.com/photo-1516067154453-6194ba34d121", // Added required property
+            imageUrl: "https://images.unsplash.com/photo-1516067154453-6194ba34d121",
             title: "Teddy Bear",
             username: "plushielover",
             likes: 42,
@@ -84,9 +85,9 @@ const Marketplace = () => {
           {
             id: "plushie-2",
             userId: "default",
-            name: "Pink Unicorn", // Added required property
+            name: "Pink Unicorn",
             image: "https://images.unsplash.com/photo-1558006510-1e4d1bf38ada",
-            imageUrl: "https://images.unsplash.com/photo-1558006510-1e4d1bf38ada", // Added required property
+            imageUrl: "https://images.unsplash.com/photo-1558006510-1e4d1bf38ada",
             title: "Pink Unicorn",
             username: "unicornlover",
             likes: 78,
@@ -111,9 +112,9 @@ const Marketplace = () => {
           {
             id: "plushie-3",
             userId: "default",
-            name: "Jellycat Bunny", // Added required property
+            name: "Jellycat Bunny",
             image: "https://images.unsplash.com/photo-1556012018-51c8c387300f",
-            imageUrl: "https://images.unsplash.com/photo-1556012018-51c8c387300f", // Added required property
+            imageUrl: "https://images.unsplash.com/photo-1556012018-51c8c387300f",
             title: "Jellycat Bunny",
             username: "bunnylover",
             likes: 120,
@@ -137,29 +138,15 @@ const Marketplace = () => {
           }
         ];
         console.log("Creating default items");
-        saveMarketplaceListings(defaultItems);
-        setPlushies(defaultItems);
-        setFilteredPlushies(defaultItems);
+        const validatedItems = validateMarketplacePlushies(defaultItems);
+        saveMarketplaceListings(validatedItems);
+        setPlushies(validatedItems);
+        setFilteredPlushies(validatedItems);
       } else {
-        // Make sure we add any missing fields required by the UI
-        const plushiesWithRequiredFields = storedPlushies.map((plushie: MarketplacePlushie) => ({
-          ...plushie,
-          // Ensure required fields exist
-          name: plushie.name || plushie.title || 'Unnamed Plushie',
-          imageUrl: plushie.imageUrl || plushie.image || '',
-          // Ensure price is a number
-          price: typeof plushie.price === 'number' ? plushie.price : 0,
-          // Ensure deliveryCost is a number
-          deliveryCost: typeof plushie.deliveryCost === 'number' ? plushie.deliveryCost : 0,
-          // Only add timestamp if it doesn't exist
-          ...(plushie.timestamp ? {} : { timestamp: new Date().toISOString() }),
-          // Add discount and originalPrice if they don't exist
-          discount: plushie.discount || 0,
-          originalPrice: plushie.originalPrice || null
-        }));
-        
-        setPlushies(plushiesWithRequiredFields);
-        setFilteredPlushies(plushiesWithRequiredFields);
+        // Validate and sanitize stored data
+        const validatedPlushies = validateMarketplacePlushies(storedPlushies);
+        setPlushies(validatedPlushies);
+        setFilteredPlushies(validatedPlushies);
       }
     } catch (error) {
       console.error("Error loading marketplace listings:", error);
@@ -334,6 +321,10 @@ const Marketplace = () => {
   };
 
   const handlePlushieClick = (plushie: MarketplacePlushie) => {
+    if (!plushie || !plushie.id) {
+      console.error('Invalid plushie data:', plushie);
+      return;
+    }
     setSelectedPlushie(plushie);
     setIsDetailsOpen(true);
   };
@@ -528,15 +519,21 @@ const Marketplace = () => {
               ) : (
                 <>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    {currentItems.map((plushie) => (
-                      <ProductCard
-                        key={plushie.id}
-                        product={plushie}
-                        onProductClick={handlePlushieClick}
-                        onWishlistToggle={handleWishlistToggle}
-                        isWishlisted={wishlist.includes(plushie.id)}
-                      />
-                    ))}
+                    {currentItems.map((plushie) => {
+                      if (!plushie || !plushie.id) {
+                        return null;
+                      }
+                      
+                      return (
+                        <ProductCard
+                          key={plushie.id}
+                          product={plushie}
+                          onProductClick={handlePlushieClick}
+                          onWishlistToggle={handleWishlistToggle}
+                          isWishlisted={wishlist.includes(plushie.id)}
+                        />
+                      );
+                    })}
                   </div>
                   
                   {/* Pagination Controls */}

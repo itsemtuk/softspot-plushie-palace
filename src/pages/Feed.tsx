@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FeedHeader } from "@/components/feed/FeedHeader";
@@ -21,6 +22,7 @@ import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { savePost } from "@/utils/posts/postManagement";
 import { PostCreationData } from "@/types/marketplace";
 import { useUser } from '@clerk/clerk-react';
+import { validatePosts } from "@/utils/dataValidation";
 
 const Feed = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
@@ -39,7 +41,10 @@ const Feed = () => {
       setLoading(true);
       const fetchedPosts = await getPosts();
       console.log("Fetched posts:", fetchedPosts.length);
-      setPosts(fetchedPosts);
+      
+      // Validate and sanitize posts data
+      const validatedPosts = validatePosts(fetchedPosts);
+      setPosts(validatedPosts);
     } catch (error) {
       console.error("Error fetching posts:", error);
       toast({
@@ -160,16 +165,26 @@ const Feed = () => {
   };
 
   const handlePostClick = (post: ExtendedPost) => {
+    if (!post || !post.id) {
+      console.error('Invalid post data:', post);
+      return;
+    }
     openPostDialog(post);
   };
 
   // Filter posts based on search query
   const filteredPosts = searchQuery
-    ? posts.filter(post => 
-        post.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        post.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (post.tags && post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())))
-      )
+    ? posts.filter(post => {
+        if (!post) return false;
+        
+        const title = post.title || '';
+        const description = post.description || '';
+        const tags = post.tags || [];
+        
+        return title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+               description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+               tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+      })
     : posts;
 
   return (
