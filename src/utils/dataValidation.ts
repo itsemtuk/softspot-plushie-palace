@@ -60,8 +60,7 @@ export const validateMarketplacePlushie = (data: any): MarketplacePlushie | null
       location: data.location || '',
       deliveryCost: safeNumber(data.deliveryCost),
       discount: safeNumber(data.discount),
-      originalPrice: data.originalPrice ? safeNumber(data.originalPrice) : null,
-      content: data.content || data.description || ''
+      originalPrice: data.originalPrice ? safeNumber(data.originalPrice) : undefined
     };
   } catch (error) {
     console.error('Error validating marketplace plushie:', error);
