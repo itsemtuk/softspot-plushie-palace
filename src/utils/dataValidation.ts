@@ -99,7 +99,6 @@ export const validatePost = (data: any): ExtendedPost | null => {
       condition: data.condition || undefined,
       color: data.color || undefined,
       material: data.material || undefined,
-      brand: data.brand || undefined,
       size: data.size || undefined,
       filling: data.filling || undefined,
       species: data.species || undefined,
