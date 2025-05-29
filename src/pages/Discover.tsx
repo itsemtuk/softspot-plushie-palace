@@ -33,6 +33,7 @@ const Discover = () => {
   const [productResults, setProductResults] = useState<MarketplacePlushie[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [wishlist, setWishlist] = useState<string[]>([]);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const { user } = useUser();
@@ -50,6 +51,16 @@ const Discover = () => {
         // Load marketplace items
         const items = getMarketplaceListings().slice(0, 5);
         setMarketplaceItems(items);
+        
+        // Load user's wishlist
+        const savedWishlist = localStorage.getItem('wishlist');
+        if (savedWishlist) {
+          try {
+            setWishlist(JSON.parse(savedWishlist));
+          } catch (error) {
+            console.error("Error parsing wishlist:", error);
+          }
+        }
       } catch (error) {
         console.error("Error loading discover data:", error);
         toast({
@@ -127,9 +138,27 @@ const Discover = () => {
 
   const handleWishlistToggle = (id: string, event: React.MouseEvent) => {
     event.stopPropagation();
+    
+    if (!user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to add items to your wishlist."
+      });
+      return;
+    }
+    
+    const newWishlist = wishlist.includes(id)
+      ? wishlist.filter(item => item !== id)
+      : [...wishlist, id];
+    
+    setWishlist(newWishlist);
+    localStorage.setItem('wishlist', JSON.stringify(newWishlist));
+    
     toast({
-      title: "Feature coming soon",
-      description: "Wishlist functionality will be available soon!",
+      title: wishlist.includes(id) ? "Removed from wishlist" : "Added to wishlist",
+      description: wishlist.includes(id) 
+        ? "This plushie has been removed from your wishlist." 
+        : "This plushie has been added to your wishlist."
     });
   };
 
@@ -225,6 +254,7 @@ const Discover = () => {
                         product={item}
                         onProductClick={handleProductClick}
                         onWishlistToggle={handleWishlistToggle}
+                        isWishlisted={wishlist.includes(item.id)}
                       />
                     ))}
                   </div>
@@ -318,6 +348,7 @@ const Discover = () => {
                         product={item}
                         onProductClick={handleProductClick}
                         onWishlistToggle={handleWishlistToggle}
+                        isWishlisted={wishlist.includes(item.id)}
                       />
                     ))}
                   </div>

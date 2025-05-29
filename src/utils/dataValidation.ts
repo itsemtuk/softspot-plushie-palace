@@ -39,7 +39,6 @@ export const validateMarketplacePlushie = (data: any): MarketplacePlushie | null
     return {
       id: data.id || `plushie-${Date.now()}`,
       userId: data.userId || data.user_id || '',
-      user_id: data.user_id || data.userId || '',
       name: data.name || data.title || 'Unnamed Plushie',
       title: data.title || data.name || 'Unnamed Plushie',
       image: data.image || data.imageUrl || '',
@@ -90,7 +89,6 @@ export const validatePost = (data: any): ExtendedPost | null => {
       description: data.description || data.content || '',
       content: data.content || data.description || '',
       image: data.image || data.imageUrl || '',
-      imageUrl: data.imageUrl || data.image || '',
       username: data.username || 'Anonymous',
       likes: safeInteger(data.likes),
       comments: safeInteger(data.comments),
