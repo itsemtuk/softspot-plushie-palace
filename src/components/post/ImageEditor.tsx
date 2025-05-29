@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -198,7 +199,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
             brightness={brightness}
             setBrightness={setBrightness}
             contrast={contrast}
-            setContrast}
+            setContrast={setContrast}
             saturation={saturation}
             setSaturation={setSaturation}
           />
