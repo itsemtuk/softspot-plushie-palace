@@ -1,4 +1,3 @@
-
 import { MarketplacePlushie, ExtendedPost } from '@/types/marketplace';
 
 // Utility function to safely convert values to numbers
