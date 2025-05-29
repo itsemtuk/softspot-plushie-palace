@@ -1,4 +1,3 @@
-
 import { MarketplacePlushie, ExtendedPost } from '@/types/marketplace';
 
 // Utility function to safely convert values to numbers
@@ -57,10 +56,6 @@ export const validateMarketplacePlushie = (data: any): MarketplacePlushie | null
       filling: data.filling || '',
       tags: Array.isArray(data.tags) ? data.tags : [],
       timestamp: data.timestamp || new Date().toISOString(),
-      createdAt: data.createdAt || data.created_at || data.timestamp || new Date().toISOString(),
-      created_at: data.created_at || data.createdAt || data.timestamp || new Date().toISOString(),
-      updatedAt: data.updatedAt || data.updated_at || new Date().toISOString(),
-      updated_at: data.updated_at || data.updatedAt || new Date().toISOString(),
       species: data.species || '',
       location: data.location || '',
       deliveryCost: safeNumber(data.deliveryCost),
