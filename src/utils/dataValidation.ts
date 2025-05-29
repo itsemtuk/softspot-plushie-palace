@@ -1,3 +1,4 @@
+
 import { MarketplacePlushie, ExtendedPost } from '@/types/marketplace';
 
 // Utility function to safely convert values to numbers
@@ -90,7 +91,6 @@ export const validatePost = (data: any): ExtendedPost | null => {
       createdAt: data.createdAt || data.created_at || data.timestamp || new Date().toISOString(),
       created_at: data.created_at || data.createdAt || data.timestamp || new Date().toISOString(),
       updatedAt: data.updatedAt || data.updated_at || new Date().toISOString(),
-      updated_at: data.updated_at || data.updatedAt || new Date().toISOString(),
       tags: Array.isArray(data.tags) ? data.tags : [],
       location: data.location || '',
       forSale: Boolean(data.forSale),
