@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FeedHeader } from "@/components/feed/FeedHeader";
@@ -29,6 +28,7 @@ const Feed = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [postText, setPostText] = useState(""); 
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   const { openPostDialog } = usePostDialog();
@@ -38,6 +38,7 @@ const Feed = () => {
     try {
       setLoading(true);
       const fetchedPosts = await getPosts();
+      console.log("Fetched posts:", fetchedPosts.length);
       setPosts(fetchedPosts);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -83,6 +84,7 @@ const Feed = () => {
   const handlePostCreated = async (data: PostCreationData) => {
     try {
       console.log("Creating post with data:", data);
+      setIsSubmitting(true);
       
       const username = user?.username || user?.firstName || "Anonymous";
       const userId = user?.id || getCurrentUserId();
@@ -118,8 +120,13 @@ const Feed = () => {
         
         setIsPostCreationOpen(false);
         
-        // Refresh the posts to show the new one
-        await fetchPosts();
+        // Immediately add the post to the feed and then refresh
+        setPosts(prevPosts => [newPost, ...prevPosts]);
+        
+        // Also refresh the posts to ensure we have the latest data
+        setTimeout(() => {
+          fetchPosts();
+        }, 1000);
       } else {
         throw new Error(result.error || "Failed to create post");
       }
@@ -130,6 +137,8 @@ const Feed = () => {
         description: "Failed to create post. Please try again.",
         variant: "destructive"
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
   
@@ -210,6 +219,7 @@ const Feed = () => {
         isOpen={isPostCreationOpen}
         onClose={() => setIsPostCreationOpen(false)}
         onPostCreated={handlePostCreated}
+        isSubmitting={isSubmitting}
       />
       
       <Footer />

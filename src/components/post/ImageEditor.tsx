@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -147,7 +146,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
   };
 
   return (
-    <Card className="p-4 w-full max-w-2xl mx-auto">
+    <Card className="p-4 w-full max-w-4xl mx-auto max-h-[90vh] overflow-hidden">
       <Tabs defaultValue="crop" value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid grid-cols-3 mb-4">
           <TabsTrigger value="crop" className="flex items-center gap-1">
@@ -164,7 +163,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
           </TabsTrigger>
         </TabsList>
         
-        <div className="aspect-square relative mb-6 overflow-hidden rounded-lg bg-gray-200 max-h-96">
+        <div className="relative mb-6 overflow-hidden rounded-lg bg-gray-200 max-h-[50vh] w-full">
           {/* Hidden reference image to apply filters preview */}
           <img
             ref={imageRef}
@@ -173,13 +172,15 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
             className="hidden"
           />
           
-          {/* Cropper component */}
-          <ImageCropper
-            ref={cropperRef}
-            image={imageUrl}
-            onCrop={(cropper) => {}} // Add empty function to satisfy prop requirements
-            aspectRatio={aspectRatio || undefined}
-          />
+          {/* Cropper component with constrained height */}
+          <div className="w-full h-full max-h-[50vh] overflow-hidden">
+            <ImageCropper
+              ref={cropperRef}
+              image={imageUrl}
+              onCrop={(cropper) => {}} // Add empty function to satisfy prop requirements
+              aspectRatio={aspectRatio || undefined}
+            />
+          </div>
         </div>
         
         <TabsContent value="crop" className="space-y-4">
@@ -197,7 +198,7 @@ export const ImageEditor = ({ imageUrl, options, onSave, onCancel }: ImageEditor
             brightness={brightness}
             setBrightness={setBrightness}
             contrast={contrast}
-            setContrast={setContrast}
+            setContrast}
             saturation={saturation}
             setSaturation={setSaturation}
           />

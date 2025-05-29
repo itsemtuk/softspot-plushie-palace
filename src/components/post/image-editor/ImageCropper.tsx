@@ -19,12 +19,12 @@ export const ImageCropper = forwardRef<CropperRef, ImageCropperProps>(({
   };
 
   return (
-    <div className="w-full h-full">
+    <div className="w-full h-full max-h-[50vh] overflow-hidden">
       <Cropper
         ref={ref}
         src={image}
         onChange={handleChange}
-        className="h-[400px] bg-gray-100"
+        className="w-full h-full max-h-[50vh] bg-gray-100"
         stencilProps={{
           aspectRatio: aspectRatio
         }}

@@ -119,13 +119,15 @@ export const ImageUploader = ({
       />
       
       {previewUrl ? (
-        <div className="relative rounded-md overflow-hidden">
-          <RobustImage 
-            src={previewUrl} 
-            alt="Preview" 
-            className={`w-full object-cover ${aspectRatio ? 'aspect-[' + aspectRatio + ']' : 'max-h-[300px]'}`}
-            showLoadingSpinner={true}
-          />
+        <div className="relative rounded-md overflow-hidden max-h-[400px]">
+          <div className="w-full h-full max-h-[400px] overflow-hidden">
+            <RobustImage 
+              src={previewUrl} 
+              alt="Preview" 
+              className={`w-full h-full object-contain ${aspectRatio ? 'aspect-[' + aspectRatio + ']' : ''}`}
+              showLoadingSpinner={true}
+            />
+          </div>
           <Button
             variant="destructive"
             size="icon"

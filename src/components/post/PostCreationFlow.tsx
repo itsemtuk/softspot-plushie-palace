@@ -51,15 +51,18 @@ const PostCreationFlow = ({
         ...initialData,
         description: initialText
       });
+      setLocalSubmitting(false);
     }
   }, [isOpen, initialText]);
 
   const handleImageUploaded = (imageUrl: string) => {
+    console.log("Image uploaded:", imageUrl);
     setPostData(prev => ({ ...prev, image: imageUrl }));
     setStep('editor');
   };
 
   const handleImageEdited = (editedImageUrl: string) => {
+    console.log("Image edited:", editedImageUrl);
     setPostData(prev => ({ ...prev, image: editedImageUrl }));
     setStep('info');
   };
@@ -95,8 +98,12 @@ const PostCreationFlow = ({
 
     try {
       setLocalSubmitting(true);
+      console.log("Submitting post data:", finalData);
       await onPostCreated(finalData);
-      onClose();
+      
+      // Reset the form data after successful submission
+      setPostData(initialData);
+      setStep('upload');
     } catch (error) {
       console.error("Error creating post:", error);
       toast({
