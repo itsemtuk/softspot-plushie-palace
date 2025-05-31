@@ -94,18 +94,12 @@ export const validatePost = (data: any): ExtendedPost | null => {
       location: data.location || '',
       forSale: Boolean(data.forSale),
       
-      // Optional marketplace fields
+      // Optional marketplace fields that exist in ExtendedPost
       price: data.price ? safeNumber(data.price) : undefined,
       condition: data.condition || undefined,
       color: data.color || undefined,
       material: data.material || undefined,
-      size: data.size || undefined,
-      filling: data.filling || undefined,
-      species: data.species || undefined,
-      deliveryCost: data.deliveryCost ? safeNumber(data.deliveryCost) : undefined,
-      discount: data.discount ? safeNumber(data.discount) : undefined,
-      originalPrice: data.originalPrice ? safeNumber(data.originalPrice) : undefined,
-      name: data.name || data.title || undefined
+      deliveryCost: data.deliveryCost ? safeNumber(data.deliveryCost) : undefined
     };
   } catch (error) {
     console.error('Error validating post:', error);
