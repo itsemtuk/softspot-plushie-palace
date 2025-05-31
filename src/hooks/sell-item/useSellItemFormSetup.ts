@@ -51,22 +51,29 @@ export const useSellItemFormSetup = () => {
         setCurrentUserId(clerkUser.id);
       }
       
-      // Validate form methods are available
-      if (!register || !handleSubmit || !setValue) {
-        console.error("SellItemForm: Form methods not available");
-        setFormError("Form initialization failed");
+      // Enhanced validation for form methods
+      if (!register || typeof register !== 'function' || 
+          !handleSubmit || typeof handleSubmit !== 'function' || 
+          !setValue || typeof setValue !== 'function') {
+        console.error("SellItemForm: Form methods not available or invalid type");
+        setFormError("Form initialization failed - invalid methods");
         return;
       }
       
       // Mark form as initialized after ensuring everything is ready
       setTimeout(() => {
-        if (register && handleSubmit && setValue) {
+        // Re-validate form methods before marking as initialized
+        if (register && typeof register === 'function' && 
+            handleSubmit && typeof handleSubmit === 'function' && 
+            setValue && typeof setValue === 'function') {
+          console.log("SellItemForm: Form successfully initialized");
           setFormInitialized(true);
           setFormError(null);
         } else {
+          console.error("SellItemForm: Form methods validation failed on timeout");
           setFormError("Form methods not properly initialized");
         }
-      }, 100);
+      }, 150); // Slightly longer delay to ensure stability
       
     } catch (error) {
       console.error("Error in form initialization:", error);
@@ -81,12 +88,23 @@ export const useSellItemFormSetup = () => {
 
   const handleSelectChange = (field: keyof SellItemFormData, value: any) => {
     console.log("SellItemForm: Select change:", field, value);
-    if (!setValue || !field || value === undefined) return;
+    
+    // Enhanced safety checks
+    if (!setValue || typeof setValue !== 'function' || !field || value === undefined) {
+      console.warn("SellItemForm: Invalid setValue or parameters", { 
+        hasSetValue: !!setValue, 
+        setValueType: typeof setValue, 
+        field, 
+        value 
+      });
+      return;
+    }
     
     try {
       setValue(field, value);
     } catch (error) {
       console.error("Error setting form value:", error);
+      // Don't show toast for this as it might spam the user
     }
   };
 

@@ -23,8 +23,13 @@ export const SellItemFormFields = ({
   const [selectedBrand, setSelectedBrand] = useState("");
   const [otherBrandValue, setOtherBrandValue] = useState("");
   
-  // Guard against null props
-  if (!register || !onSelectChange) {
+  // Enhanced safety checks - ensure all required props are functions
+  if (!register || typeof register !== 'function' || 
+      !onSelectChange || typeof onSelectChange !== 'function') {
+    console.log("SellItemFormFields: Form methods not ready", { 
+      register: typeof register, 
+      onSelectChange: typeof onSelectChange 
+    });
     return (
       <div className="flex justify-center items-center p-8">
         <Spinner size="md" />
@@ -34,23 +39,42 @@ export const SellItemFormFields = ({
   }
   
   const handleBrandChange = (value: string) => {
-    if (!value) return;
+    if (!value || !onSelectChange) return;
     
-    setSelectedBrand(value);
-    if (value !== "other") {
-      onSelectChange("brand", value);
-    } else {
-      onSelectChange("brand", otherBrandValue || "Other");
+    try {
+      setSelectedBrand(value);
+      if (value !== "other") {
+        onSelectChange("brand", value);
+      } else {
+        onSelectChange("brand", otherBrandValue || "Other");
+      }
+    } catch (error) {
+      console.error("Error in handleBrandChange:", error);
     }
   };
   
   const handleOtherBrandChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!e?.target) return;
+    if (!e?.target || !onSelectChange) return;
     
-    const value = e.target.value || "";
-    setOtherBrandValue(value);
-    if (selectedBrand === "other") {
-      onSelectChange("brand", value || "Other");
+    try {
+      const value = e.target.value || "";
+      setOtherBrandValue(value);
+      if (selectedBrand === "other") {
+        onSelectChange("brand", value || "Other");
+      }
+    } catch (error) {
+      console.error("Error in handleOtherBrandChange:", error);
+    }
+  };
+  
+  // Additional safety wrapper for child components
+  const safeOnSelectChange = (field: string, value: string) => {
+    try {
+      if (onSelectChange && typeof onSelectChange === 'function') {
+        onSelectChange(field, value);
+      }
+    } catch (error) {
+      console.error("Error in safeOnSelectChange:", error);
     }
   };
   
@@ -61,7 +85,7 @@ export const SellItemFormFields = ({
       <DescriptionFieldSimple register={register} errors={errors} />
       
       <ConditionBrandFields 
-        onSelectChange={onSelectChange} 
+        onSelectChange={safeOnSelectChange} 
         handleBrandChange={handleBrandChange} 
       />
       
@@ -73,9 +97,9 @@ export const SellItemFormFields = ({
         />
       )}
       
-      <MaterialFillingFields onSelectChange={onSelectChange} />
+      <MaterialFillingFields onSelectChange={safeOnSelectChange} />
       
-      <SpeciesDeliveryFields onSelectChange={onSelectChange} />
+      <SpeciesDeliveryFields onSelectChange={safeOnSelectChange} />
       
       <ShippingCostField register={register} />
     </div>
