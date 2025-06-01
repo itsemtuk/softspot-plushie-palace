@@ -96,35 +96,36 @@ export function FilterPanel({
   setVerifiedSellersOnly,
 }: FilterPanelProps) {
   const handleFilterChange = (category: keyof MarketplaceFilters, value: string, isChecked: boolean) => {
-    // Handle array-type filters
-    if (category === 'brand' || category === 'condition' || category === 'material' || 
-        category === 'filling' || category === 'species' || category === 'color' || 
-        category === 'size' || category === 'deliveryMethod') {
-      const currentValues = (filters[category] as string[]) || [];
-      
-      let newValues: string[];
-      if (isChecked) {
-        newValues = [...currentValues, value];
-      } else {
-        newValues = currentValues.filter(v => v !== value);
-      }
-      
-      onFilterChange({
-        ...filters,
-        [category]: newValues
-      });
+    // Handle array-type filters - use the correct property names
+    const currentValues = (filters[category] as string[]) || [];
+    
+    let newValues: string[];
+    if (isChecked) {
+      newValues = [...currentValues, value];
+    } else {
+      newValues = currentValues.filter(v => v !== value);
     }
+    
+    onFilterChange({
+      ...filters,
+      [category]: newValues
+    });
   };
   
   const handleResetFilters = () => {
     // Create default empty filters with all required properties
     const defaultFilters: MarketplaceFilters = {
-      price: [0, 100],
+      brands: [],
+      conditions: [],
+      materials: [],
+      fillings: [],
+      species: [],
+      sizes: [],
+      deliveryMethods: [],
+      brand: [],
       condition: [],
       material: [],
       filling: [],
-      species: [],
-      brand: [],
       color: [],
       size: [],
       deliveryMethod: []

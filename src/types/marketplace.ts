@@ -1,7 +1,16 @@
 
 import { Database } from "@/integrations/supabase/types";
 
-export type Post = Database["public"]["Tables"]["posts"]["Row"]
+export type Post = Database["public"]["Tables"]["posts"]["Row"] & {
+  image?: string;
+  imageUrl?: string;
+  title?: string;
+  tags?: string[];
+  username?: string;
+  likes?: number;
+  comments?: number;
+  timestamp?: string;
+}
 
 export interface Comment {
   id: string;
@@ -23,6 +32,11 @@ export interface UserProfile {
   isPrivate: boolean;
   avatar?: string; // Add avatar property
   followersCount?: number; // Add followersCount property
+  joinDate?: string; // Add joinDate property
+  followingCount?: number;
+  postsCount?: number;
+  collectionsCount?: number;
+  marketplaceListingsCount?: number;
 }
 
 export interface ExtendedPost {
@@ -53,6 +67,7 @@ export interface ExtendedPost {
   deliveryCost?: number;
   size?: string;
   sold?: boolean; // Add sold property for badges
+  color?: string; // Add color property
 }
 
 export type PostCreationData = Omit<ExtendedPost, 'id' | 'userId' | 'username' | 'likes' | 'comments' | 'timestamp' | 'createdAt' | 'updatedAt' | 'user_id' | 'created_at'>;
@@ -60,9 +75,11 @@ export type PostCreationData = Omit<ExtendedPost, 'id' | 'userId' | 'username' |
 // Add missing marketplace types
 export interface MarketplacePlushie {
   id: string;
+  name?: string; // Add name property
   title: string;
   price: number;
   image: string;
+  imageUrl?: string; // Add imageUrl property
   brand?: string;
   condition?: string;
   description: string;
@@ -80,6 +97,9 @@ export interface MarketplacePlushie {
   deliveryMethod?: string;
   deliveryCost?: number;
   size?: string;
+  color?: string; // Add color property
+  discount?: number; // Add discount property
+  originalPrice?: number; // Add originalPrice property
 }
 
 export interface PlushieBrand {
@@ -102,6 +122,14 @@ export interface MarketplaceFilters {
   species: string[];
   sizes: string[];
   deliveryMethods: string[];
+  brand: string[];
+  condition: string[];
+  material: string[];
+  filling: string[];
+  color: string[];
+  size: string[];
+  deliveryMethod: string[];
+  price?: [number, number];
 }
 
 export interface Currency {
@@ -112,7 +140,7 @@ export interface Currency {
 
 export interface ImageUploadResult {
   success: boolean;
-  url: string;
+  url?: string; // Make url optional for error cases
   error?: string;
 }
 
@@ -131,6 +159,38 @@ export interface WishlistItem {
   plushieId: string;
   userId: string;
   addedAt: string;
+  name?: string; // Add name property
+  title?: string; // Add title property
+  price?: number; // Add price property
+  description?: string; // Add description property
+  imageUrl?: string; // Add imageUrl property
+  image?: string; // Add image property
+  linkUrl?: string; // Add linkUrl property
+  priority?: 'low' | 'medium' | 'high'; // Add priority property
+  status?: 'wanted' | 'purchased' | 'received'; // Add status property
+  currencyCode?: string; // Add currencyCode property
+  brand?: string; // Add brand property
+  createdAt?: string; // Add createdAt property
+  updatedAt?: string; // Add updatedAt property
+  plushie?: {
+    id: string;
+    name?: string;
+    title?: string;
+    price: number;
+    imageUrl?: string;
+    image?: string;
+    description: string;
+    condition: string;
+    material: string;
+    species: string;
+    size: string;
+    filling: string;
+    tags: string[];
+    location: string;
+    forSale: boolean;
+    likes: number;
+    comments: number;
+  };
 }
 
 export interface Wishlist {

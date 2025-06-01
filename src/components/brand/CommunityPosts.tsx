@@ -2,11 +2,11 @@
 import { ImagePlus, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Post } from "@/types/marketplace";
+import { ExtendedPost } from "@/types/marketplace";
 
 interface CommunityPostsProps {
-  posts: Post[];
-  onPostClick: (post: Post) => void;
+  posts: ExtendedPost[];
+  onPostClick: (post: ExtendedPost) => void;
 }
 
 export const CommunityPosts = ({ posts, onPostClick }: CommunityPostsProps) => {
@@ -37,7 +37,7 @@ export const CommunityPosts = ({ posts, onPostClick }: CommunityPostsProps) => {
         >
           <AspectRatio ratio={1} className="bg-gray-100">
             <img
-              src={post.image || post.imageUrl}
+              src={post.image}
               alt={post.title || ''}
               className="object-cover w-full h-full"
             />
