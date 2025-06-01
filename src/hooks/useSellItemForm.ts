@@ -1,90 +1,116 @@
-
+import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import { toast } from "@/components/ui/use-toast";
+import { SellItemFormData } from "@/types/sellItemForm";
+import { ExtendedPost } from "@/types/marketplace";
+import { savePost } from "@/utils/posts/postManagement";
 import { useSellItemFormSetup } from "./sell-item/useSellItemFormSetup";
 import { useSellItemImage } from "./sell-item/useSellItemImage";
-import { useSellItemSubmission } from "./sell-item/useSellItemSubmission";
-import { SellItemFormData } from "@/types/sellItemForm";
 
 export const useSellItemForm = () => {
-  console.log("useSellItemForm: Initializing main hook");
+  const [imageUrl, setImageUrl] = useState<string>("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useUser();
+
+  const { 
+    formInitialized, 
+    formError, 
+    register, 
+    handleSubmit, 
+    setValue, 
+    errors, 
+    handleSelectChange 
+  } = useSellItemFormSetup();
   
-  const setupResult = useSellItemFormSetup();
-  const imageResult = useSellItemImage();
-  const submissionResult = useSellItemSubmission();
+  const { handleImageSelect } = useSellItemImage(setImageUrl, setValue);
+  
+  const onSubmit = useCallback(async (data: SellItemFormData) => {
+    if (!user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to create listings.",
+      });
+      return;
+    }
 
-  console.log("useSellItemForm: Hook results", { 
-    setupResult: !!setupResult, 
-    imageResult: !!imageResult, 
-    submissionResult: !!submissionResult 
-  });
-
-  // Early return with null check
-  if (!setupResult || !imageResult || !submissionResult) {
-    console.log("useSellItemForm: One or more hooks not ready");
-    return null;
-  }
-
-  const {
-    formInitialized,
-    formError,
-    register,
-    handleSubmit,
-    errors,
-    handleSelectChange
-  } = setupResult;
-
-  const { imageUrl, handleImageSelect } = imageResult;
-  const { isSubmitting, handleSubmit: submitForm } = submissionResult;
-
-  // Return null/loading state if form is not ready
-  if (!formInitialized || formError) {
-    console.log("useSellItemForm: Form not ready", { 
-      formInitialized, 
-      formError
-    });
-    return null;
-  }
-
-  // Additional safety check for form methods
-  if (!register || !handleSubmit) {
-    console.log("useSellItemForm: Form methods not available", { 
-      hasRegister: !!register, 
-      hasHandleSubmit: !!handleSubmit
-    });
-    return null;
-  }
-
-  const onSubmit = async (data: SellItemFormData) => {
-    console.log("useSellItemForm: Submitting form", data);
+    setIsSubmitting(true);
     
-    // Ensure all required fields are present with proper defaults
-    const submissionData: SellItemFormData = {
-      title: data.title || '',
-      description: data.description || '',
-      image: imageUrl || data.image || '',
-      imageUrl: imageUrl || data.imageUrl || '',
-      price: data.price || 0,
-      deliveryCost: data.deliveryCost || 0,
-      condition: data.condition || 'new',
-      material: data.material || 'plush',
-      color: data.color || '',
-      brand: data.brand || '',
-      species: data.species || 'other',
-      size: data.size || 'medium',
-      filling: data.filling || 'polyester',
-      tags: data.tags || [],
-      location: data.location || '',
-      deliveryMethod: data.deliveryMethod || 'shipping'
-    };
-    
-    await submitForm(submissionData);
-  };
+    try {
+      // Validate required fields
+      if (!data.title?.trim()) {
+        throw new Error("Title is required");
+      }
+      
+      if (!data.price || data.price <= 0) {
+        throw new Error("Valid price is required");
+      }
 
-  // Return form methods with type safety
+      // Prepare post data with proper validation
+      const postData: ExtendedPost = {
+        id: `post-${Date.now()}`,
+        userId: user.id,
+        user_id: user.id,
+        username: user.username || user.firstName || "User",
+        image: imageUrl || "",
+        title: data.title.trim(),
+        description: data.description?.trim() || "",
+        content: data.description?.trim() || "",
+        tags: Array.isArray(data.tags) ? data.tags : [],
+        likes: 0,
+        comments: 0,
+        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        location: data.location?.trim() || "",
+        forSale: true,
+        price: Number(data.price) || 0,
+        brand: data.brand || undefined,
+        condition: data.condition || 'new',
+        material: data.material || 'plush',
+        filling: data.filling || 'polyester',
+        species: data.species || 'bear',
+        deliveryMethod: data.deliveryMethod || 'shipping',
+        deliveryCost: data.deliveryCost ? Number(data.deliveryCost) : 0,
+        size: data.size || 'medium',
+      };
+
+      const result = await savePost(postData, user.id);
+      
+      if (result.success) {
+        toast({
+          title: "Success!",
+          description: "Your item has been listed for sale.",
+        });
+        navigate('/');
+      } else {
+        throw new Error(result.error || "Failed to create listing");
+      }
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create listing. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [user, imageUrl, navigate]);
+
+  // Return null if form is not ready to prevent Q2() is null errors
+  if (!formInitialized || formError || !register || !handleSubmit) {
+    return null;
+  }
+
   return {
     imageUrl,
     isSubmitting,
     register,
-    errors: errors || {},
+    errors,
     handleSubmit,
     onSubmit,
     handleImageSelect,

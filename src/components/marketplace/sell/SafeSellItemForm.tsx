@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SafeComponentWrapper } from "@/components/ui/safe-component-wrapper";
@@ -9,6 +8,7 @@ import { useSellItemForm } from "@/hooks/useSellItemForm";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
+import { SellItemFormValidation } from "./SellItemFormValidation";
 
 interface SafeSellItemFormProps {
   supabaseUserId?: string | null;
@@ -89,6 +89,8 @@ export const SafeSellItemForm: React.FC<SafeSellItemFormProps> = ({ supabaseUser
       <CardContent className="pt-6">
         <SafeComponentWrapper resetKeys={[supabaseUserId]}>
           <form onSubmit={formSubmitHandler} className="space-y-6">
+            <SellItemFormValidation errors={errors} isSubmitting={isSubmitting} />
+            
             <SafeComponentWrapper>
               <SellItemImageUploader 
                 imageUrl={imageUrl} 
