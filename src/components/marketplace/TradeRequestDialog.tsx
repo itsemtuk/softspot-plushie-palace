@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import {
   Dialog,
@@ -25,13 +24,15 @@ interface TradeRequestDialogProps {
   plushie?: MarketplacePlushie;
 }
 
-// Mock data
+// Mock data with all required properties
 const mockFollowers: UserProfile[] = [
   { 
     id: "user-2", 
     username: "sarahlovesplushies", 
     avatar: "https://i.pravatar.cc/150?img=5", 
     bio: "Collector of rare plushies", 
+    interests: ["plushies", "collecting", "trading"],
+    isPrivate: false,
     joinDate: new Date().toISOString(),
     followersCount: 123,
     followingCount: 45,
@@ -44,6 +45,8 @@ const mockFollowers: UserProfile[] = [
     username: "mikeplush", 
     avatar: "https://i.pravatar.cc/150?img=12", 
     bio: "Teddy bear enthusiast", 
+    interests: ["teddy bears", "vintage toys"],
+    isPrivate: false,
     joinDate: new Date().toISOString(),
     followersCount: 56,
     followingCount: 30,
@@ -56,6 +59,8 @@ const mockFollowers: UserProfile[] = [
     username: "emmacollects", 
     avatar: "https://i.pravatar.cc/150?img=9", 
     bio: "Plushie photographer", 
+    interests: ["photography", "plushies", "art"],
+    isPrivate: false,
     joinDate: new Date().toISOString(),
     followersCount: 208,
     followingCount: 150,
@@ -69,9 +74,9 @@ const mockPlushies: MarketplacePlushie[] = [
   {
     id: "1",
     userId: "user-1",
-    name: "Mint Jellycat Bunny", // Added required property
+    name: "Mint Jellycat Bunny",
     image: "https://i.pravatar.cc/300?img=1",
-    imageUrl: "https://i.pravatar.cc/300?img=1", // Added required property
+    imageUrl: "https://i.pravatar.cc/300?img=1",
     title: "Mint Jellycat Bunny",
     username: "plushielover",
     likes: 24,
@@ -92,9 +97,9 @@ const mockPlushies: MarketplacePlushie[] = [
   {
     id: "2",
     userId: "user-1",
-    name: "Limited Edition Teddy", // Added required property
+    name: "Limited Edition Teddy",
     image: "https://i.pravatar.cc/300?img=2",
-    imageUrl: "https://i.pravatar.cc/300?img=2", // Added required property
+    imageUrl: "https://i.pravatar.cc/300?img=2",
     title: "Limited Edition Teddy",
     username: "plushielover",
     likes: 42,

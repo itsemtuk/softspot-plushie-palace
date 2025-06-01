@@ -10,6 +10,24 @@ export type Post = Database["public"]["Tables"]["posts"]["Row"] & {
   likes?: number;
   comments?: number;
   timestamp?: string;
+  // Add ExtendedPost compatibility fields
+  userId?: string;
+  description?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  location?: string;
+  forSale?: boolean;
+  price?: number;
+  brand?: string;
+  condition?: string;
+  material?: string;
+  filling?: string;
+  species?: string;
+  deliveryMethod?: string;
+  deliveryCost?: number;
+  size?: string;
+  sold?: boolean;
+  color?: string;
 }
 
 export interface Comment {
@@ -30,9 +48,9 @@ export interface UserProfile {
   bio: string;
   interests: string[];
   isPrivate: boolean;
-  avatar?: string; // Add avatar property
-  followersCount?: number; // Add followersCount property
-  joinDate?: string; // Add joinDate property
+  avatar?: string;
+  followersCount?: number;
+  joinDate?: string;
   followingCount?: number;
   postsCount?: number;
   collectionsCount?: number;
@@ -72,21 +90,20 @@ export interface ExtendedPost {
 
 export type PostCreationData = Omit<ExtendedPost, 'id' | 'userId' | 'username' | 'likes' | 'comments' | 'timestamp' | 'createdAt' | 'updatedAt' | 'user_id' | 'created_at'>;
 
-// Add missing marketplace types
 export interface MarketplacePlushie {
   id: string;
-  name?: string; // Add name property
+  name?: string;
   title: string;
   price: number;
   image: string;
-  imageUrl?: string; // Add imageUrl property
+  imageUrl?: string;
   brand?: string;
   condition?: string;
   description: string;
   tags: string[];
   likes: number;
   comments: number;
-  forSale: boolean;
+  forSale: boolean; // Required property
   userId: string;
   username: string;
   timestamp: string;
@@ -97,9 +114,9 @@ export interface MarketplacePlushie {
   deliveryMethod?: string;
   deliveryCost?: number;
   size?: string;
-  color?: string; // Add color property
-  discount?: number; // Add discount property
-  originalPrice?: number; // Add originalPrice property
+  color?: string;
+  discount?: number;
+  originalPrice?: number;
 }
 
 export interface PlushieBrand {
@@ -140,7 +157,7 @@ export interface Currency {
 
 export interface ImageUploadResult {
   success: boolean;
-  url?: string; // Make url optional for error cases
+  url?: string;
   error?: string;
 }
 
@@ -159,19 +176,19 @@ export interface WishlistItem {
   plushieId: string;
   userId: string;
   addedAt: string;
-  name?: string; // Add name property
-  title?: string; // Add title property
-  price?: number; // Add price property
-  description?: string; // Add description property
-  imageUrl?: string; // Add imageUrl property
-  image?: string; // Add image property
-  linkUrl?: string; // Add linkUrl property
-  priority?: 'low' | 'medium' | 'high'; // Add priority property
-  status?: 'wanted' | 'purchased' | 'received'; // Add status property
-  currencyCode?: string; // Add currencyCode property
-  brand?: string; // Add brand property
-  createdAt?: string; // Add createdAt property
-  updatedAt?: string; // Add updatedAt property
+  name?: string;
+  title?: string;
+  price?: number;
+  description?: string;
+  imageUrl?: string;
+  image?: string;
+  linkUrl?: string;
+  priority?: 'low' | 'medium' | 'high';
+  status?: 'wanted' | 'purchased' | 'received';
+  currencyCode?: string;
+  brand?: string;
+  createdAt?: string;
+  updatedAt?: string;
   plushie?: {
     id: string;
     name?: string;
@@ -196,6 +213,7 @@ export interface WishlistItem {
 export interface Wishlist {
   id: string;
   userId: string;
+  name?: string; // Add name property
   items: WishlistItem[];
   createdAt: string;
   updatedAt: string;
@@ -207,6 +225,16 @@ export interface UserPrivacySettings {
   showPhone: boolean;
   allowMessages: boolean;
   allowTradeRequests: boolean;
+  // Add missing properties
+  profileVisibility: 'public' | 'friends' | 'private';
+  showLocation: boolean;
+  allowFriendRequests: boolean;
+  messagePermission: boolean;
+  showActivity: boolean;
+  hideFromSearch: boolean;
+  allowComments: boolean;
+  showCollections: boolean;
+  showWishlist: boolean;
 }
 
 export interface Badge {
@@ -216,11 +244,14 @@ export interface Badge {
   icon: string;
   criteria: BadgeCriteria;
   type: BadgeType;
+  earned?: boolean; // Add earned property
+  progress?: number; // Add progress property
 }
 
 export interface BadgeCriteria {
   requirement: string;
   value: number;
+  type?: string; // Add type property
 }
 
 export type BadgeType = 'achievement' | 'milestone' | 'special';

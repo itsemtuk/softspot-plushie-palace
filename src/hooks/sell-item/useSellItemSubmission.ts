@@ -64,7 +64,8 @@ export const useSellItemSubmission = () => {
         brand: formData.brand || '',
         deliveryMethod: formData.deliveryMethod || 'shipping',
         price: price, // Ensure price is explicitly set as number
-        deliveryCost: deliveryCost // Ensure deliveryCost is explicitly set as number
+        deliveryCost: deliveryCost, // Ensure deliveryCost is explicitly set as number
+        forSale: true // Explicitly set forSale as required property
       };
 
       // Save to local storage
