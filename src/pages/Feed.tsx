@@ -23,10 +23,10 @@ import { savePost } from "@/utils/posts/postManagement";
 import { PostCreationData } from "@/types/marketplace";
 import { useUser } from '@clerk/clerk-react';
 import { validatePosts } from "@/utils/dataValidation";
+import { SafeComponentWrapper } from "@/components/ui/safe-component-wrapper";
+import { useSafeData } from "@/hooks/use-safe-data";
 
 const Feed = () => {
-  const [posts, setPosts] = useState<ExtendedPost[]>([]);
-  const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [postText, setPostText] = useState(""); 
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
@@ -36,26 +36,23 @@ const Feed = () => {
   const { openPostDialog } = usePostDialog();
   const { user } = useUser();
   
-  const fetchPosts = async () => {
-    try {
-      setLoading(true);
+  // Use safe data fetching with fallback
+  const { 
+    data: posts, 
+    loading, 
+    error, 
+    retry 
+  } = useSafeData(
+    async () => {
       const fetchedPosts = await getPosts();
-      console.log("Fetched posts:", fetchedPosts.length);
-      
-      // Validate and sanitize posts data
-      const validatedPosts = validatePosts(fetchedPosts);
-      setPosts(validatedPosts);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load posts. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setLoading(false);
+      return validatePosts(fetchedPosts);
+    },
+    { 
+      fallbackValue: [] as ExtendedPost[],
+      retryCount: 3,
+      retryDelay: 1000
     }
-  };
+  );
   
   useEffect(() => {
     // Check if user is authenticated
@@ -67,8 +64,6 @@ const Feed = () => {
       navigate('/sign-in');
       return;
     }
-    
-    fetchPosts();
   }, [navigate]);
   
   const handleCreatePostClick = () => {
@@ -125,13 +120,8 @@ const Feed = () => {
         
         setIsPostCreationOpen(false);
         
-        // Immediately add the post to the feed and then refresh
-        setPosts(prevPosts => [newPost, ...prevPosts]);
-        
-        // Also refresh the posts to ensure we have the latest data
-        setTimeout(() => {
-          fetchPosts();
-        }, 1000);
+        // Refresh posts
+        retry();
       } else {
         throw new Error(result.error || "Failed to create post");
       }
@@ -161,7 +151,7 @@ const Feed = () => {
   };
   
   const handleRefresh = () => {
-    fetchPosts();
+    retry();
   };
 
   const handlePostClick = (post: ExtendedPost) => {
@@ -192,29 +182,40 @@ const Feed = () => {
       {isMobile ? <MobileNav /> : <Navbar />}
       
       <main className="flex-grow container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <FeedHeader 
-          searchQuery={searchQuery} 
-          setSearchQuery={setSearchQuery} 
-          onCreatePost={handleCreatePostClick}
-          onRefresh={handleRefresh}
-          isRefreshing={loading} 
-        />
-        
-        <QuickPostForm 
-          onCreatePost={handleCreatePostClick} 
-          value={postText} 
-          onChange={setPostText} 
-        />
-        
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Spinner size="lg" />
-          </div>
-        ) : filteredPosts.length > 0 ? (
-          <FeedContent posts={filteredPosts} onPostClick={handlePostClick} />
-        ) : (
-          <EmptyFeed onCreatePost={handleCreatePostClick} />
-        )}
+        <SafeComponentWrapper>
+          <FeedHeader 
+            searchQuery={searchQuery} 
+            setSearchQuery={setSearchQuery} 
+            onCreatePost={handleCreatePostClick}
+            onRefresh={handleRefresh}
+            isRefreshing={loading} 
+          />
+          
+          <QuickPostForm 
+            onCreatePost={handleCreatePostClick} 
+            value={postText} 
+            onChange={setPostText} 
+          />
+          
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Spinner size="lg" />
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-gray-600 mb-4">Failed to load posts</p>
+              <Button onClick={retry} variant="outline">
+                Try again
+              </Button>
+            </div>
+          ) : filteredPosts.length > 0 ? (
+            <SafeComponentWrapper>
+              <FeedContent posts={filteredPosts} onPostClick={handlePostClick} />
+            </SafeComponentWrapper>
+          ) : (
+            <EmptyFeed onCreatePost={handleCreatePostClick} />
+          )}
+        </SafeComponentWrapper>
       </main>
       
       {/* Mobile create post button */}
@@ -230,12 +231,14 @@ const Feed = () => {
       )}
 
       {/* Post Creation Flow */}
-      <PostCreationFlow
-        isOpen={isPostCreationOpen}
-        onClose={() => setIsPostCreationOpen(false)}
-        onPostCreated={handlePostCreated}
-        isSubmitting={isSubmitting}
-      />
+      <SafeComponentWrapper>
+        <PostCreationFlow
+          isOpen={isPostCreationOpen}
+          onClose={() => setIsPostCreationOpen(false)}
+          onPostCreated={handlePostCreated}
+          isSubmitting={isSubmitting}
+        />
+      </SafeComponentWrapper>
       
       <Footer />
     </div>

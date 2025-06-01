@@ -40,29 +40,31 @@ export const useSellItemFormSetup = () => {
   useEffect(() => {
     console.log("SellItemForm: Initializing form, user loaded:", isClerkLoaded, "user:", clerkUser?.id);
     
-    try {
-      // Wait for Clerk to load
-      if (!isClerkLoaded) {
-        return;
-      }
-      
-      // Handle user ID when available
-      if (clerkUser?.id) {
-        setCurrentUserId(clerkUser.id);
-      }
-      
-      // Enhanced validation for form methods
-      if (!register || typeof register !== 'function' || 
-          !handleSubmit || typeof handleSubmit !== 'function' || 
-          !setValue || typeof setValue !== 'function') {
-        console.error("SellItemForm: Form methods not available or invalid type");
-        setFormError("Form initialization failed - invalid methods");
-        return;
-      }
-      
-      // Mark form as initialized after ensuring everything is ready
-      setTimeout(() => {
-        // Re-validate form methods before marking as initialized
+    const initializeForm = async () => {
+      try {
+        // Wait for Clerk to load
+        if (!isClerkLoaded) {
+          return;
+        }
+        
+        // Handle user ID when available
+        if (clerkUser?.id) {
+          setCurrentUserId(clerkUser.id);
+        }
+        
+        // Enhanced validation for form methods
+        if (!register || typeof register !== 'function' || 
+            !handleSubmit || typeof handleSubmit !== 'function' || 
+            !setValue || typeof setValue !== 'function') {
+          console.error("SellItemForm: Form methods not available or invalid type");
+          setFormError("Form initialization failed - invalid methods");
+          return;
+        }
+        
+        // Add small delay to ensure React Hook Form is fully ready
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Final validation before marking as initialized
         if (register && typeof register === 'function' && 
             handleSubmit && typeof handleSubmit === 'function' && 
             setValue && typeof setValue === 'function') {
@@ -70,20 +72,22 @@ export const useSellItemFormSetup = () => {
           setFormInitialized(true);
           setFormError(null);
         } else {
-          console.error("SellItemForm: Form methods validation failed on timeout");
+          console.error("SellItemForm: Form methods validation failed after delay");
           setFormError("Form methods not properly initialized");
         }
-      }, 150); // Slightly longer delay to ensure stability
-      
-    } catch (error) {
-      console.error("Error in form initialization:", error);
-      setFormError("Form initialization error occurred");
-      toast({
-        variant: "destructive",
-        title: "Form Error",
-        description: "There was an issue initializing the form. Please refresh the page.",
-      });
-    }
+        
+      } catch (error) {
+        console.error("Error in form initialization:", error);
+        setFormError("Form initialization error occurred");
+        toast({
+          variant: "destructive",
+          title: "Form Error",
+          description: "There was an issue initializing the form. Please refresh the page.",
+        });
+      }
+    };
+
+    initializeForm();
   }, [clerkUser, isClerkLoaded, register, handleSubmit, setValue]);
 
   const handleSelectChange = (field: keyof SellItemFormData, value: any) => {
@@ -101,12 +105,25 @@ export const useSellItemFormSetup = () => {
     }
     
     try {
-      setValue(field, value);
+      setValue(field, value, { shouldValidate: true });
     } catch (error) {
       console.error("Error setting form value:", error);
       // Don't show toast for this as it might spam the user
     }
   };
+
+  // Only return data when form is properly initialized
+  if (!formInitialized || formError) {
+    return {
+      formInitialized: false,
+      formError,
+      register: null,
+      handleSubmit: null,
+      setValue: null,
+      errors: {},
+      handleSelectChange: () => {}
+    };
+  }
 
   return {
     formInitialized,
