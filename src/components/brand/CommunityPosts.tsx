@@ -37,7 +37,7 @@ export const CommunityPosts = ({ posts, onPostClick }: CommunityPostsProps) => {
         >
           <AspectRatio ratio={1} className="bg-gray-100">
             <img
-              src={post.image}
+              src={post.image || post.imageUrl || ''}
               alt={post.title || ''}
               className="object-cover w-full h-full"
             />
@@ -45,7 +45,7 @@ export const CommunityPosts = ({ posts, onPostClick }: CommunityPostsProps) => {
           
           <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
             <div className="text-white font-medium p-2 text-center">
-              <h3 className="text-lg line-clamp-2">{post.title}</h3>
+              <h3 className="text-lg line-clamp-2">{post.title || ''}</h3>
               <div className="flex items-center justify-center gap-4 mt-2">
                 {post.tags && post.tags.length > 0 && (
                   <div className="flex items-center">

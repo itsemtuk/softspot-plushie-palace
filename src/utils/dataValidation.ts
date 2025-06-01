@@ -3,32 +3,32 @@ import { ExtendedPost, MarketplacePlushie } from "@/types/marketplace";
 
 export const validatePosts = (posts: any[]): ExtendedPost[] => {
   if (!Array.isArray(posts)) {
-    console.warn('Posts is not an array, returning empty array');
+    console.warn('validatePosts: Expected array, got:', typeof posts);
     return [];
   }
-  
+
   return posts.filter(post => {
-    // Basic validation - must have required fields
-    if (!post || typeof post !== 'object') return false;
-    if (!post.id || !post.title) return false;
-    
+    if (!post || typeof post !== 'object') {
+      console.warn('validatePosts: Invalid post object:', post);
+      return false;
+    }
     return true;
   }).map(post => ({
-    id: post.id || '',
-    userId: post.userId || post.user_id || '',
-    user_id: post.user_id || post.userId || '',
-    username: post.username || 'Anonymous',
+    id: post.id || `post-${Date.now()}-${Math.random()}`,
+    userId: post.userId || post.user_id || 'unknown',
+    user_id: post.user_id || post.userId || 'unknown',
+    username: post.username || 'Unknown User',
     image: post.image || '',
     title: post.title || '',
-    description: post.description || post.content || '',
+    description: post.description || '',
     content: post.content || post.description || '',
     tags: Array.isArray(post.tags) ? post.tags : [],
     likes: Number(post.likes) || 0,
     comments: Number(post.comments) || 0,
-    timestamp: post.timestamp || post.created_at || post.createdAt || new Date().toISOString(),
-    createdAt: post.createdAt || post.created_at || post.timestamp || new Date().toISOString(),
-    created_at: post.created_at || post.createdAt || post.timestamp || new Date().toISOString(),
-    updatedAt: post.updatedAt || post.updated_at || post.createdAt || post.created_at || new Date().toISOString(),
+    timestamp: post.timestamp || post.created_at || new Date().toISOString(),
+    createdAt: post.createdAt || post.created_at || new Date().toISOString(),
+    created_at: post.created_at || post.createdAt || new Date().toISOString(),
+    updatedAt: post.updatedAt || post.created_at || new Date().toISOString(),
     location: post.location || '',
     forSale: Boolean(post.forSale),
     price: post.price ? Number(post.price) : undefined,
@@ -40,42 +40,49 @@ export const validatePosts = (posts: any[]): ExtendedPost[] => {
     deliveryMethod: post.deliveryMethod || undefined,
     deliveryCost: post.deliveryCost ? Number(post.deliveryCost) : undefined,
     size: post.size || undefined,
+    sold: Boolean(post.sold),
+    color: post.color || undefined
   }));
 };
 
 export const validateMarketplacePlushies = (plushies: any[]): MarketplacePlushie[] => {
   if (!Array.isArray(plushies)) {
-    console.warn('Plushies is not an array, returning empty array');
+    console.warn('validateMarketplacePlushies: Expected array, got:', typeof plushies);
     return [];
   }
-  
+
   return plushies.filter(plushie => {
-    // Basic validation - must have required fields
-    if (!plushie || typeof plushie !== 'object') return false;
-    if (!plushie.id || !plushie.title) return false;
-    
+    if (!plushie || typeof plushie !== 'object') {
+      console.warn('validateMarketplacePlushies: Invalid plushie object:', plushie);
+      return false;
+    }
     return true;
   }).map(plushie => ({
-    id: plushie.id || '',
-    title: plushie.title || '',
+    id: plushie.id || `plushie-${Date.now()}-${Math.random()}`,
+    name: plushie.name || plushie.title || '',
+    title: plushie.title || plushie.name || '',
     price: Number(plushie.price) || 0,
-    image: plushie.image || '',
-    brand: plushie.brand || undefined,
-    condition: plushie.condition || undefined,
+    image: plushie.image || plushie.imageUrl || '',
+    imageUrl: plushie.imageUrl || plushie.image || '',
+    brand: plushie.brand || '',
+    condition: plushie.condition || '',
     description: plushie.description || '',
     tags: Array.isArray(plushie.tags) ? plushie.tags : [],
     likes: Number(plushie.likes) || 0,
     comments: Number(plushie.comments) || 0,
     forSale: Boolean(plushie.forSale),
-    userId: plushie.userId || plushie.user_id || '',
-    username: plushie.username || 'Anonymous',
-    timestamp: plushie.timestamp || plushie.created_at || plushie.createdAt || new Date().toISOString(),
+    userId: plushie.userId || plushie.user_id || 'unknown',
+    username: plushie.username || 'Unknown User',
+    timestamp: plushie.timestamp || plushie.created_at || new Date().toISOString(),
     location: plushie.location || '',
-    material: plushie.material || undefined,
-    filling: plushie.filling || undefined,
-    species: plushie.species || undefined,
-    deliveryMethod: plushie.deliveryMethod || undefined,
+    material: plushie.material || '',
+    filling: plushie.filling || '',
+    species: plushie.species || '',
+    deliveryMethod: plushie.deliveryMethod || '',
     deliveryCost: plushie.deliveryCost ? Number(plushie.deliveryCost) : undefined,
-    size: plushie.size || undefined,
+    size: plushie.size || '',
+    color: plushie.color || '',
+    discount: plushie.discount ? Number(plushie.discount) : undefined,
+    originalPrice: plushie.originalPrice ? Number(plushie.originalPrice) : undefined
   }));
 };

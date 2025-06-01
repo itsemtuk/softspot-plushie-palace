@@ -217,6 +217,7 @@ export interface Wishlist {
   items: WishlistItem[];
   createdAt: string;
   updatedAt: string;
+  isPublic?: boolean; // Add isPublic property
 }
 
 export interface UserPrivacySettings {
@@ -246,12 +247,14 @@ export interface Badge {
   type: BadgeType;
   earned?: boolean; // Add earned property
   progress?: number; // Add progress property
+  earnedAt?: string; // Add earnedAt property
 }
 
 export interface BadgeCriteria {
   requirement: string;
   value: number;
   type?: string; // Add type property
+  threshold?: number; // Add threshold property
 }
 
 export type BadgeType = 'achievement' | 'milestone' | 'special';
