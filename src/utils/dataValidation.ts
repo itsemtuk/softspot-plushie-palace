@@ -1,4 +1,5 @@
-import { ExtendedPost } from "@/types/marketplace";
+
+import { ExtendedPost, MarketplacePlushie } from "@/types/marketplace";
 
 export const validatePosts = (posts: any[]): ExtendedPost[] => {
   if (!Array.isArray(posts)) {
@@ -39,5 +40,42 @@ export const validatePosts = (posts: any[]): ExtendedPost[] => {
     deliveryMethod: post.deliveryMethod || undefined,
     deliveryCost: post.deliveryCost ? Number(post.deliveryCost) : undefined,
     size: post.size || undefined,
+  }));
+};
+
+export const validateMarketplacePlushies = (plushies: any[]): MarketplacePlushie[] => {
+  if (!Array.isArray(plushies)) {
+    console.warn('Plushies is not an array, returning empty array');
+    return [];
+  }
+  
+  return plushies.filter(plushie => {
+    // Basic validation - must have required fields
+    if (!plushie || typeof plushie !== 'object') return false;
+    if (!plushie.id || !plushie.title) return false;
+    
+    return true;
+  }).map(plushie => ({
+    id: plushie.id || '',
+    title: plushie.title || '',
+    price: Number(plushie.price) || 0,
+    image: plushie.image || '',
+    brand: plushie.brand || undefined,
+    condition: plushie.condition || undefined,
+    description: plushie.description || '',
+    tags: Array.isArray(plushie.tags) ? plushie.tags : [],
+    likes: Number(plushie.likes) || 0,
+    comments: Number(plushie.comments) || 0,
+    forSale: Boolean(plushie.forSale),
+    userId: plushie.userId || plushie.user_id || '',
+    username: plushie.username || 'Anonymous',
+    timestamp: plushie.timestamp || plushie.created_at || plushie.createdAt || new Date().toISOString(),
+    location: plushie.location || '',
+    material: plushie.material || undefined,
+    filling: plushie.filling || undefined,
+    species: plushie.species || undefined,
+    deliveryMethod: plushie.deliveryMethod || undefined,
+    deliveryCost: plushie.deliveryCost ? Number(plushie.deliveryCost) : undefined,
+    size: plushie.size || undefined,
   }));
 };

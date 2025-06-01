@@ -10,8 +10,8 @@ interface PostCommentItemProps {
 }
 
 export function PostCommentItem({ comment, onLikeToggle }: PostCommentItemProps) {
-  // Use content instead of text for consistency with marketplace Comment interface
-  const content = comment.content || "";
+  // Use content, with fallback to text for backward compatibility
+  const content = comment.content || comment.text || "";
   const timestamp = comment.timestamp || new Date().toISOString();
   const likes = typeof comment.likes === 'number' ? comment.likes : 0;
   const isLiked = Boolean(comment.isLiked);

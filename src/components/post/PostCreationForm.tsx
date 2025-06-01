@@ -44,8 +44,9 @@ export const PostCreationForm = ({
   
   const handleSubmit = (data: z.infer<typeof formSchema>) => {
     const formData: PostCreationData = {
-      title: data.title, // This ensures title is always provided
+      title: data.title,
       description: data.description || "",
+      content: data.description || "", // Add content property
       tags: data.tags || [],
       location: data.location || "",
       image: imageUrl || "",

@@ -1,4 +1,3 @@
-
 import { ExtendedPost, Comment } from "@/types/marketplace";
 import { useState, useEffect, useCallback, createContext, useContext } from "react";
 import { toast } from "@/components/ui/use-toast";
@@ -162,9 +161,11 @@ export const usePostDialog = (post: ExtendedPost | null = null) => {
       userId: currentUserId,
       username: currentUsername,
       content: text,
+      text: text, // Keep for backward compatibility
       timestamp: new Date().toISOString(),
       postId: currentPostData.id,
-      likes: 0
+      likes: 0,
+      isLiked: false
     };
     
     // Add to local state

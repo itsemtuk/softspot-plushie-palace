@@ -20,6 +20,7 @@ function convertToUnifiedComment(comment: Comment | any): Comment {
     userId: '',
     username: 'Anonymous',
     content: '',
+    text: '', // Keep for backward compatibility
     timestamp: new Date().toISOString(),
     postId: '',
     likes: 0,
@@ -32,6 +33,7 @@ function convertToUnifiedComment(comment: Comment | any): Comment {
     userId: comment.userId || "",
     username: comment.username || "Anonymous",
     content: comment.content || comment.text || "",
+    text: comment.text || comment.content || "", // Keep for backward compatibility
     timestamp: comment.timestamp || comment.createdAt || new Date().toISOString(),
     postId: comment.postId || "",
     likes: typeof comment.likes === 'number' ? comment.likes : 0,

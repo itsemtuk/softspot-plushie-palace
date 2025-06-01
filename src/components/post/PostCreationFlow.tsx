@@ -22,6 +22,7 @@ interface PostCreationFlowProps {
 const initialData: PostCreationData = {
   title: "",
   description: "",
+  content: "", // Add content property
   image: "",
   tags: [],
   location: "",
