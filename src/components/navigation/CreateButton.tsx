@@ -23,7 +23,6 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
   const { user } = useUser();
   const navigate = useNavigate();
   const { setIsPostCreationOpen } = useCreatePost();
-
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleCreatePost = () => {
@@ -90,7 +89,7 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
           <span>Create</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[220px] bg-white shadow-lg rounded-md border border-gray-200">
+      <DropdownMenuContent align="end" className="w-[220px] bg-white shadow-lg rounded-md border border-gray-200 z-50">
         <DropdownMenuLabel>Create New</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer">

@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Filter, TrendingUp, Users, MapPin, Tag, Grid3X3, List, Star } from "lucide-react";
@@ -47,8 +46,7 @@ const Marketplace = () => {
         title: plushie.title || 'Adorable Plushie',
         condition: plushie.condition || conditions[Math.floor(Math.random() * conditions.length)],
         brand: plushie.brand || brands[Math.floor(Math.random() * brands.length)],
-        size: plushie.size || sizes[Math.floor(Math.random() * sizes.length)],
-        rating: plushie.rating || (Math.random() * 2 + 3).toFixed(1)
+        size: plushie.size || sizes[Math.floor(Math.random() * sizes.length)]
       }));
       setPlushies(updatedPlushies);
     };
@@ -77,8 +75,6 @@ const Marketplace = () => {
           return (b.price || 0) - (a.price || 0);
         case "popular":
           return (b.likes || 0) - (a.likes || 0);
-        case "rating":
-          return parseFloat(b.rating || "0") - parseFloat(a.rating || "0");
         default: // newest
           return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
       }
@@ -164,7 +160,6 @@ const Marketplace = () => {
                 <SelectItem value="price-low">Price: Low to High</SelectItem>
                 <SelectItem value="price-high">Price: High to Low</SelectItem>
                 <SelectItem value="popular">Most Popular</SelectItem>
-                <SelectItem value="rating">Highest Rated</SelectItem>
               </SelectContent>
             </Select>
             <Button onClick={clearFilters} variant="outline" className="w-full">
@@ -315,7 +310,7 @@ const Marketplace = () => {
                         <h3 className="text-lg font-semibold line-clamp-1">{plushie.title}</h3>
                         <div className="flex items-center text-yellow-500">
                           <Star className="h-4 w-4 fill-current" />
-                          <span className="text-sm ml-1">{plushie.rating || "4.5"}</span>
+                          <span className="text-sm ml-1">4.5</span>
                         </div>
                       </div>
                       

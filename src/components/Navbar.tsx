@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { UserMenu } from "./navigation/UserMenu";
 import { PostCreationData } from "@/types/core";
 import { useTheme } from "@/components/ui/theme-provider";
@@ -24,8 +25,8 @@ export const Navbar = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+  const handleThemeChange = (checked: boolean) => {
+    setTheme(checked ? "dark" : "light");
   };
 
   return (
@@ -54,20 +55,18 @@ export const Navbar = () => {
 
         {/* User Menu and Mobile Menu Button */}
         <div className="flex items-center space-x-4">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleTheme}
-            className="h-9 w-9"
-          >
-            {theme === 'light' ? (
-              <Moon className="h-4 w-4" />
-            ) : (
-              <Sun className="h-4 w-4" />
-            )}
-            <span className="sr-only">Toggle theme</span>
-          </Button>
+          {/* Dark Mode Switch */}
+          <div className="flex items-center space-x-2">
+            <Sun className="h-4 w-4" />
+            <Switch
+              checked={theme === "dark"}
+              onCheckedChange={handleThemeChange}
+            />
+            <Moon className="h-4 w-4" />
+          </div>
+          
           <UserMenu />
+          
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <Sheet>
@@ -111,6 +110,17 @@ export const Navbar = () => {
                   <Link to="/community" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
                     Community
                   </Link>
+                  
+                  {/* Dark Mode Switch in Mobile Menu */}
+                  <div className="flex items-center space-x-2 py-2">
+                    <Sun className="h-4 w-4" />
+                    <Switch
+                      checked={theme === "dark"}
+                      onCheckedChange={handleThemeChange}
+                    />
+                    <Moon className="h-4 w-4" />
+                    <span className="text-sm">Dark Mode</span>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>
