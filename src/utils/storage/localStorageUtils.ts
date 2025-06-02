@@ -4,6 +4,7 @@ import { ExtendedPost } from "@/types/core";
 const POSTS_STORAGE_KEY = 'offline_posts';
 const USER_ID_KEY = 'current_user_id';
 const MARKETPLACE_STORAGE_KEY = 'marketplace_listings';
+const USER_STATUS_KEY = 'user_status';
 
 export const savePosts = (posts: ExtendedPost[]): void => {
   try {
@@ -55,5 +56,23 @@ export const getCurrentUserId = (): string | null => {
   } catch (error) {
     console.error('Error reading user ID from localStorage:', error);
     return null;
+  }
+};
+
+export const setUserStatus = (status: "online" | "offline" | "away" | "busy"): void => {
+  try {
+    localStorage.setItem(USER_STATUS_KEY, status);
+  } catch (error) {
+    console.error('Error saving user status to localStorage:', error);
+  }
+};
+
+export const getUserStatus = (): "online" | "offline" | "away" | "busy" => {
+  try {
+    const status = localStorage.getItem(USER_STATUS_KEY);
+    return (status as "online" | "offline" | "away" | "busy") || "online";
+  } catch (error) {
+    console.error('Error reading user status from localStorage:', error);
+    return "online";
   }
 };

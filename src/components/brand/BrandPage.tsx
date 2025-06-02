@@ -94,9 +94,15 @@ export const BrandPageWrapper = () => {
           
           // Fetch plushies and posts related to this brand
           const allPlushies = getMarketplaceListings();
-          const brandPlushies = allPlushies.filter(
-            plushie => plushie.brand?.toLowerCase() === currentBrand.name.toLowerCase()
-          );
+          const brandPlushies = allPlushies
+            .filter(plushie => plushie.brand?.toLowerCase() === currentBrand.name.toLowerCase())
+            .map(plushie => ({
+              ...plushie,
+              price: plushie.price || 0, // Ensure price is defined
+              forSale: plushie.forSale || true,
+              title: plushie.title || plushie.name || 'Untitled',
+              name: plushie.name || plushie.title
+            } as MarketplacePlushie));
           setPlushies(brandPlushies);
           
           // Fetch posts mentioning this brand and convert to ExtendedPost

@@ -1,30 +1,18 @@
+
 import { useState, useEffect, useCallback } from "react";
-import { ExtendedPost } from "@/types/core";
 import { useOfflinePostOperations } from "./useOfflinePostOperations";
 import { useOnlineSync } from "./useOnlineSync";
-
-interface SyncManagerState {
-  isOnline: boolean;
-  posts: ExtendedPost[];
-  isSyncing: boolean;
-  error: string | null;
-}
+import { ExtendedPost } from "@/types/core";
 
 export const useSyncManager = (initialPosts: ExtendedPost[]) => {
-  const [syncState, setSyncState] = useState<SyncManagerState>({
+  const [syncState, setSyncState] = useState({
     isOnline: navigator.onLine,
     posts: initialPosts,
     isSyncing: false,
-    error: null,
+    error: null as string | null
   });
 
-  const {
-    addOfflinePost,
-    updateOfflinePost,
-    deleteOfflinePost,
-    getAllOfflinePosts,
-  } = useOfflinePostOperations();
-
+  const { addOfflinePost, updateOfflinePost, deleteOfflinePost, getAllOfflinePosts } = useOfflinePostOperations();
   const { syncPosts } = useOnlineSync();
 
   // Update online status
@@ -84,45 +72,68 @@ export const useSyncManager = (initialPosts: ExtendedPost[]) => {
 
   const handleAddPost = useCallback(async (post: ExtendedPost) => {
     try {
-      await addOfflinePost(post);
-      setSyncState(prevState => ({ ...prevState, posts: [...prevState.posts, post] }));
-    } catch (error: any) {
-      setSyncState(prevState => ({ ...prevState, error: error.message }));
+      addOfflinePost(post);
+      setSyncState((prevState) => ({
+        ...prevState,
+        posts: [...prevState.posts, post]
+      }));
+    } catch (error) {
+      setSyncState((prevState) => ({
+        ...prevState,
+        error: (error as Error).message
+      }));
     }
   }, [addOfflinePost]);
 
   const handleUpdatePost = useCallback(async (post: ExtendedPost) => {
     try {
-      await updateOfflinePost(post);
-      setSyncState(prevState => ({
+      updateOfflinePost(post);
+      setSyncState((prevState) => ({
         ...prevState,
-        posts: prevState.posts.map(p => (p.id === post.id ? post : p)),
+        posts: prevState.posts.map((p) => p.id === post.id ? post : p)
       }));
-    } catch (error: any) {
-      setSyncState(prevState => ({ ...prevState, error: error.message }));
+    } catch (error) {
+      setSyncState((prevState) => ({
+        ...prevState,
+        error: (error as Error).message
+      }));
     }
   }, [updateOfflinePost]);
 
   const handleDeletePost = useCallback(async (postId: string) => {
     try {
-      await deleteOfflinePost(postId);
-      setSyncState(prevState => ({
+      deleteOfflinePost(postId);
+      setSyncState((prevState) => ({
         ...prevState,
-        posts: prevState.posts.filter(p => p.id !== postId),
+        posts: prevState.posts.filter((p) => p.id !== postId)
       }));
-    } catch (error: any) {
-      setSyncState(prevState => ({ ...prevState, error: error.message }));
+    } catch (error) {
+      setSyncState((prevState) => ({
+        ...prevState,
+        error: (error as Error).message
+      }));
     }
   }, [deleteOfflinePost]);
 
   const refreshPosts = useCallback(async () => {
     try {
       const offlinePosts = await getAllOfflinePosts();
-      setSyncState(prevState => ({ ...prevState, posts: offlinePosts }));
-    } catch (error: any) {
-      setSyncState(prevState => ({ ...prevState, error: error.message }));
+      setSyncState((prevState) => ({
+        ...prevState,
+        posts: offlinePosts
+      }));
+    } catch (error) {
+      setSyncState((prevState) => ({
+        ...prevState,
+        error: (error as Error).message
+      }));
     }
   }, [getAllOfflinePosts]);
+
+  const syncPendingOperations = useCallback(async () => {
+    // Implementation for syncing pending operations
+    console.log("Syncing pending operations...");
+  }, []);
 
   return {
     ...syncState,
@@ -130,5 +141,7 @@ export const useSyncManager = (initialPosts: ExtendedPost[]) => {
     handleUpdatePost,
     handleDeletePost,
     refreshPosts,
+    syncStatus: syncState.isSyncing ? 'syncing' : 'idle',
+    syncPendingOperations
   };
 };

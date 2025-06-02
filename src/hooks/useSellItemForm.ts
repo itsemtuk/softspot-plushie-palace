@@ -1,119 +1,167 @@
-import { useState, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
+import { useState } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
-import { SellItemFormData } from "@/types/sellItemForm";
-import { ExtendedPost } from "@/types/core";
-import { savePost } from "@/utils/posts/postManagement";
-import { useSellItemFormSetup } from "./sell-item/useSellItemFormSetup";
-import { useSellItemImage } from "./sell-item/useSellItemImage";
+import { addPost } from "@/utils/posts/postManagement";
+import { uploadImage } from "@/utils/storage/imageStorage";
+import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
+
+const sellItemSchema = z.object({
+  title: z.string().min(2, {
+    message: "Title must be at least 2 characters.",
+  }),
+  description: z.string().min(10, {
+    message: "Description must be at least 10 characters.",
+  }),
+  price: z.number().min(0, {
+    message: "Price must be a positive number.",
+  }),
+  brand: z.string().optional(),
+  condition: z.enum(["new", "used", "like new"]),
+  material: z.string().optional(),
+  filling: z.string().optional(),
+  species: z.string().optional(),
+  deliveryMethod: z.enum(["shipping", "local pickup", "both"]),
+  deliveryCost: z.number().optional(),
+  size: z.string().optional(),
+  color: z.string().optional(),
+});
+
+export type SellItemFormData = z.infer<typeof sellItemSchema>;
 
 export const useSellItemForm = () => {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
-  const { user } = useUser();
 
-  const { 
-    formInitialized, 
-    formError, 
-    register, 
-    handleSubmit, 
-    setValue, 
-    errors, 
-    handleSelectChange 
-  } = useSellItemFormSetup();
-  
-  const { handleImageSelect } = useSellItemImage(setImageUrl, setValue);
-  
-  const onSubmit = useCallback(async (data: SellItemFormData) => {
-    if (!user?.id) {
-      toast({
-        variant: "destructive",
-        title: "Authentication required",
-        description: "Please sign in to create listings.",
-      });
+  const form = useForm<SellItemFormData>({
+    resolver: zodResolver(sellItemSchema),
+    defaultValues: {
+      title: "",
+      description: "",
+      price: 0,
+      brand: "",
+      condition: "new",
+      material: "",
+      filling: "",
+      species: "",
+      deliveryMethod: "shipping",
+      deliveryCost: 0,
+      size: "",
+      color: "",
+    },
+  });
+
+  const handleImageSelect = async (file: File | null) => {
+    if (!file) {
+      setImageUrl("");
       return;
     }
 
-    setIsSubmitting(true);
-    
     try {
-      // Validate required fields
-      if (!data.title?.trim()) {
-        throw new Error("Title is required");
+      const result = await uploadImage(file);
+      if (result.success && result.url) {
+        setImageUrl(result.url);
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Upload failed",
+          description: result.error || "Failed to upload image",
+        });
       }
-      
-      if (!data.price || data.price <= 0) {
-        throw new Error("Valid price is required");
+    } catch (error) {
+      console.error("Image upload error:", error);
+      toast({
+        variant: "destructive",
+        title: "Upload error",
+        description: "An unexpected error occurred while uploading the image",
+      });
+    }
+  };
+
+  const handleSelectChange = (field: string, value: string) => {
+    form.setValue(field as keyof SellItemFormData, value);
+  };
+
+  const onSubmit: SubmitHandler<SellItemFormData> = async (data) => {
+    setIsSubmitting(true);
+
+    try {
+      const userId = getCurrentUserId();
+      if (!userId) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please sign in to sell items",
+        });
+        return;
       }
 
-      // Prepare post data with proper validation
-      const postData: ExtendedPost = {
-        id: `post-${Date.now()}`,
-        userId: user.id,
-        user_id: user.id,
-        username: user.username || user.firstName || "User",
-        image: imageUrl || "",
-        title: data.title.trim(),
-        description: data.description?.trim() || "",
-        content: data.description?.trim() || "",
-        tags: Array.isArray(data.tags) ? data.tags : [],
+      const postData = {
+        id: `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+        userId,
+        user_id: userId,
+        username: "Current User",
+        image: imageUrl,
+        title: data.title,
+        description: data.description,
+        content: data.description,
+        tags: [data.brand, data.condition, data.material].filter(Boolean),
         likes: 0,
         comments: 0,
         timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        location: data.location?.trim() || "",
         forSale: true,
-        price: Number(data.price) || 0,
-        brand: data.brand || undefined,
-        condition: data.condition || 'new',
-        material: data.material || 'plush',
-        filling: data.filling || 'polyester',
-        species: data.species || 'bear',
-        deliveryMethod: data.deliveryMethod || 'shipping',
-        deliveryCost: data.deliveryCost ? Number(data.deliveryCost) : 0,
-        size: data.size || 'medium',
+        price: data.price,
+        brand: data.brand,
+        condition: data.condition,
+        material: data.material,
+        filling: data.filling,
+        species: data.species,
+        deliveryMethod: data.deliveryMethod,
+        deliveryCost: data.deliveryCost,
+        size: data.size,
+        color: data.color,
       };
 
-      const result = await savePost(postData, user.id);
+      const result = await addPost(postData);
       
       if (result.success) {
         toast({
-          title: "Success!",
-          description: "Your item has been listed for sale.",
+          title: "Item listed successfully!",
+          description: "Your plushie has been added to the marketplace.",
         });
-        navigate('/');
+        form.reset();
+        setImageUrl("");
       } else {
-        throw new Error(result.error || "Failed to create listing");
+        toast({
+          variant: "destructive",
+          title: "Failed to list item",
+          description: result.error || "Please try again",
+        });
       }
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to create listing. Please try again.",
+        description: "An unexpected error occurred",
       });
     } finally {
       setIsSubmitting(false);
     }
-  }, [user, imageUrl, navigate]);
-
-  // Return null if form is not ready to prevent Q2() is null errors
-  if (!formInitialized || formError || !register || !handleSubmit) {
-    return null;
-  }
+  };
 
   return {
     imageUrl,
     isSubmitting,
-    register,
-    errors,
-    handleSubmit,
+    register: form.register,
+    handleSubmit: form.handleSubmit,
     onSubmit,
+    errors: form.formState.errors,
     handleImageSelect,
-    handleSelectChange
+    handleSelectChange,
   };
 };

@@ -24,5 +24,11 @@ export {
   saveMarketplaceListings,
   getMarketplaceListings,
   setCurrentUserId,
-  getCurrentUserId
+  getCurrentUserId,
+  setUserStatus,
+  getUserStatus
 } from './storage/localStorageUtils';
+
+// Add missing function aliases
+export const getAllUserPosts = getPosts;
+export const getPostById = (id: string) => getPosts().then(posts => posts.find(p => p.id === id));

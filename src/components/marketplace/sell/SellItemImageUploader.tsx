@@ -1,12 +1,12 @@
+
 import { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Upload, X } from "lucide-react";
-import { ImageUploadResult } from "@/types/ui";
 
 interface SellItemImageUploaderProps {
   imageUrl: string;
-  onImageSelect: (file: File) => void;
+  onImageSelect: (file: File | null) => void;
 }
 
 export const SellItemImageUploader = ({ imageUrl, onImageSelect }: SellItemImageUploaderProps) => {
@@ -27,9 +27,9 @@ export const SellItemImageUploader = ({ imageUrl, onImageSelect }: SellItemImage
   };
 
   const handleRemoveImage = () => {
-    onImageSelect(null as any); // Passing null to clear the image
+    onImageSelect(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = ''; // Reset the file input
+      fileInputRef.current.value = '';
     }
   };
 
