@@ -1,219 +1,224 @@
-
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useUser } from '@clerk/clerk-react';
-import { toast } from '@/components/ui/use-toast';
-import { CheckoutLayout } from '@/components/checkout/CheckoutLayout';
-import { OrderSummary } from '@/components/checkout/OrderSummary';
-import { ShippingForm, ShippingFormData } from '@/components/checkout/ShippingForm';
-import { PaymentForm } from '@/components/checkout/PaymentForm';
-import { OrderConfirmation } from '@/components/checkout/OrderConfirmation';
-import { MarketplacePlushie } from '@/types/marketplace';
-import { getMarketplaceListings } from '@/utils/storage/localStorageUtils';
-import { Spinner } from '@/components/ui/spinner';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
+import { CreditCard, MapPin, Mail, User } from "lucide-react";
+import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
+import { MarketplacePlushie } from "@/types/marketplace";
+import { ExtendedPost } from "@/types/core";
 
 const CheckoutPage = () => {
+  const { itemId } = useParams<{ itemId: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const { user, isSignedIn } = useUser();
-  
-  // Parse checkout items from location state or URL query params
-  const [items, setItems] = useState<MarketplacePlushie[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const [step, setStep] = useState(1);
-  const totalSteps = 3;
-  
-  const [shippingDetails, setShippingDetails] = useState<ShippingFormData | null>(null);
-  const [orderId, setOrderId] = useState<string>("");
-  
-  // Calculate order totals
-  const subtotal = items.reduce((sum, item) => sum + item.price, 0);
-  const shippingCost = items.length > 0 ? 5.99 : 0; // Example shipping cost
-  const taxRate = 0.07; // 7% tax rate example
-  const tax = subtotal * taxRate;
-  const total = subtotal + shippingCost + tax;
+  const [item, setItem] = useState<MarketplacePlushie | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [shippingAddress, setShippingAddress] = useState({
+    name: '',
+    address: '',
+    city: '',
+    zipCode: '',
+    email: ''
+  });
 
-  // This would be replaced with a cart system in a real app
   useEffect(() => {
-    const loadItems = () => {
+    const fetchItemDetails = async () => {
       try {
-        setIsLoading(true);
+        const allPlushies = await getMarketplaceListings();
+        const foundItem = allPlushies.find(item => item.id === itemId);
         
-        // In a real app, this would come from a cart system
-        // For demo, we're getting from URL params or using sample data
-        const queryParams = new URLSearchParams(location.search);
-        const itemId = queryParams.get('item');
-        
-        if (itemId) {
-          // Load specific item
-          const allListings = getMarketplaceListings();
-          const foundItem = allListings.find(item => item.id === itemId);
-          
-          if (foundItem) {
-            setItems([foundItem]);
-          } else {
-            // Item not found
-            toast({
-              title: "Item not found",
-              description: "The requested item could not be found.",
-              variant: "destructive"
-            });
-            navigate('/marketplace');
-          }
+        if (foundItem) {
+          // Convert ExtendedPost to MarketplacePlushie
+          const marketplaceItem: MarketplacePlushie = {
+            ...foundItem,
+            price: foundItem.price || 0, // Ensure price is defined
+            name: foundItem.title || foundItem.name || 'Untitled',
+            forSale: foundItem.forSale || true
+          };
+          setItem(marketplaceItem);
         } else {
-          // Load sample item for demo
-          const allListings = getMarketplaceListings();
-          if (allListings && allListings.length > 0) {
-            setItems([allListings[0]]);
-          } else {
-            // No items available
-            toast({
-              title: "No items available",
-              description: "There are no items in the marketplace.",
-              variant: "destructive"
-            });
-            navigate('/marketplace');
-          }
+          toast({
+            variant: "destructive",
+            title: "Item not found",
+            description: "The item you're trying to purchase could not be found.",
+          });
+          navigate("/marketplace");
         }
       } catch (error) {
-        console.error("Error loading checkout items:", error);
+        console.error("Error fetching item details:", error);
         toast({
+          variant: "destructive",
           title: "Error",
-          description: "Failed to load checkout items.",
-          variant: "destructive"
+          description: "Failed to load item details.",
         });
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-    
-    loadItems();
-    
-    // Try to restore any saved checkout progress from localStorage
-    const savedProgress = localStorage.getItem('checkoutProgress');
-    if (savedProgress) {
-      try {
-        const { step, shippingDetails } = JSON.parse(savedProgress);
-        setStep(step);
-        setShippingDetails(shippingDetails);
-      } catch (e) {
-        console.error("Error parsing saved checkout progress:", e);
-      }
+
+    if (itemId) {
+      fetchItemDetails();
     }
-  }, [location.search, navigate]);
-  
-  // Save checkout progress to localStorage when it changes
-  useEffect(() => {
-    if (shippingDetails) {
-      localStorage.setItem('checkoutProgress', JSON.stringify({
-        step,
-        shippingDetails
-      }));
+  }, [itemId, navigate]);
+
+  const handlePlaceOrder = async () => {
+    if (!item) return;
+
+    setIsProcessing(true);
+    try {
+      // Convert to MarketplacePlushie format for order processing
+      const orderItem: MarketplacePlushie = {
+        ...item,
+        price: item.price || 0,
+        name: item.name || item.title || 'Untitled'
+      };
+
+      // Simulate order processing
+      await new Promise(resolve => setTimeout(resolve, 2000));
+
+      toast({
+        title: "Order placed!",
+        description: `Your order for ${orderItem.name} has been placed successfully.`,
+      });
+      navigate("/profile");
+    } catch (error) {
+      console.error("Order processing failed:", error);
+      toast({
+        variant: "destructive",
+        title: "Order failed",
+        description: "There was an error processing your order. Please try again.",
+      });
+    } finally {
+      setIsProcessing(false);
     }
-  }, [step, shippingDetails]);
-  
-  const handleShippingSubmit = (data: ShippingFormData) => {
-    setShippingDetails(data);
-    setStep(2);
-    
-    // In a real app, you might want to validate the address with an API
-    console.log("Shipping details:", data);
-  };
-  
-  const handlePaymentSubmit = (data: any) => {
-    setIsSubmitting(true);
-    
-    // Simulate payment processing
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setOrderId(`ORD-${Date.now().toString().substr(-6)}`);
-      setStep(3);
-      
-      // Clear checkout progress from localStorage once completed
-      localStorage.removeItem('checkoutProgress');
-      
-      // In a real app, this would call a Stripe payment API
-      console.log("Payment details:", data);
-    }, 1500);
-  };
-  
-  const handleBackToShipping = () => {
-    setStep(1);
   };
 
-  if (isLoading) {
-    return (
-      <CheckoutLayout currentStep={1} totalSteps={totalSteps}>
-        <div className="flex justify-center items-center h-64">
-          <Spinner size="lg" />
-          <span className="ml-2">Loading checkout...</span>
-        </div>
-      </CheckoutLayout>
-    );
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-  if (items.length === 0) {
-    return (
-      <CheckoutLayout currentStep={1} totalSteps={totalSteps}>
-        <div className="text-center py-12">
-          <h2 className="text-xl font-semibold mb-2">No Items In Cart</h2>
-          <p className="text-gray-600 mb-6">Your cart is empty.</p>
-          <button
-            onClick={() => navigate('/marketplace')}
-            className="bg-softspot-500 text-white px-4 py-2 rounded hover:bg-softspot-600"
-          >
-            Continue Shopping
-          </button>
-        </div>
-      </CheckoutLayout>
-    );
+  if (!item) {
+    return <div>Item not found.</div>;
   }
 
   return (
-    <CheckoutLayout currentStep={step} totalSteps={totalSteps}>
-      <div className="space-y-6 mb-10">
-        <OrderSummary
-          items={items}
-          subtotal={subtotal}
-          shippingCost={shippingCost}
-          tax={tax}
-          total={total}
-          collapsible={true}
-        />
-        
-        {step === 1 && (
-          <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
-            <h2 className="text-xl font-semibold mb-6">Shipping Information</h2>
-            <ShippingForm
-              onSubmit={handleShippingSubmit}
-              isSubmitting={isSubmitting}
-            />
+    <div className="container mx-auto py-8">
+      <Card>
+        <CardHeader>
+          <CardTitle>Checkout</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Item Details</h2>
+              <div className="flex items-center space-x-4">
+                <img src={item.image} alt={item.name} className="w-24 h-24 rounded-md object-cover" />
+                <div>
+                  <h3 className="text-xl font-semibold">{item.name}</h3>
+                  <p className="text-gray-500">${item.price}</p>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Shipping Information</h2>
+              <div className="grid gap-2">
+                <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="name" className="text-right">
+                    <User className="inline-block h-4 w-4 mr-1" />
+                    Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={shippingAddress.name}
+                    onChange={(e) => setShippingAddress({ ...shippingAddress, name: e.target.value })}
+                    className="col-span-2"
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="address" className="text-right">
+                    <MapPin className="inline-block h-4 w-4 mr-1" />
+                    Address
+                  </Label>
+                  <Input
+                    id="address"
+                    value={shippingAddress.address}
+                    onChange={(e) => setShippingAddress({ ...shippingAddress, address: e.target.value })}
+                    className="col-span-2"
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="city" className="text-right">
+                    <MapPin className="inline-block h-4 w-4 mr-1" />
+                    City
+                  </Label>
+                  <Input
+                    id="city"
+                    value={shippingAddress.city}
+                    onChange={(e) => setShippingAddress({ ...shippingAddress, city: e.target.value })}
+                    className="col-span-2"
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="zipCode" className="text-right">
+                    <MapPin className="inline-block h-4 w-4 mr-1" />
+                    Zip Code
+                  </Label>
+                  <Input
+                    id="zipCode"
+                    value={shippingAddress.zipCode}
+                    onChange={(e) => setShippingAddress({ ...shippingAddress, zipCode: e.target.value })}
+                    className="col-span-2"
+                  />
+                </div>
+                <div className="grid grid-cols-3 items-center gap-4">
+                  <Label htmlFor="email" className="text-right">
+                    <Mail className="inline-block h-4 w-4 mr-1" />
+                    Email
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    value={shippingAddress.email}
+                    onChange={(e) => setShippingAddress({ ...shippingAddress, email: e.target.value })}
+                    className="col-span-2"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
-        )}
-        
-        {step === 2 && (
-          <div className="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
-            <h2 className="text-xl font-semibold mb-6">Payment Method</h2>
-            <PaymentForm
-              onSubmit={handlePaymentSubmit}
-              onBack={handleBackToShipping}
-              isSubmitting={isSubmitting}
-            />
+          <div>
+            <h2 className="text-lg font-semibold mb-2">Payment Information</h2>
+            <div className="grid gap-2">
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label htmlFor="cardNumber" className="text-right">
+                  <CreditCard className="inline-block h-4 w-4 mr-1" />
+                  Card Number
+                </Label>
+                <Input id="cardNumber" placeholder="•••• •••• •••• ••••" className="col-span-2" />
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label htmlFor="expiry" className="text-right">
+                  Expiry Date
+                </Label>
+                <Input id="expiry" placeholder="MM/YY" className="col-span-2" />
+              </div>
+              <div className="grid grid-cols-3 items-center gap-4">
+                <Label htmlFor="cvc" className="text-right">
+                  CVC
+                </Label>
+                <Input id="cvc" placeholder="CVC" className="col-span-2" />
+              </div>
+            </div>
           </div>
-        )}
-        
-        {step === 3 && (
-          <OrderConfirmation
-            orderId={orderId}
-            items={items}
-            total={total}
-            estimatedDelivery="May 25 - May 30, 2024"
-          />
-        )}
-      </div>
-    </CheckoutLayout>
+          <Button onClick={handlePlaceOrder} disabled={isProcessing} className="w-full">
+            {isProcessing ? "Processing..." : "Place Order"}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

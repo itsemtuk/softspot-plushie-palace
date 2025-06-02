@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -59,9 +60,9 @@ export const useSellItemForm = () => {
     }
 
     try {
-      const result = await uploadImage(file);
-      if (result.success && result.url) {
-        setImageUrl(result.url);
+      const result = await uploadImage(file, 'posts');
+      if (result.imageUrl) {
+        setImageUrl(result.imageUrl);
       } else {
         toast({
           variant: "destructive",

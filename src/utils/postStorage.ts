@@ -29,6 +29,9 @@ export {
   getUserStatus
 } from './storage/localStorageUtils';
 
+// Import functions for aliases
+import { getPosts } from './posts/postFetch';
+
 // Add missing function aliases
 export const getAllUserPosts = getPosts;
 export const getPostById = (id: string) => getPosts().then(posts => posts.find(p => p.id === id));
