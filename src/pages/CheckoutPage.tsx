@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
@@ -36,7 +35,8 @@ const CheckoutPage = () => {
           const marketplaceItem: MarketplacePlushie = {
             ...foundItem,
             price: foundItem.price || 0, // Ensure price is defined
-            name: foundItem.title || foundItem.name || 'Untitled',
+            name: foundItem.title || 'Untitled',
+            title: foundItem.title || 'Untitled',
             forSale: foundItem.forSale || true
           };
           setItem(marketplaceItem);
@@ -74,7 +74,8 @@ const CheckoutPage = () => {
       const orderItem: MarketplacePlushie = {
         ...item,
         price: item.price || 0,
-        name: item.name || item.title || 'Untitled'
+        name: item.title || 'Untitled',
+        title: item.title || 'Untitled'
       };
 
       // Simulate order processing
@@ -82,7 +83,7 @@ const CheckoutPage = () => {
 
       toast({
         title: "Order placed!",
-        description: `Your order for ${orderItem.name} has been placed successfully.`,
+        description: `Your order for ${orderItem.title} has been placed successfully.`,
       });
       navigate("/profile");
     } catch (error) {
@@ -116,9 +117,9 @@ const CheckoutPage = () => {
             <div>
               <h2 className="text-lg font-semibold mb-2">Item Details</h2>
               <div className="flex items-center space-x-4">
-                <img src={item.image} alt={item.name} className="w-24 h-24 rounded-md object-cover" />
+                <img src={item.image} alt={item.title} className="w-24 h-24 rounded-md object-cover" />
                 <div>
-                  <h3 className="text-xl font-semibold">{item.name}</h3>
+                  <h3 className="text-xl font-semibold">{item.title}</h3>
                   <p className="text-gray-500">${item.price}</p>
                 </div>
               </div>

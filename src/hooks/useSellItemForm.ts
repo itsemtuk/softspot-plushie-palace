@@ -61,7 +61,7 @@ export const useSellItemForm = () => {
 
     try {
       const result = await uploadImage(file, 'posts');
-      if (result.imageUrl) {
+      if (result.success && result.imageUrl) {
         setImageUrl(result.imageUrl);
       } else {
         toast({

@@ -37,7 +37,7 @@ const Marketplace = () => {
         ...plushie,
         price: plushie.price !== undefined ? plushie.price : 0,
         forSale: plushie.forSale !== undefined ? plushie.forSale : true,
-        name: plushie.title || plushie.name || 'Untitled'
+        title: plushie.title || 'Untitled'
       }));
       setPlushies(updatedPlushies);
     };
@@ -75,7 +75,7 @@ const Marketplace = () => {
     
     toast({
       title: "Added to Collection",
-      description: `${plushie.name} has been added to your collection!`,
+      description: `${plushie.title} has been added to your collection!`,
     });
   };
 
