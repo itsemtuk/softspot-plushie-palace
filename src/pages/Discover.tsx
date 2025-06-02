@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Search, Filter, TrendingUp, Users, MapPin, Tag } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MainLayout from "@/components/layout/MainLayout";
 import { ExtendedPost } from "@/types/core";
-import { getAllPosts } from "@/utils/postStorage";
+import { getPosts } from "@/utils/postStorage";
+import { getAllPosts } from "@/utils/posts/postFetch";
 import { PostCard } from "@/components/post/PostCard";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { useNavigate } from "react-router-dom";
@@ -22,8 +24,19 @@ const Discover = () => {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const allPosts = await getAllPosts();
-        setPosts(allPosts);
+        // Get posts from both sources and merge them
+        const [allPosts, userPosts] = await Promise.all([
+          getAllPosts(),
+          getPosts()
+        ]);
+        
+        // Combine and deduplicate posts
+        const combinedPosts = [...allPosts, ...userPosts];
+        const uniquePosts = combinedPosts.filter((post, index, self) => 
+          index === self.findIndex(p => p.id === post.id)
+        );
+        
+        setPosts(uniquePosts);
       } catch (error) {
         console.error("Error fetching posts:", error);
       }

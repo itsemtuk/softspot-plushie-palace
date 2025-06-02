@@ -7,7 +7,8 @@ import { ExtendedPost } from "@/types/core";
 import { Card, CardContent } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
-import { getAllPosts } from "@/utils/postStorage";
+import { getPosts } from "@/utils/postStorage";
+import { getAllPosts } from "@/utils/posts/postFetch";
 import MainLayout from "@/components/layout/MainLayout";
 import { PostDialog } from "@/components/PostDialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
@@ -25,8 +26,15 @@ const PostPage = () => {
     const fetchPost = async () => {
       setIsLoading(true);
       try {
-        const allPosts = await getAllPosts();
-        const foundPost = allPosts.find((p) => p.id === postId) || null;
+        // Get posts from both sources and merge them
+        const [allPosts, userPosts] = await Promise.all([
+          getAllPosts(),
+          getPosts()
+        ]);
+        
+        // Combine and deduplicate posts
+        const combinedPosts = [...allPosts, ...userPosts];
+        const foundPost = combinedPosts.find((p) => p.id === postId) || null;
         setPost(foundPost);
       } catch (error) {
         console.error("Error fetching post:", error);
