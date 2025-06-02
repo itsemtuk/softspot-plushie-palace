@@ -1,5 +1,4 @@
-
-import { Post, ExtendedPost } from "@/types/marketplace";
+import { Post, ExtendedPost } from "@/types/core";
 
 export const convertPostToExtendedPost = (post: Post): ExtendedPost => {
   return {

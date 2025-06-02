@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -8,7 +7,7 @@ import { PlushieGrid } from "@/components/brand/PlushieGrid";
 import { CommunityPosts } from "@/components/brand/CommunityPosts";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { MarketplacePlushie, ExtendedPost } from "@/types/marketplace";
+import { MarketplacePlushie, ExtendedPost } from "@/types/index";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
 import { getPosts } from "@/utils/posts/postFetch";

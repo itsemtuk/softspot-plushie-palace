@@ -1,8 +1,7 @@
-
 import { ImagePlus, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { ExtendedPost } from "@/types/marketplace";
+import { ExtendedPost } from "@/types/core";
 
 interface CommunityPostsProps {
   posts: ExtendedPost[];

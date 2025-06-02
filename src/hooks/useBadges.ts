@@ -1,6 +1,5 @@
-
 import { useEffect, useState } from "react";
-import { Badge, BadgeCriteria, BadgeType } from "@/types/marketplace";
+import { Badge, BadgeCriteria, BadgeType } from "@/types/badges";
 import { useUser } from "@clerk/clerk-react";
 import { getUserPosts } from "@/utils/posts/postFetch";
 

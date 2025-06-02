@@ -1,5 +1,4 @@
-
-import { ExtendedPost, MarketplacePlushie } from "@/types/marketplace";
+import { ExtendedPost, MarketplacePlushie } from "@/types";
 
 export const validatePosts = (posts: any[]): ExtendedPost[] => {
   if (!Array.isArray(posts)) {

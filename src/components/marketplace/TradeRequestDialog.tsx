@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Search, MessageSquare } from "lucide-react";
-import { MarketplacePlushie, UserProfile, PlushieFilling } from '@/types/marketplace';
+import { MarketplacePlushie, UserProfile, PlushieFilling } from '@/types';
 import { toast } from '@/components/ui/use-toast';
 
 interface TradeRequestDialogProps {
