@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import { getPosts, deletePost } from "@/utils/postStorage";
+import { getPosts } from "@/utils/postStorage";
 import { ExtendedPost } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
@@ -15,6 +15,7 @@ import UserProfileHeader from "@/components/UserProfileHeader";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { Card } from "@/components/ui/card";
 import ErrorBoundary from "@/components/ui/error-boundary";
+import { deletePost as deletePostFromStorage } from "@/utils/postStorage";
 
 export const ProfileLayout = () => {
   const navigate = useNavigate();
@@ -90,7 +91,7 @@ export const ProfileLayout = () => {
   
   const handleDeletePost = async (postId: string) => {
     try {
-      const result = await deletePost(postId);
+      const result = await deletePostFromStorage(postId);
       
       if (result.success) {
         setUserPosts(prev => prev.filter(post => post.id !== postId));

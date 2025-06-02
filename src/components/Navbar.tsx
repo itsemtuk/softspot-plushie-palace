@@ -1,9 +1,10 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { UserMenu } from "./navigation/UserMenu";
 import { PostCreationData } from "@/types/core";
-import { useTheme } from "@/hooks/useTheme";
+import { useTheme } from "@/components/ui/theme-provider";
 import { Moon, Sun } from "lucide-react";
 import {
   Sheet,
@@ -13,15 +14,18 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
-import { ModeToggle } from "./ModeToggle";
 
 export const Navbar = () => {
   const navigate = useNavigate();
-  const { theme, toggleTheme } = useTheme();
+  const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
+  };
+
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
   return (
@@ -34,6 +38,9 @@ export const Navbar = () => {
 
         {/* Navigation Links (Hidden on Small Screens) */}
         <div className="hidden md:flex items-center space-x-6">
+          <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400">
+            Feed
+          </Link>
           <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400">
             Discover
           </Link>
@@ -47,7 +54,19 @@ export const Navbar = () => {
 
         {/* User Menu and Mobile Menu Button */}
         <div className="flex items-center space-x-4">
-          <ModeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="h-9 w-9"
+          >
+            {theme === 'light' ? (
+              <Moon className="h-4 w-4" />
+            ) : (
+              <Sun className="h-4 w-4" />
+            )}
+            <span className="sr-only">Toggle theme</span>
+          </Button>
           <UserMenu />
           {/* Mobile Menu Button */}
           <div className="md:hidden">
@@ -80,6 +99,9 @@ export const Navbar = () => {
                   </SheetDescription>
                 </SheetHeader>
                 <div className="grid gap-4 py-4">
+                  <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
+                    Feed
+                  </Link>
                   <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
                     Discover
                   </Link>

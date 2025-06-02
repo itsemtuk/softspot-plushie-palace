@@ -1,37 +1,52 @@
 
-// Re-export all post-related functions from their new modules
-export {
-  getPosts,
-  getAllPosts,
-  fetchPosts
-} from './posts/postFetch';
+import { ExtendedPost } from "@/types/core";
 
-export {
-  savePost,
-  addPost,
-  updatePost,
-  deletePost
-} from './posts/postManagement';
+const POSTS_STORAGE_KEY = 'userPosts';
 
-export {
-  uploadImage,
-  deleteImage
-} from './storage/imageStorage';
+export const getPosts = async (): Promise<ExtendedPost[]> => {
+  try {
+    const stored = localStorage.getItem(POSTS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
+  } catch (error) {
+    console.error('Error getting posts from storage:', error);
+    return [];
+  }
+};
 
-export {
-  savePosts,
-  getLocalPosts,
-  saveMarketplaceListings,
-  getMarketplaceListings,
-  setCurrentUserId,
-  getCurrentUserId,
-  setUserStatus,
-  getUserStatus
-} from './storage/localStorageUtils';
+export const savePost = async (post: ExtendedPost): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const existingPosts = await getPosts();
+    const updatedPosts = [post, ...existingPosts.filter(p => p.id !== post.id)];
+    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(updatedPosts));
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving post to storage:', error);
+    return { success: false, error: 'Failed to save post' };
+  }
+};
 
-// Import functions for aliases
-import { getPosts } from './posts/postFetch';
+export const deletePost = async (postId: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const existingPosts = await getPosts();
+    const updatedPosts = existingPosts.filter(post => post.id !== postId);
+    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(updatedPosts));
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting post from storage:', error);
+    return { success: false, error: 'Failed to delete post' };
+  }
+};
 
-// Add missing function aliases
-export const getAllUserPosts = getPosts;
-export const getPostById = (id: string) => getPosts().then(posts => posts.find(p => p.id === id));
+export const updatePost = async (postId: string, updates: Partial<ExtendedPost>): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const existingPosts = await getPosts();
+    const updatedPosts = existingPosts.map(post => 
+      post.id === postId ? { ...post, ...updates, updatedAt: new Date().toISOString() } : post
+    );
+    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(updatedPosts));
+    return { success: true };
+  } catch (error) {
+    console.error('Error updating post in storage:', error);
+    return { success: false, error: 'Failed to update post' };
+  }
+};

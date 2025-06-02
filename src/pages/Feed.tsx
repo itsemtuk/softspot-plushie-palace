@@ -8,17 +8,19 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Spinner } from "@/components/ui/spinner";
+import { toast } from "@/components/ui/use-toast";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedContent } from "@/components/feed/FeedContent";
 import { FeedGrid } from "@/components/feed/FeedGrid";
 import { ExtendedPost, PostCreationData } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { getAllPosts } from "@/utils/posts/postFetch";
+import { getPosts, savePost } from "@/utils/postStorage";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useSyncManager } from "@/hooks/useSyncManager";
 import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
-import { toast } from "@/components/ui/use-toast";
+import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
 
 const Feed = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
@@ -34,8 +36,19 @@ const Feed = () => {
   const fetchPosts = useCallback(async () => {
     setIsLoading(true);
     try {
-      const fetchedPosts = await getAllPosts();
-      setPosts(fetchedPosts);
+      // Get posts from both sources and merge them
+      const [allPosts, userPosts] = await Promise.all([
+        getAllPosts(),
+        getPosts()
+      ]);
+      
+      // Combine and deduplicate posts
+      const combinedPosts = [...allPosts, ...userPosts];
+      const uniquePosts = combinedPosts.filter((post, index, self) => 
+        index === self.findIndex(p => p.id === post.id)
+      );
+      
+      setPosts(uniquePosts);
     } catch (error) {
       console.error("Error fetching posts:", error);
       toast({
@@ -82,13 +95,24 @@ const Feed = () => {
 
   const handlePostCreated = async (data: PostCreationData) => {
     try {
-      // Optimistically add the post to the feed
+      const userId = getCurrentUserId();
+      
+      if (!userId) {
+        toast({
+          variant: "destructive",
+          title: "Authentication Required",
+          description: "Please sign in to create posts.",
+        });
+        return Promise.reject(new Error("Authentication required"));
+      }
+
+      // Create the new post
       const newPost: ExtendedPost = {
         ...data,
-        id: `post-${Date.now()}`,
-        userId: 'offline-user',
-        user_id: 'offline-user',
-        username: 'Offline User',
+        id: `post-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        userId: userId,
+        user_id: userId,
+        username: 'You',
         timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         created_at: new Date().toISOString(),
@@ -99,10 +123,21 @@ const Feed = () => {
         forSale: false
       };
 
+      // Show immediate feedback
+      toast({
+        title: "Post created!",
+        description: "Your post has been added to the feed.",
+        duration: 3000,
+      });
+
+      // Optimistically add the post to the feed
       setPosts(prevPosts => [newPost, ...prevPosts]);
 
-      // Save the post offline
-      await addOfflinePost(newPost);
+      // Save the post
+      await Promise.all([
+        savePost(newPost),
+        addOfflinePost(newPost)
+      ]);
 
       // Close the post creation flow
       onClosePostCreation();
@@ -110,6 +145,11 @@ const Feed = () => {
       return Promise.resolve();
     } catch (error) {
       console.error("Error creating post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create post. Please try again.",
+      });
       return Promise.reject(error);
     }
   };
