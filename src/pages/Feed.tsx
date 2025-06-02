@@ -21,6 +21,7 @@ import { useCreatePost } from "@/hooks/use-create-post";
 import { useSyncManager } from "@/hooks/useSyncManager";
 import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
 import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
+import { PostDialog } from "@/components/PostDialog";
 
 const Feed = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
@@ -28,7 +29,7 @@ const Feed = () => {
   const [sortOrder, setSortOrder] = useState("newest");
   const [layout, setLayout] = useState("grid");
   const [isLoading, setIsLoading] = useState(false);
-  const { openPostDialog } = usePostDialog();
+  const { dialogState, openPostDialog, closePostDialog } = usePostDialog();
   const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
   const syncManager = useSyncManager(posts);
   const { addOfflinePost } = useOfflinePostOperations();
@@ -199,6 +200,11 @@ const Feed = () => {
         onClose={onClosePostCreation}
         onPostCreated={handlePostCreated}
       />
+      {dialogState.post && (
+        <PostDialog post={dialogState.post}>
+          <div />
+        </PostDialog>
+      )}
     </MainLayout>
   );
 };
