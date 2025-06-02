@@ -1,9 +1,11 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ImageUploader } from "./ImageUploader";
 import { PostCreationForm } from "./PostCreationForm";
 import { PostCreationData } from "@/types/core";
+import { ImageUploadResult } from "@/types/ui";
 
 interface PostCreationFlowProps {
   isOpen: boolean;
@@ -14,8 +16,10 @@ interface PostCreationFlowProps {
 const PostCreationFlow: React.FC<PostCreationFlowProps> = ({ isOpen, onClose, onPostCreated }) => {
   const [imageUrl, setImageUrl] = useState<string | null>(null);
 
-  const handleImageUpload = (url: string) => {
-    setImageUrl(url);
+  const handleImageUpload = (result: ImageUploadResult) => {
+    if (result.success && result.url) {
+      setImageUrl(result.url);
+    }
   };
 
   const handlePostCreation = async (data: PostCreationData) => {
@@ -39,8 +43,8 @@ const PostCreationFlow: React.FC<PostCreationFlowProps> = ({ isOpen, onClose, on
         <ImageUploader onImageUpload={handleImageUpload} />
 
         <PostCreationForm 
-          imageUrl={imageUrl}
-          onPostCreated={handlePostCreation} 
+          onPostCreated={handlePostCreation}
+          onClose={onClose}
         />
 
         <div className="grid gap-4 py-4">

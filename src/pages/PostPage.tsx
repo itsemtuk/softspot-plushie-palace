@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Heart, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
@@ -115,7 +116,7 @@ const PostPage = () => {
           </CardContent>
         </Card>
       </div>
-      <PostDialog />
+      {post && <PostDialog post={post} />}
     </MainLayout>
   );
 };

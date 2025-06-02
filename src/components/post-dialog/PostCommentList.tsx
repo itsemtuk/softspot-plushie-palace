@@ -1,5 +1,6 @@
 
-import { PostCommentItem, Comment } from "./PostCommentItem";
+import { Comment } from "@/types/core";
+import { PostCommentItem } from "./PostCommentItem";
 
 interface PostCommentListProps {
   comments: Comment[];
@@ -17,7 +18,11 @@ export function PostCommentList({ comments, onCommentLikeToggle, currentUserId }
         <PostCommentItem 
           key={comment.id} 
           comment={comment} 
-          onLikeToggle={onCommentLikeToggle}
+          isLiked={comment.isLiked || false}
+          onLike={onCommentLikeToggle}
+          onEdit={(commentId) => console.log('Edit comment:', commentId)}
+          onDelete={(commentId) => console.log('Delete comment:', commentId)}
+          isOwnComment={comment.userId === currentUserId}
         />
       ))}
     </div>

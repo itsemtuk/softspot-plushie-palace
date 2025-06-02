@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ImageUploadResult } from "@/types/ui";
+import { ImageUploadResult, ImageEditorOptions } from "@/types/ui";
 import { Upload, X } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { ImageEditor } from "./ImageEditor";
@@ -108,10 +108,11 @@ export const ImageUploader = ({
     onImageUpload({ success: false });
   };
 
-  const handleImageSave = (editedImageUrl: string) => {
-    setSelectedImage(editedImageUrl);
+  const handleImageSave = (options: ImageEditorOptions) => {
+    // In a real implementation, you would apply the editing options to the image
+    // For now, we'll just return the original image URL
     setIsEditing(false);
-    onImageUpload({ success: true, url: editedImageUrl });
+    onImageUpload({ success: true, url: selectedImage || "" });
   };
 
   const handleCancelEdit = () => {
@@ -135,8 +136,6 @@ export const ImageUploader = ({
   return (
     <Card
       className={`border-2 border-dashed rounded-lg ${className}`}
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
     >
       <input
         type="file"
@@ -157,7 +156,7 @@ export const ImageUploader = ({
             variant="destructive"
             size="icon"
             className="absolute top-2 right-2 rounded-full"
-            onClick={handleRemoveImage}
+            onClick={() => setSelectedImage(null)}
           >
             <X className="h-4 w-4" />
           </Button>

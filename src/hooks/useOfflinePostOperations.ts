@@ -1,6 +1,7 @@
+
 import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/use-toast";
-import { ExtendedPost } from "@/types/core";
+import { ExtendedPost, Comment } from "@/types/core";
 
 const LOCAL_STORAGE_KEY = "offlinePosts";
 
@@ -36,8 +37,27 @@ export const useOfflinePostOperations = () => {
     });
   };
 
+  const updateOfflinePost = (post: ExtendedPost) => {
+    setOfflinePosts((prevPosts) => 
+      prevPosts.map(p => p.id === post.id ? post : p)
+    );
+  };
+
+  const deleteOfflinePost = (postId: string) => {
+    setOfflinePosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+  };
+
   const removeOfflinePost = (postId: string) => {
     setOfflinePosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+  };
+
+  const getAllOfflinePosts = () => {
+    return Promise.resolve(offlinePosts);
+  };
+
+  const addOfflineComment = (postId: string, comment: Comment) => {
+    console.log("Adding offline comment:", { postId, comment });
+    // In a real implementation, you would store comments separately
   };
 
   const clearOfflinePosts = () => {
@@ -47,7 +67,11 @@ export const useOfflinePostOperations = () => {
   return {
     offlinePosts,
     addOfflinePost,
+    updateOfflinePost,
+    deleteOfflinePost,
     removeOfflinePost,
+    getAllOfflinePosts,
+    addOfflineComment,
     clearOfflinePosts,
   };
 };

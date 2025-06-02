@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from "react";
 import { toast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/clerk-react";
@@ -98,7 +99,7 @@ export const usePostActions = () => {
       setIsLoading(true);
 
       try {
-        const result = await updatePost(postId, updatedPostData, user.id);
+        const result = await updatePost(postId, updatedPostData);
 
         if (result.success) {
           toast({

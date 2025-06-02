@@ -14,7 +14,7 @@ import { FeedGrid } from "@/components/feed/FeedGrid";
 import { ExtendedPost, PostCreationData } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { getAllPosts } from "@/utils/posts/postFetch";
-import { PostCreationFlow } from "@/components/post/PostCreationFlow";
+import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { useSyncManager } from "@/hooks/useSyncManager";
 import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -37,7 +38,15 @@ export const PostCreationForm = ({ onPostCreated, onClose }: PostCreationFormPro
   const onSubmit = async (values: z.infer<typeof postCreationSchema>) => {
     setIsSubmitting(true);
     try {
-      await onPostCreated(values);
+      const postData: PostCreationData = {
+        title: values.title,
+        description: values.description,
+        content: values.description,
+        image: "",
+        tags: [],
+      };
+      
+      await onPostCreated(postData);
       toast({
         title: "Post created!",
         description: "Your post has been successfully created.",

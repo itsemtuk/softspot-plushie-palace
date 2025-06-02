@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -22,8 +23,8 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
   const [isLiked, setIsLiked] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const { user } = useUser();
-  const { handleLikePost, handleSharePost, handleEditPost, handleDeletePost } = usePostActions();
-  const { addOfflineComment } = useOfflinePostOperations();
+  const { handleEditPost, handleDeletePost } = usePostActions();
+  const { addOfflinePost } = useOfflinePostOperations();
 
   useEffect(() => {
     // Mock comments for demonstration
@@ -50,9 +51,8 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
     setComments(mockComments);
   }, [post.id]);
 
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (comment.trim() === "") return;
+  const handleCommentSubmit = (commentText: string) => {
+    if (commentText.trim() === "") return;
 
     if (!user) {
       console.error("User is not authenticated.");
@@ -64,33 +64,37 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
       postId: post.id,
       userId: user.id,
       username: user.username || "Anonymous",
-      content: comment,
+      content: commentText,
       likes: 0,
       timestamp: new Date().toISOString(),
     };
 
     setComments((prevComments) => [...prevComments, newComment]);
-    setComment("");
-
-    // Optimistically add comment offline
-    addOfflineComment(post.id, newComment);
   };
 
   const toggleLike = () => {
     setIsLiked(!isLiked);
-    handleLikePost(post.id, isLiked);
   };
 
   const sharePost = () => {
-    handleSharePost(post.id);
+    if (navigator.share) {
+      navigator.share({
+        title: post.title,
+        text: post.description,
+        url: window.location.href,
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+    }
   };
 
   const editPost = () => {
     setIsEditing(true);
   };
 
-  const deletePost = () => {
-    handleDeletePost(post.id, onPostDeleted);
+  const deletePost = async () => {
+    await handleDeletePost(post.id);
+    onPostDeleted(post.id);
     onClose();
   };
 
@@ -139,11 +143,7 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
       </div>
 
       {/* Comment Form */}
-      <PostCommentForm
-        comment={comment}
-        setComment={setComment}
-        onSubmit={handleCommentSubmit}
-      />
+      <PostCommentForm onSubmit={handleCommentSubmit} />
 
       {/* Comments List */}
       <div>

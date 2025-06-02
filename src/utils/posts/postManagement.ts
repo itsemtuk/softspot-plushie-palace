@@ -54,7 +54,7 @@ export const deletePost = async (postId: string, userId?: string): Promise<{ suc
 
     // If userId is provided, further restrict deletion to posts owned by the user
     if (userId) {
-      query = query.eq('userId', userId);
+      query = query.eq('user_id', userId);
     }
 
     const { error } = await query;
@@ -70,3 +70,6 @@ export const deletePost = async (postId: string, userId?: string): Promise<{ suc
     return { success: false, error: "Failed to delete post" };
   }
 };
+
+// Add savePost as an alias to addPost for compatibility
+export const savePost = addPost;

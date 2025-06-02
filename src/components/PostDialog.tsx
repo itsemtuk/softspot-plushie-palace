@@ -27,12 +27,24 @@ export const PostDialog = ({ post, children }: PostDialogProps) => {
     setIsOpen(false);
   };
 
-  const handleCommentSubmit = (comment: string) => {
+  const handleCommentSubmit = async (comment: Omit<Comment, 'id' | 'likes' | 'timestamp' | 'isLiked'>) => {
     console.log("Comment submitted:", comment);
   };
 
-  const handleCommentLike = (commentId: string) => {
+  const handleCommentLike = async (commentId: string) => {
     console.log("Comment liked:", commentId);
+  };
+
+  const handleCommentUnlike = async (commentId: string) => {
+    console.log("Comment unliked:", commentId);
+  };
+
+  const handleEditComment = async (commentId: string, content: string) => {
+    console.log("Comment edited:", commentId, content);
+  };
+
+  const handleDeleteComment = async (commentId: string) => {
+    console.log("Comment deleted:", commentId);
   };
 
   return (
@@ -47,6 +59,9 @@ export const PostDialog = ({ post, children }: PostDialogProps) => {
           onPostDelete={handlePostDelete}
           onCommentSubmit={handleCommentSubmit}
           onCommentLike={handleCommentLike}
+          onCommentUnlike={handleCommentUnlike}
+          onEditComment={handleEditComment}
+          onDeleteComment={handleDeleteComment}
         />
       </DialogContent>
     </Dialog>

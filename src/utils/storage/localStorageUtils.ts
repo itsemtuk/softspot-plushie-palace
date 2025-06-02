@@ -1,273 +1,59 @@
-import { ExtendedPost, MarketplacePlushie } from "@/types/marketplace";
 
-// Constants for storage keys
-const POSTS_STORAGE_KEY = 'userPosts';
-const MARKETPLACE_STORAGE_KEY = 'marketplaceListings';
-const CURRENT_USER_KEY = 'currentUserId';
-const USER_STATUS_KEY = 'userStatus';
-const SYNC_TIMESTAMP_KEY = 'lastSyncTimestamp';
-const CACHE_VERSION_KEY = 'cacheVersion';
+import { ExtendedPost } from "@/types/core";
 
-// Set a cache version to allow for future cache invalidation if needed
-const CURRENT_CACHE_VERSION = '1.0';
+const POSTS_STORAGE_KEY = 'offline_posts';
+const USER_ID_KEY = 'current_user_id';
+const MARKETPLACE_STORAGE_KEY = 'marketplace_listings';
 
-/**
- * Initializes cache version if not set
- */
-const initCacheVersion = () => {
-  const version = localStorage.getItem(CACHE_VERSION_KEY);
-  if (version !== CURRENT_CACHE_VERSION) {
-    localStorage.setItem(CACHE_VERSION_KEY, CURRENT_CACHE_VERSION);
-  }
-};
-
-// Initialize cache version on script load
-initCacheVersion();
-
-/**
- * Saves posts to local storage
- */
 export const savePosts = (posts: ExtendedPost[]): void => {
   try {
-    // Before saving, remove duplicates by ID
-    const uniquePosts = removeDuplicatePosts(posts);
-    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(uniquePosts));
-    // Also store in sessionStorage for cross-tab syncing
-    sessionStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(uniquePosts));
-    // Update sync timestamp
-    updateSyncTimestamp();
+    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error('Error saving posts to local storage:', error);
-    }
+    console.error('Error saving posts to localStorage:', error);
   }
 };
 
-/**
- * Updates the last sync timestamp
- */
-export const updateSyncTimestamp = (): void => {
-  const timestamp = new Date().toISOString();
-  localStorage.setItem(SYNC_TIMESTAMP_KEY, timestamp);
-  sessionStorage.setItem(SYNC_TIMESTAMP_KEY, timestamp);
-};
-
-/**
- * Gets the last sync timestamp
- */
-export const getLastSyncTimestamp = (): string | null => {
-  return localStorage.getItem(SYNC_TIMESTAMP_KEY) || sessionStorage.getItem(SYNC_TIMESTAMP_KEY);
-};
-
-/**
- * Removes duplicate posts by ID, keeping the most recent version
- */
-const removeDuplicatePosts = (posts: ExtendedPost[]): ExtendedPost[] => {
-  const postMap = new Map<string, ExtendedPost>();
-  
-  // Keep only the latest version of each post by ID
-  posts.forEach(post => {
-    if (!postMap.has(post.id) || 
-        new Date(post.timestamp || 0) > new Date(postMap.get(post.id)!.timestamp || 0)) {
-      postMap.set(post.id, post);
-    }
-  });
-  
-  return Array.from(postMap.values());
-};
-
-/**
- * Retrieves posts from local storage
- */
 export const getLocalPosts = (): ExtendedPost[] => {
   try {
-    // First check if there are newer posts in sessionStorage (from other tabs)
-    const sessionPosts = sessionStorage.getItem(POSTS_STORAGE_KEY);
-    const localPosts = localStorage.getItem(POSTS_STORAGE_KEY);
-    
-    const storedPosts = sessionPosts || localPosts;
-    const posts = storedPosts ? JSON.parse(storedPosts) : [];
-    
-    // Remove duplicates before returning
-    const uniquePosts = removeDuplicatePosts(posts);
-    
-    // Sort posts by timestamp (newest first)
-    return uniquePosts.sort((a: ExtendedPost, b: ExtendedPost) => {
-      const dateA = new Date(a.timestamp || 0).getTime();
-      const dateB = new Date(b.timestamp || 0).getTime();
-      return dateB - dateA; // Descending order (newest first)
-    });
+    const stored = localStorage.getItem(POSTS_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error('Error retrieving posts from local storage:', error);
-    }
+    console.error('Error reading posts from localStorage:', error);
     return [];
   }
 };
 
-/**
- * Saves marketplace listings to local storage
- */
-export const saveMarketplaceListings = (listings: MarketplacePlushie[]): void => {
+export const saveMarketplaceListings = (listings: ExtendedPost[]): void => {
   try {
-    // Ensure userId is attached to each listing for sync purposes
-    const userId = localStorage.getItem(CURRENT_USER_KEY) || 'anonymous';
-    const listingsWithUser = listings.map(listing => ({
-      ...listing,
-      userId: listing.userId || userId,
-      timestamp: listing.timestamp || new Date().toISOString()
-    }));
-    
-    // Remove any duplicates by ID
-    const uniqueListings = removeDuplicateListings(listingsWithUser);
-    
-    localStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(uniqueListings));
-    // Also store in sessionStorage for cross-tab syncing
-    sessionStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(uniqueListings));
+    localStorage.setItem(MARKETPLACE_STORAGE_KEY, JSON.stringify(listings));
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error('Error saving marketplace listings to local storage:', error);
-    }
+    console.error('Error saving marketplace listings to localStorage:', error);
   }
 };
 
-/**
- * Removes duplicate listings by ID, keeping the most recent version
- */
-const removeDuplicateListings = (listings: MarketplacePlushie[]): MarketplacePlushie[] => {
-  const listingMap = new Map<string, MarketplacePlushie>();
-  
-  // Keep only the latest version of each listing by ID
-  listings.forEach(listing => {
-    if (!listingMap.has(listing.id) || 
-        new Date(listing.timestamp || 0) > new Date(listingMap.get(listing.id)!.timestamp || 0)) {
-      listingMap.set(listing.id, listing);
-    }
-  });
-  
-  return Array.from(listingMap.values());
-};
-
-/**
- * Retrieves marketplace listings from local storage
- */
-export const getMarketplaceListings = (): MarketplacePlushie[] => {
+export const getMarketplaceListings = (): ExtendedPost[] => {
   try {
-    // First check if there are newer listings in sessionStorage (from other tabs)
-    const sessionListings = sessionStorage.getItem(MARKETPLACE_STORAGE_KEY);
-    const localListings = localStorage.getItem(MARKETPLACE_STORAGE_KEY);
-    
-    const storedListings = sessionListings || localListings;
-    
-    if (!storedListings) {
-      if (import.meta.env.DEV) {
-        console.log("No marketplace listings found in storage");
-      }
-      return [];
-    }
-    
-    let listings;
-    try {
-      listings = JSON.parse(storedListings);
-    } catch (parseError) {
-      if (import.meta.env.DEV) {
-        console.error("Error parsing marketplace listings:", parseError);
-      }
-      return [];
-    }
-    
-    if (!Array.isArray(listings)) {
-      if (import.meta.env.DEV) {
-        console.error("Marketplace listings is not an array:", listings);
-      }
-      return [];
-    }
-    
-    // Remove duplicates before returning
-    const uniqueListings = removeDuplicateListings(listings);
-    
-    // Sort listings by timestamp (newest first)
-    return uniqueListings.sort((a: MarketplacePlushie, b: MarketplacePlushie) => {
-      const dateA = new Date(a.timestamp || 0).getTime();
-      const dateB = new Date(b.timestamp || 0).getTime();
-      return dateB - dateA;
-    });
+    const stored = localStorage.getItem(MARKETPLACE_STORAGE_KEY);
+    return stored ? JSON.parse(stored) : [];
   } catch (error) {
-    if (import.meta.env.DEV) {
-      console.error('Error retrieving marketplace listings from local storage:', error);
-    }
+    console.error('Error reading marketplace listings from localStorage:', error);
     return [];
   }
 };
 
-/**
- * Sets the current user ID in local storage for syncing
- */
 export const setCurrentUserId = (userId: string): void => {
-  localStorage.setItem(CURRENT_USER_KEY, userId);
-  // Also store in sessionStorage for cross-tab syncing
-  sessionStorage.setItem(CURRENT_USER_KEY, userId);
-  // Update sync timestamp when user changes
-  updateSyncTimestamp();
-};
-
-/**
- * Gets the current user ID from local storage
- */
-export const getCurrentUserId = (): string => {
-  return localStorage.getItem(CURRENT_USER_KEY) || sessionStorage.getItem(CURRENT_USER_KEY) || 'anonymous';
-};
-
-/**
- * Sets the current user status in local storage
- */
-export const setUserStatus = (status: "online" | "offline" | "away" | "busy"): void => {
-  localStorage.setItem(USER_STATUS_KEY, status);
-  sessionStorage.setItem(USER_STATUS_KEY, status);
-};
-
-/**
- * Gets the current user status from local storage
- */
-export const getUserStatus = (): "online" | "offline" | "away" | "busy" => {
-  return (localStorage.getItem(USER_STATUS_KEY) || 
-          sessionStorage.getItem(USER_STATUS_KEY) || 
-          'online') as "online" | "offline" | "away" | "busy";
-};
-
-/**
- * Cleans up duplicate posts and listings from storage
- */
-export const cleanupStorage = (): void => {
-  // Get all posts and save them back (which will remove duplicates)
-  const posts = getLocalPosts();
-  savePosts(posts);
-  
-  // Get all listings and save them back (which will remove duplicates)
-  const listings = getMarketplaceListings();
-  saveMarketplaceListings(listings);
-  
-  console.log("Storage cleanup completed");
-};
-
-/**
- * Clears the cache for a specific user or all users
- */
-export const clearUserCache = (userId?: string): void => {
-  if (userId) {
-    // Clear cache for specific user only
-    const posts = getLocalPosts().filter(post => post.userId !== userId);
-    savePosts(posts);
-    
-    const listings = getMarketplaceListings().filter(listing => listing.userId !== userId);
-    saveMarketplaceListings(listings);
-  } else {
-    // Clear all cache
-    localStorage.removeItem(POSTS_STORAGE_KEY);
-    localStorage.removeItem(MARKETPLACE_STORAGE_KEY);
-    sessionStorage.removeItem(POSTS_STORAGE_KEY);
-    sessionStorage.removeItem(MARKETPLACE_STORAGE_KEY);
+  try {
+    localStorage.setItem(USER_ID_KEY, userId);
+  } catch (error) {
+    console.error('Error saving user ID to localStorage:', error);
   }
-  
-  updateSyncTimestamp();
+};
+
+export const getCurrentUserId = (): string | null => {
+  try {
+    return localStorage.getItem(USER_ID_KEY);
+  } catch (error) {
+    console.error('Error reading user ID from localStorage:', error);
+    return null;
+  }
 };

@@ -2,24 +2,16 @@
 // Re-export all post-related functions from their new modules
 export {
   getPosts,
-  getUserPosts,
-  getPostById
+  getAllPosts,
+  fetchPosts
 } from './posts/postFetch';
 
 export {
   savePost,
   addPost,
   updatePost,
-  deletePost,
-  getAllUserPosts
+  deletePost
 } from './posts/postManagement';
-
-export {
-  togglePostLike,
-  sharePost,
-  likePost,
-  likeComment
-} from './posts/postInteraction';
 
 export {
   uploadImage,
