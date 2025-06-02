@@ -60,16 +60,25 @@ export const useSellItemForm = () => {
     }
 
     try {
-      const result = await uploadImage(file, 'posts');
-      if (result.success && result.imageUrl) {
-        setImageUrl(result.imageUrl);
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Upload failed",
-          description: result.error || "Failed to upload image",
-        });
-      }
+      // Convert File to data URL first
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const dataUrl = e.target?.result as string;
+        if (dataUrl) {
+          const imageId = `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const result = await uploadImage(dataUrl, imageId);
+          if (result.imageUrl) {
+            setImageUrl(result.imageUrl);
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Upload failed",
+              description: result.error || "Failed to upload image",
+            });
+          }
+        }
+      };
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error("Image upload error:", error);
       toast({
