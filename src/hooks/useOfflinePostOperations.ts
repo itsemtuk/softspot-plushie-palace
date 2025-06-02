@@ -1,78 +1,53 @@
+import { useState, useEffect } from "react";
+import { toast } from "@/components/ui/use-toast";
+import { ExtendedPost } from "@/types/core";
 
-import { useCallback } from 'react';
-import { ExtendedPost } from '@/types/marketplace';
-import { useSyncManager } from '@/hooks/useSyncManager';
-import { useConnectionStatus } from '@/hooks/useConnectionStatus';
-import { savePost as savePostToStorage, deletePost as deletePostFromStorage } from '@/utils/posts/postManagement';
-import { toast } from '@/hooks/use-toast';
+const LOCAL_STORAGE_KEY = "offlinePosts";
 
 export const useOfflinePostOperations = () => {
-  const { isOnline, supabaseConnected } = useConnectionStatus();
-  const { addPendingSync } = useSyncManager();
-
-  const savePost = useCallback(async (post: ExtendedPost, isNewPost = false) => {
-    // Always save locally first
-    const result = await savePostToStorage(post);
-    
-    if (!result.success) {
-      return result;
+  const [offlinePosts, setOfflinePosts] = useState<ExtendedPost[]>(() => {
+    try {
+      const storedPosts = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return storedPosts ? JSON.parse(storedPosts) : [];
+    } catch (error) {
+      console.error("Error parsing offline posts from localStorage:", error);
+      return [];
     }
+  });
 
-    // If offline or no connection, queue for sync
-    if (!isOnline || !supabaseConnected) {
-      addPendingSync({
-        id: post.id,
-        type: isNewPost ? 'create' : 'update',
-        data: post
-      });
-      
+  useEffect(() => {
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(offlinePosts));
+    } catch (error) {
+      console.error("Error saving offline posts to localStorage:", error);
       toast({
-        title: isNewPost ? "Post Created" : "Post Updated",
-        description: "Changes will sync when you're back online.",
-        duration: 3000
-      });
-    } else {
-      toast({
-        title: isNewPost ? "Post Created" : "Post Updated",
-        description: "Changes synced successfully."
+        variant: "destructive",
+        title: "Offline Error",
+        description: "Failed to save posts offline. Please check your browser settings.",
       });
     }
+  }, [offlinePosts]);
 
-    return result;
-  }, [isOnline, supabaseConnected, addPendingSync]);
+  const addOfflinePost = (post: ExtendedPost) => {
+    setOfflinePosts((prevPosts) => [...prevPosts, post]);
+    toast({
+      title: "Post Saved Offline",
+      description: "Your post has been saved locally and will be synced when you reconnect.",
+    });
+  };
 
-  const deletePost = useCallback(async (postId: string) => {
-    // Always delete locally first
-    const result = await deletePostFromStorage(postId);
-    
-    if (!result.success) {
-      return result;
-    }
+  const removeOfflinePost = (postId: string) => {
+    setOfflinePosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+  };
 
-    // If offline or no connection, queue for sync
-    if (!isOnline || !supabaseConnected) {
-      addPendingSync({
-        id: postId,
-        type: 'delete'
-      });
-      
-      toast({
-        title: "Post Deleted",
-        description: "Changes will sync when you're back online.",
-        duration: 3000
-      });
-    } else {
-      toast({
-        title: "Post Deleted",
-        description: "Changes synced successfully."
-      });
-    }
-
-    return result;
-  }, [isOnline, supabaseConnected, addPendingSync]);
+  const clearOfflinePosts = () => {
+    setOfflinePosts([]);
+  };
 
   return {
-    savePost,
-    deletePost
+    offlinePosts,
+    addOfflinePost,
+    removeOfflinePost,
+    clearOfflinePosts,
   };
 };

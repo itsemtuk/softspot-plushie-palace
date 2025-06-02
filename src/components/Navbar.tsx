@@ -1,99 +1,100 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { useIsMobile } from "@/hooks/use-mobile";
-import PostCreationFlow from "@/components/post/PostCreationFlow";
-import { PostCreationData } from "@/types/marketplace";
-import { toast } from "@/components/ui/use-toast";
-import { MobileNav } from "@/components/navigation/MobileNav";
-import { Logo } from "@/components/navigation/Logo";
-import { NavLinks } from "@/components/navigation/NavLinks";
-import { SearchBar } from "@/components/navigation/SearchBar";
-import { UserMenu } from "@/components/navigation/UserMenu";
-import { ConnectionStatusIndicator } from "@/components/ui/connection-status";
-import { isAuthenticated } from "@/utils/auth/authState";
-import { OfflineNotification } from "@/components/ui/offline-notification";
+import { useNavigate, Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { UserMenu } from "./navigation/UserMenu";
+import { PostCreationData } from "@/types/core";
+import { useTheme } from "@/hooks/useTheme";
+import { Moon, Sun } from "lucide-react";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet"
+import { ModeToggle } from "./ModeToggle";
 
-export function Navbar() {
-  const isMobile = useIsMobile();
-  const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(isAuthenticated());
+export const Navbar = () => {
+  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Update auth status whenever it changes
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      const authStatus = isAuthenticated();
-      console.log("Navbar: Auth status checked:", authStatus);
-      setIsSignedIn(authStatus);
-    };
-    
-    // Check on mount
-    checkAuthStatus();
-    
-    // Listen for auth changes
-    const handleAuthChange = () => {
-      checkAuthStatus();
-    };
-    
-    window.addEventListener('clerk-auth-change', handleAuthChange);
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'currentUserId' || e.key === 'authStatus') {
-        checkAuthStatus();
-      }
-    });
-    
-    // Check auth status periodically (every 5 seconds)
-    const intervalId = setInterval(checkAuthStatus, 5000);
-    
-    return () => {
-      window.removeEventListener('clerk-auth-change', handleAuthChange);
-      window.removeEventListener('storage', handleAuthChange);
-      clearInterval(intervalId);
-    };
-  }, []);
-
-  // Handle post creation
-  const handleCreatePost = async (postData: PostCreationData): Promise<void> => {
-    console.log("New post created:", postData);
-    toast({
-      title: "Post created successfully!",
-      description: "Your post is now visible in your profile and feed."
-    });
-    return Promise.resolve();
+  const toggleMenu = () => {
+    setIsMenuOpen(!isMenuOpen);
   };
 
-  if (isMobile) {
-    return <MobileNav />;
-  }
-
   return (
-    <>
-      <nav className="bg-white/80 backdrop-blur-sm sticky top-0 z-50 w-full border-b border-softspot-100">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16">
-            <div className="flex-shrink-0 flex items-center">
-              <Logo />
-            </div>
-            
-            {/* Desktop navigation */}
-            <div className="hidden md:flex md:items-center md:space-x-4">
-              <NavLinks />
-              <SearchBar />
-              <UserMenu />
-            </div>
+    <div className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
+        {/* Logo and Brand */}
+        <Link to="/" className="flex items-center font-bold text-xl text-softspot-500 dark:text-softspot-400">
+          SoftSpot
+        </Link>
+
+        {/* Navigation Links (Hidden on Small Screens) */}
+        <div className="hidden md:flex items-center space-x-6">
+          <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400">
+            Discover
+          </Link>
+          <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400">
+            Marketplace
+          </Link>
+          <Link to="/community" className="hover:text-softspot-500 dark:hover:text-softspot-400">
+            Community
+          </Link>
+        </div>
+
+        {/* User Menu and Mobile Menu Button */}
+        <div className="flex items-center space-x-4">
+          <ModeToggle />
+          <UserMenu />
+          {/* Mobile Menu Button */}
+          <div className="md:hidden">
+            <Sheet>
+              <SheetTrigger className="outline-none">
+                <Button variant="outline" size="icon">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="lucide lucide-menu"
+                  >
+                    <line x1="4" x2="20" y1="12" y2="12" />
+                    <line x1="4" x2="20" y1="6" y2="6" />
+                    <line x1="4" x2="20" y1="18" y2="18" />
+                  </svg>
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:w-64">
+                <SheetHeader>
+                  <SheetTitle>Menu</SheetTitle>
+                  <SheetDescription>
+                    Explore SoftSpot
+                  </SheetDescription>
+                </SheetHeader>
+                <div className="grid gap-4 py-4">
+                  <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
+                    Discover
+                  </Link>
+                  <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
+                    Marketplace
+                  </Link>
+                  <Link to="/community" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
+                    Community
+                  </Link>
+                </div>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
-      </nav>
-      
-      {/* Enhanced offline notification */}
-      <OfflineNotification />
-      
-      <PostCreationFlow
-        isOpen={isPostCreationOpen}
-        onClose={() => setIsPostCreationOpen(false)}
-        onPostCreated={handleCreatePost}
-      />
-    </>
+      </div>
+    </div>
   );
-}
-
-export default Navbar;
+};

@@ -1,109 +1,87 @@
-
-import { useState } from "react";
-import { useUser } from "@clerk/clerk-react";
-import { ExtendedPost } from "@/types/marketplace";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Card } from "@/components/ui/card";
-import { Heart, MessageSquare, Share2, MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { useState, useCallback } from "react";
+import { usePostDialog } from "@/hooks/use-post-dialog";
+import { Spinner } from "@/components/ui/spinner";
+import { ExtendedPost } from "@/types/core";
+import { FeedGrid } from "./FeedGrid";
+import { useSyncManager } from "@/hooks/useSyncManager";
+import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { WifiOff } from "lucide-react";
 
 interface FeedContentProps {
-  posts: ExtendedPost[];
-  onPostClick: (post: ExtendedPost) => void;
+  initialPosts: ExtendedPost[];
+  isLoading: boolean;
+  isError: boolean;
+  isOnline: boolean;
+  onRefresh: () => void;
 }
 
-export const FeedContent = ({ posts, onPostClick }: FeedContentProps) => {
-  const { user } = useUser();
+export const FeedContent = ({ initialPosts, isLoading, isError, isOnline, onRefresh }: FeedContentProps) => {
+  const { openPostDialog } = usePostDialog();
+  const [posts, setPosts] = useState<ExtendedPost[]>(initialPosts);
+  const { syncPosts } = useSyncManager();
+  const { addOfflinePost, deleteOfflinePost } = useOfflinePostOperations();
+
+  const handlePostClick = (post: ExtendedPost) => {
+    openPostDialog(post);
+  };
+
+  const handlePostCreated = useCallback(
+    (newPost: ExtendedPost) => {
+      setPosts((prevPosts) => [newPost, ...prevPosts]);
+      addOfflinePost(newPost);
+    },
+    [addOfflinePost]
+  );
+
+  const handlePostDeleted = useCallback(
+    (postId: string) => {
+      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
+      deleteOfflinePost(postId);
+    },
+    [deleteOfflinePost]
+  );
+
+  const handlePostsRefreshed = useCallback(
+    (refreshedPosts: ExtendedPost[]) => {
+      setPosts(refreshedPosts);
+    },
+    []
+  );
+
+  useEffect(() => {
+    if (isOnline) {
+      syncPosts(posts, handlePostsRefreshed);
+    }
+  }, [isOnline, posts, syncPosts, handlePostsRefreshed]);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-40">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return <div className="text-red-500">Error loading posts. Please try again.</div>;
+  }
 
   return (
-    <div className="space-y-6">
-      {posts.map((post) => (
-        <Card key={post.id} className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="flex items-center p-4">
-            <Avatar className="h-10 w-10 mr-3">
-              <AvatarImage 
-                src={`https://api.dicebear.com/6.x/initials/svg?seed=${post.username}`}
-                alt={post.username} 
-              />
-              <AvatarFallback>{post.username?.[0] || '?'}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <h3 className="font-medium">{post.username}</h3>
-              <p className="text-xs text-gray-500">
-                {post.timestamp ? new Date(post.timestamp).toLocaleString('en-US', { 
-                  hour: 'numeric',
-                  minute: 'numeric',
-                  day: 'numeric',
-                  month: 'short'
-                }) : 'Recently'}
-                {post.forSale && <span className="text-softspot-500 ml-2">• Selling</span>}
-              </p>
-            </div>
-            <Button variant="ghost" size="icon" className="text-gray-500 hover:text-softspot-500">
-              <MoreHorizontal className="h-5 w-5" />
-            </Button>
-          </div>
-          
-          <div className="px-4 pb-2">
-            <p>{post.description || post.title}</p>
-          </div>
-          
-          {post.image && (
-            <div 
-              className="w-full bg-gray-100"
-              onClick={() => onPostClick(post)}
-            >
-              <img 
-                src={post.image} 
-                alt={post.title || "Post"} 
-                className="w-full object-cover max-h-96 cursor-pointer"
-                onError={(e) => {
-                  e.currentTarget.src = 'https://via.placeholder.com/600x400?text=Image+Error';
-                }}
-              />
-            </div>
-          )}
-          
-          {post.forSale ? (
-            <div className="p-4 border-t">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="text-xs text-gray-500">Price</p>
-                  <p className="font-bold text-softspot-500 text-lg">
-                    ${post.price?.toFixed(2) || '0.00'}
-                  </p>
-                </div>
-                <Button 
-                  className="bg-softspot-500 hover:bg-softspot-600 text-white"
-                  onClick={() => onPostClick(post)}
-                >
-                  Buy Now
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="p-3 flex justify-between">
-              <Button variant="ghost" size="sm" className="flex items-center text-gray-600 hover:text-softspot-500">
-                <Heart className="mr-2 h-4 w-4" />
-                <span>{post.likes || 0}</span>
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="flex items-center text-gray-600 hover:text-softspot-500"
-                onClick={() => onPostClick(post)}
-              >
-                <MessageSquare className="mr-2 h-4 w-4" />
-                <span>{post.comments || 0}</span>
-              </Button>
-              <Button variant="ghost" size="sm" className="flex items-center text-gray-600 hover:text-softspot-500">
-                <Share2 className="mr-2 h-4 w-4" />
-                <span>Share</span>
-              </Button>
-            </div>
-          )}
-        </Card>
-      ))}
+    <div className="space-y-4">
+      {!isOnline && (
+        <Alert className="mb-4 border-yellow-200 bg-yellow-50">
+          <WifiOff className="h-4 w-4 text-yellow-600" />
+          <AlertDescription className="text-yellow-800">
+            <strong>Offline Mode:</strong> You're working offline. Changes will be synced when you reconnect.
+          </AlertDescription>
+        </Alert>
+      )}
+      {posts.length === 0 ? (
+        <div className="text-gray-500 text-center py-12">No posts available.</div>
+      ) : (
+        <FeedGrid posts={posts} onPostClick={handlePostClick} />
+      )}
     </div>
   );
 };

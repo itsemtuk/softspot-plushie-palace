@@ -1,20 +1,31 @@
-
-import React, { useState } from 'react';
+import { useState, useEffect } from "react";
+import { Heart, Plus, Trash2, ExternalLink, Tag, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
-import { WishlistItem, MarketplacePlushie } from '@/types/marketplace';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { toast } from "@/components/ui/use-toast";
+import { WishlistItem } from "@/types/user";
 
 interface WishlistManagerProps {
-  // Add any props here
+  wishlistItems: WishlistItem[];
+  onItemAdded: (item: WishlistItem) => void;
+  onItemDeleted: (itemId: string) => void;
+  onItemUpdated: (item: WishlistItem) => void;
 }
 
-export function WishlistManager() {
-  const [newItemData, setNewItemData] = useState<Partial<WishlistItem>>({
+export const WishlistManager = ({
+  wishlistItems,
+  onItemAdded,
+  onItemDeleted,
+  onItemUpdated,
+}: WishlistManagerProps) => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [newItem, setNewItem] = useState<Omit<WishlistItem, 'id' | 'addedAt'>>({
+    plushieId: '',
+    userId: '',
     name: '',
     title: '',
     price: 0,
@@ -26,71 +37,23 @@ export function WishlistManager() {
     status: 'wanted',
     currencyCode: 'USD',
     brand: '',
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
   });
-
-  const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
-  const [priority, setPriority] = useState<WishlistItem['priority']>('medium');
-  const [status, setStatus] = useState<WishlistItem['status']>('wanted');
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setNewItemData(prev => ({ ...prev, [name]: value }));
+    setNewItem(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSelectPriority = (value: WishlistItem['priority']) => {
-    setPriority(value);
-    setNewItemData(prev => ({ ...prev, priority: value }));
-  };
-
-  const handleSelectStatus = (value: WishlistItem['status']) => {
-    setStatus(value);
-    setNewItemData(prev => ({ ...prev, status: value }));
-  };
-
-  const handleAddToWishlist = () => {
-    const newItem: WishlistItem = {
-      id: `item-${Date.now()}`,
-      plushieId: `plushie-${Date.now()}`,
-      userId: "current-user",
+  const handleAddItem = () => {
+    const newItemWithDefaults: WishlistItem = {
+      id: `wishlist-item-${Date.now()}`,
       addedAt: new Date().toISOString(),
-      name: newItemData.name,
-      title: newItemData.title,
-      price: newItemData.price,
-      description: newItemData.description,
-      imageUrl: newItemData.imageUrl,
-      image: newItemData.image,
-      linkUrl: newItemData.linkUrl,
-      priority: priority,
-      status: status,
-      currencyCode: 'USD',
-      brand: newItemData.brand,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      plushie: {
-        id: `plushie-${Date.now()}`,
-        name: newItemData.name,
-        title: newItemData.title,
-        price: newItemData.price || 0,
-        imageUrl: newItemData.imageUrl || '',
-        image: newItemData.image,
-        description: newItemData.description || '',
-        condition: 'new',
-        material: 'plush',
-        species: 'bear',
-        size: 'medium',
-        filling: 'polyester',
-        tags: [],
-        location: '',
-        forSale: true,
-        likes: 0,
-        comments: 0
-      }
+      ...newItem,
     };
-
-    setWishlistItems(prev => [...prev, newItem]);
-    setNewItemData({
+    onItemAdded(newItemWithDefaults);
+    setNewItem({
+      plushieId: '',
+      userId: '',
       name: '',
       title: '',
       price: 0,
@@ -102,120 +65,136 @@ export function WishlistManager() {
       status: 'wanted',
       currencyCode: 'USD',
       brand: '',
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+    });
+    setIsDialogOpen(false);
+    toast({
+      title: "Item added",
+      description: "The item has been added to your wishlist.",
+    });
+  };
+
+  const handleDeleteItem = (itemId: string) => {
+    onItemDeleted(itemId);
+    toast({
+      title: "Item deleted",
+      description: "The item has been removed from your wishlist.",
+    });
+  };
+
+  const handleUpdateItem = (item: WishlistItem) => {
+    onItemUpdated(item);
+    toast({
+      title: "Item updated",
+      description: "The item has been updated in your wishlist.",
     });
   };
 
   return (
-    <div className="container mx-auto py-10">
-      <Card>
+    <div>
+      <Card className="mb-4">
         <CardHeader>
-          <CardTitle>Manage Wishlist</CardTitle>
-          <CardDescription>Add items to your wishlist.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid gap-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Input
-                type="text"
-                name="name"
-                placeholder="Item Name"
-                value={newItemData.name || ''}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div>
-              <Input
-                type="text"
-                name="title"
-                placeholder="Item Title"
-                value={newItemData.title || ''}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div>
-              <Input
-                type="number"
-                name="price"
-                placeholder="Price"
-                value={newItemData.price || ''}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div>
-              <Input
-                type="text"
-                name="imageUrl"
-                placeholder="Image URL"
-                value={newItemData.imageUrl || ''}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-          <Textarea
-            name="description"
-            placeholder="Description"
-            value={newItemData.description || ''}
-            onChange={handleInputChange}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <Select onValueChange={handleSelectPriority} defaultValue={priority}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Priority" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="low">Low</SelectItem>
-                  <SelectItem value="medium">Medium</SelectItem>
-                  <SelectItem value="high">High</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Select onValueChange={handleSelectStatus} defaultValue={status}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="wanted">Wanted</SelectItem>
-                  <SelectItem value="purchased">Purchased</SelectItem>
-                  <SelectItem value="received">Received</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Button onClick={handleAddToWishlist}>Add to Wishlist</Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Wishlist Items</CardTitle>
-          <CardDescription>Your saved wishlist items.</CardDescription>
+          <CardTitle className="flex items-center justify-between">
+            <span>My Wishlist</span>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="outline" size="sm">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Item
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Item</DialogTitle>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="name" className="text-right">
+                      Name
+                    </Label>
+                    <Input id="name" name="name" value={newItem.name || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="title" className="text-right">
+                      Title
+                    </Label>
+                    <Input id="title" name="title" value={newItem.title || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="price" className="text-right">
+                      Price
+                    </Label>
+                    <Input id="price" name="price" type="number" value={newItem.price || 0} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="imageUrl" className="text-right">
+                      Image URL
+                    </Label>
+                    <Input id="imageUrl" name="imageUrl" value={newItem.imageUrl || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="linkUrl" className="text-right">
+                      Link URL
+                    </Label>
+                    <Input id="linkUrl" name="linkUrl" value={newItem.linkUrl || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <Label htmlFor="description" className="text-right">
+                      Description
+                    </Label>
+                    <Textarea id="description" name="description" value={newItem.description || ''} onChange={handleInputChange} className="col-span-3" />
+                  </div>
+                </div>
+                <Button onClick={handleAddItem}>Add Item</Button>
+              </DialogContent>
+            </Dialog>
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[300px] w-full">
+          {wishlistItems.length === 0 ? (
+            <p>Your wishlist is empty.</p>
+          ) : (
             <div className="grid gap-4">
-              {wishlistItems.map((item) => (
+              {wishlistItems.map(item => (
                 <Card key={item.id}>
                   <CardHeader>
-                    <CardTitle>{item.name}</CardTitle>
-                    <CardDescription>{item.description}</CardDescription>
+                    <CardTitle className="flex items-center justify-between">
+                      <span>{item.name || item.title}</span>
+                      <div className="space-x-2">
+                        <Button variant="ghost" size="icon" onClick={() => handleDeleteItem(item.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        {item.linkUrl && (
+                          <Button variant="ghost" size="icon" asChild>
+                            <a href={item.linkUrl} target="_blank" rel="noopener noreferrer">
+                              <ExternalLink className="h-4 w-4" />
+                            </a>
+                          </Button>
+                        )}
+                      </div>
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p>Price: {item.price}</p>
-                    <p>Priority: <Badge>{item.priority}</Badge></p>
-                    <p>Status: <Badge>{item.status}</Badge></p>
+                    <div className="grid gap-2">
+                      {item.imageUrl && (
+                        <img src={item.imageUrl} alt={item.name || item.title} className="rounded-md aspect-video object-cover" />
+                      )}
+                      <p className="text-sm">{item.description}</p>
+                      <div className="flex items-center space-x-2">
+                        <Tag className="h-4 w-4" />
+                        <span>{item.brand}</span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <DollarSign className="h-4 w-4" />
+                        <span>{item.price}</span>
+                      </div>
+                    </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
-          </ScrollArea>
+          )}
         </CardContent>
       </Card>
     </div>
   );
-}
+};

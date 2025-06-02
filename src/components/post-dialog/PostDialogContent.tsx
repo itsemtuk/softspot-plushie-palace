@@ -1,94 +1,63 @@
-
-import { PostImage } from "./PostImage";
+import { useState, useCallback } from "react";
 import { PostContent } from "./PostContent";
-import { ExtendedPost, Comment } from "@/types/marketplace";
-import { Spinner } from "@/components/ui/spinner";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { ExtendedPost, Comment } from "@/types/core";
 
 interface PostDialogContentProps {
-  post: ExtendedPost | null;
-  isLoading: boolean;
-  isAuthor: boolean;
-  isLiked: boolean;
-  likeCount: number;
-  commentList: Comment[];
-  onLikeToggle: () => void;
-  onCommentLikeToggle: (commentId: string) => void;
-  onCommentSubmit: (comment: string) => void;
-  onFindSimilar: () => void;
-  onClose: () => void;
-  onSaveEdit: (editedPost: ExtendedPost) => Promise<boolean>;
-  onDeletePost: () => void;
+  post: ExtendedPost;
+  onPostUpdate: (updatedPost: ExtendedPost) => void;
+  onPostDelete: (postId: string) => void;
+  onCommentSubmit: (comment: Omit<Comment, 'id' | 'likes' | 'timestamp' | 'isLiked'>) => Promise<void>;
+  onCommentLike: (commentId: string) => Promise<void>;
+  onCommentUnlike: (commentId: string) => Promise<void>;
+  onEditComment: (commentId: string, content: string) => Promise<void>;
+  onDeleteComment: (commentId: string) => Promise<void>;
 }
 
-export function PostDialogContent({
+export const PostDialogContent = ({
   post,
-  isLoading,
-  isAuthor,
-  isLiked,
-  likeCount,
-  commentList,
-  onLikeToggle,
-  onCommentLikeToggle,
+  onPostUpdate,
+  onPostDelete,
   onCommentSubmit,
-  onFindSimilar,
-  onClose,
-  onSaveEdit,
-  onDeletePost
-}: PostDialogContentProps) {
-  const isMobile = useIsMobile();
-  
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64 w-full">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  onCommentLike,
+  onCommentUnlike,
+  onEditComment,
+  onDeleteComment
+}: PostDialogContentProps) => {
+  const [comments, setComments] = useState<Comment[]>([]);
 
-  if (!post) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 w-full p-6 text-center">
-        <h3 className="text-lg font-medium text-gray-900">Post not found</h3>
-        <p className="mt-2 text-sm text-gray-500">
-          The post you're looking for doesn't exist or has been removed.
-        </p>
-      </div>
-    );
-  }
+  const handleCommentSubmit = useCallback(
+    async (newComment: Omit<Comment, 'id' | 'likes' | 'timestamp' | 'isLiked'>) => {
+      try {
+        await onCommentSubmit(newComment);
+        // Optimistically update the local state
+        setComments(prevComments => [
+          ...prevComments,
+          {
+            ...newComment,
+            id: `temp-${Date.now()}`, // Temporary ID
+            likes: 0,
+            timestamp: new Date().toISOString(),
+            isLiked: false,
+          } as Comment,
+        ]);
+      } catch (error) {
+        console.error("Error submitting comment:", error);
+      }
+    },
+    [onCommentSubmit]
+  );
 
   return (
-    <div className="relative grid grid-cols-1 md:grid-cols-2 h-full">
-      {/* Only show one close button positioned according to device */}
-      <Button 
-        variant="ghost" 
-        size="icon" 
-        className={`absolute ${isMobile ? 'top-2 left-2' : 'top-2 right-2'} z-10 bg-white/80 hover:bg-white rounded-full`} 
-        onClick={onClose}
-      >
-        <X className={`h-${isMobile ? '5' : '4'} w-${isMobile ? '5' : '4'}`} />
-      </Button>
-
-      {/* Left side - Image */}
-      <PostImage imageUrl={post.image} altText={post.title} />
-      
-      {/* Right side - Content */}
-      <PostContent 
-        post={post}
-        isAuthor={isAuthor}
-        isLiked={isLiked}
-        likeCount={likeCount}
-        commentList={commentList}
-        onLikeToggle={onLikeToggle}
-        onCommentLikeToggle={onCommentLikeToggle}
-        onCommentSubmit={onCommentSubmit}
-        onFindSimilar={onFindSimilar}
-        onClose={null} // Remove duplicate close button in PostContent
-        onSaveEdit={onSaveEdit}
-        onDeletePost={onDeletePost}
-      />
-    </div>
+    <PostContent
+      post={post}
+      comments={comments}
+      onPostUpdate={onPostUpdate}
+      onPostDelete={onPostDelete}
+      onCommentSubmit={handleCommentSubmit}
+      onCommentLike={onCommentLike}
+      onCommentUnlike={onCommentUnlike}
+      onEditComment={onEditComment}
+      onDeleteComment={onDeleteComment}
+    />
   );
-}
+};

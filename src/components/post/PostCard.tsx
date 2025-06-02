@@ -1,100 +1,69 @@
-
-import React from 'react';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Heart, MessageSquare } from 'lucide-react';
-import { ExtendedPost } from '@/types/marketplace';
-import { cn } from '@/lib/utils';
-import { formatDistanceToNow } from 'date-fns';
+import { useState } from "react";
+import { Heart, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { ExtendedPost } from "@/types/core";
 
 interface PostCardProps {
   post: ExtendedPost;
-  onLike?: (postId: string) => void;
-  onClick?: () => void;
-  className?: string;
+  onPostClick: (post: ExtendedPost) => void;
 }
 
-export const PostCard: React.FC<PostCardProps> = ({ 
-  post, 
-  onLike,
-  onClick,
-  className 
-}) => {
-  const { id, username, image, likes, comments, forSale, createdAt, price } = post;
-  
-  const formattedTime = createdAt ? formatDistanceToNow(new Date(createdAt), { addSuffix: true }) : '';
-  
-  // Safely handle price formatting
-  const safePrice = typeof price === 'number' ? price : 
-                    typeof price === 'string' ? parseFloat(price) : 0;
-  const displayPrice = isNaN(safePrice) ? 0 : safePrice;
-  
+export const PostCard = ({ post, onPostClick }: PostCardProps) => {
+  const [isLiked, setIsLiked] = useState(false);
+
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsLiked(!isLiked);
+  };
+
+  const handleCommentClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onPostClick(post);
+  };
+
   return (
-    <Card 
-      className={cn("overflow-hidden cursor-pointer transition-all hover:shadow-md bg-white", 
-        className
-      )}
-      onClick={onClick}
+    <Card
+      className="bg-white rounded-lg shadow-sm overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+      onClick={() => onPostClick(post)}
     >
-      <CardHeader className="p-3 pb-0">
-        <div className="flex items-center gap-2">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback>{username?.[0] || 'U'}</AvatarFallback>
-            <AvatarImage src={`https://api.dicebear.com/7.x/thumbs/svg?seed=${username}`} />
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="text-sm font-medium">{username}</span>
-            {formattedTime && <span className="text-[10px] text-gray-500">{formattedTime}</span>}
-          </div>
-        </div>
-      </CardHeader>
-      <CardContent className="p-0 mt-2">
-        <div className="aspect-square max-h-72 overflow-hidden">
+      <CardContent className="p-0">
+        <AspectRatio ratio={16 / 9}>
           <img
-            src={image}
-            alt="Post"
-            className="w-full h-full object-cover"
+            src={post.image}
+            alt={post.title}
+            className="object-cover w-full h-full"
           />
+        </AspectRatio>
+        <div className="p-4">
+          <h3 className="text-lg font-semibold line-clamp-2">{post.title}</h3>
+          <p className="text-sm text-gray-500 line-clamp-3">{post.description}</p>
+          <div className="flex items-center mt-4 space-x-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLikeClick}
+              className="hover:bg-softspot-100"
+            >
+              <Heart
+                className={`h-5 w-5 ${isLiked ? "text-red-500" : "text-gray-500"}`}
+              />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCommentClick}
+              className="hover:bg-softspot-100"
+            >
+              <MessageCircle className="h-5 w-5 text-gray-500" />
+            </Button>
+            <Button variant="ghost" size="icon" className="hover:bg-softspot-100">
+              <Share2 className="h-5 w-5 text-gray-500" />
+            </Button>
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="p-3 flex justify-between">
-        <div className="flex gap-3">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8" 
-            onClick={(e) => {
-              e.stopPropagation();
-              onLike?.(id);
-            }}
-          >
-            <Heart className="h-4 w-4" />
-            <span className="ml-1 text-xs">{likes || 0}</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-8 w-8"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <MessageSquare className="h-4 w-4" />
-            <span className="ml-1 text-xs">{comments || 0}</span>
-          </Button>
-        </div>
-        {forSale && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium bg-emerald-100 text-emerald-800 px-2 py-1 rounded">
-              For Sale
-            </span>
-            {price && (
-              <span className="text-xs font-medium text-gray-600">
-                ${displayPrice.toFixed(2)}
-              </span>
-            )}
-          </div>
-        )}
-      </CardFooter>
     </Card>
   );
 };

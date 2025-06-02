@@ -1,166 +1,188 @@
-
-import { useState, ChangeEvent, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Upload, X } from 'lucide-react';
-import { ImageUploadResult } from '@/types/marketplace';
-import { RobustImage } from '@/components/ui/robust-image';
+import { useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ImageUploadResult } from "@/types/ui";
+import { Upload, X } from "lucide-react";
+import { toast } from "@/components/ui/use-toast";
+import { ImageEditor } from "./ImageEditor";
 
 interface ImageUploaderProps {
-  onImageSelected: (result: ImageUploadResult) => void;
-  defaultImage?: string;
+  onImageUpload: (result: ImageUploadResult) => void;
+  maxSizeMB?: number;
+  allowedTypes?: string[];
   className?: string;
-  buttonText?: string;
-  aspectRatio?: number;
 }
 
 export const ImageUploader = ({
-  onImageSelected,
-  defaultImage,
-  className = '',
-  buttonText = 'Upload Image',
-  aspectRatio
+  onImageUpload,
+  maxSizeMB = 5,
+  allowedTypes = ["image/jpeg", "image/png", "image/webp"],
+  className = "",
 }: ImageUploaderProps) => {
-  const [previewUrl, setPreviewUrl] = useState<string | null>(defaultImage || null);
-  const [dragging, setDragging] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
-    
-    handleSelectedFile(file);
-  };
-  
-  const handleSelectedFile = async (file: File) => {
-    // Check if file is an image
-    if (!file.type.match(/image.*/)) {
-      onImageSelected({
-        success: false,
-        error: 'Please upload an image file (PNG, JPG, JPEG, GIF)'
+
+    // Validate file type
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: `Please upload a valid image file (${allowedTypes.join(", ")})`,
       });
       return;
     }
-    
-    // Check file size (max 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      onImageSelected({
-        success: false,
-        error: 'Image must be less than 5MB'
+
+    // Validate file size
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: `Please upload an image smaller than ${maxSizeMB}MB`,
       });
       return;
     }
-    
-    try {
-      // Create preview URL
-      const url = URL.createObjectURL(file);
-      setPreviewUrl(url);
-      
-      // In a real app, you'd upload to a server here
-      console.log('Would upload file:', file.name);
-      
-      // Return success with the URL
-      onImageSelected({
-        success: true,
-        url: url
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setSelectedImage(result);
+      setIsEditing(true);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+
+    const file = event.dataTransfer.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid file type",
+        description: `Please upload a valid image file (${allowedTypes.join(", ")})`,
       });
-      
-    } catch (error) {
-      console.error('Error processing image:', error);
-      onImageSelected({
-        success: false,
-        error: 'Failed to process image'
+      return;
+    }
+
+    // Validate file size
+    const maxSizeBytes = maxSizeMB * 1024 * 1024;
+    if (file.size > maxSizeBytes) {
+      toast({
+        variant: "destructive",
+        title: "File too large",
+        description: `Please upload an image smaller than ${maxSizeMB}MB`,
       });
+      return;
     }
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setSelectedImage(result);
+      setIsEditing(true);
+    };
+    reader.readAsDataURL(file);
   };
-  
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(true);
+
+  const handleDragOver = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
   };
-  
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-  };
-  
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    
-    const file = e.dataTransfer.files?.[0];
-    if (file) {
-      handleSelectedFile(file);
-    }
-  };
-  
-  const clearImage = () => {
-    setPreviewUrl(null);
+
+  const handleRemoveImage = () => {
+    setSelectedImage(null);
+    setIsEditing(false);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
-    onImageSelected({
-      success: false,
-      url: undefined
-    });
+    onImageUpload({ success: false });
   };
-  
+
+  const handleImageSave = (editedImageUrl: string) => {
+    setSelectedImage(editedImageUrl);
+    setIsEditing(false);
+    onImageUpload({ success: true, url: editedImageUrl });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
 
+  if (isEditing && selectedImage) {
+    return (
+      <ImageEditor
+        imageUrl={selectedImage}
+        onSave={handleImageSave}
+        onCancel={handleCancelEdit}
+      />
+    );
+  }
+
   return (
-    <div className={`w-full max-w-lg ${className}`}>
+    <Card
+      className={`border-2 border-dashed rounded-lg ${className}`}
+      onDrop={handleDrop}
+      onDragOver={handleDragOver}
+    >
       <input
         type="file"
-        accept="image/*"
-        onChange={handleFileChange}
         ref={fileInputRef}
+        onChange={handleFileChange}
+        accept={allowedTypes.join(",")}
         className="hidden"
       />
-      
-      {previewUrl ? (
-        <div className="relative rounded-md overflow-hidden max-h-[400px]">
-          <div className="w-full h-full max-h-[400px] overflow-hidden">
-            <RobustImage 
-              src={previewUrl} 
-              alt="Preview" 
-              className={`w-full h-full object-contain ${aspectRatio ? 'aspect-[' + aspectRatio + ']' : ''}`}
-              showLoadingSpinner={true}
-            />
-          </div>
+
+      {selectedImage ? (
+        <div className="relative">
+          <img
+            src={selectedImage}
+            alt="Selected"
+            className="w-full h-auto rounded-lg"
+          />
           <Button
             variant="destructive"
             size="icon"
-            className="absolute top-2 right-2 opacity-80 hover:opacity-100"
-            onClick={clearImage}
+            className="absolute top-2 right-2 rounded-full"
+            onClick={handleRemoveImage}
           >
             <X className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="secondary"
+            className="absolute bottom-2 right-2"
+            onClick={() => setIsEditing(true)}
+          >
+            Edit Image
           </Button>
         </div>
       ) : (
         <div
-          className={`border-2 border-dashed rounded-md ${
-            dragging ? 'border-softspot-400 bg-softspot-50' : 'border-gray-300'
-          } p-8 text-center cursor-pointer transition-colors min-h-[200px] flex flex-col items-center justify-center`}
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
+          className="flex flex-col items-center justify-center p-12 cursor-pointer"
           onClick={triggerFileInput}
         >
-          <div className="flex flex-col items-center gap-2">
-            <div className="p-3 bg-softspot-100 rounded-full">
-              <Upload className="h-6 w-6 text-softspot-500" />
-            </div>
-            <p className="text-sm font-medium">{buttonText}</p>
-            <p className="text-xs text-gray-500">
-              Drag and drop or click to upload
-            </p>
-            <p className="text-xs text-gray-500">
-              PNG, JPG, JPEG, GIF up to 5MB
-            </p>
-          </div>
+          <Upload className="h-12 w-12 text-gray-400 mb-4" />
+          <p className="text-lg font-medium text-gray-700">
+            Drag & drop an image or click to browse
+          </p>
+          <p className="text-sm text-gray-500 mt-2">
+            Supports: {allowedTypes.join(", ")} (Max: {maxSizeMB}MB)
+          </p>
         </div>
       )}
-    </div>
+    </Card>
   );
 };

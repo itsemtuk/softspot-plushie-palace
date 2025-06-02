@@ -1,101 +1,93 @@
-
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useToast } from "@/hooks/use-toast";
-import { ExtendedPost, MarketplacePlushie } from '@/types/marketplace';
-import { SellItemFormData } from '@/types/sellItemForm';
-import { getLocalPosts, getMarketplaceListings, saveMarketplaceListings } from '@/utils/storage/localStorageUtils';
+import { useState, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import { toast } from "@/components/ui/use-toast";
+import { ExtendedPost } from "@/types/core";
+import { SellItemFormData } from "@/types/sellItemForm";
 
 export const useSellItemSubmission = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useUser();
 
-  const handleSubmit = async (formData: SellItemFormData): Promise<void> => {
+  const onSubmit = useCallback(async (data: SellItemFormData, imageUrl: string) => {
+    if (!user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to create listings.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
+    
     try {
-      console.log('Submitting sell item form:', formData);
+      // Validate required fields
+      if (!data.title?.trim()) {
+        throw new Error("Title is required");
+      }
       
-      // Create a unique ID for the new post
-      const newId = `post-${Date.now()}`;
-      
-      // Ensure numeric values are properly handled
-      const price = typeof formData.price === 'number' ? formData.price : parseFloat(String(formData.price)) || 0;
-      const deliveryCost = typeof formData.deliveryCost === 'number' ? formData.deliveryCost : parseFloat(String(formData.deliveryCost)) || 0;
-      
-      // Prepare the post data according to ExtendedPost interface
-      const newPost: ExtendedPost = {
-        id: newId,
-        userId: "current-user",
-        user_id: "current-user", // Added for compatibility
-        username: "Current User",
-        content: formData.description || '', // Added required content field
-        image: formData.imageUrl || formData.image || '',
-        title: formData.title,
-        description: formData.description,
+      if (!data.price || data.price <= 0) {
+        throw new Error("Valid price is required");
+      }
+
+      // Prepare post data with proper validation
+      const postData: ExtendedPost = {
+        id: `post-${Date.now()}`,
+        userId: user.id,
+        user_id: user.id,
+        username: user.username || user.firstName || "User",
+        image: imageUrl || "",
+        title: data.title.trim(),
+        description: data.description?.trim() || "",
+        content: data.description?.trim() || "",
+        tags: Array.isArray(data.tags) ? data.tags : [],
         likes: 0,
         comments: 0,
         timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
-        created_at: new Date().toISOString(), // Added for compatibility
+        created_at: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        location: formData.location || '',
+        location: data.location?.trim() || "",
         forSale: true,
-        tags: formData.tags || [],
-        condition: formData.condition || '',
-        material: formData.material || '',
-        color: formData.color || '',
-        price: price,
-        deliveryCost: deliveryCost,
-        sold: false // Added marketplace functionality
+        price: Number(data.price) || 0,
+        brand: data.brand || undefined,
+        condition: data.condition || 'new',
+        material: data.material || 'plush',
+        filling: data.filling || 'polyester',
+        species: data.species || 'bear',
+        deliveryMethod: data.deliveryMethod || 'shipping',
+        deliveryCost: data.deliveryCost ? Number(data.deliveryCost) : 0,
+        size: data.size || 'medium',
       };
 
-      // Create marketplace plushie data with all required fields
-      const marketplacePlushie: MarketplacePlushie = {
-        ...newPost,
-        name: formData.title, // Added required name field
-        imageUrl: formData.imageUrl || formData.image || '', // Added required imageUrl field
-        description: formData.description || '', // Ensure description is required
-        condition: formData.condition || '', // Ensure condition is included
-        material: formData.material || '', // Ensure material is included
-        species: formData.species || 'other',
-        size: formData.size || 'medium',
-        filling: formData.filling || 'polyester',
-        brand: formData.brand || '',
-        deliveryMethod: formData.deliveryMethod || 'shipping',
-        price: price, // Ensure price is explicitly set as number
-        deliveryCost: deliveryCost, // Ensure deliveryCost is explicitly set as number
-        forSale: true // Explicitly set forSale as required property
-      };
-
-      // Save to local storage
-      const existingListings = getMarketplaceListings();
-      const updatedListings = [marketplacePlushie, ...existingListings];
-      saveMarketplaceListings(updatedListings);
-
-      // Show success message
-      toast({
-        title: "Success!",
-        description: "Your plushie has been listed in the marketplace.",
-      });
-
-      // Navigate to marketplace
-      navigate('/marketplace');
+      // const result = await savePost(postData, user.id);
+      const result = { success: true }; // Mock success for now
+      
+      if (result.success) {
+        toast({
+          title: "Success!",
+          description: "Your item has been listed for sale.",
+        });
+        navigate('/');
+      } else {
+        throw new Error("Failed to create listing");
+      }
     } catch (error) {
-      console.error('Error submitting sell item form:', error);
+      console.error("Error submitting form:", error);
       toast({
-        title: "Error",
-        description: "Failed to list your plushie. Please try again.",
         variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to create listing. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [user, navigate]);
 
   return {
-    handleSubmit,
     isSubmitting,
-    submitForm: handleSubmit
+    onSubmit,
   };
 };

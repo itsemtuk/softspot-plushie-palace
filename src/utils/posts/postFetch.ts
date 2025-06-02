@@ -1,155 +1,37 @@
+import { validatePosts } from "../dataValidation";
+import { ExtendedPost } from "@/types/core";
 
-import { ExtendedPost } from "@/types/marketplace";
-import { supabase, isSupabaseConfigured, handleSupabaseError } from '../supabase/client';
-import { getLocalPosts } from '../storage/localStorageUtils';
-import { toast } from '@/components/ui/use-toast';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-/**
- * Retrieves posts from storage with enhanced error handling
- */
-export const getPosts = async (): Promise<ExtendedPost[]> => {
-  if (!isSupabaseConfigured()) {
-    return getLocalPosts();
-  }
+if (!SUPABASE_URL) {
+  console.error('VITE_SUPABASE_URL is not defined in .env or environment variables');
+}
 
+if (!SUPABASE_ANON_KEY) {
+  console.error('VITE_SUPABASE_ANON_KEY is not defined in .env or environment variables');
+}
+
+const supabaseUrl = SUPABASE_URL;
+const supabaseKey = SUPABASE_ANON_KEY;
+
+export const fetchPosts = async (): Promise<ExtendedPost[]> => {
   try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .order('created_at', { ascending: false });
-      
-    if (error) {
-      const errorDetails = handleSupabaseError(error);
-      if (errorDetails.isCORSError) {
-        console.warn("CORS issue detected, using local data");
-        toast({
-          title: "Connection Issue",
-          description: "Using local data due to connection issues."
-        });
-      } else {
-        console.error("Supabase query error:", error);
-      }
-      return getLocalPosts();
-    }
-
-    // Transform Supabase data to ExtendedPost format
-    const transformedPosts: ExtendedPost[] = (data || []).map(item => {
-      let content;
-      try {
-        content = typeof item.content === 'string' ? JSON.parse(item.content) : item.content;
-      } catch {
-        content = { title: '', description: item.content || '', image: '', tags: [] };
-      }
-
-      return {
-        id: item.id,
-        userId: item.user_id,
-        user_id: item.user_id,
-        username: content.username || 'User',
-        image: content.image || '',
-        title: content.title || '',
-        description: content.description || '',
-        content: content.description || '',
-        tags: Array.isArray(content.tags) ? content.tags : [],
-        likes: content.likes || 0,
-        comments: content.comments || 0,
-        timestamp: item.created_at,
-        createdAt: item.created_at,
-        created_at: item.created_at,
-        updatedAt: item.created_at,
-        location: content.location || "",
-        forSale: content.forSale || false,
-        price: content.price ? Number(content.price) : undefined,
-        brand: content.brand || undefined,
-        condition: content.condition || undefined,
-        material: content.material || undefined,
-        filling: content.filling || undefined,
-        species: content.species || undefined,
-        deliveryMethod: content.deliveryMethod || undefined,
-        deliveryCost: content.deliveryCost ? Number(content.deliveryCost) : undefined,
-        size: content.size || undefined,
-      } as ExtendedPost;
+    const response = await fetch(`${supabaseUrl}/rest/v1/posts?select=*`, {
+      headers: {
+        apikey: supabaseKey,
+        Authorization: `Bearer ${supabaseKey}`,
+      },
     });
 
-    return transformedPosts;
-  } catch (error) {
-    console.error('Error retrieving posts from Supabase:', error);
-    return getLocalPosts();
-  }
-};
-
-/**
- * Retrieves all public posts (accessible without login)
- */
-export const getAllPublicPosts = async (): Promise<ExtendedPost[]> => {
-  // For now, this is just an alias to getPosts
-  // In the future, you might want to filter for public posts only
-  return getPosts();
-};
-
-/**
- * Retrieves posts by a specific user
- */
-export const getUserPosts = async (userId: string): Promise<ExtendedPost[]> => {
-  if (!isSupabaseConfigured()) {
-    return getLocalPosts().filter(post => post.userId === userId);
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('userId', userId)
-      .order('created_at', { ascending: false }); // Fixed: Use created_at instead of timestamp
-      
-    if (error) {
-      const errorDetails = handleSupabaseError(error);
-      if (errorDetails.isCORSError) {
-        toast({
-          title: "Connection Issue",
-          description: "Using local data due to connection issues."
-        });
-      }
-      throw error;
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
     }
-    return data as ExtendedPost[];
-  } catch (error) {
-    console.error('Error retrieving user posts from Supabase:', error);
-    return getLocalPosts().filter(post => post.userId === userId);
-  }
-};
 
-/**
- * Gets a single post by ID
- */
-export const getPostById = async (postId: string): Promise<ExtendedPost | null> => {
-  if (!isSupabaseConfigured()) {
-    const posts = getLocalPosts();
-    return posts.find(post => post.id === postId) || null;
-  }
-
-  try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select('*')
-      .eq('id', postId)
-      .single();
-      
-    if (error) {
-      const errorDetails = handleSupabaseError(error);
-      if (errorDetails.isCORSError) {
-        toast({
-          title: "Connection Issue",
-          description: "Using local data due to connection issues."
-        });
-      }
-      throw error;
-    }
-    return data as ExtendedPost;
+    const data = await response.json();
+    return validatePosts(data);
   } catch (error) {
-    console.error(`Error retrieving post ${postId} from Supabase:`, error);
-    // Fall back to local storage
-    const posts = getLocalPosts();
-    return posts.find(post => post.id === postId) || null;
+    console.error("Error fetching posts:", error);
+    return [];
   }
 };

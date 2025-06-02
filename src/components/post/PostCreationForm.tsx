@@ -1,72 +1,62 @@
-
-import React from 'react';
-import { z } from 'zod';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { PostCreationData } from "@/types/marketplace";
-import { MapPin } from 'lucide-react';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { toast } from "@/components/ui/use-toast";
+import { PostCreationData } from "@/types/core";
 
-const formSchema = z.object({
-  title: z.string().min(1, { message: "Title is required" }).max(100),
-  description: z.string().max(1000, { message: "Description cannot exceed 1000 characters" }).optional(),
-  tags: z.array(z.string()).optional(),
-  location: z.string().optional(),
+const postCreationSchema = z.object({
+  title: z.string().min(3, {
+    message: "Title must be at least 3 characters.",
+  }),
+  description: z.string().min(10, {
+    message: "Description must be at least 10 characters.",
+  }),
 });
 
-export interface PostCreationFormProps {
-  onSubmit: (data: PostCreationData) => void;
-  onCancel: () => void;
-  imageUrl?: string;
-  initialData?: Partial<PostCreationData>;
-  isSubmitting?: boolean;
+interface PostCreationFormProps {
+  onPostCreated: (data: PostCreationData) => Promise<void>;
+  onClose: () => void;
 }
 
-export const PostCreationForm = ({ 
-  onSubmit, 
-  onCancel,
-  imageUrl, 
-  initialData = {}, 
-  isSubmitting = false 
-}: PostCreationFormProps) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+export const PostCreationForm = ({ onPostCreated, onClose }: PostCreationFormProps) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const form = useForm<z.infer<typeof postCreationSchema>>({
+    resolver: zodResolver(postCreationSchema),
     defaultValues: {
-      title: initialData.title || "",
-      description: initialData.description || "",
-      tags: initialData.tags || [],
-      location: initialData.location || "",
+      title: "",
+      description: "",
     },
   });
-  
-  const handleSubmit = (data: z.infer<typeof formSchema>) => {
-    const formData: PostCreationData = {
-      title: data.title,
-      description: data.description || "",
-      content: data.description || "", // Add content property
-      tags: data.tags || [],
-      location: data.location || "",
-      image: imageUrl || "",
-    };
-    onSubmit(formData);
+
+  const onSubmit = async (values: z.infer<typeof postCreationSchema>) => {
+    setIsSubmitting(true);
+    try {
+      await onPostCreated(values);
+      toast({
+        title: "Post created!",
+        description: "Your post has been successfully created.",
+      });
+      onClose();
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "There was a problem creating your post. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {imageUrl && (
-          <div className="aspect-square w-full relative rounded-md overflow-hidden bg-gray-100 mb-4">
-            <img 
-              src={imageUrl} 
-              alt="Upload preview" 
-              className="w-full h-full object-cover"
-            />
-          </div>
-        )}
-        
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
           name="title"
@@ -74,13 +64,12 @@ export const PostCreationForm = ({
             <FormItem>
               <FormLabel>Title</FormLabel>
               <FormControl>
-                <Input placeholder="Add a title" {...field} />
+                <Input placeholder="Post title" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
         <FormField
           control={form.control}
           name="description"
@@ -88,58 +77,19 @@ export const PostCreationForm = ({
             <FormItem>
               <FormLabel>Description</FormLabel>
               <FormControl>
-                <Textarea 
-                  placeholder="Add a description" 
-                  className="resize-none" 
-                  {...field} 
-                  value={field.value || ""}
+                <Textarea
+                  placeholder="Write something about your plushie..."
+                  className="resize-none"
+                  {...field}
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        
-        <FormField
-          control={form.control}
-          name="location"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Location</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                  <Input 
-                    placeholder="Add a location" 
-                    className="pl-10" 
-                    {...field} 
-                    value={field.value || ""}
-                  />
-                </div>
-              </FormControl>
-              <FormDescription>
-                Add the location where this photo was taken
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <div className="flex gap-2 pt-2">
-          <Button 
-            type="button" 
-            variant="outline" 
-            onClick={onCancel} 
-            className="flex-1"
-          >
-            Cancel
-          </Button>
-          <Button 
-            type="submit" 
-            disabled={isSubmitting} 
-            className="flex-1"
-          >
-            {isSubmitting ? "Posting..." : "Post"}
+        <div className="flex justify-end">
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? "Creating..." : "Create Post"}
           </Button>
         </div>
       </form>

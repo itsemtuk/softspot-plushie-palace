@@ -1,169 +1,134 @@
-import { useState, useEffect, useCallback } from 'react';
-import { ExtendedPost } from '@/types/marketplace';
-import { useConnectionStatus } from '@/hooks/useConnectionStatus';
-import { getLocalPosts, savePosts, getCurrentUserId } from '@/utils/storage/localStorageUtils';
-import { supabase, isSupabaseConfigured } from '@/utils/supabase/client';
-import { toast } from '@/hooks/use-toast';
+import { useState, useEffect, useCallback } from "react";
+import { ExtendedPost } from "@/types/core";
+import { useOfflinePostOperations } from "./useOfflinePostOperations";
+import { useOnlineSync } from "./useOnlineSync";
 
-interface PendingSync {
-  id: string;
-  type: 'create' | 'update' | 'delete';
-  data?: ExtendedPost;
-  timestamp: string;
-  retryCount: number;
-}
-
-interface SyncStatus {
-  isSupabaseConfigured: boolean;
-  pendingSyncs: PendingSync[];
+interface SyncManagerState {
+  isOnline: boolean;
+  posts: ExtendedPost[];
   isSyncing: boolean;
-  lastSyncAttempt: Date | null;
-  hasUnsyncedChanges: boolean;
+  error: string | null;
 }
 
-export const useSyncManager = () => {
-  const { isOnline, supabaseConnected } = useConnectionStatus();
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>({
-    isSupabaseConfigured: isSupabaseConfigured(),
-    pendingSyncs: [],
+export const useSyncManager = (initialPosts: ExtendedPost[]) => {
+  const [syncState, setSyncState] = useState<SyncManagerState>({
+    isOnline: navigator.onLine,
+    posts: initialPosts,
     isSyncing: false,
-    lastSyncAttempt: null,
-    hasUnsyncedChanges: false
+    error: null,
   });
 
-  // Load pending syncs from localStorage
+  const {
+    addOfflinePost,
+    updateOfflinePost,
+    deleteOfflinePost,
+    getAllOfflinePosts,
+  } = useOfflinePostOperations();
+
+  const { syncPosts } = useOnlineSync();
+
+  // Update online status
   useEffect(() => {
-    const stored = localStorage.getItem('pendingSyncs');
-    if (stored) {
-      try {
-        const pendingSyncs = JSON.parse(stored);
-        setSyncStatus(prev => ({ 
-          ...prev, 
-          pendingSyncs,
-          hasUnsyncedChanges: pendingSyncs.length > 0 
-        }));
-      } catch (error) {
-        console.error('Error loading pending syncs:', error);
-      }
-    }
-  }, []);
-
-  // Save pending syncs to localStorage
-  const savePendingSyncs = useCallback((syncs: PendingSync[]) => {
-    localStorage.setItem('pendingSyncs', JSON.stringify(syncs));
-    setSyncStatus(prev => ({ 
-      ...prev, 
-      pendingSyncs: syncs,
-      hasUnsyncedChanges: syncs.length > 0 
-    }));
-  }, []);
-
-  // Add a pending sync operation
-  const addPendingSync = useCallback((operation: Omit<PendingSync, 'timestamp' | 'retryCount'>) => {
-    const newSync: PendingSync = {
-      ...operation,
-      timestamp: new Date().toISOString(),
-      retryCount: 0
+    const handleOnlineStatusChange = () => {
+      setSyncState(prevState => ({ ...prevState, isOnline: navigator.onLine }));
     };
-    
-    setSyncStatus(prev => {
-      const updated = [...prev.pendingSyncs, newSync];
-      savePendingSyncs(updated);
-      return { ...prev, pendingSyncs: updated, hasUnsyncedChanges: true };
-    });
-  }, [savePendingSyncs]);
 
-  // Sync all pending operations
-  const syncPendingOperations = useCallback(async () => {
-    if (!isOnline || !supabaseConnected || syncStatus.pendingSyncs.length === 0) {
-      return;
-    }
+    window.addEventListener('online', handleOnlineStatusChange);
+    window.addEventListener('offline', handleOnlineStatusChange);
 
-    setSyncStatus(prev => ({ ...prev, isSyncing: true, lastSyncAttempt: new Date() }));
-
-    const successful: string[] = [];
-    const failed: PendingSync[] = [];
-
-    for (const sync of syncStatus.pendingSyncs) {
-      try {
-        switch (sync.type) {
-          case 'create':
-          case 'update':
-            if (sync.data) {
-              const { error } = await supabase!
-                .from('posts')
-                .upsert(sync.data, { onConflict: 'id' });
-              
-              if (error) throw error;
-              successful.push(sync.id);
-            }
-            break;
-          case 'delete':
-            const { error } = await supabase!
-              .from('posts')
-              .delete()
-              .eq('id', sync.id);
-            
-            if (error) throw error;
-            successful.push(sync.id);
-            break;
-        }
-      } catch (error) {
-        console.error(`Sync failed for ${sync.id}:`, error);
-        failed.push({
-          ...sync,
-          retryCount: sync.retryCount + 1
-        });
-      }
-    }
-
-    // Update pending syncs (remove successful, keep failed with updated retry count)
-    const remainingPending = failed.filter(sync => sync.retryCount < 3); // Max 3 retries
-    savePendingSyncs(remainingPending);
-
-    setSyncStatus(prev => ({ 
-      ...prev, 
-      isSyncing: false,
-      hasUnsyncedChanges: remainingPending.length > 0
-    }));
-
-    // Show sync results
-    if (successful.length > 0) {
-      toast({
-        title: "Sync Complete",
-        description: `${successful.length} changes synced successfully.`
-      });
-    }
-
-    if (failed.length > 0) {
-      const permanentFailures = failed.filter(sync => sync.retryCount >= 3);
-      if (permanentFailures.length > 0) {
-        toast({
-          title: "Sync Issues",
-          description: `${permanentFailures.length} changes failed to sync after multiple attempts.`,
-          variant: "destructive"
-        });
-      }
-    }
-  }, [isOnline, supabaseConnected, syncStatus.pendingSyncs, savePendingSyncs]);
-
-  // Auto-sync when connection is restored
-  useEffect(() => {
-    if (isOnline && supabaseConnected && syncStatus.hasUnsyncedChanges && !syncStatus.isSyncing) {
-      syncPendingOperations();
-    }
-  }, [isOnline, supabaseConnected, syncStatus.hasUnsyncedChanges, syncStatus.isSyncing, syncPendingOperations]);
-
-  // Clear all pending syncs (for testing or manual reset)
-  const clearPendingSyncs = useCallback(() => {
-    localStorage.removeItem('pendingSyncs');
-    setSyncStatus(prev => ({ ...prev, pendingSyncs: [], hasUnsyncedChanges: false }));
+    return () => {
+      window.removeEventListener('online', handleOnlineStatusChange);
+      window.removeEventListener('offline', handleOnlineStatusChange);
+    };
   }, []);
+
+  // Initial sync on mount and when online
+  useEffect(() => {
+    const initialSync = async () => {
+      if (syncState.isOnline) {
+        setSyncState(prevState => ({ ...prevState, isSyncing: true, error: null }));
+        try {
+          const offlinePosts = await getAllOfflinePosts();
+          const syncedPosts = await syncPosts(offlinePosts);
+          setSyncState(prevState => ({ ...prevState, posts: syncedPosts }));
+        } catch (error: any) {
+          setSyncState(prevState => ({ ...prevState, error: error.message }));
+        } finally {
+          setSyncState(prevState => ({ ...prevState, isSyncing: false }));
+        }
+      }
+    };
+
+    initialSync();
+  }, [syncState.isOnline, syncPosts, getAllOfflinePosts]);
+
+  // Sync posts when posts change and online
+  useEffect(() => {
+    const syncOnChange = async () => {
+      if (syncState.isOnline) {
+        setSyncState(prevState => ({ ...prevState, isSyncing: true, error: null }));
+        try {
+          const offlinePosts = await getAllOfflinePosts();
+          const syncedPosts = await syncPosts(offlinePosts);
+          setSyncState(prevState => ({ ...prevState, posts: syncedPosts }));
+        } catch (error: any) {
+          setSyncState(prevState => ({ ...prevState, error: error.message }));
+        } finally {
+          setSyncState(prevState => ({ ...prevState, isSyncing: false }));
+        }
+      }
+    };
+
+    syncOnChange();
+  }, [syncState.posts, syncState.isOnline, syncPosts, getAllOfflinePosts]);
+
+  const handleAddPost = useCallback(async (post: ExtendedPost) => {
+    try {
+      await addOfflinePost(post);
+      setSyncState(prevState => ({ ...prevState, posts: [...prevState.posts, post] }));
+    } catch (error: any) {
+      setSyncState(prevState => ({ ...prevState, error: error.message }));
+    }
+  }, [addOfflinePost]);
+
+  const handleUpdatePost = useCallback(async (post: ExtendedPost) => {
+    try {
+      await updateOfflinePost(post);
+      setSyncState(prevState => ({
+        ...prevState,
+        posts: prevState.posts.map(p => (p.id === post.id ? post : p)),
+      }));
+    } catch (error: any) {
+      setSyncState(prevState => ({ ...prevState, error: error.message }));
+    }
+  }, [updateOfflinePost]);
+
+  const handleDeletePost = useCallback(async (postId: string) => {
+    try {
+      await deleteOfflinePost(postId);
+      setSyncState(prevState => ({
+        ...prevState,
+        posts: prevState.posts.filter(p => p.id !== postId),
+      }));
+    } catch (error: any) {
+      setSyncState(prevState => ({ ...prevState, error: error.message }));
+    }
+  }, [deleteOfflinePost]);
+
+  const refreshPosts = useCallback(async () => {
+    try {
+      const offlinePosts = await getAllOfflinePosts();
+      setSyncState(prevState => ({ ...prevState, posts: offlinePosts }));
+    } catch (error: any) {
+      setSyncState(prevState => ({ ...prevState, error: error.message }));
+    }
+  }, [getAllOfflinePosts]);
 
   return {
-    syncStatus,
-    addPendingSync,
-    syncPendingOperations,
-    clearPendingSyncs
+    ...syncState,
+    handleAddPost,
+    handleUpdatePost,
+    handleDeletePost,
+    refreshPosts,
   };
 };

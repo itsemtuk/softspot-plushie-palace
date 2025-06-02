@@ -1,9 +1,8 @@
-
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { getAllUserPosts, deletePost } from "@/utils/postStorage";
-import { ExtendedPost } from "@/types/marketplace";
+import { ExtendedPost } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { toast } from "@/components/ui/use-toast";

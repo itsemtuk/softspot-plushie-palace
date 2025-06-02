@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "@/components/ui/use-toast";
 import { SellItemFormData } from "@/types/sellItemForm";
-import { ExtendedPost } from "@/types/marketplace";
+import { ExtendedPost } from "@/types/core";
 import { savePost } from "@/utils/posts/postManagement";
 import { useSellItemFormSetup } from "./sell-item/useSellItemFormSetup";
 import { useSellItemImage } from "./sell-item/useSellItemImage";

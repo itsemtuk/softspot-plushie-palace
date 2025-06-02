@@ -1,104 +1,96 @@
-
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { FeedHeader } from "@/components/feed/FeedHeader";
-import { FeedContent } from "@/components/feed/FeedContent";
-import { EmptyFeed } from "@/components/feed/EmptyFeed";
-import { Navbar } from "@/components/Navbar";
-import { MobileNav } from "@/components/navigation/MobileNav";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
-import { getPosts } from "@/utils/posts/postFetch";
-import { ExtendedPost } from "@/types/marketplace";
-import { usePostDialog } from "@/hooks/use-post-dialog";
-import { Spinner } from "@/components/ui/spinner";
-import Footer from "@/components/Footer";
-import { isAuthenticated } from "@/utils/auth/authState";
-import { toast } from "@/components/ui/use-toast";
-import { QuickPostForm } from "@/components/feed/QuickPostForm";
+import { useState, useEffect, useCallback } from "react";
+import { Plus, Filter, Search, Grid3X3, List, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import PostCreationFlow from "@/components/post/PostCreationFlow";
-import { savePost } from "@/utils/posts/postManagement";
-import { PostCreationData } from "@/types/marketplace";
-import { useUser } from '@clerk/clerk-react';
-import { validatePosts } from "@/utils/dataValidation";
-import { SafeComponentWrapper } from "@/components/ui/safe-component-wrapper";
-import { useSafeData } from "@/hooks/use-safe-data";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import MainLayout from "@/components/layout/MainLayout";
+import { FeedContent } from "@/components/feed/FeedContent";
+import { FeedGrid } from "@/components/feed/FeedGrid";
+import { ExtendedPost } from "@/types/core";
+import { usePostDialog } from "@/hooks/use-post-dialog";
+import { getAllPosts } from "@/utils/posts/postFetch";
+import { PostCreationFlow } from "@/components/post/PostCreationFlow";
+import { useCreatePost } from "@/hooks/use-create-post";
+import { useSyncManager } from "@/hooks/useSyncManager";
+import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
+import { toast } from "@/components/ui/use-toast";
 
 const Feed = () => {
+  const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [postText, setPostText] = useState(""); 
-  const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const navigate = useNavigate();
-  const isMobile = useIsMobile();
+  const [sortOrder, setSortOrder] = useState("newest");
+  const [layout, setLayout] = useState("grid");
+  const [isLoading, setIsLoading] = useState(false);
   const { openPostDialog } = usePostDialog();
-  const { user } = useUser();
-  
-  // Use safe data fetching with fallback
-  const { 
-    data: posts, 
-    loading, 
-    error, 
-    retry 
-  } = useSafeData(
-    async () => {
-      const fetchedPosts = await getPosts();
-      return validatePosts(fetchedPosts);
-    },
-    { 
-      fallbackValue: [] as ExtendedPost[],
-      retryCount: 3,
-      retryDelay: 1000
+  const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
+  const { syncPosts } = useSyncManager();
+  const { addOfflinePost, deleteOfflinePost } = useOfflinePostOperations();
+
+  const fetchPosts = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const fetchedPosts = await getAllPosts();
+      setPosts(fetchedPosts);
+    } catch (error) {
+      console.error("Error fetching posts:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load posts. Please try again.",
+      });
+    } finally {
+      setIsLoading(false);
     }
-  );
-  
+  }, []);
+
   useEffect(() => {
-    // Check if user is authenticated
-    if (!isAuthenticated()) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to view the feed."
-      });
-      navigate('/sign-in');
-      return;
-    }
-  }, [navigate]);
-  
-  const handleCreatePostClick = () => {
-    console.log("Create post button clicked on Feed page");
-    
-    if (!isAuthenticated()) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to create posts."
-      });
-      navigate('/sign-in');
-      return;
-    }
-    
-    setIsPostCreationOpen(true);
+    fetchPosts();
+  }, [fetchPosts]);
+
+  useEffect(() => {
+    syncPosts(posts, setPosts);
+  }, [posts, syncPosts]);
+
+  const handlePostClick = (post: ExtendedPost) => {
+    openPostDialog(post);
   };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  const handleSortOrderChange = (value: string) => {
+    setSortOrder(value);
+  };
+
+  const filteredPosts = posts.filter((post) =>
+    post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    post.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const sortedPosts = [...filteredPosts].sort((a, b) => {
+    if (sortOrder === "newest") {
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    } else if (sortOrder === "oldest") {
+      return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+    } else if (sortOrder === "popular") {
+      return (b.likes || 0) - (a.likes || 0);
+    }
+    return 0;
+  });
 
   const handlePostCreated = async (data: PostCreationData) => {
     try {
-      console.log("Creating post with data:", data);
-      setIsSubmitting(true);
-      
-      const username = user?.username || user?.firstName || "Anonymous";
-      const userId = user?.id || getCurrentUserId();
-      
-      if (!userId) {
-        throw new Error("User ID not found");
-      }
-
+      // Optimistically add the post to the feed
       const newPost: ExtendedPost = {
         ...data,
         id: `post-${Date.now()}`,
-        userId: userId,
-        user_id: userId,
-        username: username,
+        userId: 'offline-user',
+        user_id: 'offline-user',
+        username: 'Offline User',
         timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         created_at: new Date().toISOString(),
@@ -109,140 +101,80 @@ const Feed = () => {
         forSale: false
       };
 
-      console.log("Saving new post:", newPost);
-      const result = await savePost(newPost, userId);
-      
-      if (result.success) {
-        toast({
-          title: "Success!",
-          description: "Your post has been created."
-        });
-        
-        setIsPostCreationOpen(false);
-        
-        // Refresh posts
-        retry();
-      } else {
-        throw new Error(result.error || "Failed to create post");
-      }
+      setPosts(prevPosts => [newPost, ...prevPosts]);
+
+      // Save the post offline
+      await addOfflinePost(newPost);
+
+      // Close the post creation flow
+      onClosePostCreation();
+
+      return Promise.resolve();
     } catch (error) {
       console.error("Error creating post:", error);
-      toast({
-        title: "Error",
-        description: "Failed to create post. Please try again.",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSubmitting(false);
+      return Promise.reject(error);
     }
   };
-  
-  const handleSellPlushie = () => {
-    if (!isAuthenticated()) {
-      toast({
-        title: "Authentication Required",
-        description: "Please sign in to sell items."
-      });
-      navigate('/sign-in');
-      return;
-    }
-    
-    navigate('/sell');
-  };
-  
-  const handleRefresh = () => {
-    retry();
-  };
-
-  const handlePostClick = (post: ExtendedPost) => {
-    if (!post || !post.id) {
-      console.error('Invalid post data:', post);
-      return;
-    }
-    openPostDialog(post);
-  };
-
-  // Filter posts based on search query
-  const filteredPosts = searchQuery
-    ? posts.filter(post => {
-        if (!post) return false;
-        
-        const title = post.title || '';
-        const description = post.description || '';
-        const tags = post.tags || [];
-        
-        return title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-               description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-               tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
-      })
-    : posts;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      {isMobile ? <MobileNav /> : <Navbar />}
-      
-      <main className="flex-grow container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <SafeComponentWrapper>
-          <FeedHeader 
-            searchQuery={searchQuery} 
-            setSearchQuery={setSearchQuery} 
-            onCreatePost={handleCreatePostClick}
-            onRefresh={handleRefresh}
-            isRefreshing={loading} 
-          />
-          
-          <QuickPostForm 
-            onCreatePost={handleCreatePostClick} 
-            value={postText} 
-            onChange={setPostText} 
-          />
-          
-          {loading ? (
-            <div className="flex justify-center items-center h-64">
-              <Spinner size="lg" />
+    <MainLayout>
+      <div className="container mx-auto py-6">
+        <Card className="mb-4">
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <Input
+                type="search"
+                placeholder="Search posts..."
+                value={searchQuery}
+                onChange={handleSearchChange}
+                className="w-full md:w-auto"
+              />
+              <div className="space-x-2 flex items-center">
+                <Select onValueChange={handleSortOrderChange} defaultValue={sortOrder}>
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder="Sort by" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="newest">Newest</SelectItem>
+                    <SelectItem value="oldest">Oldest</SelectItem>
+                    <SelectItem value="popular">Popular</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="icon" onClick={() => setLayout(layout === "grid" ? "list" : "grid")}>
+                  {layout === "grid" ? <List className="h-5 w-5" /> : <Grid3X3 className="h-5 w-5" />}
+                </Button>
+              </div>
             </div>
-          ) : error ? (
-            <div className="text-center py-8">
-              <p className="text-gray-600 mb-4">Failed to load posts</p>
-              <Button onClick={retry} variant="outline">
-                Try again
-              </Button>
-            </div>
-          ) : filteredPosts.length > 0 ? (
-            <SafeComponentWrapper>
-              <FeedContent posts={filteredPosts} onPostClick={handlePostClick} />
-            </SafeComponentWrapper>
-          ) : (
-            <EmptyFeed onCreatePost={handleCreatePostClick} />
-          )}
-        </SafeComponentWrapper>
-      </main>
-      
-      {/* Mobile create post button */}
-      {isMobile && (
-        <div className="fixed bottom-20 right-4 z-50">
-          <Button 
-            onClick={handleCreatePostClick} 
-            className="bg-softspot-500 hover:bg-softspot-600 text-white h-14 w-14 rounded-full shadow-lg p-0"
-          >
-            <Plus className="h-6 w-6" />
-          </Button>
-        </div>
-      )}
+          </CardContent>
+        </Card>
 
-      {/* Post Creation Flow */}
-      <SafeComponentWrapper>
-        <PostCreationFlow
-          isOpen={isPostCreationOpen}
-          onClose={() => setIsPostCreationOpen(false)}
-          onPostCreated={handlePostCreated}
-          isSubmitting={isSubmitting}
-        />
-      </SafeComponentWrapper>
-      
-      <Footer />
-    </div>
+        {isLoading ? (
+          <div className="flex justify-center items-center h-40">
+            <Spinner size="lg" />
+          </div>
+        ) : (
+          <>
+            {layout === "grid" ? (
+              <FeedGrid posts={sortedPosts} onPostClick={handlePostClick} />
+            ) : (
+              <FeedContent posts={sortedPosts} onPostClick={handlePostClick} />
+            )}
+          </>
+        )}
+      </div>
+      <PostCreationFlow
+        isOpen={isPostCreationOpen}
+        onClose={onClosePostCreation}
+        onPostCreated={handlePostCreated}
+      />
+    </MainLayout>
   );
 };
 
 export default Feed;
+
+interface CreatePostProps {
+  onPostCreated: (data: PostCreationData) => Promise<void>;
+}
+
+import { PostCreationData } from "@/types/core";

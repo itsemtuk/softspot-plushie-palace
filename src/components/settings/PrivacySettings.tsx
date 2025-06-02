@@ -1,219 +1,186 @@
-
-import React, { useState } from 'react';
-import { Card } from "@/components/ui/card";
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
-import { Shield, Eye, Users, MessageSquare } from "lucide-react";
-import { UserPrivacySettings } from "@/types/marketplace";
+import { UserPrivacySettings } from "@/types/user";
 
-export const PrivacySettings = () => {
-  const [settings, setSettings] = useState<UserPrivacySettings>({
-    isPrivate: false,
-    showEmail: false,
-    showPhone: false,
-    allowMessages: true,
-    allowTradeRequests: true,
-    profileVisibility: "public",
-    showLocation: true,
-    allowFriendRequests: true,
-    messagePermission: true,
-    showActivity: true,
-    hideFromSearch: false,
-    allowComments: true,
-    showCollections: true,
-    showWishlist: true,
-  });
+interface PrivacySettingsProps {
+  initialSettings: UserPrivacySettings;
+  onSave: (settings: UserPrivacySettings) => Promise<void>;
+}
 
-  const updateSetting = (key: keyof UserPrivacySettings, value: boolean | string) => {
-    setSettings(prev => ({
-      ...prev,
-      [key]: value
+export function PrivacySettings({ initialSettings, onSave }: PrivacySettingsProps) {
+  const [settings, setSettings] = useState<UserPrivacySettings>(initialSettings);
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    setSettings(initialSettings);
+  }, [initialSettings]);
+
+  const handleSettingChange = (key: keyof UserPrivacySettings, value: any) => {
+    setSettings(prevSettings => ({
+      ...prevSettings,
+      [key]: value,
     }));
   };
 
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await onSave(settings);
+      alert("Privacy settings saved!");
+    } catch (error) {
+      console.error("Error saving privacy settings:", error);
+      alert("Failed to save privacy settings.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Privacy & Security</h3>
-        <p className="text-sm text-gray-600">Control who can see your profile and content</p>
-      </div>
-
-      {/* Profile Visibility */}
-      <Card className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Eye className="h-5 w-5 text-blue-500" />
-          <div>
-            <h4 className="font-medium">Profile Visibility</h4>
-            <p className="text-sm text-gray-600">Who can see your profile</p>
-          </div>
+    <Card className="bg-white rounded-xl shadow-sm p-6">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold">Privacy Settings</CardTitle>
+        <CardDescription>Manage your privacy preferences.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Label htmlFor="isPrivate">Private Account</Label>
+          <Switch
+            id="isPrivate"
+            checked={settings.isPrivate}
+            onCheckedChange={(checked) => handleSettingChange("isPrivate", checked)}
+          />
         </div>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="profileVisibility">Profile Visibility</Label>
-            <Select 
-              value={settings.profileVisibility} 
-              onValueChange={(value) => updateSetting("profileVisibility", value)}
-            >
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="friends">Friends</SelectItem>
-                <SelectItem value="private">Private</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <Separator />
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="isPrivate">Private Account</Label>
-            <Switch
-              id="isPrivate"
-              checked={settings.isPrivate}
-              onCheckedChange={(checked) => updateSetting("isPrivate", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="showLocation">Show Location</Label>
-            <Switch
-              id="showLocation"
-              checked={settings.showLocation}
-              onCheckedChange={(checked) => updateSetting("showLocation", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="showEmail">Show Email</Label>
-            <Switch
-              id="showEmail"
-              checked={settings.showEmail}
-              onCheckedChange={(checked) => updateSetting("showEmail", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="showPhone">Show Phone</Label>
-            <Switch
-              id="showPhone"
-              checked={settings.showPhone}
-              onCheckedChange={(checked) => updateSetting("showPhone", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="allowFriendRequests">Allow Friend Requests</Label>
-            <Switch
-              id="allowFriendRequests"
-              checked={settings.allowFriendRequests}
-              onCheckedChange={(checked) => updateSetting("allowFriendRequests", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="hideFromSearch">Hide from Search</Label>
-            <Switch
-              id="hideFromSearch"
-              checked={settings.hideFromSearch}
-              onCheckedChange={(checked) => updateSetting("hideFromSearch", checked)}
-            />
-          </div>
+        <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="showEmail">Show Email</Label>
+          <Switch
+            id="showEmail"
+            checked={settings.showEmail}
+            onCheckedChange={(checked) => handleSettingChange("showEmail", checked)}
+          />
         </div>
-      </Card>
-
-      {/* Activity & Content */}
-      <Card className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <Users className="h-5 w-5 text-green-500" />
-          <div>
-            <h4 className="font-medium">Activity & Content</h4>
-            <p className="text-sm text-gray-600">Control what others can see</p>
-          </div>
+        <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="showPhone">Show Phone</Label>
+          <Switch
+            id="showPhone"
+            checked={settings.showPhone}
+            onCheckedChange={(checked) => handleSettingChange("showPhone", checked)}
+          />
         </div>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="showActivity">Show Activity</Label>
-            <Switch
-              id="showActivity"
-              checked={settings.showActivity}
-              onCheckedChange={(checked) => updateSetting("showActivity", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="showCollections">Show Collections</Label>
-            <Switch
-              id="showCollections"
-              checked={settings.showCollections}
-              onCheckedChange={(checked) => updateSetting("showCollections", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="showWishlist">Show Wishlist</Label>
-            <Switch
-              id="showWishlist"
-              checked={settings.showWishlist}
-              onCheckedChange={(checked) => updateSetting("showWishlist", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="allowComments">Allow Comments</Label>
-            <Switch
-              id="allowComments"
-              checked={settings.allowComments}
-              onCheckedChange={(checked) => updateSetting("allowComments", checked)}
-            />
-          </div>
+        <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="allowMessages">Allow Messages</Label>
+          <Switch
+            id="allowMessages"
+            checked={settings.allowMessages}
+            onCheckedChange={(checked) => handleSettingChange("allowMessages", checked)}
+          />
         </div>
-      </Card>
-
-      {/* Messages & Communication */}
-      <Card className="p-6">
-        <div className="flex items-center gap-3 mb-4">
-          <MessageSquare className="h-5 w-5 text-purple-500" />
-          <div>
-            <h4 className="font-medium">Messages & Communication</h4>
-            <p className="text-sm text-gray-600">Control how others can contact you</p>
-          </div>
+        <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="allowTradeRequests">Allow Trade Requests</Label>
+          <Switch
+            id="allowTradeRequests"
+            checked={settings.allowTradeRequests}
+            onCheckedChange={(checked) => handleSettingChange("allowTradeRequests", checked)}
+          />
         </div>
-        
-        <div className="space-y-4">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="allowMessages">Allow Messages</Label>
-            <Switch
-              id="allowMessages"
-              checked={settings.allowMessages}
-              onCheckedChange={(checked) => updateSetting("allowMessages", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="allowTradeRequests">Allow Trade Requests</Label>
-            <Switch
-              id="allowTradeRequests"
-              checked={settings.allowTradeRequests}
-              onCheckedChange={(checked) => updateSetting("allowTradeRequests", checked)}
-            />
-          </div>
-
-          <div className="flex items-center justify-between">
-            <Label htmlFor="messagePermission">Message Permission</Label>
-            <Switch
-              id="messagePermission"
-              checked={settings.messagePermission}
-              onCheckedChange={(checked) => updateSetting("messagePermission", checked)}
-            />
-          </div>
+        <Separator />
+        <div>
+          <Label htmlFor="profileVisibility">Profile Visibility</Label>
+          <Select value={settings.profileVisibility} onValueChange={(value) => handleSettingChange("profileVisibility", value)}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="Select visibility" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="public">Public</SelectItem>
+              <SelectItem value="friends">Friends</SelectItem>
+              <SelectItem value="private">Private</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </Card>
-    </div>
+        <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="showLocation">Show Location</Label>
+          <Switch
+            id="showLocation"
+            checked={settings.showLocation}
+            onCheckedChange={(checked) => handleSettingChange("showLocation", checked)}
+          />
+        </div>
+        <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="allowFriendRequests">Allow Friend Requests</Label>
+          <Switch
+            id="allowFriendRequests"
+            checked={settings.allowFriendRequests}
+            onCheckedChange={(checked) => handleSettingChange("allowFriendRequests", checked)}
+          />
+        </div>
+         <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="messagePermission">Message Permission</Label>
+          <Switch
+            id="messagePermission"
+            checked={settings.messagePermission}
+            onCheckedChange={(checked) => handleSettingChange("messagePermission", checked)}
+          />
+        </div>
+         <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="showActivity">Show Activity</Label>
+          <Switch
+            id="showActivity"
+            checked={settings.showActivity}
+            onCheckedChange={(checked) => handleSettingChange("showActivity", checked)}
+          />
+        </div>
+         <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="hideFromSearch">Hide From Search</Label>
+          <Switch
+            id="hideFromSearch"
+            checked={settings.hideFromSearch}
+            onCheckedChange={(checked) => handleSettingChange("hideFromSearch", checked)}
+          />
+        </div>
+         <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="allowComments">Allow Comments</Label>
+          <Switch
+            id="allowComments"
+            checked={settings.allowComments}
+            onCheckedChange={(checked) => handleSettingChange("allowComments", checked)}
+          />
+        </div>
+         <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="showCollections">Show Collections</Label>
+          <Switch
+            id="showCollections"
+            checked={settings.showCollections}
+            onCheckedChange={(checked) => handleSettingChange("showCollections", checked)}
+          />
+        </div>
+        <Separator />
+        <div className="flex items-center justify-between">
+          <Label htmlFor="showWishlist">Show Wishlist</Label>
+          <Switch
+            id="showWishlist"
+            checked={settings.showWishlist}
+            onCheckedChange={(checked) => handleSettingChange("showWishlist", checked)}
+          />
+        </div>
+        <Button onClick={handleSave} disabled={isSaving}>
+          {isSaving ? "Saving..." : "Save Changes"}
+        </Button>
+      </CardContent>
+    </Card>
   );
-};
+}

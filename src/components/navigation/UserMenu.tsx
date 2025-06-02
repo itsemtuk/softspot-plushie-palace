@@ -11,7 +11,7 @@ import { CreateButton } from "./CreateButton";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "../post/PostCreationFlow";
 import { addPost } from "@/utils/posts/postManagement";
-import { PostCreationData, ExtendedPost } from "@/types/marketplace";
+import { PostCreationData, ExtendedPost } from "@/types/core";
 
 export const UserMenu = () => {
   const [isSignedIn, setIsSignedIn] = useState(false);

@@ -1,6 +1,5 @@
-
 import { useState, useCallback } from 'react';
-import { ExtendedPost } from '@/types/marketplace';
+import { ExtendedPost } from '@/types/core';
 import { deletePost } from '@/utils/posts/postManagement';
 import { toast } from '@/components/ui/use-toast';
 import { useUser } from '@clerk/clerk-react';

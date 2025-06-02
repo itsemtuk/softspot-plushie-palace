@@ -1,80 +1,131 @@
-
-import { useUser } from '@clerk/clerk-react';
-import { setCurrentUserContext } from '@/utils/supabase/rls';
-import { supabase } from '@/utils/supabase/client';
-import { ExtendedPost } from '@/types/marketplace';
-import { getLocalPosts, savePosts } from '@/utils/storage/localStorageUtils';
+import { useState, useCallback } from "react";
+import { toast } from "@/components/ui/use-toast";
+import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
+import { ExtendedPost } from "@/types/core";
+import { deletePost, updatePost } from "@/utils/posts/postManagement";
 
 export const usePostActions = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
+  const navigate = useNavigate();
 
-  const createPost = async (postData: Omit<ExtendedPost, 'id' | 'userId' | 'timestamp' | 'createdAt' | 'updatedAt' | 'likes' | 'comments'>): Promise<ExtendedPost> => {
-    if (!user) throw new Error('Authentication required');
-    
-    const newPost: ExtendedPost = {
-      ...postData,
-      id: `post-${Date.now()}`,
-      userId: user.id,
-      username: user.username || user.firstName || 'User',
-      likes: 0,
-      comments: 0,
-      timestamp: new Date().toISOString(),
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    try {
-      await setCurrentUserContext(user.id);
-      
-      const { data, error } = await supabase
-        .from('posts')
-        .insert({
-          id: newPost.id,
-          user_id: newPost.userId,
-          content: JSON.stringify({
-            image: newPost.image,
-            title: newPost.title,
-            description: newPost.description || '',
-            tags: newPost.tags || [],
-          }),
-          created_at: newPost.timestamp,
+  const handleEditPost = useCallback(
+    (post: ExtendedPost) => {
+      if (!user?.id) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please sign in to edit posts.",
         });
+        navigate("/sign-in");
+        return;
+      }
 
-      if (error) throw error;
-      return newPost;
-    } catch (error) {
-      console.error('Database insert failed, using localStorage:', error);
-      
-      // Fallback to localStorage
-      const existingPosts = getLocalPosts();
-      const updatedPosts = [newPost, ...existingPosts];
-      savePosts(updatedPosts);
-      
-      return newPost;
-    }
+      // Navigate to the edit post page with the post ID
+      navigate(`/edit-post/${post.id}`);
+    },
+    [user?.id, navigate]
+  );
+
+  const handleDeletePost = useCallback(
+    async (postId: string) => {
+      if (!postId) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Invalid post ID",
+        });
+        return;
+      }
+
+      if (!user?.id) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please sign in to delete posts.",
+        });
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const result = await deletePost(postId, user.id);
+
+        if (result.success) {
+          toast({
+            title: "Post deleted",
+            description: "Your post has been successfully deleted.",
+          });
+        } else {
+          throw new Error(result.error || "Failed to delete post");
+        }
+      } catch (error) {
+        console.error("Error deleting post:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to delete the post. Please try again.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user?.id]
+  );
+
+  const handleUpdatePost = useCallback(
+    async (postId: string, updatedPostData: Partial<ExtendedPost>) => {
+      if (!postId) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Invalid post ID",
+        });
+        return;
+      }
+
+      if (!user?.id) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please sign in to update posts.",
+        });
+        return;
+      }
+
+      setIsLoading(true);
+
+      try {
+        const result = await updatePost(postId, updatedPostData, user.id);
+
+        if (result.success) {
+          toast({
+            title: "Post updated",
+            description: "Your post has been successfully updated.",
+          });
+        } else {
+          throw new Error(result.error || "Failed to update post");
+        }
+      } catch (error) {
+        console.error("Error updating post:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to update the post. Please try again.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user?.id]
+  );
+
+  return {
+    isLoading,
+    handleEditPost,
+    handleDeletePost,
+    handleUpdatePost,
   };
-
-  const deletePost = async (postId: string): Promise<void> => {
-    if (!user) throw new Error('Authentication required');
-
-    try {
-      await setCurrentUserContext(user.id);
-      
-      const { error } = await supabase
-        .from('posts')
-        .delete()
-        .eq('id', postId);
-
-      if (error) throw error;
-    } catch (error) {
-      console.error('Database delete failed, using localStorage:', error);
-      
-      // Fallback to localStorage
-      const existingPosts = getLocalPosts();
-      const updatedPosts = existingPosts.filter(post => post.id !== postId);
-      savePosts(updatedPosts);
-    }
-  };
-
-  return { createPost, deletePost };
 };

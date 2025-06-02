@@ -1,450 +1,274 @@
-import { useEffect, useState } from "react";
-import { Badge, BadgeCriteria, BadgeType } from "@/types/badges";
-import { useUser } from "@clerk/clerk-react";
-import { getUserPosts } from "@/utils/posts/postFetch";
 
-export const useBadges = () => {
-  const { user } = useUser();
-  const [badges, setBadges] = useState<Badge[]>([]);
-  const [completedCount, setCompletedCount] = useState(0);
+import { useState, useEffect } from 'react';
+import { Badge } from '@/types/badges';
 
-  // Base badges that every user can earn
-  const baseBadges: Badge[] = [
-    {
-      id: "profile-pic",
-      name: "Profile Picture",
-      description: "Set a profile picture to personalize your account",
-      imagePath: "/assets/Badges/profile-pic-badge.png",
-      earned: false,
-      icon: "user",
-      criteria: {
-        requirement: "Set a profile picture",
-        value: 1,
-        type: "achievement",
-        threshold: 1,
-        requiresProfilePicture: true
-      }
-    },
-    {
-      id: "preferences",
-      name: "Plushie Preferences",
-      description: "Share your plushie preferences with the community",
-      imagePath: "/assets/Badges/preferences-badge.png",
-      earned: false,
-      icon: "heart",
-      criteria: {
-        requirement: "Set plushie preferences",
-        value: 1,
-        type: "achievement",
-        threshold: 1,
-        requiresPlushiePreferences: true
-      }
-    },
-    {
-      id: "complete-profile",
-      name: "Complete Profile",
-      description: "Fill out all your profile information",
-      imagePath: "/assets/Badges/complete-profile-badge.png",
-      earned: false,
-      icon: "check",
-      criteria: {
-        requirement: "Complete profile information",
-        value: 1,
-        type: "achievement",
-        threshold: 1,
-        requiresCompletedProfile: true
-      }
-    },
-    {
-      id: "first-post",
-      name: "First Post",
-      description: "Share your first post with the community",
-      imagePath: "/assets/Badges/first-post-badge.png",
-      earned: false,
-      icon: "edit",
-      criteria: {
-        requirement: "Share your first post",
-        value: 1,
-        type: "milestone",
-        threshold: 1,
-        requiresFeedPosts: 1
-      },
-      progress: 0
-    },
-    {
-      id: "first-listing",
-      name: "First Listing",
-      description: "List your first item for sale",
-      imagePath: "/assets/Badges/first-listing-badge.png",
-      earned: false,
-      icon: "shopping-cart",
-      criteria: {
-        requirement: "List your first item",
-        value: 1,
-        type: "milestone",
-        threshold: 1,
-        requiresListedItems: 1
-      },
-      progress: 0
-    },
-    {
-      id: "first-sale",
-      name: "First Sale",
-      description: "Successfully sell your first item",
-      imagePath: "/assets/Badges/first-sale-badge.png",
-      earned: false,
-      icon: "dollar-sign",
-      criteria: {
-        requirement: "Complete your first sale",
-        value: 1,
-        type: "milestone",
-        threshold: 1,
-        requiresSoldItems: 1
-      },
-      progress: 0
-    },
-    {
-      id: "wishlist",
-      name: "Wishlist Creator",
-      description: "Create a wishlist to track plushies you want",
-      imagePath: "/assets/Badges/wishlist-badge.png",
-      earned: false,
-      icon: "bookmark",
-      criteria: {
-        requirement: "Create a wishlist",
-        value: 1,
-        type: "achievement",
-        threshold: 1,
-        requiresWishlist: true
-      }
-    },
-    {
-      id: "10-followers",
-      name: "10 Followers",
-      description: "Have 10 people follow your profile",
-      imagePath: "/assets/Badges/10-followers-badge.png",
-      earned: false,
-      icon: "users",
-      criteria: {
-        requirement: "Gain 10 followers",
-        value: 10,
-        type: "milestone",
-        threshold: 10,
-        requiresFollowers: 10
-      },
-      progress: 0
-    },
-    {
-      id: "50-followers",
-      name: "50 Followers",
-      description: "Have 50 people follow your profile",
-      imagePath: "/assets/Badges/50-followers-badge.png",
-      earned: false,
-      icon: "users",
-      criteria: {
-        requirement: "Gain 50 followers",
-        value: 50,
-        type: "milestone",
-        threshold: 50,
-        requiresFollowers: 50
-      },
-      progress: 0
-    },
-    {
-      id: "100-followers",
-      name: "100 Followers",
-      description: "Have 100 people follow your profile",
-      imagePath: "/assets/Badges/100-followers-badge.png",
-      earned: false,
-      icon: "users",
-      criteria: {
-        requirement: "Gain 100 followers",
-        value: 100,
-        type: "milestone",
-        threshold: 100,
-        requiresFollowers: 100
-      },
-      progress: 0
-    },
-  ];
-
-  // Special badges that only specific users can earn
-  const specialBadges: Badge[] = [
-    {
-      id: "alpha-tester",
-      name: "Alpha Tester",
-      description: "One of the first users to test our platform",
-      imagePath: "/assets/Badges/Alpha_Tester.PNG",
-      earned: false,
-      isSpecial: true,
-      icon: "star",
-      criteria: {
-        requirement: "Alpha testing participation",
-        value: 1,
-        type: "special",
-        specialBadgeType: "alpha_tester"
-      }
-    },
-    {
-      id: "beta-tester",
-      name: "Beta Tester",
-      description: "Helped test our platform before public release",
-      imagePath: "/assets/Badges/Beta_Tester.PNG",
-      earned: false,
-      isSpecial: true,
-      icon: "star",
-      criteria: {
-        requirement: "Beta testing participation",
-        value: 1,
-        type: "special",
-        specialBadgeType: "beta_tester"
-      }
-    }
-  ];
-
-  // Check if the user qualifies for special badges
-  const checkForSpecialBadges = (allBadges: Badge[]): Badge[] => {
-    // Check for user metadata to determine if they're alpha/beta testers
-    const userMetadata = user?.publicMetadata || {};
-    const updatedBadges = [...allBadges];
-    
-    // Check for alpha tester status
-    const alphaIndex = updatedBadges.findIndex(b => b.id === "alpha-tester");
-    if (alphaIndex !== -1 && userMetadata.isTester === "alpha") {
-      updatedBadges[alphaIndex] = {
-        ...updatedBadges[alphaIndex],
-        earned: true,
-        earnedAt: new Date().toISOString()
-      };
-    }
-    
-    // Check for beta tester status
-    const betaIndex = updatedBadges.findIndex(b => b.id === "beta-tester");
-    if (betaIndex !== -1 && userMetadata.isTester === "beta") {
-      updatedBadges[betaIndex] = {
-        ...updatedBadges[betaIndex],
-        earned: true,
-        earnedAt: new Date().toISOString()
-      };
-    }
-    
-    return updatedBadges;
-  };
-
-  // Evaluate profile picture badge
-  const checkProfilePictureBadge = (allBadges: Badge[]): Badge[] => {
-    const updatedBadges = [...allBadges];
-    const badgeIndex = updatedBadges.findIndex(b => b.id === "profile-pic");
-    
-    if (badgeIndex !== -1) {
-      const hasProfilePic = !!user?.imageUrl && user.imageUrl !== "";
-      
-      if (hasProfilePic && !updatedBadges[badgeIndex].earned) {
-        updatedBadges[badgeIndex] = {
-          ...updatedBadges[badgeIndex],
-          earned: true,
-          earnedAt: new Date().toISOString()
-        };
-      }
-    }
-    
-    return updatedBadges;
-  };
-
-  // Evaluate plushie preferences badge
-  const checkPreferencesBadge = (allBadges: Badge[]): Badge[] => {
-    const updatedBadges = [...allBadges];
-    const badgeIndex = updatedBadges.findIndex(b => b.id === "preferences");
-    
-    if (badgeIndex !== -1) {
-      const userPreferences = user?.unsafeMetadata?.plushiePreferences || null;
-      const hasPreferences = Array.isArray(userPreferences) && userPreferences.length > 0;
-      
-      if (hasPreferences && !updatedBadges[badgeIndex].earned) {
-        updatedBadges[badgeIndex] = {
-          ...updatedBadges[badgeIndex],
-          earned: true,
-          earnedAt: new Date().toISOString()
-        };
-      }
-    }
-    
-    return updatedBadges;
-  };
-
-  // Evaluate completed profile badge
-  const checkCompletedProfileBadge = (allBadges: Badge[]): Badge[] => {
-    const updatedBadges = [...allBadges];
-    const badgeIndex = updatedBadges.findIndex(b => b.id === "complete-profile");
-    
-    if (badgeIndex !== -1) {
-      const userMetadata = user?.unsafeMetadata || {};
-      const requiredFields = ["bio", "plushiePreferences", "favoriteBrands"];
-      const hasAllFields = requiredFields.every(field => 
-        Array.isArray(userMetadata[field]) ? 
-          (userMetadata[field] as any[]).length > 0 : 
-          !!userMetadata[field]
-      );
-      
-      if (hasAllFields && !updatedBadges[badgeIndex].earned) {
-        updatedBadges[badgeIndex] = {
-          ...updatedBadges[badgeIndex],
-          earned: true,
-          earnedAt: new Date().toISOString()
-        };
-      }
-    }
-    
-    return updatedBadges;
-  };
-
-  // Evaluate post related badges
-  const checkPostBadges = async (allBadges: Badge[]): Promise<Badge[]> => {
-    let updatedBadges = [...allBadges];
-    
-    try {
-      // Get user posts
-      const userPosts = await getUserPosts(user?.id || "");
-      const totalPosts = userPosts.length;
-      const listedItems = userPosts.filter(post => post.forSale).length;
-      // Fix: Check if post.sold exists before using it
-      const soldItems = userPosts.filter(post => post.forSale && post.sold === true).length;
-      
-      // Update first post badge
-      const firstPostIndex = updatedBadges.findIndex(b => b.id === "first-post");
-      if (firstPostIndex !== -1) {
-        updatedBadges[firstPostIndex] = {
-          ...updatedBadges[firstPostIndex],
-          progress: totalPosts,
-          earned: totalPosts >= 1,
-          earnedAt: totalPosts >= 1 ? new Date().toISOString() : undefined
-        };
-      }
-      
-      // Update first listing badge
-      const firstListingIndex = updatedBadges.findIndex(b => b.id === "first-listing");
-      if (firstListingIndex !== -1) {
-        updatedBadges[firstListingIndex] = {
-          ...updatedBadges[firstListingIndex],
-          progress: listedItems,
-          earned: listedItems >= 1,
-          earnedAt: listedItems >= 1 ? new Date().toISOString() : undefined
-        };
-      }
-      
-      // Update first sale badge
-      const firstSaleIndex = updatedBadges.findIndex(b => b.id === "first-sale");
-      if (firstSaleIndex !== -1) {
-        updatedBadges[firstSaleIndex] = {
-          ...updatedBadges[firstSaleIndex],
-          progress: soldItems,
-          earned: soldItems >= 1,
-          earnedAt: soldItems >= 1 ? new Date().toISOString() : undefined
-        };
-      }
-    } catch (error) {
-      console.error("Error checking post badges:", error);
-    }
-    
-    return updatedBadges;
-  };
-
-  // Evaluate wishlist badge
-  const checkWishlistBadge = (allBadges: Badge[]): Badge[] => {
-    const updatedBadges = [...allBadges];
-    const badgeIndex = updatedBadges.findIndex(b => b.id === "wishlist");
-    
-    if (badgeIndex !== -1) {
-      // Check local storage for wishlist
-      const wishlist = localStorage.getItem('userWishlist');
-      const hasWishlist = !!wishlist && JSON.parse(wishlist).length > 0;
-      
-      if (hasWishlist && !updatedBadges[badgeIndex].earned) {
-        updatedBadges[badgeIndex] = {
-          ...updatedBadges[badgeIndex],
-          earned: true,
-          earnedAt: new Date().toISOString()
-        };
-      }
-    }
-    
-    return updatedBadges;
-  };
-
-  // Evaluate follower badges
-  const checkFollowerBadges = (allBadges: Badge[]): Badge[] => {
-    const updatedBadges = [...allBadges];
-    const userMetadata = user?.publicMetadata || {};
-    const followerCount = typeof userMetadata.followerCount === 'number' ? userMetadata.followerCount : 0;
-    
-    // Check 10 followers badge
-    const badge10Index = updatedBadges.findIndex(b => b.id === "10-followers");
-    if (badge10Index !== -1) {
-      updatedBadges[badge10Index] = {
-        ...updatedBadges[badge10Index],
-        progress: followerCount,
-        earned: followerCount >= 10,
-        earnedAt: followerCount >= 10 ? new Date().toISOString() : undefined
-      };
-    }
-    
-    // Check 50 followers badge
-    const badge50Index = updatedBadges.findIndex(b => b.id === "50-followers");
-    if (badge50Index !== -1) {
-      updatedBadges[badge50Index] = {
-        ...updatedBadges[badge50Index],
-        progress: followerCount,
-        earned: followerCount >= 50,
-        earnedAt: followerCount >= 50 ? new Date().toISOString() : undefined
-      };
-    }
-    
-    // Check 100 followers badge
-    const badge100Index = updatedBadges.findIndex(b => b.id === "100-followers");
-    if (badge100Index !== -1) {
-      updatedBadges[badge100Index] = {
-        ...updatedBadges[badge100Index],
-        progress: followerCount,
-        earned: followerCount >= 100,
-        earnedAt: followerCount >= 100 ? new Date().toISOString() : undefined
-      };
-    }
-    
-    return updatedBadges;
-  };
-
-  useEffect(() => {
-    const initializeBadges = async () => {
-      // Combine base and special badges
-      let allBadges = [...baseBadges, ...specialBadges];
-      
-      // Run all badge checks
-      allBadges = checkForSpecialBadges(allBadges);
-      allBadges = checkProfilePictureBadge(allBadges);
-      allBadges = checkPreferencesBadge(allBadges);
-      allBadges = checkCompletedProfileBadge(allBadges);
-      allBadges = await checkPostBadges(allBadges);
-      allBadges = checkWishlistBadge(allBadges);
-      allBadges = checkFollowerBadges(allBadges);
-      
-      // Count earned badges
-      const earnedCount = allBadges.filter(badge => badge.earned).length;
-      
-      setBadges(allBadges);
-      setCompletedCount(earnedCount);
-    };
-    
-    if (user) {
-      initializeBadges();
-    }
-  }, [user]);
-
-  return {
-    badges,
-    completedCount,
-    totalCount: baseBadges.length,
-    isVerified: completedCount === baseBadges.length
-  };
+// Mock user data for demonstration
+const MOCK_USER_DATA = {
+  hasProfilePicture: true,
+  hasPlushiePreferences: true,
+  profileComplete: true,
+  feedPosts: 5,
+  listedItems: 3,
+  soldItems: 1,
+  hasWishlist: true,
+  followers: 25,
+  isAlphaTester: true,
+  isBetaTester: false,
 };
 
-export default useBadges;
+export const useBadges = () => {
+  const [badges, setBadges] = useState<Badge[]>([]);
+
+  useEffect(() => {
+    const badgeList: Badge[] = [
+      {
+        id: 'profile-picture',
+        name: 'Changed Profile Photo',
+        type: 'achievement',
+        description: 'Upload your first profile picture',
+        imagePath: '/assets/Badges/Changed_Profile_Photo.PNG',
+        earned: false,
+        icon: 'Camera',
+        criteria: {
+          requirement: 'Upload a profile picture',
+          value: 1,
+          type: 'profile',
+          threshold: 1,
+          requiresProfilePicture: true,
+        },
+      },
+      {
+        id: 'plushie-preferences',
+        name: 'Plushie Preferences',
+        type: 'achievement',
+        description: 'Set your plushie preferences',
+        imagePath: '/assets/Badges/Plushie_Preferences.PNG',
+        earned: false,
+        icon: 'Settings',
+        criteria: {
+          requirement: 'Set plushie preferences',
+          value: 1,
+          type: 'preferences',
+          threshold: 1,
+          requiresPlushiePreferences: true,
+        },
+      },
+      {
+        id: 'completed-profile',
+        name: 'Completed Profile',
+        type: 'achievement',
+        description: 'Complete your profile setup',
+        imagePath: '/assets/Badges/Completed_Profile.PNG',
+        earned: false,
+        icon: 'User',
+        criteria: {
+          requirement: 'Complete profile',
+          value: 1,
+          type: 'profile',
+          threshold: 1,
+          requiresCompletedProfile: true,
+        },
+      },
+      {
+        id: 'first-post',
+        name: 'First Post',
+        type: 'milestone',
+        description: 'Share your first post',
+        imagePath: '/assets/Badges/First_Post.PNG',
+        earned: false,
+        icon: 'MessageSquare',
+        criteria: {
+          requirement: 'Create posts',
+          value: 1,
+          type: 'posts',
+          threshold: 1,
+          requiresFeedPosts: 1,
+        },
+        progress: Math.min(MOCK_USER_DATA.feedPosts, 1),
+      },
+      {
+        id: 'active-poster',
+        name: 'Active Poster',
+        type: 'milestone',
+        description: 'Share 10 posts',
+        imagePath: '/assets/Badges/First_Post.PNG',
+        earned: false,
+        icon: 'MessageSquare',
+        criteria: {
+          requirement: 'Create posts',
+          value: 10,
+          type: 'posts',
+          threshold: 10,
+          requiresListedItems: 10,
+        },
+        progress: Math.min(MOCK_USER_DATA.feedPosts, 10),
+      },
+      {
+        id: 'first-sale',
+        name: 'First Sale',
+        type: 'milestone',
+        description: 'Complete your first sale',
+        imagePath: '/assets/Badges/First_Sale.PNG',
+        earned: false,
+        icon: 'ShoppingBag',
+        criteria: {
+          requirement: 'Complete sales',
+          value: 1,
+          type: 'sales',
+          threshold: 1,
+          requiresSoldItems: 1,
+        },
+        progress: Math.min(MOCK_USER_DATA.soldItems, 1),
+      },
+      {
+        id: 'wishlist-created',
+        name: 'Wishlist Created',
+        type: 'achievement',
+        description: 'Create your first wishlist',
+        imagePath: '/assets/Badges/Completed_Profile.PNG',
+        earned: false,
+        icon: 'Heart',
+        criteria: {
+          requirement: 'Create wishlist',
+          value: 1,
+          type: 'wishlist',
+          threshold: 1,
+          requiresWishlist: true,
+        },
+      },
+      {
+        id: 'popular-user',
+        name: 'Popular User',
+        type: 'milestone',
+        description: 'Gain 50 followers',
+        imagePath: '/assets/Badges/Completed_Profile.PNG',
+        earned: false,
+        icon: 'Users',
+        criteria: {
+          requirement: 'Gain followers',
+          value: 50,
+          type: 'social',
+          threshold: 50,
+          requiresFollowers: 50,
+        },
+        progress: Math.min(MOCK_USER_DATA.followers, 50),
+      },
+      {
+        id: 'community-leader',
+        name: 'Community Leader',
+        type: 'milestone',
+        description: 'Gain 100 followers',
+        imagePath: '/assets/Badges/Completed_Profile.PNG',
+        earned: false,
+        icon: 'Crown',
+        criteria: {
+          requirement: 'Gain followers',
+          value: 100,
+          type: 'social',
+          threshold: 100,
+          requiresFollowers: 100,
+        },
+        progress: Math.min(MOCK_USER_DATA.followers, 100),
+      },
+      {
+        id: 'influencer',
+        name: 'Influencer',
+        type: 'milestone',
+        description: 'Gain 500 followers',
+        imagePath: '/assets/Badges/Completed_Profile.PNG',
+        earned: false,
+        icon: 'Star',
+        criteria: {
+          requirement: 'Gain followers',
+          value: 500,
+          type: 'social',
+          threshold: 500,
+          requiresFollowers: 500,
+        },
+        progress: Math.min(MOCK_USER_DATA.followers, 500),
+      },
+      {
+        id: 'alpha-tester',
+        name: 'Alpha Tester',
+        type: 'special',
+        description: 'Participated in alpha testing',
+        imagePath: '/assets/Badges/Alpha_Tester.PNG',
+        earned: false,
+        isSpecial: true,
+        icon: 'Zap',
+        criteria: {
+          requirement: 'Alpha participation',
+          value: 1,
+          type: 'special',
+          specialBadgeType: 'alpha',
+        },
+      },
+      {
+        id: 'beta-tester',
+        name: 'Beta Tester',
+        type: 'special',
+        description: 'Participated in beta testing',
+        imagePath: '/assets/Badges/Beta_Tester.PNG',
+        earned: false,
+        isSpecial: true,
+        icon: 'TestTube',
+        criteria: {
+          requirement: 'Beta participation',
+          value: 1,
+          type: 'special',
+          specialBadgeType: 'beta',
+        },
+      },
+    ];
+
+    // Calculate earned status for each badge
+    const updatedBadges = badgeList.map(badge => {
+      let earned = false;
+
+      switch (badge.id) {
+        case 'profile-picture':
+          earned = MOCK_USER_DATA.hasProfilePicture;
+          break;
+        case 'plushie-preferences':
+          earned = MOCK_USER_DATA.hasPlushiePreferences;
+          break;
+        case 'completed-profile':
+          earned = MOCK_USER_DATA.profileComplete;
+          break;
+        case 'first-post':
+          earned = MOCK_USER_DATA.feedPosts >= 1;
+          break;
+        case 'active-poster':
+          earned = MOCK_USER_DATA.feedPosts >= 10;
+          break;
+        case 'first-sale':
+          earned = MOCK_USER_DATA.soldItems >= 1;
+          break;
+        case 'wishlist-created':
+          earned = MOCK_USER_DATA.hasWishlist;
+          break;
+        case 'popular-user':
+          earned = MOCK_USER_DATA.followers >= 50;
+          break;
+        case 'community-leader':
+          earned = MOCK_USER_DATA.followers >= 100;
+          break;
+        case 'influencer':
+          earned = MOCK_USER_DATA.followers >= 500;
+          break;
+        case 'alpha-tester':
+          earned = MOCK_USER_DATA.isAlphaTester;
+          break;
+        case 'beta-tester':
+          earned = MOCK_USER_DATA.isBetaTester;
+          break;
+      }
+
+      return { ...badge, earned };
+    });
+
+    setBadges(updatedBadges);
+  }, []);
+
+  return { badges };
+};
