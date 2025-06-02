@@ -1,4 +1,5 @@
-import { useState, useCallback } from "react";
+
+import { useState, useCallback, useEffect } from "react";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { ExtendedPost } from "@/types/core";
@@ -19,8 +20,8 @@ interface FeedContentProps {
 export const FeedContent = ({ initialPosts, isLoading, isError, isOnline, onRefresh }: FeedContentProps) => {
   const { openPostDialog } = usePostDialog();
   const [posts, setPosts] = useState<ExtendedPost[]>(initialPosts);
-  const { syncPosts } = useSyncManager();
-  const { addOfflinePost, deleteOfflinePost } = useOfflinePostOperations();
+  const syncManager = useSyncManager(posts);
+  const { addOfflinePost, removeOfflinePost } = useOfflinePostOperations();
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);
@@ -37,9 +38,9 @@ export const FeedContent = ({ initialPosts, isLoading, isError, isOnline, onRefr
   const handlePostDeleted = useCallback(
     (postId: string) => {
       setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
-      deleteOfflinePost(postId);
+      removeOfflinePost(postId);
     },
-    [deleteOfflinePost]
+    [removeOfflinePost]
   );
 
   const handlePostsRefreshed = useCallback(
@@ -50,10 +51,10 @@ export const FeedContent = ({ initialPosts, isLoading, isError, isOnline, onRefr
   );
 
   useEffect(() => {
-    if (isOnline) {
-      syncPosts(posts, handlePostsRefreshed);
+    if (isOnline && syncManager.refreshPosts) {
+      syncManager.refreshPosts();
     }
-  }, [isOnline, posts, syncPosts, handlePostsRefreshed]);
+  }, [isOnline, syncManager]);
 
   if (isLoading) {
     return (

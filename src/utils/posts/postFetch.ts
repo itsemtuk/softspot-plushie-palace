@@ -1,3 +1,4 @@
+
 import { validatePosts } from "../dataValidation";
 import { ExtendedPost } from "@/types/core";
 
@@ -34,4 +35,12 @@ export const fetchPosts = async (): Promise<ExtendedPost[]> => {
     console.error("Error fetching posts:", error);
     return [];
   }
+};
+
+export const getAllPosts = async (): Promise<ExtendedPost[]> => {
+  return fetchPosts();
+};
+
+export const getPosts = async (): Promise<ExtendedPost[]> => {
+  return fetchPosts();
 };

@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from "react";
 import { Plus, Filter, Search, Grid3X3, List, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedContent } from "@/components/feed/FeedContent";
 import { FeedGrid } from "@/components/feed/FeedGrid";
-import { ExtendedPost } from "@/types/core";
+import { ExtendedPost, PostCreationData } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { getAllPosts } from "@/utils/posts/postFetch";
 import { PostCreationFlow } from "@/components/post/PostCreationFlow";
@@ -26,8 +28,8 @@ const Feed = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { openPostDialog } = usePostDialog();
   const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
-  const { syncPosts } = useSyncManager();
-  const { addOfflinePost, deleteOfflinePost } = useOfflinePostOperations();
+  const syncManager = useSyncManager(posts);
+  const { addOfflinePost } = useOfflinePostOperations();
 
   const fetchPosts = useCallback(async () => {
     setIsLoading(true);
@@ -49,10 +51,6 @@ const Feed = () => {
   useEffect(() => {
     fetchPosts();
   }, [fetchPosts]);
-
-  useEffect(() => {
-    syncPosts(posts, setPosts);
-  }, [posts, syncPosts]);
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);
@@ -153,13 +151,7 @@ const Feed = () => {
             <Spinner size="lg" />
           </div>
         ) : (
-          <>
-            {layout === "grid" ? (
-              <FeedGrid posts={sortedPosts} onPostClick={handlePostClick} />
-            ) : (
-              <FeedContent posts={sortedPosts} onPostClick={handlePostClick} />
-            )}
-          </>
+          <FeedGrid posts={sortedPosts} onPostClick={handlePostClick} />
         )}
       </div>
       <PostCreationFlow
@@ -172,9 +164,3 @@ const Feed = () => {
 };
 
 export default Feed;
-
-interface CreatePostProps {
-  onPostCreated: (data: PostCreationData) => Promise<void>;
-}
-
-import { PostCreationData } from "@/types/core";

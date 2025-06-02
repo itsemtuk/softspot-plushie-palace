@@ -1,6 +1,6 @@
+
 import { useState } from "react";
 import { toast } from "@/components/ui/use-toast";
-import { ExtendedPost } from "@/types/core";
 
 export const useCreatePost = () => {
   const [isPostCreationOpen, setIsPostCreationOpen] = useState(false);
@@ -15,6 +15,7 @@ export const useCreatePost = () => {
 
   return {
     isPostCreationOpen,
+    setIsPostCreationOpen,
     openPostCreation,
     onClosePostCreation,
   };

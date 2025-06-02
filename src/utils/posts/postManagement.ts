@@ -1,5 +1,6 @@
+
 import { ExtendedPost } from "@/types/core";
-import { supabase } from "@/integrations/supabase";
+import { supabase } from "@/integrations/supabase/client";
 
 export const addPost = async (postData: ExtendedPost): Promise<{ success: boolean; data?: any; error?: string }> => {
   try {
