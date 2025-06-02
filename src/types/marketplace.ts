@@ -1,4 +1,3 @@
-
 import { Database } from "@/integrations/supabase/types";
 
 export type Post = Database["public"]["Tables"]["posts"]["Row"] & {
@@ -253,8 +252,18 @@ export interface Badge {
 export interface BadgeCriteria {
   requirement: string;
   value: number;
-  type?: string; // Add type property
-  threshold?: number; // Add threshold property
+  type?: string;
+  threshold?: number;
+  description?: string; // Add description property
+  requiresProfilePicture?: boolean;
+  requiresPlushiePreferences?: boolean;
+  requiresCompletedProfile?: boolean;
+  requiresFeedPosts?: number;
+  requiresListedItems?: number;
+  requiresSoldItems?: number;
+  requiresWishlist?: boolean;
+  requiresFollowers?: number;
+  specialBadgeType?: string;
 }
 
 export type BadgeType = 'achievement' | 'milestone' | 'special';

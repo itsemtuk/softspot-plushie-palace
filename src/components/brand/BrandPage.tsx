@@ -8,10 +8,11 @@ import { PlushieGrid } from "@/components/brand/PlushieGrid";
 import { CommunityPosts } from "@/components/brand/CommunityPosts";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
-import { MarketplacePlushie, Post } from "@/types/marketplace";
+import { MarketplacePlushie, ExtendedPost } from "@/types/marketplace";
 import { BrandLogo } from "@/components/brand/BrandLogo";
 import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
 import { getPosts } from "@/utils/posts/postFetch";
+import { convertPostsToExtendedPosts } from "@/utils/postConversion";
 import { toast } from "@/components/ui/use-toast";
 
 // Brand data mapping
@@ -72,7 +73,7 @@ export const BrandPageWrapper = () => {
   const [loading, setLoading] = useState(true);
   const [brand, setBrand] = useState<any>(null);
   const [plushies, setPlushies] = useState<MarketplacePlushie[]>([]);
-  const [posts, setPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState<ExtendedPost[]>([]);
   
   useEffect(() => {
     if (!brandName) {
@@ -99,13 +100,14 @@ export const BrandPageWrapper = () => {
           );
           setPlushies(brandPlushies);
           
-          // Fetch posts mentioning this brand
+          // Fetch posts mentioning this brand and convert to ExtendedPost
           const allPosts = await getPosts();
           const brandPosts = allPosts.filter(post => 
             post.tags?.some(tag => tag.toLowerCase() === currentBrand.name.toLowerCase()) ||
             (post.description && post.description.toLowerCase().includes(currentBrand.name.toLowerCase()))
           );
-          setPosts(brandPosts);
+          const extendedPosts = convertPostsToExtendedPosts(brandPosts);
+          setPosts(extendedPosts);
         } else {
           // Try fuzzy matching or handle unknown brand
           toast({
@@ -138,7 +140,7 @@ export const BrandPageWrapper = () => {
     navigate(`/marketplace/product/${plushie.id}`);
   };
   
-  const handlePostClick = (post: Post) => {
+  const handlePostClick = (post: ExtendedPost) => {
     navigate(`/post/${post.id}`);
   };
   

@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Badge, BadgeCriteria, BadgeType } from "@/types/marketplace";
 import { useUser } from "@clerk/clerk-react";
@@ -18,9 +19,10 @@ export const useBadges = () => {
       earned: false,
       icon: "user",
       criteria: {
-        type: "achievement" as BadgeType,
+        requirement: "Set a profile picture",
+        value: 1,
+        type: "achievement",
         threshold: 1,
-        description: "Set a profile picture",
         requiresProfilePicture: true
       }
     },
@@ -32,9 +34,10 @@ export const useBadges = () => {
       earned: false,
       icon: "heart",
       criteria: {
-        type: "achievement" as BadgeType,
+        requirement: "Set plushie preferences",
+        value: 1,
+        type: "achievement",
         threshold: 1,
-        description: "Set plushie preferences",
         requiresPlushiePreferences: true
       }
     },
@@ -46,9 +49,10 @@ export const useBadges = () => {
       earned: false,
       icon: "check",
       criteria: {
-        type: "achievement" as BadgeType,
+        requirement: "Complete profile information",
+        value: 1,
+        type: "achievement",
         threshold: 1,
-        description: "Complete profile information",
         requiresCompletedProfile: true
       }
     },
@@ -60,9 +64,10 @@ export const useBadges = () => {
       earned: false,
       icon: "edit",
       criteria: {
-        type: "milestone" as BadgeType,
+        requirement: "Share your first post",
+        value: 1,
+        type: "milestone",
         threshold: 1,
-        description: "Share your first post",
         requiresFeedPosts: 1
       },
       progress: 0
@@ -75,9 +80,10 @@ export const useBadges = () => {
       earned: false,
       icon: "shopping-cart",
       criteria: {
-        type: "milestone" as BadgeType,
+        requirement: "List your first item",
+        value: 1,
+        type: "milestone",
         threshold: 1,
-        description: "List your first item",
         requiresListedItems: 1
       },
       progress: 0
@@ -90,9 +96,10 @@ export const useBadges = () => {
       earned: false,
       icon: "dollar-sign",
       criteria: {
-        type: "milestone" as BadgeType,
+        requirement: "Complete your first sale",
+        value: 1,
+        type: "milestone",
         threshold: 1,
-        description: "Complete your first sale",
         requiresSoldItems: 1
       },
       progress: 0
@@ -105,9 +112,10 @@ export const useBadges = () => {
       earned: false,
       icon: "bookmark",
       criteria: {
-        type: "achievement" as BadgeType,
+        requirement: "Create a wishlist",
+        value: 1,
+        type: "achievement",
         threshold: 1,
-        description: "Create a wishlist",
         requiresWishlist: true
       }
     },
@@ -119,9 +127,10 @@ export const useBadges = () => {
       earned: false,
       icon: "users",
       criteria: {
-        type: "milestone" as BadgeType,
+        requirement: "Gain 10 followers",
+        value: 10,
+        type: "milestone",
         threshold: 10,
-        description: "Gain 10 followers",
         requiresFollowers: 10
       },
       progress: 0
@@ -134,9 +143,10 @@ export const useBadges = () => {
       earned: false,
       icon: "users",
       criteria: {
-        type: "milestone" as BadgeType,
+        requirement: "Gain 50 followers",
+        value: 50,
+        type: "milestone",
         threshold: 50,
-        description: "Gain 50 followers",
         requiresFollowers: 50
       },
       progress: 0
@@ -149,9 +159,10 @@ export const useBadges = () => {
       earned: false,
       icon: "users",
       criteria: {
-        type: "milestone" as BadgeType,
+        requirement: "Gain 100 followers",
+        value: 100,
+        type: "milestone",
         threshold: 100,
-        description: "Gain 100 followers",
         requiresFollowers: 100
       },
       progress: 0
@@ -169,9 +180,9 @@ export const useBadges = () => {
       isSpecial: true,
       icon: "star",
       criteria: {
-        type: "special" as BadgeType,
-        threshold: 1,
-        description: "Alpha testing participation",
+        requirement: "Alpha testing participation",
+        value: 1,
+        type: "special",
         specialBadgeType: "alpha_tester"
       }
     },
@@ -184,9 +195,9 @@ export const useBadges = () => {
       isSpecial: true,
       icon: "star",
       criteria: {
-        type: "special" as BadgeType,
-        threshold: 1,
-        description: "Beta testing participation",
+        requirement: "Beta testing participation",
+        value: 1,
+        type: "special",
         specialBadgeType: "beta_tester"
       }
     }

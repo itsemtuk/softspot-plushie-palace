@@ -37,7 +37,7 @@ export const CommunityPosts = ({ posts, onPostClick }: CommunityPostsProps) => {
         >
           <AspectRatio ratio={1} className="bg-gray-100">
             <img
-              src={post.image || post.imageUrl || ''}
+              src={post.image || ''}
               alt={post.title || ''}
               className="object-cover w-full h-full"
             />
