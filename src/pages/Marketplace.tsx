@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
@@ -7,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { MainLayout } from "@/components/layout/MainLayout";
+import MainLayout from "@/components/layout/MainLayout";
 import { MarketplacePlushie } from "@/types/marketplace";
 import { ExtendedPost } from "@/types/core";
 import { getMarketplaceListings, saveMarketplaceListings } from "@/utils/storage/localStorageUtils";
@@ -36,6 +37,7 @@ const Marketplace = () => {
         ...plushie,
         price: plushie.price !== undefined ? plushie.price : 0,
         forSale: plushie.forSale !== undefined ? plushie.forSale : true,
+        name: plushie.title || plushie.name || 'Untitled'
       }));
       setPlushies(updatedPlushies);
     };
@@ -68,7 +70,8 @@ const Marketplace = () => {
       tags: plushie.tags || []
     };
     
-    saveMarketplaceListings([...getMarketplaceListings(), extendedPost]);
+    const currentListings = getMarketplaceListings();
+    saveMarketplaceListings([...currentListings, extendedPost]);
     
     toast({
       title: "Added to Collection",
@@ -206,7 +209,7 @@ const Marketplace = () => {
                         className="object-cover rounded-md"
                       />
                     </AspectRatio>
-                    {plushie.sold && (
+                    {plushie.forSale === false && (
                       <Badge className="absolute top-2 left-2 bg-red-500 text-white">Sold</Badge>
                     )}
                   </div>

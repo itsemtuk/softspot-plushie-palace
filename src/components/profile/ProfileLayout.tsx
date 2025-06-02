@@ -1,7 +1,8 @@
+
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
-import { getAllUserPosts, deletePost } from "@/utils/postStorage";
+import { getPosts, deletePost } from "@/utils/postStorage";
 import { ExtendedPost } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
@@ -52,7 +53,7 @@ export const ProfileLayout = () => {
       }
       
       try {
-        const posts = await getAllUserPosts(userId);
+        const posts = await getPosts();
         if (isMounted) {
           setUserPosts(posts);
         }

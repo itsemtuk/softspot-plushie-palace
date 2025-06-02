@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -54,6 +55,9 @@ export const BrandPageWrapper = () => {
   const [brand, setBrand] = useState<any>(null);
   const [plushies, setPlushies] = useState<MarketplacePlushie[]>([]);
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [priceRange, setPriceRange] = useState<number[]>([0, 100]);
+  const [availableOnly, setAvailableOnly] = useState(false);
   
   useEffect(() => {
     if (!brandName) {
@@ -118,6 +122,20 @@ export const BrandPageWrapper = () => {
     fetchBrandData();
   }, [brandName]);
 
+  const handlePlushieClick = (plushie: MarketplacePlushie) => {
+    navigate(`/checkout/${plushie.id}`);
+  };
+
+  const handlePostClick = (post: ExtendedPost) => {
+    // Handle post click - could open a dialog or navigate to post page
+    console.log("Post clicked:", post);
+  };
+
+  const handleFilterChange = (filterType: string, value: string[]) => {
+    // Handle filter changes
+    console.log("Filter changed:", filterType, value);
+  };
+
   if (loading) {
     return <div>Loading brand data...</div>;
   }
@@ -132,16 +150,24 @@ export const BrandPageWrapper = () => {
       <div className="container mx-auto py-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           <div className="md:col-span-1">
-            <BrandFilterPanel />
+            <BrandFilterPanel 
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              priceRange={priceRange}
+              setPriceRange={setPriceRange}
+              availableOnly={availableOnly}
+              setAvailableOnly={setAvailableOnly}
+              onFilterChange={handleFilterChange}
+            />
           </div>
           <div className="md:col-span-3">
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4">Featured Plushies</h2>
-              <PlushieGrid plushies={plushies} />
+              <PlushieGrid plushies={plushies} onPlushieClick={handlePlushieClick} />
             </section>
             <section>
               <h2 className="text-2xl font-bold mb-4">Community Posts</h2>
-              <CommunityPosts posts={posts} />
+              <CommunityPosts posts={posts} onPostClick={handlePostClick} />
             </section>
           </div>
         </div>

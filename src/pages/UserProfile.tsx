@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, UserPlus, MessageSquare, MoreHorizontal } from "lucide-react";
@@ -10,7 +11,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { usePostDialog } from "@/hooks/use-post-dialog";
-import { getAllUserPosts } from "@/utils/postStorage";
+import { getPosts } from "@/utils/postStorage";
 import { toast } from "@/components/ui/use-toast";
 import { UserProfile } from "@/types/user";
 import { Spinner } from "@/components/ui/spinner";
@@ -125,7 +126,7 @@ const UserProfilePage = () => {
       try {
         // Simulate fetching user posts from a server
         // Replace this with your actual data fetching logic
-        const posts = await getAllUserPosts('user-123');
+        const posts = await getPosts();
         setUserPosts(posts);
       } catch (error) {
         console.error("Error fetching user posts:", error);
