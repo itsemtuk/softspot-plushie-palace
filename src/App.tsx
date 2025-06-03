@@ -15,11 +15,12 @@ import Users from "./pages/Users";
 import Messages from "./pages/Messages";
 import SellItemPage from "./pages/SellItemPage";
 import CheckoutPage from "./pages/CheckoutPage";
+import PostPage from "./pages/PostPage";
 
 const queryClient = new QueryClient();
 
-// Get Clerk publishable key
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+// Use the hardcoded Clerk publishable key
+const clerkPubKey = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 if (!clerkPubKey) {
   throw new Error("Missing Publishable Key");
@@ -43,6 +44,7 @@ function App() {
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/sell" element={<SellItemPage />} />
                 <Route path="/checkout/:id" element={<CheckoutPage />} />
+                <Route path="/post/:id" element={<PostPage />} />
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
