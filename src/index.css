@@ -5,9 +5,12 @@
 @import './styles/dropdowns.css';
 @import './styles/animations.css';
 
-/* Fix radix sheet backgrounds */
-[data-radix-sheet-content] {
-  @apply bg-white !important;
+/* Fix radix backgrounds for dark mode */
+[data-radix-sheet-content],
+[data-radix-dialog-content],
+[data-radix-dropdown-menu-content],
+[data-radix-popover-content] {
+  @apply bg-white dark:bg-gray-800 !important;
 }
 
 /* Fix all sheet content */
@@ -15,14 +18,14 @@
 .dropdown-content,
 [data-state="open"].sheet-content,
 [data-state="open"].dropdown-content {
-  @apply bg-white !important;
+  @apply bg-white dark:bg-gray-800 !important;
   @apply rounded-lg !important;
 }
 
-/* Fix all sheet content */
+/* Fix portal content */
 div[role="dialog"].fixed.inset-0,
 div[role="dialog"] > div,
 [data-radix-portal] > div,
 [data-radix-portal] > div > div {
-  @apply bg-white !important;
+  @apply bg-white dark:bg-gray-800 !important;
 }

@@ -64,7 +64,7 @@ export const Navbar = () => {
             <Moon className="h-4 w-4" />
           </div>
 
-          {/* Create Button */}
+          {/* Create Button - Only one instance */}
           <div className="hidden md:block">
             <CreateButton />
           </div>
@@ -74,7 +74,7 @@ export const Navbar = () => {
           {/* Mobile Menu Button */}
           <div className="md:hidden">
             <Sheet>
-              <SheetTrigger className="outline-none">
+              <SheetTrigger asChild>
                 <Button variant="outline" size="icon">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -94,7 +94,7 @@ export const Navbar = () => {
                   </svg>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:w-64">
+              <SheetContent side="right" className="w-full sm:w-64 bg-white dark:bg-gray-900">
                 <SheetHeader>
                   <SheetTitle>Menu</SheetTitle>
                   <SheetDescription>
