@@ -21,69 +21,112 @@ export const ProfileLayout = () => {
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
   const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
-  const { user: clerkUser, isLoaded: isClerkLoaded, isSignedIn } = 
-    isClerkConfigured ? useUser() : { user: null, isLoaded: true, isSignedIn: false };
+  // Safely handle Clerk hooks with fallback
+  let clerkUser = null;
+  let isClerkLoaded = true;
+  let isSignedIn = false;
+  
+  try {
+    if (isClerkConfigured) {
+      const clerkData = useUser();
+      clerkUser = clerkData.user;
+      isClerkLoaded = clerkData.isLoaded;
+      isSignedIn = clerkData.isSignedIn;
+    }
+  } catch (error) {
+    console.warn("Clerk hooks not available, using fallback auth");
+    isClerkConfigured = false;
+  }
   
   const { openPostDialog } = usePostDialog();
-  const userIsAuthenticated = isClerkConfigured ? isSignedIn : !!localStorage.getItem('currentUserId');
+  const userIsAuthenticated = isClerkConfigured ? isSignedIn : isAuthenticated();
+
+  console.log("ProfileLayout: Auth state", {
+    isClerkConfigured,
+    userIsAuthenticated,
+    isClerkLoaded,
+    isSignedIn,
+    clerkUser: !!clerkUser
+  });
 
   useEffect(() => {
     let isMounted = true;
     
-    const fetchUserPosts = async () => {
-      setIsLoading(true);
+    const initializeProfile = async () => {
+      console.log("ProfileLayout: Initializing...");
       
+      // Check authentication first
+      if (isClerkConfigured) {
+        if (!isClerkLoaded) {
+          console.log("ProfileLayout: Waiting for Clerk to load");
+          return;
+        }
+        if (!isSignedIn) {
+          console.log("ProfileLayout: User not signed in, redirecting");
+          navigate('/');
+          return;
+        }
+      } else {
+        if (!userIsAuthenticated) {
+          console.log("ProfileLayout: User not authenticated, redirecting");
+          navigate('/');
+          return;
+        }
+      }
+
+      // Get user ID
       let userId;
       if (isClerkConfigured && clerkUser) {
         userId = clerkUser.id;
       } else {
-        userId = localStorage.getItem('currentUserId');
+        const currentUser = getCurrentUser();
+        userId = currentUser?.userId;
       }
       
       if (!userId) {
-        if (isClerkConfigured) {
-          if (isClerkLoaded && !isSignedIn) {
-            navigate('/sign-in');
-          }
-        } else {
-          navigate('/sign-in');
+        console.log("ProfileLayout: No user ID found");
+        if (isMounted) {
+          setIsLoading(false);
+          setIsInitialized(true);
         }
         return;
       }
+
+      console.log("ProfileLayout: Fetching posts for user", userId);
       
       try {
+        setIsLoading(true);
         const posts = await getPosts();
         if (isMounted) {
+          console.log("ProfileLayout: Posts loaded", posts.length);
           setUserPosts(posts);
         }
       } catch (error) {
-        console.error("Error fetching user posts:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load your posts. Please try again.",
-        });
+        console.error("ProfileLayout: Error fetching posts:", error);
+        if (isMounted) {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to load your posts. Please try again.",
+          });
+        }
       } finally {
         if (isMounted) {
           setIsLoading(false);
+          setIsInitialized(true);
         }
       }
     };
 
-    if (isClerkConfigured) {
-      if (isClerkLoaded) {
-        fetchUserPosts();
-      }
-    } else {
-      fetchUserPosts();
-    }
+    initializeProfile();
     
     return () => {
       isMounted = false;
     };
-  }, [isClerkConfigured, clerkUser, isClerkLoaded, isSignedIn, navigate]);
+  }, [isClerkConfigured, clerkUser, isClerkLoaded, isSignedIn, userIsAuthenticated, navigate]);
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);
@@ -112,7 +155,9 @@ export const ProfileLayout = () => {
     }
   };
 
-  if ((isClerkConfigured && !isClerkLoaded) || isLoading) {
+  // Show loading while initializing
+  if (!isInitialized || (isClerkConfigured && !isClerkLoaded) || isLoading) {
+    console.log("ProfileLayout: Showing loading state");
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-screen">
@@ -122,18 +167,18 @@ export const ProfileLayout = () => {
     );
   }
 
-  let userData = null;
+  // Get user data for profile
   let username = '';
   let bio = '';
   let interests: string[] = [];
   
   if (isClerkConfigured && clerkUser) {
-    username = clerkUser.username || '';
-    bio = clerkUser.unsafeMetadata?.bio as string || "Hi! I'm a passionate plushie collector. Always looking to connect with fellow plushie enthusiasts!";
-    interests = clerkUser.unsafeMetadata?.plushieInterests as string[] || ["Jellycat", "Squishmallows", "Build-A-Bear"];
+    username = clerkUser.username || clerkUser.firstName || 'User';
+    bio = (clerkUser.unsafeMetadata?.bio as string) || "Hi! I'm a passionate plushie collector. Always looking to connect with fellow plushie enthusiasts!";
+    interests = (clerkUser.unsafeMetadata?.plushieInterests as string[]) || ["Jellycat", "Squishmallows", "Build-A-Bear"];
   } else {
     const currentUser = getCurrentUser();
-    username = currentUser?.username || '';
+    username = currentUser?.username || 'User';
     
     try {
       const userProfile = localStorage.getItem('userProfile');
@@ -141,11 +186,18 @@ export const ProfileLayout = () => {
         const parsedProfile = JSON.parse(userProfile);
         bio = parsedProfile.bio || "Hi! I'm a passionate plushie collector. Always looking to connect with fellow plushie enthusiasts!";
         interests = parsedProfile.interests || ["Jellycat", "Squishmallows", "Build-A-Bear"];
+      } else {
+        bio = "Hi! I'm a passionate plushie collector. Always looking to connect with fellow plushie enthusiasts!";
+        interests = ["Jellycat", "Squishmallows", "Build-A-Bear"];
       }
     } catch (error) {
       console.error("Error parsing user profile:", error);
+      bio = "Hi! I'm a passionate plushie collector. Always looking to connect with fellow plushie enthusiasts!";
+      interests = ["Jellycat", "Squishmallows", "Build-A-Bear"];
     }
   }
+  
+  console.log("ProfileLayout: Rendering profile for", username);
   
   const profileData = {
     bio: bio,
@@ -168,24 +220,24 @@ export const ProfileLayout = () => {
 
           <div className="container mx-auto px-4 py-2 max-w-4xl">
             <Tabs defaultValue="posts" className="w-full">
-              <TabsList className="bg-white shadow-sm mb-6 rounded-full w-full flex justify-center p-1">
+              <TabsList className="bg-white dark:bg-gray-800 shadow-sm mb-6 rounded-full w-full flex justify-center p-1">
                 <TabsTrigger 
                   value="posts" 
-                  className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
+                  className="flex items-center data-[state=active]:bg-softspot-100 dark:data-[state=active]:bg-softspot-800 rounded-full data-[state=active]:shadow-none"
                 >
                   <Grid3X3 className="h-4 w-4 mr-2" />
                   <span>Posts</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="collections" 
-                  className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
+                  className="flex items-center data-[state=active]:bg-softspot-100 dark:data-[state=active]:bg-softspot-800 rounded-full data-[state=active]:shadow-none"
                 >
                   <BookMarked className="h-4 w-4 mr-2" />
                   <span>Collections</span>
                 </TabsTrigger>
                 <TabsTrigger 
                   value="sales" 
-                  className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none"
+                  className="flex items-center data-[state=active]:bg-softspot-100 dark:data-[state=active]:bg-softspot-800 rounded-full data-[state=active]:shadow-none"
                 >
                   <ShoppingBag className="h-4 w-4 mr-2" />
                   <span>For Sale</span>
@@ -205,10 +257,10 @@ export const ProfileLayout = () => {
               </TabsContent>
               
               <TabsContent value="collections">
-                <Card className="shadow-sm">
+                <Card className="shadow-sm bg-white dark:bg-gray-800">
                   <div className="text-center py-16">
-                    <h3 className="text-lg font-medium">Collection Coming Soon</h3>
-                    <p className="text-gray-500 mt-2">
+                    <h3 className="text-lg font-medium dark:text-white">Collection Coming Soon</h3>
+                    <p className="text-gray-500 dark:text-gray-400 mt-2">
                       This feature will be available in a future update.
                     </p>
                   </div>
