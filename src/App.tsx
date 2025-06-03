@@ -1,111 +1,54 @@
 
-import React from 'react';
-import {
-  createBrowserRouter,
-  RouterProvider,
-} from "react-router-dom";
-import { ProtectedRoute } from "@/components/auth/ProtectedRoute";
-import Index from "@/pages/Index";
-import Feed from "@/pages/Feed";
-import Discover from "@/pages/Discover";
-import Profile from "@/pages/Profile";
-import UserProfile from "@/pages/UserProfile";  
-import EditProfile from "@/pages/EditProfile";
-import NotFound from "@/pages/NotFound";
-import Settings from "@/pages/Settings";
-import Messaging from "@/pages/Messaging";
-import SellItemPageFixed from "@/pages/SellItemPageFixed";
-import Marketplace from "@/pages/Marketplace";
-import CheckoutPage from "@/pages/CheckoutPage";
-import NotificationsPage from "@/pages/NotificationsPage";
-import WishlistPage from "@/pages/WishlistPage";
-import BrandPage from "@/pages/BrandPage";
-import SignIn from "@/pages/SignIn";
-import SignUp from "@/pages/SignUp";
-import AuthBoundary from "@/components/auth/AuthBoundary";
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ClerkProvider } from "@clerk/clerk-react";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
-const router = createBrowserRouter(
-  [
-    {
-      path: "/",
-      element: <Index />,
-      errorElement: <NotFound />,
-    },
-    {
-      path: "/sign-in",
-      element: <ProtectedRoute requireAuth={false}><SignIn /></ProtectedRoute>,
-    },
-    {
-      path: "/sign-up",
-      element: <ProtectedRoute requireAuth={false}><SignUp /></ProtectedRoute>,
-    },
-    {
-      path: "/marketplace",
-      element: <Marketplace />,
-    },
-    {
-      path: "/brand/:brandName",
-      element: <BrandPage />,
-    },
-    {
-      path: "/feed",
-      element: <AuthBoundary><Feed /></AuthBoundary>,
-    },
-    {
-      path: "/discover",
-      element: <AuthBoundary><Discover /></AuthBoundary>,
-    },
-    {
-      path: "/profile",
-      element: <AuthBoundary><Profile /></AuthBoundary>,
-    },
-    {
-      path: "/user/:userId",
-      element: <AuthBoundary><UserProfile /></AuthBoundary>,
-    },
-    {
-      path: "/edit-profile",
-      element: <AuthBoundary><EditProfile /></AuthBoundary>,
-    },
-    {
-      path: "/settings",
-      element: <AuthBoundary><Settings /></AuthBoundary>,
-    },
-    {
-      path: "/messaging",
-      element: <AuthBoundary><Messaging /></AuthBoundary>,
-    },
-    {
-      path: "/messages",
-      element: <AuthBoundary><Messaging /></AuthBoundary>,
-    },
-    {
-      path: "/sell",
-      element: <AuthBoundary><SellItemPageFixed /></AuthBoundary>,
-    },
-    {
-      path: "/checkout",
-      element: <AuthBoundary><CheckoutPage /></AuthBoundary>,
-    },
-    {
-      path: "/notifications",
-      element: <AuthBoundary><NotificationsPage /></AuthBoundary>,
-    },
-    {
-      path: "/wishlist",
-      element: <AuthBoundary><WishlistPage /></AuthBoundary>,
-    },
-  ],
-  {
-    basename: "/",
-  }
-);
+import Index from "./pages/Index";
+import Feed from "./pages/Feed";
+import Discover from "./pages/Discover";
+import Marketplace from "./pages/Marketplace";
+import Users from "./pages/Users";
+import Messages from "./pages/Messages";
+import SellItemPage from "./pages/SellItemPage";
+import CheckoutPage from "./pages/CheckoutPage";
+
+const queryClient = new QueryClient();
+
+// Get Clerk publishable key
+const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!clerkPubKey) {
+  throw new Error("Missing Publishable Key");
+}
 
 function App() {
   return (
-    <React.StrictMode>
-      <RouterProvider router={router} />
-    </React.StrictMode>
+    <ClerkProvider publishableKey={clerkPubKey}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider defaultTheme="light" storageKey="softspot-theme">
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/feed" element={<Feed />} />
+                <Route path="/discover" element={<Discover />} />
+                <Route path="/marketplace" element={<Marketplace />} />
+                <Route path="/users" element={<Users />} />
+                <Route path="/messages" element={<Messages />} />
+                <Route path="/sell" element={<SellItemPage />} />
+                <Route path="/checkout/:id" element={<CheckoutPage />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ClerkProvider>
   );
 }
 

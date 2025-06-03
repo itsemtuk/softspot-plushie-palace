@@ -1,7 +1,6 @@
 
 import MainLayout from "@/components/layout/MainLayout";
-import { SafeSellItemForm } from "@/components/marketplace/sell/SafeSellItemForm";
-import { SafeComponentWrapper } from "@/components/ui/safe-component-wrapper";
+import { SellItemFormWrapper } from "@/components/marketplace/sell/SellItemFormWrapper";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
@@ -17,11 +16,13 @@ const SellItemPage = () => {
   const [error, setError] = useState<string | null>(null);
   
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
-  const { supabaseUserId, isLoading: isUserSyncLoading } = useClerkSupabaseUser(clerkUser);
+  const { supabaseUserId, isLoading: isUserSyncLoading, error: userSyncError } = useClerkSupabaseUser(clerkUser);
 
   useEffect(() => {
     const initializePage = async () => {
       try {
+        console.log("SellItemPage: Initializing", { isClerkLoaded, clerkUser: !!clerkUser, isUserSyncLoading });
+        
         // Wait for Clerk to load
         if (!isClerkLoaded) {
           return;
@@ -42,7 +43,15 @@ const SellItemPage = () => {
         if (isUserSyncLoading) {
           return;
         }
+
+        // Check for user sync errors
+        if (userSyncError) {
+          console.error("User sync error:", userSyncError);
+          setError("Failed to sync user account. Please try refreshing the page.");
+          return;
+        }
         
+        console.log("SellItemPage: Ready to show form", { supabaseUserId });
         setIsReady(true);
         setError(null);
         
@@ -53,7 +62,7 @@ const SellItemPage = () => {
     };
 
     initializePage();
-  }, [isClerkLoaded, clerkUser, isUserSyncLoading, navigate]);
+  }, [isClerkLoaded, clerkUser, isUserSyncLoading, userSyncError, navigate, supabaseUserId]);
 
   // Loading state
   if (!isClerkLoaded || isUserSyncLoading || !isReady) {
@@ -117,21 +126,19 @@ const SellItemPage = () => {
 
   return (
     <MainLayout>
-      <SafeComponentWrapper resetKeys={[clerkUser?.id, supabaseUserId]}>
-        <div className="max-w-2xl mx-auto py-6">
-          {/* Offline mode indicator */}
-          {!navigator.onLine && (
-            <Alert className="mb-4 border-yellow-200 bg-yellow-50">
-              <WifiOff className="h-4 w-4 text-yellow-600" />
-              <AlertDescription className="text-yellow-800">
-                <strong>Offline Mode:</strong> You're working offline. Your listing will be saved locally and synced when you reconnect.
-              </AlertDescription>
-            </Alert>
-          )}
-          
-          <SafeSellItemForm supabaseUserId={supabaseUserId} />
-        </div>
-      </SafeComponentWrapper>
+      <div className="max-w-2xl mx-auto py-6">
+        {/* Offline mode indicator */}
+        {!navigator.onLine && (
+          <Alert className="mb-4 border-yellow-200 bg-yellow-50">
+            <WifiOff className="h-4 w-4 text-yellow-600" />
+            <AlertDescription className="text-yellow-800">
+              <strong>Offline Mode:</strong> You're working offline. Your listing will be saved locally and synced when you reconnect.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        <SellItemFormWrapper supabaseUserId={supabaseUserId} />
+      </div>
     </MainLayout>
   );
 };

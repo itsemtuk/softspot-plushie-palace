@@ -1,27 +1,22 @@
 
 import { useState, useRef, useEffect } from "react";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
+import { useNavigate } from "react-router-dom";
+import { Search, User, Hash, MessageSquare } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
-import { SearchInput } from "./search/SearchInput";
-import { SearchResults } from "./search/SearchResults";
-import { SearchCategories } from "./search/SearchCategories";
-import { TrendingSearches } from "./search/TrendingSearches";
-import { RecentItems } from "./search/RecentItems";
-import { PopularUsers } from "./search/PopularUsers";
-import { SearchFooter } from "./search/SearchFooter";
-
-// Mock categories and trending searches
-const categories = ["Bears", "Rabbits", "Cats", "Dogs", "Mythical"];
-const trendingSearches = ["Vintage bear", "Rare plushies", "Limited edition"];
 
 export const SearchBar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+  const [searchType, setSearchType] = useState<"all" | "users" | "posts">("all");
+  const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
-  
+
   // Close popover when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -29,48 +24,155 @@ export const SearchBar = () => {
         setIsOpen(false);
       }
     };
-    
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-  
+
   // Handle search submission
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      // In a real app, you'd navigate to search results with the query
+      const params = new URLSearchParams();
+      params.set('q', searchQuery.trim());
+      if (searchType !== 'all') {
+        params.set('type', searchType);
+      }
+      
+      // Navigate to discover page with search params
+      navigate(`/discover?${params.toString()}`);
       setIsOpen(false);
+      setSearchQuery("");
     }
   };
-  
+
+  const handleUserSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/users?q=${encodeURIComponent(searchQuery.trim())}`);
+      setIsOpen(false);
+      setSearchQuery("");
+    }
+  };
+
+  const quickActions = [
+    {
+      title: "Search Posts",
+      description: "Find posts and plushies",
+      icon: Hash,
+      action: () => setSearchType("posts")
+    },
+    {
+      title: "Find Users",
+      description: "Connect with collectors",
+      icon: User,
+      action: () => setSearchType("users")
+    },
+    {
+      title: "Messages",
+      description: "Go to messages",
+      icon: MessageSquare,
+      action: () => {
+        navigate("/messages");
+        setIsOpen(false);
+      }
+    }
+  ];
+
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <div className="relative w-full max-w-xs" ref={inputRef}>
-          <SearchInput 
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            handleSearch={handleSearch}
-          />
+        <div className="relative w-full" ref={inputRef}>
+          <form onSubmit={handleSearch} className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search SoftSpot..."
+              className="pl-10 pr-12 w-full rounded-full"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => setIsOpen(true)}
+            />
+            <Button
+              size="sm"
+              variant="ghost"
+              type="submit"
+              className="absolute right-0 top-0 h-full rounded-l-none rounded-r-full"
+            >
+              Search
+            </Button>
+          </form>
         </div>
       </PopoverTrigger>
-      
-      <PopoverContent className="w-[300px] p-0" align="start">
+
+      <PopoverContent className="w-80 p-0 rounded-xl" align="start">
         <div className="p-4 space-y-4">
           {searchQuery ? (
-            <SearchResults searchQuery={searchQuery} setIsOpen={setIsOpen} />
+            <div>
+              <h3 className="text-sm font-medium mb-2">Search Results</h3>
+              <div className="space-y-2">
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={handleSearch}
+                >
+                  <Hash className="h-4 w-4 mr-2" />
+                  Search posts: "{searchQuery}"
+                </Button>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start"
+                  onClick={handleUserSearch}
+                >
+                  <User className="h-4 w-4 mr-2" />
+                  Find users: "{searchQuery}"
+                </Button>
+              </div>
+            </div>
           ) : (
             <>
-              <SearchCategories categories={categories} setIsOpen={setIsOpen} />
-              <TrendingSearches trendingSearches={trendingSearches} setIsOpen={setIsOpen} />
-              <RecentItems setIsOpen={setIsOpen} />
-              <PopularUsers setIsOpen={setIsOpen} />
+              <div>
+                <h3 className="text-sm font-medium mb-2">Quick Actions</h3>
+                <div className="space-y-1">
+                  {quickActions.map((action, index) => (
+                    <Button
+                      key={index}
+                      variant="ghost"
+                      className="w-full justify-start h-auto p-3"
+                      onClick={action.action}
+                    >
+                      <action.icon className="h-4 w-4 mr-3 text-gray-500" />
+                      <div className="text-left">
+                        <div className="font-medium text-sm">{action.title}</div>
+                        <div className="text-xs text-gray-500">{action.description}</div>
+                      </div>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t pt-3">
+                <h3 className="text-sm font-medium mb-2">Trending</h3>
+                <div className="flex flex-wrap gap-2">
+                  {["Vintage Bears", "Rare Jellycat", "Limited Edition"].map((tag) => (
+                    <Button
+                      key={tag}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs rounded-full"
+                      onClick={() => {
+                        setSearchQuery(tag);
+                        handleSearch(new Event('submit') as any);
+                      }}
+                    >
+                      #{tag.replace(" ", "")}
+                    </Button>
+                  ))}
+                </div>
+              </div>
             </>
           )}
-          
-          <SearchFooter setIsOpen={setIsOpen} />
         </div>
       </PopoverContent>
     </Popover>

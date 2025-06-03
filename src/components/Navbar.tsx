@@ -4,7 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { UserMenu } from "./navigation/UserMenu";
-import { PostCreationData } from "@/types/core";
+import { SearchBar } from "./navigation/SearchBar";
+import { CreateButton } from "./navigation/CreateButton";
 import { useTheme } from "@/components/ui/theme-provider";
 import { Moon, Sun } from "lucide-react";
 import {
@@ -21,39 +22,37 @@ export const Navbar = () => {
   const { theme, setTheme } = useTheme();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
-
   const handleThemeChange = (checked: boolean) => {
     setTheme(checked ? "dark" : "light");
   };
 
   return (
-    <div className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50">
+    <div className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50 transition-colors duration-200">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         {/* Logo and Brand */}
         <Link to="/" className="flex items-center font-bold text-xl text-softspot-500 dark:text-softspot-400">
           SoftSpot
         </Link>
 
+        {/* Search Bar (Desktop) */}
+        <div className="hidden md:flex flex-1 max-w-md mx-8">
+          <SearchBar />
+        </div>
+
         {/* Navigation Links (Hidden on Small Screens) */}
         <div className="hidden md:flex items-center space-x-6">
-          <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400">
+          <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors">
             Feed
           </Link>
-          <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400">
+          <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors">
             Discover
           </Link>
-          <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400">
+          <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors">
             Marketplace
-          </Link>
-          <Link to="/community" className="hover:text-softspot-500 dark:hover:text-softspot-400">
-            Community
           </Link>
         </div>
 
-        {/* User Menu and Mobile Menu Button */}
+        {/* Right side actions */}
         <div className="flex items-center space-x-4">
           {/* Dark Mode Switch */}
           <div className="flex items-center space-x-2">
@@ -63,6 +62,11 @@ export const Navbar = () => {
               onCheckedChange={handleThemeChange}
             />
             <Moon className="h-4 w-4" />
+          </div>
+
+          {/* Create Button */}
+          <div className="hidden md:block">
+            <CreateButton />
           </div>
           
           <UserMenu />
@@ -98,6 +102,11 @@ export const Navbar = () => {
                   </SheetDescription>
                 </SheetHeader>
                 <div className="grid gap-4 py-4">
+                  {/* Mobile Search */}
+                  <div className="md:hidden">
+                    <SearchBar />
+                  </div>
+                  
                   <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
                     Feed
                   </Link>
@@ -107,9 +116,11 @@ export const Navbar = () => {
                   <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
                     Marketplace
                   </Link>
-                  <Link to="/community" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
-                    Community
-                  </Link>
+                  
+                  {/* Create Button for Mobile */}
+                  <div className="py-2">
+                    <CreateButton />
+                  </div>
                   
                   {/* Dark Mode Switch in Mobile Menu */}
                   <div className="flex items-center space-x-2 py-2">
