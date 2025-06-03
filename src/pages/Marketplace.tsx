@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Filter, TrendingUp, Users, MapPin, Tag, Grid3X3, List, Star } from "lucide-react";
@@ -17,6 +18,7 @@ import { getMarketplaceListings, saveMarketplaceListings } from "@/utils/storage
 import { toast } from "@/components/ui/use-toast";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 
 const brands = ["SoftSpot", "Fluffington", "CuddleCo", "SnuggleBears", "Build-A-Bear", "Jellycat", "Ty", "Steiff"];
 const conditions = ["new", "like-new", "good", "fair", "used"];
@@ -66,7 +68,6 @@ const Marketplace = () => {
       return searchMatch && brandMatch && priceMatch && conditionMatch && sizeMatch;
     });
 
-    // Sort the filtered results
     filtered.sort((a, b) => {
       switch (sortBy) {
         case "price-low":
@@ -75,7 +76,7 @@ const Marketplace = () => {
           return (b.price || 0) - (a.price || 0);
         case "popular":
           return (b.likes || 0) - (a.likes || 0);
-        default: // newest
+        default:
           return new Date(b.timestamp || 0).getTime() - new Date(a.timestamp || 0).getTime();
       }
     });
@@ -119,25 +120,21 @@ const Marketplace = () => {
   return (
     <MainLayout>
       <div className="container mx-auto py-6">
-        {/* Header Section */}
+        <MarketplaceHeader />
+
         <div className="mb-6">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Marketplace</h1>
-              <p className="text-gray-600">Discover and collect amazing plushies from our community</p>
-            </div>
             <div className="flex items-center space-x-2 mt-4 md:mt-0">
-              <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}>
+              <Button variant="outline" size="sm" onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")} className="rounded-full">
                 {viewMode === "grid" ? <List className="h-4 w-4" /> : <Grid3X3 className="h-4 w-4" />}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)}>
+              <Button variant="outline" size="sm" onClick={() => setShowFilters(!showFilters)} className="rounded-full">
                 <Filter className="h-4 w-4 mr-2" />
                 Filters
               </Button>
             </div>
           </div>
 
-          {/* Search and Sort */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="md:col-span-2">
               <div className="relative">
@@ -147,31 +144,30 @@ const Marketplace = () => {
                   placeholder="Search for plushies..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 rounded-full border-2 focus:border-softspot-300"
                 />
               </div>
             </div>
             <Select onValueChange={setSortBy} defaultValue={sortBy}>
-              <SelectTrigger>
+              <SelectTrigger className="rounded-full">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-xl">
                 <SelectItem value="newest">Newest First</SelectItem>
                 <SelectItem value="price-low">Price: Low to High</SelectItem>
                 <SelectItem value="price-high">Price: High to Low</SelectItem>
                 <SelectItem value="popular">Most Popular</SelectItem>
               </SelectContent>
             </Select>
-            <Button onClick={clearFilters} variant="outline" className="w-full">
+            <Button onClick={clearFilters} variant="outline" className="w-full rounded-full">
               Clear Filters
             </Button>
           </div>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {/* Filters Sidebar */}
           <div className={`md:col-span-1 ${showFilters ? 'block' : 'hidden md:block'}`}>
-            <Card className="sticky top-20">
+            <Card className="sticky top-20 rounded-2xl shadow-lg">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Filter className="h-5 w-5 mr-2" />
@@ -181,7 +177,6 @@ const Marketplace = () => {
               <CardContent>
                 <ScrollArea className="h-[600px] w-full rounded-md">
                   <div className="space-y-6 p-2">
-                    {/* Price Range */}
                     <div>
                       <Label className="text-sm font-medium mb-3 block">Price Range</Label>
                       <Slider
@@ -197,7 +192,6 @@ const Marketplace = () => {
                       </div>
                     </div>
 
-                    {/* Brand Filter */}
                     <div>
                       <Label className="text-sm font-medium mb-3 block">Brand</Label>
                       <div className="space-y-2">
@@ -209,6 +203,7 @@ const Marketplace = () => {
                               onCheckedChange={(checked) =>
                                 setSelectedBrand(checked ? brand : null)
                               }
+                              className="rounded"
                             />
                             <Label htmlFor={`brand-${brand}`} className="text-sm">
                               {brand}
@@ -218,7 +213,6 @@ const Marketplace = () => {
                       </div>
                     </div>
 
-                    {/* Condition Filter */}
                     <div>
                       <Label className="text-sm font-medium mb-3 block">Condition</Label>
                       <div className="space-y-2">
@@ -230,6 +224,7 @@ const Marketplace = () => {
                               onCheckedChange={(checked) =>
                                 setSelectedCondition(checked ? condition : null)
                               }
+                              className="rounded"
                             />
                             <Label htmlFor={`condition-${condition}`} className="text-sm capitalize">
                               {condition}
@@ -239,7 +234,6 @@ const Marketplace = () => {
                       </div>
                     </div>
 
-                    {/* Size Filter */}
                     <div>
                       <Label className="text-sm font-medium mb-3 block">Size</Label>
                       <div className="space-y-2">
@@ -251,6 +245,7 @@ const Marketplace = () => {
                               onCheckedChange={(checked) =>
                                 setSelectedSize(checked ? size : null)
                               }
+                              className="rounded"
                             />
                             <Label htmlFor={`size-${size}`} className="text-sm capitalize">
                               {size}
@@ -265,7 +260,6 @@ const Marketplace = () => {
             </Card>
           </div>
 
-          {/* Results Grid */}
           <div className="md:col-span-3">
             <div className="mb-4 flex items-center justify-between">
               <p className="text-sm text-gray-600">
@@ -274,20 +268,20 @@ const Marketplace = () => {
             </div>
 
             {filteredPlushies.length === 0 ? (
-              <Card className="text-center py-12">
+              <Card className="text-center py-12 rounded-2xl">
                 <CardContent>
                   <div className="text-gray-500 mb-4">
                     <Search className="h-12 w-12 mx-auto mb-4" />
                     <h3 className="text-lg font-medium">No plushies found</h3>
                     <p>Try adjusting your search or filters</p>
                   </div>
-                  <Button onClick={clearFilters}>Clear all filters</Button>
+                  <Button onClick={clearFilters} className="rounded-full">Clear all filters</Button>
                 </CardContent>
               </Card>
             ) : (
-              <div className={`grid gap-4 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
+              <div className={`grid gap-6 ${viewMode === "grid" ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
                 {filteredPlushies.map((plushie) => (
-                  <Card key={plushie.id} className="bg-white shadow-sm hover:shadow-md transition-shadow group overflow-hidden">
+                  <Card key={plushie.id} className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 group overflow-hidden rounded-2xl border-0">
                     <div className="relative">
                       <AspectRatio ratio={4 / 3}>
                         <img
@@ -297,16 +291,16 @@ const Marketplace = () => {
                         />
                       </AspectRatio>
                       {plushie.forSale === false && (
-                        <Badge className="absolute top-2 left-2 bg-red-500 text-white">Sold</Badge>
+                        <Badge className="absolute top-3 left-3 bg-red-500 text-white rounded-full">Sold</Badge>
                       )}
                       {plushie.condition && (
-                        <Badge className="absolute top-2 right-2 bg-green-500 text-white capitalize">
+                        <Badge className="absolute top-3 right-3 bg-green-500 text-white capitalize rounded-full">
                           {plushie.condition}
                         </Badge>
                       )}
                     </div>
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between mb-2">
+                    <CardContent className="p-6">
+                      <div className="flex items-start justify-between mb-3">
                         <h3 className="text-lg font-semibold line-clamp-1">{plushie.title}</h3>
                         <div className="flex items-center text-yellow-500">
                           <Star className="h-4 w-4 fill-current" />
@@ -314,25 +308,25 @@ const Marketplace = () => {
                         </div>
                       </div>
                       
-                      <p className="text-sm text-gray-600 mb-2 line-clamp-2">{plushie.description || "A wonderful plushie perfect for cuddling!"}</p>
+                      <p className="text-sm text-gray-600 mb-3 line-clamp-2">{plushie.description || "A wonderful plushie perfect for cuddling!"}</p>
                       
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex flex-wrap gap-1">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex flex-wrap gap-2">
                           {plushie.brand && (
-                            <Badge variant="outline" className="text-xs">{plushie.brand}</Badge>
+                            <Badge variant="outline" className="text-xs rounded-full">{plushie.brand}</Badge>
                           )}
                           {plushie.size && (
-                            <Badge variant="outline" className="text-xs">{plushie.size}</Badge>
+                            <Badge variant="outline" className="text-xs rounded-full">{plushie.size}</Badge>
                           )}
                         </div>
-                        <span className="text-lg font-bold text-softspot-600">${plushie.price}</span>
+                        <span className="text-xl font-bold text-softspot-600">${plushie.price}</span>
                       </div>
                       
-                      <div className="flex gap-2">
+                      <div className="flex gap-3">
                         <Button 
                           size="sm" 
                           onClick={() => handleQuickAdd(plushie)}
-                          className="flex-1 bg-softspot-500 hover:bg-softspot-600"
+                          className="flex-1 bg-softspot-500 hover:bg-softspot-600 rounded-full"
                         >
                           Add to Collection
                         </Button>
@@ -340,7 +334,7 @@ const Marketplace = () => {
                           size="sm" 
                           variant="outline" 
                           onClick={() => handleViewDetails(plushie.id)}
-                          className="flex-1"
+                          className="flex-1 rounded-full"
                         >
                           View Details
                         </Button>

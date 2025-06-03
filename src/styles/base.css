@@ -28,7 +28,7 @@
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-    --radius: 0.5rem;
+    --radius: 1rem;
   }
 
   .dark {
@@ -59,11 +59,24 @@
   }
   
   button {
-    @apply rounded-md;
+    @apply rounded-lg;
+  }
+
+  input, textarea, select {
+    @apply rounded-lg;
+  }
+
+  .card {
+    @apply rounded-xl;
+  }
+
+  .dialog-content {
+    @apply rounded-xl;
   }
 
   [data-radix-popper-content-wrapper] {
     @apply bg-white dark:bg-gray-800 !important;
     @apply z-50 !important;
+    @apply rounded-xl !important;
   }
 }

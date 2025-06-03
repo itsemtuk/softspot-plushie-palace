@@ -39,7 +39,6 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
     console.log("Opening post creation dialog");
     setIsPostCreationOpen(true);
     
-    // If there's a custom handler passed, call it too
     if (onCreatePost) {
       onCreatePost();
     }
@@ -82,25 +81,25 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
     <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen}>
       <DropdownMenuTrigger asChild>
         <Button 
-          className="bg-softspot-500 hover:bg-softspot-600 text-white rounded-full px-4"
+          className="bg-softspot-500 hover:bg-softspot-600 text-white rounded-full px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200"
           size="sm"
         >
           <PlusCircle className="h-4 w-4 mr-2" />
           <span>Create</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[220px] bg-white shadow-lg rounded-md border border-gray-200 z-50">
+      <DropdownMenuContent align="end" className="w-[220px] bg-white shadow-xl rounded-xl border border-gray-100 z-50">
         <DropdownMenuLabel>Create New</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer">
+        <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50">
           <Image className="mr-2 h-4 w-4" />
           <span>New Post</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleTradeRequest} className="cursor-pointer">
+        <DropdownMenuItem onClick={handleTradeRequest} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50">
           <Handshake className="mr-2 h-4 w-4" />
           <span>Trade Request</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSellItem} className="cursor-pointer">
+        <DropdownMenuItem onClick={handleSellItem} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50">
           <Tag className="mr-2 h-4 w-4" />
           <span>Sell Plushie</span>
         </DropdownMenuItem>
