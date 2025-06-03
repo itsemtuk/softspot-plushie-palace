@@ -5,19 +5,18 @@ import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
 import { ExtendedPost, Comment } from "@/types/core";
 import { PostDialogContent } from "./post-dialog/PostDialogContent";
-import { usePostDialog } from "@/hooks/use-post-dialog";
 
 interface PostDialogProps {
-  post: ExtendedPost;
+  post: ExtendedPost | null;
+  isOpen: boolean;
+  onClose: () => void;
   children?: React.ReactNode;
 }
 
-export const PostDialog = ({ post, children }: PostDialogProps) => {
-  const { dialogState, closePostDialog } = usePostDialog();
-
+export const PostDialog = ({ post, isOpen, onClose, children }: PostDialogProps) => {
   const handleOpenChange = (open: boolean) => {
     if (!open) {
-      closePostDialog();
+      onClose();
     }
   };
 
@@ -27,7 +26,7 @@ export const PostDialog = ({ post, children }: PostDialogProps) => {
 
   const handlePostDelete = (postId: string) => {
     console.log("Post deleted:", postId);
-    closePostDialog();
+    onClose();
   };
 
   const handleCommentSubmit = async (comment: Omit<Comment, 'id' | 'likes' | 'timestamp' | 'isLiked'>) => {
@@ -50,8 +49,10 @@ export const PostDialog = ({ post, children }: PostDialogProps) => {
     console.log("Comment deleted:", commentId);
   };
 
+  if (!post) return null;
+
   return (
-    <Dialog open={dialogState.isOpen} onOpenChange={handleOpenChange}>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>

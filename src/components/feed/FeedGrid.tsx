@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { PostCard } from "@/components/post/PostCard";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
@@ -8,9 +9,10 @@ interface FeedGridProps {
   posts: ExtendedPost[];
   onPostClick: (post: ExtendedPost) => void;
   onCreatePostClick?: () => void;
+  layout?: string;
 }
 
-export const FeedGrid = ({ posts, onPostClick, onCreatePostClick }: FeedGridProps) => {
+export const FeedGrid = ({ posts, onPostClick, onCreatePostClick, layout = "grid" }: FeedGridProps) => {
   const [showAllPosts, setShowAllPosts] = useState(false);
 
   const visiblePosts = showAllPosts ? posts : posts.slice(0, 6);
@@ -33,9 +35,13 @@ export const FeedGrid = ({ posts, onPostClick, onCreatePostClick }: FeedGridProp
     );
   }
 
+  const gridClass = layout === "list" 
+    ? "grid grid-cols-1 gap-4" 
+    : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4";
+
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <div className={gridClass}>
         {visiblePosts.map((post) => (
           <div key={post.id} className="relative cursor-pointer hover:opacity-95 transition-opacity" onClick={() => onPostClick(post)}>
             <PostCard post={post} />
