@@ -25,7 +25,7 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
   if (!formValues) {
     console.log("SellItemFormWrapper: No form values, showing loading");
     return (
-      <Card className="rounded-xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+      <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
           <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
         </CardHeader>
@@ -63,7 +63,7 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
   if (!register || !handleSubmit || !onSubmit) {
     console.log("SellItemFormWrapper: Missing critical form methods");
     return (
-      <Card className="rounded-xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+      <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
         <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
           <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
         </CardHeader>
@@ -77,7 +77,7 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
     );
   }
 
-  // Safe form submit handler
+  // Safe form submit handler with proper error handling
   const formSubmitHandler: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
     console.log("SellItemFormWrapper: Form submitted");
@@ -87,6 +87,8 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
         const submitFunction = handleSubmit(onSubmit);
         if (typeof submitFunction === 'function') {
           submitFunction(e);
+        } else {
+          console.error("SellItemFormWrapper: handleSubmit did not return a function");
         }
       } else {
         console.error("SellItemFormWrapper: Missing handleSubmit or onSubmit");
@@ -97,7 +99,7 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
   };
 
   return (
-    <Card className="rounded-xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+    <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Sell Your Plushie</CardTitle>
       </CardHeader>

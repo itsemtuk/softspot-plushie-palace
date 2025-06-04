@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -21,6 +22,9 @@ export const ProfileLayout = () => {
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+  
+  // Check if Clerk is configured
   let isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
   // Safely handle Clerk hooks with fallback
@@ -56,60 +60,75 @@ export const ProfileLayout = () => {
     
     const initializeProfile = async () => {
       console.log("ProfileLayout: Initializing...");
-      
-      // Check authentication first
-      if (isClerkConfigured) {
-        if (!isClerkLoaded) {
-          console.log("ProfileLayout: Waiting for Clerk to load");
-          return;
-        }
-        if (!isSignedIn) {
-          console.log("ProfileLayout: User not signed in, redirecting");
-          navigate('/');
-          return;
-        }
-      } else {
-        if (!userIsAuthenticated) {
-          console.log("ProfileLayout: User not authenticated, redirecting");
-          navigate('/');
-          return;
-        }
-      }
-
-      // Get user ID
-      let userId;
-      if (isClerkConfigured && clerkUser) {
-        userId = clerkUser.id;
-      } else {
-        const currentUser = getCurrentUser();
-        userId = currentUser?.userId;
-      }
-      
-      if (!userId) {
-        console.log("ProfileLayout: No user ID found");
-        if (isMounted) {
-          setIsLoading(false);
-          setIsInitialized(true);
-        }
-        return;
-      }
-
-      console.log("ProfileLayout: Fetching posts for user", userId);
+      setAuthError(null);
       
       try {
+        // Check authentication first
+        if (isClerkConfigured) {
+          if (!isClerkLoaded) {
+            console.log("ProfileLayout: Waiting for Clerk to load");
+            return;
+          }
+          if (!isSignedIn) {
+            console.log("ProfileLayout: User not signed in with Clerk, redirecting");
+            if (isMounted) {
+              setAuthError("Please sign in to view your profile");
+              navigate('/');
+            }
+            return;
+          }
+        } else {
+          if (!userIsAuthenticated) {
+            console.log("ProfileLayout: User not authenticated with fallback, redirecting");
+            if (isMounted) {
+              setAuthError("Please sign in to view your profile");
+              navigate('/');
+            }
+            return;
+          }
+        }
+
+        // Get user ID
+        let userId;
+        if (isClerkConfigured && clerkUser) {
+          userId = clerkUser.id;
+        } else {
+          const currentUser = getCurrentUser();
+          userId = currentUser?.userId;
+        }
+        
+        if (!userId) {
+          console.log("ProfileLayout: No user ID found");
+          if (isMounted) {
+            setAuthError("Unable to identify user");
+            setIsLoading(false);
+            setIsInitialized(true);
+          }
+          return;
+        }
+
+        console.log("ProfileLayout: Fetching posts for user", userId);
+        
         setIsLoading(true);
         const posts = await getPosts();
+        
         if (isMounted) {
           console.log("ProfileLayout: Posts loaded", posts.length);
-          setUserPosts(posts);
+          // Filter posts for the current user
+          const userSpecificPosts = posts.filter(post => 
+            post.userId === userId || post.user_id === userId
+          );
+          console.log("ProfileLayout: User-specific posts", userSpecificPosts.length);
+          setUserPosts(userSpecificPosts);
         }
       } catch (error) {
-        console.error("ProfileLayout: Error fetching posts:", error);
+        console.error("ProfileLayout: Error during initialization:", error);
         if (isMounted) {
+          setAuthError("Failed to load profile data");
           toast({
             variant: "destructive",
             title: "Error",
-            description: "Failed to load your posts. Please try again.",
+            description: "Failed to load your profile. Please try again.",
           });
         }
       } finally {
@@ -160,7 +179,29 @@ export const ProfileLayout = () => {
     return (
       <MainLayout>
         <div className="flex items-center justify-center min-h-screen">
-          <Spinner size="lg" />
+          <div className="text-center">
+            <Spinner size="lg" />
+            <p className="mt-4 text-gray-600 dark:text-gray-400">Loading your profile...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  // Show error state if there's an authentication error
+  if (authError) {
+    return (
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="text-center">
+            <p className="text-lg text-red-600 dark:text-red-400">{authError}</p>
+            <button 
+              onClick={() => navigate('/')}
+              className="mt-4 px-4 py-2 bg-softspot-500 text-white rounded-lg hover:bg-softspot-600"
+            >
+              Go Home
+            </button>
+          </div>
         </div>
       </MainLayout>
     );
@@ -196,7 +237,7 @@ export const ProfileLayout = () => {
     }
   }
   
-  console.log("ProfileLayout: Rendering profile for", username);
+  console.log("ProfileLayout: Rendering profile for", username, "with", userPosts.length, "posts");
   
   const profileData = {
     bio: bio,
@@ -256,7 +297,7 @@ export const ProfileLayout = () => {
               </TabsContent>
               
               <TabsContent value="collections">
-                <Card className="shadow-sm bg-white dark:bg-gray-800">
+                <Card className="shadow-sm bg-white dark:bg-gray-800 rounded-2xl">
                   <div className="text-center py-16">
                     <h3 className="text-lg font-medium dark:text-white">Collection Coming Soon</h3>
                     <p className="text-gray-500 dark:text-gray-400 mt-2">

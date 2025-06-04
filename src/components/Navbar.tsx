@@ -39,7 +39,7 @@ export const Navbar = () => {
           <SearchBar />
         </div>
 
-        {/* Navigation Links (Hidden on Small Screens) */}
+        {/* Navigation Links (Desktop Only) */}
         <div className="hidden md:flex items-center space-x-6">
           <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors">
             Feed
@@ -64,7 +64,7 @@ export const Navbar = () => {
             <Moon className="h-4 w-4" />
           </div>
 
-          {/* Create Button - Only one instance */}
+          {/* Create Button - Desktop Only */}
           <div className="hidden md:block">
             <CreateButton />
           </div>
