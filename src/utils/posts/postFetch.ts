@@ -2,19 +2,9 @@
 import { validatePosts } from "../dataValidation";
 import { ExtendedPost } from "@/types/core";
 
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-if (!SUPABASE_URL) {
-  console.error('VITE_SUPABASE_URL is not defined in .env or environment variables');
-}
-
-if (!SUPABASE_ANON_KEY) {
-  console.error('VITE_SUPABASE_ANON_KEY is not defined in .env or environment variables');
-}
-
-const supabaseUrl = SUPABASE_URL;
-const supabaseKey = SUPABASE_ANON_KEY;
+// Use the hardcoded Supabase credentials (same as in client.ts)
+const supabaseUrl = "https://evsamjzmqzbynwkuszsm.supabase.co";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2c2FtanptcXpieW53a3VzenNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MzgwMTEsImV4cCI6MjA2MDQxNDAxMX0.rkYcUyq7tMf3om2doHkWt85bdAHinEceuH43Hwn1knw";
 
 export const fetchPosts = async (): Promise<ExtendedPost[]> => {
   try {
