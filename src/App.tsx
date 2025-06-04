@@ -16,6 +16,9 @@ import Messages from "./pages/Messages";
 import SellItemPage from "./pages/SellItemPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import PostPage from "./pages/PostPage";
+import SignIn from "./pages/SignIn";
+import SignUp from "./pages/SignUp";
+import Profile from "./pages/Profile";
 
 const queryClient = new QueryClient();
 
@@ -45,6 +48,9 @@ function App() {
                 <Route path="/sell" element={<SellItemPage />} />
                 <Route path="/checkout/:id" element={<CheckoutPage />} />
                 <Route path="/post/:id" element={<PostPage />} />
+                <Route path="/sign-in" element={<SignIn />} />
+                <Route path="/sign-up" element={<SignUp />} />
+                <Route path="/profile" element={<Profile />} />
               </Routes>
             </BrowserRouter>
           </TooltipProvider>
