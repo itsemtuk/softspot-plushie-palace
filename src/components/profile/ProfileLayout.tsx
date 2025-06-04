@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +21,7 @@ export const ProfileLayout = () => {
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
-  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
+  let isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
   
   // Safely handle Clerk hooks with fallback
   let clerkUser = null;
