@@ -54,7 +54,7 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
   );
   
   return (
-    <div className="bg-white shadow-sm rounded-xl mb-6">
+    <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl mb-6 border border-gray-200 dark:border-gray-700">
       <div className="container mx-auto px-4 py-6 max-w-4xl">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex-shrink-0 flex justify-center">
@@ -64,8 +64,8 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
           <div className="flex-grow">
             <div className="flex justify-between items-center flex-wrap gap-2">
               <div>
-                <h1 className="text-2xl font-bold">{username}</h1>
-                <p className="text-gray-500 text-sm">Plushie collector</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">{username}</h1>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">Plushie collector</p>
               </div>
               
               <div className="flex gap-2">
@@ -74,7 +74,7 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
                     variant="outline"
                     size={isMobile ? "sm" : "default"}
                     onClick={handleEditProfileClick}
-                    className="rounded-full px-6"
+                    className="rounded-full px-6 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     <Pencil className="mr-2 h-4 w-4" />
                     Edit Profile
@@ -107,77 +107,77 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
                 />
                 
                 {profileData.isPrivate && (
-                  <Badge variant="outline" className="mt-2">Private Account</Badge>
+                  <Badge variant="outline" className="mt-2 border-gray-300 dark:border-gray-600">Private Account</Badge>
                 )}
               </TabsContent>
               
               <TabsContent value="badges" className="mt-4">
-                <div className="bg-white rounded-lg">
-                  <h2 className="text-lg font-semibold mb-4">Badges</h2>
+                <div className="bg-white dark:bg-gray-800 rounded-lg">
+                  <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Badges</h2>
                   
                   <div className="mb-6">
                     <div className="flex justify-between mb-2">
-                      <span className="text-sm font-medium">Profile completion</span>
-                      <span className="text-sm font-medium">{completionPercentage}%</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">Profile completion</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{completionPercentage}%</span>
                     </div>
-                    <Progress value={completionPercentage} className="h-2 bg-gray-100" />
+                    <Progress value={completionPercentage} className="h-2 bg-gray-100 dark:bg-gray-700" />
                   </div>
                   
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     {/* Unlocked badges */}
-                    <div className="bg-white border border-gray-100 rounded-lg p-4 flex flex-col items-center text-center">
-                      <div className="w-12 h-12 bg-softspot-100 rounded-full flex items-center justify-center mb-2">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-4 flex flex-col items-center text-center">
+                      <div className="w-12 h-12 bg-softspot-100 dark:bg-softspot-900 rounded-full flex items-center justify-center mb-2">
                         <img 
                           src="/assets/Badges/Changed_Profile_Photo.PNG" 
                           alt="Profile Photo Badge" 
                           className="w-10 h-10 object-cover rounded-full" 
                         />
                       </div>
-                      <h3 className="text-sm font-medium">Profile Photo</h3>
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">Profile Photo</h3>
                     </div>
                     
-                    <div className="bg-white border border-gray-100 rounded-lg p-4 flex flex-col items-center text-center">
-                      <div className="w-12 h-12 bg-softspot-100 rounded-full flex items-center justify-center mb-2">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-4 flex flex-col items-center text-center">
+                      <div className="w-12 h-12 bg-softspot-100 dark:bg-softspot-900 rounded-full flex items-center justify-center mb-2">
                         <img 
                           src="/assets/Badges/Plushie_Preferences.PNG" 
                           alt="Plushie Preferences Badge" 
                           className="w-10 h-10 object-cover rounded-full" 
                         />
                       </div>
-                      <h3 className="text-sm font-medium">Plushie Preferences</h3>
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">Plushie Preferences</h3>
                     </div>
                     
-                    <div className="bg-white border border-gray-100 rounded-lg p-4 flex flex-col items-center text-center">
-                      <div className="w-12 h-12 bg-softspot-100 rounded-full flex items-center justify-center mb-2">
+                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-4 flex flex-col items-center text-center">
+                      <div className="w-12 h-12 bg-softspot-100 dark:bg-softspot-900 rounded-full flex items-center justify-center mb-2">
                         <img 
                           src="/assets/Badges/Completed_Profile.PNG" 
                           alt="Complete Profile Badge" 
                           className="w-10 h-10 object-cover rounded-full" 
                         />
                       </div>
-                      <h3 className="text-sm font-medium">Complete Profile</h3>
+                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">Complete Profile</h3>
                     </div>
                     
                     {/* Locked badges */}
-                    <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 flex flex-col items-center text-center opacity-70">
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mb-2">
+                    <div className="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col items-center text-center opacity-70">
+                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-2">
                         <Lock className="w-6 h-6 text-gray-400" />
                       </div>
-                      <h3 className="text-sm font-medium text-gray-500">First Post</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">First Post</h3>
                     </div>
                     
-                    <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 flex flex-col items-center text-center opacity-70">
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mb-2">
+                    <div className="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col items-center text-center opacity-70">
+                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-2">
                         <Lock className="w-6 h-6 text-gray-400" />
                       </div>
-                      <h3 className="text-sm font-medium text-gray-500">Marketplace Vendor</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Marketplace Vendor</h3>
                     </div>
                     
-                    <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 flex flex-col items-center text-center opacity-70">
-                      <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mb-2">
+                    <div className="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col items-center text-center opacity-70">
+                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-2">
                         <Lock className="w-6 h-6 text-gray-400" />
                       </div>
-                      <h3 className="text-sm font-medium text-gray-500">First Sale</h3>
+                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">First Sale</h3>
                     </div>
                   </div>
                 </div>

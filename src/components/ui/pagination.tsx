@@ -1,3 +1,4 @@
+
 import * as React from "react"
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react"
 
@@ -52,6 +53,7 @@ const PaginationLink = ({
         variant: isActive ? "outline" : "ghost",
         size,
       }),
+      "text-gray-900 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 border-gray-300 dark:border-gray-600",
       className
     )}
     {...props}
@@ -97,7 +99,7 @@ const PaginationEllipsis = ({
 }: React.ComponentProps<"span">) => (
   <span
     aria-hidden
-    className={cn("flex h-9 w-9 items-center justify-center", className)}
+    className={cn("flex h-9 w-9 items-center justify-center text-gray-900 dark:text-gray-100", className)}
     {...props}
   >
     <MoreHorizontal className="h-4 w-4" />
