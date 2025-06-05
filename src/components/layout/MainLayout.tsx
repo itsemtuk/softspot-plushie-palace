@@ -1,20 +1,16 @@
 
-import { ReactNode } from "react";
 import { Navbar } from "@/components/Navbar";
-import { NetworkStatus } from "@/components/ui/network-status";
+import { ReactNode } from "react";
 
 interface MainLayoutProps {
   children: ReactNode;
-  noPadding?: boolean;
-  className?: string;
 }
 
-const MainLayout = ({ children, noPadding = false, className = "" }: MainLayoutProps) => {
+const MainLayout = ({ children }: MainLayoutProps) => {
   return (
-    <div className={`min-h-screen bg-gray-50 ${className}`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <Navbar />
-      <NetworkStatus />
-      <main className={noPadding ? "" : "container mx-auto px-4 py-6"}>
+      <main className="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200">
         {children}
       </main>
     </div>

@@ -41,13 +41,13 @@ export const Navbar = () => {
 
         {/* Navigation Links (Desktop Only) */}
         <div className="hidden md:flex items-center space-x-6">
-          <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors">
+          <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors text-gray-700 dark:text-gray-300">
             Feed
           </Link>
-          <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors">
+          <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors text-gray-700 dark:text-gray-300">
             Discover
           </Link>
-          <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors">
+          <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400 transition-colors text-gray-700 dark:text-gray-300">
             Marketplace
           </Link>
         </div>
@@ -56,12 +56,12 @@ export const Navbar = () => {
         <div className="flex items-center space-x-4">
           {/* Dark Mode Switch */}
           <div className="flex items-center space-x-2">
-            <Sun className="h-4 w-4" />
+            <Sun className="h-4 w-4 text-gray-600 dark:text-gray-400" />
             <Switch
               checked={theme === "dark"}
               onCheckedChange={handleThemeChange}
             />
-            <Moon className="h-4 w-4" />
+            <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
           </div>
 
           {/* Create Button - Desktop Only */}
@@ -96,8 +96,8 @@ export const Navbar = () => {
               </SheetTrigger>
               <SheetContent side="right" className="w-full sm:w-64 bg-white dark:bg-gray-900">
                 <SheetHeader>
-                  <SheetTitle>Menu</SheetTitle>
-                  <SheetDescription>
+                  <SheetTitle className="text-gray-900 dark:text-white">Menu</SheetTitle>
+                  <SheetDescription className="text-gray-600 dark:text-gray-400">
                     Explore SoftSpot
                   </SheetDescription>
                 </SheetHeader>
@@ -107,30 +107,30 @@ export const Navbar = () => {
                     <SearchBar />
                   </div>
                   
-                  <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
+                  <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2 text-gray-700 dark:text-gray-300">
                     Feed
                   </Link>
-                  <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
+                  <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2 text-gray-700 dark:text-gray-300">
                     Discover
                   </Link>
-                  <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2">
+                  <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2 text-gray-700 dark:text-gray-300">
                     Marketplace
                   </Link>
                   
-                  {/* Create Button for Mobile */}
+                  {/* Create Button for Mobile - Only one instance */}
                   <div className="py-2">
                     <CreateButton />
                   </div>
                   
                   {/* Dark Mode Switch in Mobile Menu */}
                   <div className="flex items-center space-x-2 py-2">
-                    <Sun className="h-4 w-4" />
+                    <Sun className="h-4 w-4 text-gray-600 dark:text-gray-400" />
                     <Switch
                       checked={theme === "dark"}
                       onCheckedChange={handleThemeChange}
                     />
-                    <Moon className="h-4 w-4" />
-                    <span className="text-sm">Dark Mode</span>
+                    <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                    <span className="text-sm text-gray-600 dark:text-gray-400">Dark Mode</span>
                   </div>
                 </div>
               </SheetContent>

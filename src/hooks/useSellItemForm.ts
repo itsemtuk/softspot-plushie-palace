@@ -4,9 +4,10 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
-import { addPost } from "@/utils/posts/postManagement";
 import { uploadImage } from "@/utils/storage/imageStorage";
-import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
+import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
 
 const sellItemSchema = z.object({
   title: z.string().min(2, {
@@ -34,6 +35,8 @@ export type SellItemFormData = z.infer<typeof sellItemSchema>;
 export const useSellItemForm = () => {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useUser();
+  const navigate = useNavigate();
 
   const form = useForm<SellItemFormData>({
     resolver: zodResolver(sellItemSchema),
@@ -60,7 +63,6 @@ export const useSellItemForm = () => {
     }
 
     try {
-      // Convert File to data URL first
       const reader = new FileReader();
       reader.onload = async (e) => {
         const dataUrl = e.target?.result as string;
@@ -94,64 +96,69 @@ export const useSellItemForm = () => {
   };
 
   const onSubmit: SubmitHandler<SellItemFormData> = async (data) => {
+    if (!user) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to sell items",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
-      const userId = getCurrentUserId();
-      if (!userId) {
+      console.log("Submitting form data:", data);
+      
+      // Create the post object for Supabase
+      const postData = {
+        content: `${data.title}\n\n${data.description}`,
+        user_id: user.id, // Use Clerk user ID directly
+        title: data.title,
+        description: data.description,
+        image: imageUrl,
+        price: data.price,
+        brand: data.brand || null,
+        condition: data.condition,
+        material: data.material || null,
+        filling: data.filling || null,
+        species: data.species || null,
+        delivery_method: data.deliveryMethod,
+        delivery_cost: data.deliveryCost || null,
+        size: data.size || null,
+        color: data.color || null,
+        for_sale: true,
+        created_at: new Date().toISOString(),
+      };
+
+      console.log("Inserting into Supabase:", postData);
+
+      const { data: result, error } = await supabase
+        .from('posts')
+        .insert([postData])
+        .select();
+
+      if (error) {
+        console.error("Supabase error:", error);
         toast({
           variant: "destructive",
-          title: "Authentication required",
-          description: "Please sign in to sell items",
+          title: "Failed to list item",
+          description: error.message || "Please try again",
         });
         return;
       }
 
-      const postData = {
-        id: `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        userId,
-        user_id: userId,
-        username: "Current User",
-        image: imageUrl,
-        title: data.title,
-        description: data.description,
-        content: data.description,
-        tags: [data.brand, data.condition, data.material].filter(Boolean),
-        likes: 0,
-        comments: 0,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        forSale: true,
-        price: data.price,
-        brand: data.brand,
-        condition: data.condition,
-        material: data.material,
-        filling: data.filling,
-        species: data.species,
-        deliveryMethod: data.deliveryMethod,
-        deliveryCost: data.deliveryCost,
-        size: data.size,
-        color: data.color,
-      };
-
-      const result = await addPost(postData);
+      console.log("Successfully created post:", result);
       
-      if (result.success) {
-        toast({
-          title: "Item listed successfully!",
-          description: "Your plushie has been added to the marketplace.",
-        });
-        form.reset();
-        setImageUrl("");
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Failed to list item",
-          description: result.error || "Please try again",
-        });
-      }
+      toast({
+        title: "Item listed successfully!",
+        description: "Your plushie has been added to the marketplace.",
+      });
+      
+      form.reset();
+      setImageUrl("");
+      navigate('/marketplace');
+      
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
