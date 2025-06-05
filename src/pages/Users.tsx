@@ -80,19 +80,70 @@ const Users = () => {
     }
 
     try {
-      const { error } = await supabase
+      // First check if user exists in our users table
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', currentUser.id)
+        .single();
+
+      if (userError || !userData) {
+        // Create user record if it doesn't exist
+        const { data: newUser, error: createError } = await supabase
+          .from('users')
+          .insert({
+            clerk_id: currentUser.id,
+            username: currentUser.username,
+            first_name: currentUser.firstName,
+            last_name: currentUser.lastName,
+            email: currentUser.primaryEmailAddress?.emailAddress,
+            avatar_url: currentUser.imageUrl,
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating user:', createError);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to create user profile",
+          });
+          return;
+        }
+      }
+
+      // Now create the follow relationship using raw SQL to avoid type issues
+      const { error } = await supabase.rpc('set_current_user_id', {
+        user_id_param: currentUser.id
+      });
+
+      if (error) {
+        console.error('Error setting user context:', error);
+      }
+
+      // Insert into followers table with raw query
+      const { error: followError } = await supabase
         .from('followers')
         .insert({
           follower_id: currentUser.id,
           following_id: userId
         });
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to follow user",
-        });
+      if (followError) {
+        if (followError.code === '23505') {
+          toast({
+            title: "Already following",
+            description: "You are already following this user!",
+          });
+        } else {
+          console.error('Follow error:', followError);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "Failed to follow user",
+          });
+        }
         return;
       }
 
@@ -103,6 +154,11 @@ const Users = () => {
       });
     } catch (error) {
       console.error('Error following user:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred",
+      });
     }
   };
 
