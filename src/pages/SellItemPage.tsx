@@ -39,16 +39,19 @@ const SellItemPage = () => {
           return;
         }
         
-        // Wait for user sync to complete
+        // Wait for user sync to complete (but don't block on failure)
         if (isUserSyncLoading) {
           return;
         }
 
-        // Check for user sync errors
+        // Check for user sync errors (but don't block - warn instead)
         if (userSyncError) {
-          console.error("User sync error:", userSyncError);
-          setError("Failed to sync user account. Please try refreshing the page.");
-          return;
+          console.warn("User sync error (non-blocking):", userSyncError);
+          toast({
+            title: "Sync Warning",
+            description: "There was an issue syncing your profile, but you can still create listings.",
+            variant: "default"
+          });
         }
         
         console.log("SellItemPage: Ready to show form", { supabaseUserId });
@@ -80,7 +83,7 @@ const SellItemPage = () => {
     );
   }
 
-  // Error state
+  // Error state (only for critical errors)
   if (error) {
     return (
       <MainLayout>

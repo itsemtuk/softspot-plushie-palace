@@ -77,6 +77,28 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
     );
   }
 
+  // Don't render the form until we have a valid supabaseUserId (unless it's intentionally null)
+  // The form should still work for authenticated Clerk users even without Supabase sync
+  const canRenderForm = supabaseUserId !== undefined; // Allow null, but not undefined
+
+  if (!canRenderForm) {
+    console.log("SellItemFormWrapper: Waiting for user sync to complete");
+    return (
+      <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+        <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
+          <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
+        </CardHeader>
+        
+        <CardContent className="pt-6">
+          <div className="flex justify-center items-center p-8">
+            <Spinner size="md" />
+            <span className="ml-3 text-sm text-gray-500">Syncing your account...</span>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Safe form submit handler with proper error handling
   const formSubmitHandler: React.FormEventHandler<HTMLFormElement> = (e) => {
     e.preventDefault();
