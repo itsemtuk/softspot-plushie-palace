@@ -8,9 +8,11 @@ import { getPosts } from "@/utils/postStorage";
 export const useFeedData = () => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const fetchPosts = useCallback(async () => {
     setIsLoading(true);
+    setError(null);
     try {
       const [allPostsResult, userPostsResult] = await Promise.allSettled([
         getAllPosts(),
@@ -30,10 +32,12 @@ export const useFeedData = () => {
       setPosts(Array.from(postMap.values()));
     } catch (error) {
       console.error("Error fetching posts:", error);
+      const errorMessage = "Failed to load posts. Please try again.";
+      setError(errorMessage);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to load posts. Please try again.",
+        description: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -48,6 +52,7 @@ export const useFeedData = () => {
     posts,
     setPosts,
     isLoading,
+    error,
     fetchPosts
   };
 };

@@ -90,7 +90,7 @@ const Feed = () => {
               <Spinner size="lg" />
             </div>
           ) : (
-            <SafeErrorBoundary resetKeys={[processedPosts.length, layout]}>
+            <SafeErrorBoundary resetKeys={[processedPosts.length.toString(), layout]}>
               <FeedGrid 
                 posts={processedPosts} 
                 onPostClick={handlePostClick} 
@@ -99,7 +99,7 @@ const Feed = () => {
             </SafeErrorBoundary>
           )}
 
-          <SafeErrorBoundary resetKeys={[isPostCreationOpen]}>
+          <SafeErrorBoundary resetKeys={[isPostCreationOpen.toString()]}>
             <PostCreationFlow
               isOpen={isPostCreationOpen}
               onClose={onClosePostCreation}
@@ -107,7 +107,7 @@ const Feed = () => {
             />
           </SafeErrorBoundary>
 
-          <SafeErrorBoundary resetKeys={[dialogState.isOpen, dialogState.post?.id]}>
+          <SafeErrorBoundary resetKeys={[dialogState.isOpen.toString(), dialogState.post?.id || ""]}>
             <PostDialog
               post={dialogState.post}
               isOpen={dialogState.isOpen}
