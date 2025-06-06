@@ -14,10 +14,11 @@ import { useFeedData } from "@/hooks/useFeedData";
 import { useFeedFilters } from "@/hooks/useFeedFilters";
 import { useFeedPostCreation } from "@/hooks/useFeedPostCreation";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
+import { SafeErrorBoundary } from "@/components/ui/safe-error-boundary";
 
 const Feed = () => {
   const [layout, setLayout] = useState("grid");
-  const { posts, setPosts, isLoading } = useFeedData();
+  const { posts, setPosts, isLoading, error } = useFeedData();
   const { searchQuery, setSearchQuery, sortOrder, setSortOrder, processedPosts } = useFeedFilters(posts);
   const { handlePostCreated } = useFeedPostCreation(setPosts);
   const { dialogState, openPostDialog, closePostDialog } = usePostDialog();
@@ -25,7 +26,11 @@ const Feed = () => {
   const syncManager = useSyncManager(posts);
 
   const handlePostClick = (post: ExtendedPost) => {
-    openPostDialog(post);
+    try {
+      openPostDialog(post);
+    } catch (error) {
+      console.error("Error opening post dialog:", error);
+    }
   };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -40,40 +45,75 @@ const Feed = () => {
     setLayout(layout === "grid" ? "list" : "grid");
   };
 
+  if (error) {
+    return (
+      <EnhancedErrorBoundary>
+        <MainLayout>
+          <div className="container mx-auto py-6">
+            <div className="text-center py-12">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
+                Unable to load feed
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
+                There was an error loading your feed. Please try refreshing the page.
+              </p>
+              <button 
+                onClick={() => window.location.reload()} 
+                className="bg-softspot-500 hover:bg-softspot-600 text-white px-4 py-2 rounded"
+              >
+                Refresh Page
+              </button>
+            </div>
+          </div>
+        </MainLayout>
+      </EnhancedErrorBoundary>
+    );
+  }
+
   return (
     <EnhancedErrorBoundary>
       <MainLayout>
         <div className="container mx-auto py-6">
-          <FeedSearchAndSort
-            searchQuery={searchQuery}
-            onSearchChange={handleSearchChange}
-            sortOrder={sortOrder}
-            onSortChange={handleSortOrderChange}
-            layout={layout}
-            onLayoutChange={handleLayoutChange}
-          />
+          <SafeErrorBoundary resetKeys={[searchQuery, sortOrder]}>
+            <FeedSearchAndSort
+              searchQuery={searchQuery}
+              onSearchChange={handleSearchChange}
+              sortOrder={sortOrder}
+              onSortChange={handleSortOrderChange}
+              layout={layout}
+              onLayoutChange={handleLayoutChange}
+            />
+          </SafeErrorBoundary>
 
           {isLoading ? (
             <div className="flex justify-center items-center h-40">
               <Spinner size="lg" />
             </div>
           ) : (
-            <EnhancedErrorBoundary>
-              <FeedGrid posts={processedPosts} onPostClick={handlePostClick} layout={layout} />
-            </EnhancedErrorBoundary>
+            <SafeErrorBoundary resetKeys={[processedPosts.length, layout]}>
+              <FeedGrid 
+                posts={processedPosts} 
+                onPostClick={handlePostClick} 
+                layout={layout} 
+              />
+            </SafeErrorBoundary>
           )}
 
-          <PostCreationFlow
-            isOpen={isPostCreationOpen}
-            onClose={onClosePostCreation}
-            onPostCreated={handlePostCreated}
-          />
+          <SafeErrorBoundary resetKeys={[isPostCreationOpen]}>
+            <PostCreationFlow
+              isOpen={isPostCreationOpen}
+              onClose={onClosePostCreation}
+              onPostCreated={handlePostCreated}
+            />
+          </SafeErrorBoundary>
 
-          <PostDialog
-            post={dialogState.post}
-            isOpen={dialogState.isOpen}
-            onClose={closePostDialog}
-          />
+          <SafeErrorBoundary resetKeys={[dialogState.isOpen, dialogState.post?.id]}>
+            <PostDialog
+              post={dialogState.post}
+              isOpen={dialogState.isOpen}
+              onClose={closePostDialog}
+            />
+          </SafeErrorBoundary>
         </div>
       </MainLayout>
     </EnhancedErrorBoundary>

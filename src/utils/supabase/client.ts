@@ -194,40 +194,74 @@ export const safeRpcCall = async (
   }
 };
 
-// Safe user sync function that handles RLS properly
+// Safe user sync function that handles RLS properly with better error handling
 export const syncClerkUserToSupabase = async (clerkUser: any) => {
   if (!clerkUser) return { data: null, error: 'No user provided' };
 
   try {
     console.log('Syncing Clerk user to Supabase:', clerkUser.id);
     
-    // Use upsert with on_conflict to handle existing users
-    const { data, error } = await supabase
+    // Check if user already exists first
+    const { data: existingUser, error: checkError } = await supabase
       .from('users')
-      .upsert({
-        id: clerkUser.id,
-        clerk_id: clerkUser.id,
-        username: clerkUser.username || clerkUser.firstName || 'user',
-        first_name: clerkUser.firstName,
-        last_name: clerkUser.lastName,
-        email: clerkUser.emailAddresses?.[0]?.emailAddress,
-        avatar_url: clerkUser.imageUrl,
-        updated_at: new Date().toISOString(),
-      }, {
-        onConflict: 'clerk_id',
-        ignoreDuplicates: false
-      })
-      .select()
-      .single();
+      .select('id, clerk_id')
+      .eq('clerk_id', clerkUser.id)
+      .maybeSingle();
 
-    if (error) {
-      console.warn('User sync failed, but continuing:', error);
-      // Don't throw error, just log and continue
-      return { data: null, error };
+    if (checkError && !checkError.message.includes('no rows returned')) {
+      console.warn('Error checking existing user:', checkError);
+      return { data: null, error: checkError };
     }
 
-    console.log('User sync successful:', data);
-    return { data, error: null };
+    if (existingUser) {
+      console.log('User already exists, updating:', existingUser.id);
+      // Update existing user
+      const { data, error } = await supabase
+        .from('users')
+        .update({
+          username: clerkUser.username || clerkUser.firstName || 'user',
+          first_name: clerkUser.firstName,
+          last_name: clerkUser.lastName,
+          email: clerkUser.emailAddresses?.[0]?.emailAddress,
+          avatar_url: clerkUser.imageUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('clerk_id', clerkUser.id)
+        .select()
+        .single();
+
+      if (error) {
+        console.warn('User update failed:', error);
+        return { data: null, error };
+      }
+
+      console.log('User update successful:', data);
+      return { data, error: null };
+    } else {
+      // Create new user
+      const { data, error } = await supabase
+        .from('users')
+        .insert({
+          clerk_id: clerkUser.id,
+          username: clerkUser.username || clerkUser.firstName || 'user',
+          first_name: clerkUser.firstName,
+          last_name: clerkUser.lastName,
+          email: clerkUser.emailAddresses?.[0]?.emailAddress,
+          avatar_url: clerkUser.imageUrl,
+          updated_at: new Date().toISOString(),
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.warn('User creation failed, but continuing:', error);
+        // Don't throw error, just log and continue
+        return { data: null, error };
+      }
+
+      console.log('User creation successful:', data);
+      return { data, error: null };
+    }
   } catch (err: any) {
     console.warn('User sync error:', err);
     return { data: null, error: err };

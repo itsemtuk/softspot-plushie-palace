@@ -35,22 +35,26 @@ export function ThemeProvider({
     const root = window.document.documentElement;
     const body = window.document.body;
 
+    // Remove existing theme classes
     root.classList.remove("light", "dark");
     body.classList.remove("light", "dark");
 
+    let effectiveTheme: "light" | "dark";
+
     if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)")
-        .matches
+      effectiveTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
         : "light";
-
-      root.classList.add(systemTheme);
-      body.classList.add(systemTheme);
-      return;
+    } else {
+      effectiveTheme = theme;
     }
 
-    root.classList.add(theme);
-    body.classList.add(theme);
+    // Apply theme classes to both root and body for better consistency
+    root.classList.add(effectiveTheme);
+    body.classList.add(effectiveTheme);
+
+    // Set data attribute for CSS selectors
+    root.setAttribute('data-theme', effectiveTheme);
   }, [theme]);
 
   const value = {

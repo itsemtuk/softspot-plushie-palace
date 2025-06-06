@@ -37,6 +37,18 @@ export const Navbar = () => {
     setIsPostCreationOpen(true);
   };
 
+  // Single create button component to avoid duplication
+  const CreateButton = ({ className = "" }: { className?: string }) => (
+    <Button 
+      onClick={handleCreateClick}
+      className={`bg-softspot-500 hover:bg-softspot-600 text-white rounded-full px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200 ${className}`}
+      size="sm"
+    >
+      <PlusCircle className="h-4 w-4 mr-2" />
+      Create
+    </Button>
+  );
+
   return (
     <div className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50 transition-colors duration-200">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -75,17 +87,10 @@ export const Navbar = () => {
             <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
           </div>
 
-          {/* Single Create Button - Desktop Only */}
+          {/* Create Button - Desktop Only */}
           {user && (
             <div className="hidden md:block">
-              <Button 
-                onClick={handleCreateClick}
-                className="bg-softspot-500 hover:bg-softspot-600 text-white rounded-full px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200"
-                size="sm"
-              >
-                <PlusCircle className="h-4 w-4 mr-2" />
-                Create
-              </Button>
+              <CreateButton />
             </div>
           )}
           
@@ -137,16 +142,10 @@ export const Navbar = () => {
                     Marketplace
                   </Link>
                   
-                  {/* Single Create Button for Mobile */}
+                  {/* Create Button for Mobile */}
                   {user && (
                     <div className="py-2">
-                      <Button 
-                        onClick={handleCreateClick}
-                        className="bg-softspot-500 hover:bg-softspot-600 text-white w-full"
-                      >
-                        <PlusCircle className="h-4 w-4 mr-2" />
-                        Create
-                      </Button>
+                      <CreateButton className="w-full" />
                     </div>
                   )}
                   
