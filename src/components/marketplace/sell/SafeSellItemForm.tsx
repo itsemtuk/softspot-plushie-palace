@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SafeComponentWrapper } from "@/components/ui/safe-component-wrapper";

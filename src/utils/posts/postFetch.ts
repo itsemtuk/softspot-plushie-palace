@@ -12,17 +12,19 @@ export const fetchPosts = async (): Promise<ExtendedPost[]> => {
       headers: {
         apikey: supabaseKey,
         Authorization: `Bearer ${supabaseKey}`,
+        'Content-Type': 'application/json',
       },
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
+      console.warn(`HTTP error! status: ${response.status}`);
+      return [];
     }
 
     const data = await response.json();
     return validatePosts(data);
   } catch (error) {
-    console.error("Error fetching posts:", error);
+    console.warn("Error fetching posts, returning empty array:", error);
     return [];
   }
 };

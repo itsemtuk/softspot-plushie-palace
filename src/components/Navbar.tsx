@@ -5,9 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { UserMenu } from "./navigation/UserMenu";
 import { SearchBar } from "./navigation/SearchBar";
-import { CreateButton } from "./navigation/CreateButton";
 import { useTheme } from "@/components/ui/theme-provider";
 import { Moon, Sun } from "lucide-react";
+import { useUser } from "@clerk/clerk-react";
+import { PlusCircle } from "lucide-react";
+import { useCreatePost } from "@/hooks/use-create-post";
 import {
   Sheet,
   SheetContent,
@@ -20,10 +22,19 @@ import {
 export const Navbar = () => {
   const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user } = useUser();
+  const { setIsPostCreationOpen } = useCreatePost();
 
   const handleThemeChange = (checked: boolean) => {
     setTheme(checked ? "dark" : "light");
+  };
+
+  const handleCreateClick = () => {
+    if (!user) {
+      navigate('/sign-in');
+      return;
+    }
+    setIsPostCreationOpen(true);
   };
 
   return (
@@ -64,10 +75,19 @@ export const Navbar = () => {
             <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
           </div>
 
-          {/* Create Button - Desktop Only - Single Instance */}
-          <div className="hidden md:block">
-            <CreateButton />
-          </div>
+          {/* Single Create Button - Desktop Only */}
+          {user && (
+            <div className="hidden md:block">
+              <Button 
+                onClick={handleCreateClick}
+                className="bg-softspot-500 hover:bg-softspot-600 text-white rounded-full px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200"
+                size="sm"
+              >
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create
+              </Button>
+            </div>
+          )}
           
           <UserMenu />
           
@@ -117,10 +137,18 @@ export const Navbar = () => {
                     Marketplace
                   </Link>
                   
-                  {/* Create Button for Mobile - Single Instance */}
-                  <div className="py-2">
-                    <CreateButton />
-                  </div>
+                  {/* Single Create Button for Mobile */}
+                  {user && (
+                    <div className="py-2">
+                      <Button 
+                        onClick={handleCreateClick}
+                        className="bg-softspot-500 hover:bg-softspot-600 text-white w-full"
+                      >
+                        <PlusCircle className="h-4 w-4 mr-2" />
+                        Create
+                      </Button>
+                    </div>
+                  )}
                   
                   {/* Dark Mode Switch in Mobile Menu */}
                   <div className="flex items-center space-x-2 py-2">

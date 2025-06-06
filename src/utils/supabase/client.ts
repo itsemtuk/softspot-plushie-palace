@@ -193,3 +193,43 @@ export const safeRpcCall = async (
     };
   }
 };
+
+// Safe user sync function that handles RLS properly
+export const syncClerkUserToSupabase = async (clerkUser: any) => {
+  if (!clerkUser) return { data: null, error: 'No user provided' };
+
+  try {
+    console.log('Syncing Clerk user to Supabase:', clerkUser.id);
+    
+    // Use upsert with on_conflict to handle existing users
+    const { data, error } = await supabase
+      .from('users')
+      .upsert({
+        id: clerkUser.id,
+        clerk_id: clerkUser.id,
+        username: clerkUser.username || clerkUser.firstName || 'user',
+        first_name: clerkUser.firstName,
+        last_name: clerkUser.lastName,
+        email: clerkUser.emailAddresses?.[0]?.emailAddress,
+        avatar_url: clerkUser.imageUrl,
+        updated_at: new Date().toISOString(),
+      }, {
+        onConflict: 'clerk_id',
+        ignoreDuplicates: false
+      })
+      .select()
+      .single();
+
+    if (error) {
+      console.warn('User sync failed, but continuing:', error);
+      // Don't throw error, just log and continue
+      return { data: null, error };
+    }
+
+    console.log('User sync successful:', data);
+    return { data, error: null };
+  } catch (err: any) {
+    console.warn('User sync error:', err);
+    return { data: null, error: err };
+  }
+};
