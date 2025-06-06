@@ -2,11 +2,12 @@
 import React, { Component, ErrorInfo, ReactNode } from "react";
 import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface Props {
   children: ReactNode;
   fallback?: ReactNode;
+  onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
 
 interface State {
@@ -31,15 +32,17 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
   }
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
-    console.error("Component Error Boundary caught an error:", error, errorInfo);
+    console.error("Enhanced Error Boundary caught an error:", error);
+    console.error("Error info:", errorInfo);
     
     this.setState({
       error,
       errorInfo
     });
     
-    // Log to external service if needed
-    // logErrorToService(error, errorInfo);
+    if (this.props.onError) {
+      this.props.onError(error, errorInfo);
+    }
   }
 
   public resetErrorBoundary = (): void => {
@@ -48,42 +51,55 @@ export class EnhancedErrorBoundary extends Component<Props, State> {
       error: null,
       errorInfo: null
     });
-    
-    // Force page reload for critical errors
-    if (this.state.error?.message?.includes("Vm() is null") || 
-        this.state.error?.message?.includes("Cannot read properties")) {
-      window.location.reload();
-    }
   };
 
   public render(): ReactNode {
     if (this.state.hasError) {
       return this.props.fallback || (
-        <Alert variant="destructive" className="my-4 bg-white border border-red-200 rounded-lg">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Something went wrong</AlertTitle>
-          <AlertDescription>
-            <div className="mt-2">
-              <p className="mb-2">{this.state.error?.message || "An unexpected error occurred"}</p>
-              {this.state.errorInfo && (
-                <details className="mt-2 text-xs">
-                  <summary className="cursor-pointer">View technical details</summary>
-                  <pre className="overflow-auto p-2 bg-gray-100 rounded mt-2 max-h-40 text-xs">
-                    {this.state.error?.stack || "No stack trace available"}
-                  </pre>
-                </details>
-              )}
-            </div>
-            <Button 
-              onClick={this.resetErrorBoundary}
-              variant="outline" 
-              size="sm" 
-              className="mt-4 rounded-md"
-            >
-              Try again
-            </Button>
-          </AlertDescription>
-        </Alert>
+        <div className="min-h-[400px] flex items-center justify-center p-4">
+          <Alert variant="destructive" className="max-w-lg bg-white dark:bg-gray-800">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle className="text-gray-900 dark:text-gray-100">Something went wrong</AlertTitle>
+            <AlertDescription>
+              <div className="mt-2 space-y-3">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
+                  {this.state.error?.message || "An unexpected error occurred"}
+                </p>
+                
+                {this.state.errorInfo && (
+                  <details className="text-xs">
+                    <summary className="cursor-pointer text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200">
+                      View technical details
+                    </summary>
+                    <pre className="mt-2 p-2 bg-gray-100 dark:bg-gray-700 rounded text-xs overflow-auto max-h-32">
+                      {this.state.errorInfo.componentStack}
+                    </pre>
+                  </details>
+                )}
+                
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={this.resetErrorBoundary}
+                    variant="outline" 
+                    size="sm"
+                    className="flex items-center gap-1"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                    Try again
+                  </Button>
+                  
+                  <Button 
+                    onClick={() => window.location.reload()}
+                    variant="outline" 
+                    size="sm"
+                  >
+                    Reload page
+                  </Button>
+                </div>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
       );
     }
 

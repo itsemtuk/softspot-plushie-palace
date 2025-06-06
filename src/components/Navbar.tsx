@@ -64,7 +64,7 @@ export const Navbar = () => {
             <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
           </div>
 
-          {/* Create Button - Desktop Only */}
+          {/* Create Button - Desktop Only - Single Instance */}
           <div className="hidden md:block">
             <CreateButton />
           </div>
@@ -117,7 +117,7 @@ export const Navbar = () => {
                     Marketplace
                   </Link>
                   
-                  {/* Create Button for Mobile - Only one instance */}
+                  {/* Create Button for Mobile - Single Instance */}
                   <div className="py-2">
                     <CreateButton />
                   </div>

@@ -13,6 +13,7 @@ import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { useFeedData } from "@/hooks/useFeedData";
 import { useFeedFilters } from "@/hooks/useFeedFilters";
 import { useFeedPostCreation } from "@/hooks/useFeedPostCreation";
+import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 
 const Feed = () => {
   const [layout, setLayout] = useState("grid");
@@ -40,38 +41,42 @@ const Feed = () => {
   };
 
   return (
-    <MainLayout>
-      <div className="container mx-auto py-6">
-        <FeedSearchAndSort
-          searchQuery={searchQuery}
-          onSearchChange={handleSearchChange}
-          sortOrder={sortOrder}
-          onSortChange={handleSortOrderChange}
-          layout={layout}
-          onLayoutChange={handleLayoutChange}
-        />
+    <EnhancedErrorBoundary>
+      <MainLayout>
+        <div className="container mx-auto py-6">
+          <FeedSearchAndSort
+            searchQuery={searchQuery}
+            onSearchChange={handleSearchChange}
+            sortOrder={sortOrder}
+            onSortChange={handleSortOrderChange}
+            layout={layout}
+            onLayoutChange={handleLayoutChange}
+          />
 
-        {isLoading ? (
-          <div className="flex justify-center items-center h-40">
-            <Spinner size="lg" />
-          </div>
-        ) : (
-          <FeedGrid posts={processedPosts} onPostClick={handlePostClick} layout={layout} />
-        )}
+          {isLoading ? (
+            <div className="flex justify-center items-center h-40">
+              <Spinner size="lg" />
+            </div>
+          ) : (
+            <EnhancedErrorBoundary>
+              <FeedGrid posts={processedPosts} onPostClick={handlePostClick} layout={layout} />
+            </EnhancedErrorBoundary>
+          )}
 
-        <PostCreationFlow
-          isOpen={isPostCreationOpen}
-          onClose={onClosePostCreation}
-          onPostCreated={handlePostCreated}
-        />
+          <PostCreationFlow
+            isOpen={isPostCreationOpen}
+            onClose={onClosePostCreation}
+            onPostCreated={handlePostCreated}
+          />
 
-        <PostDialog
-          post={dialogState.post}
-          isOpen={dialogState.isOpen}
-          onClose={closePostDialog}
-        />
-      </div>
-    </MainLayout>
+          <PostDialog
+            post={dialogState.post}
+            isOpen={dialogState.isOpen}
+            onClose={closePostDialog}
+          />
+        </div>
+      </MainLayout>
+    </EnhancedErrorBoundary>
   );
 };
 
