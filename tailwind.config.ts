@@ -65,6 +65,12 @@ export default {
           800: '#4a3568',
           900: '#2c1f40',
         },
+        // Dark mode specific colors
+        'dark-surface': '#1f2937',
+        'dark-surface-secondary': '#111827',
+        'dark-text': '#f3f4f6',
+        'dark-text-secondary': '#d1d5db',
+        'dark-border': '#374151',
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

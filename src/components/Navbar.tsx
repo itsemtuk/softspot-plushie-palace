@@ -38,10 +38,10 @@ export const Navbar = () => {
   };
 
   // Single create button component to avoid duplication
-  const CreateButton = ({ className = "" }: { className?: string }) => (
+  const CreateButton = ({ className = "", isFullWidth = false }: { className?: string; isFullWidth?: boolean }) => (
     <Button 
       onClick={handleCreateClick}
-      className={`bg-softspot-500 hover:bg-softspot-600 text-white rounded-full px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200 ${className}`}
+      className={`bg-softspot-500 hover:bg-softspot-600 text-white rounded-full px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200 ${isFullWidth ? 'w-full' : ''} ${className}`}
       size="sm"
     >
       <PlusCircle className="h-4 w-4 mr-2" />
@@ -145,7 +145,7 @@ export const Navbar = () => {
                   {/* Create Button for Mobile */}
                   {user && (
                     <div className="py-2">
-                      <CreateButton className="w-full" />
+                      <CreateButton isFullWidth={true} />
                     </div>
                   )}
                   

@@ -50,7 +50,7 @@ const Settings = () => {
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
               Please sign in to access settings
             </h2>
-            <Button onClick={() => window.location.href = '/sign-in'}>
+            <Button onClick={() => window.location.href = '/sign-in'} className="bg-softspot-500 hover:bg-softspot-600">
               Sign In
             </Button>
           </div>
@@ -80,26 +80,38 @@ const Settings = () => {
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
-              <TabsTrigger value="profile" className="text-gray-900 dark:text-gray-100">Profile Information</TabsTrigger>
-              <TabsTrigger value="account" className="text-gray-900 dark:text-gray-100">Account</TabsTrigger>
-              <TabsTrigger value="appearance" className="text-gray-900 dark:text-gray-100">Appearance</TabsTrigger>
+              <TabsTrigger value="profile" className="text-gray-900 dark:text-gray-100 data-[state=active]:bg-softspot-100 dark:data-[state=active]:bg-softspot-900/20">
+                Profile Information
+              </TabsTrigger>
+              <TabsTrigger value="account" className="text-gray-900 dark:text-gray-100 data-[state=active]:bg-softspot-100 dark:data-[state=active]:bg-softspot-900/20">
+                Account
+              </TabsTrigger>
+              <TabsTrigger value="appearance" className="text-gray-900 dark:text-gray-100 data-[state=active]:bg-softspot-100 dark:data-[state=active]:bg-softspot-900/20">
+                Appearance
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="profile" className="space-y-6">
               <EnhancedErrorBoundary>
-                <ProfileSettings />
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <ProfileSettings />
+                </div>
               </EnhancedErrorBoundary>
             </TabsContent>
             
             <TabsContent value="account" className="space-y-6">
               <EnhancedErrorBoundary>
-                <AccountSettings />
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <AccountSettings />
+                </div>
               </EnhancedErrorBoundary>
             </TabsContent>
             
             <TabsContent value="appearance" className="space-y-6">
               <EnhancedErrorBoundary>
-                <DarkModeSettings />
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+                  <DarkModeSettings />
+                </div>
               </EnhancedErrorBoundary>
             </TabsContent>
           </Tabs>
