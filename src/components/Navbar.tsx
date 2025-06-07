@@ -64,7 +64,7 @@ export const Navbar = () => {
             <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
           </div>
 
-          {/* Create Dropdown - Desktop Only */}
+          {/* Create Dropdown - Desktop Only, and only when user is signed in */}
           {user && (
             <div className="hidden md:block">
               <CreateDropdown />
@@ -119,7 +119,7 @@ export const Navbar = () => {
                     Marketplace
                   </Link>
                   
-                  {/* Create Dropdown for Mobile */}
+                  {/* Create Dropdown for Mobile - only when user is signed in */}
                   {user && (
                     <div className="py-2">
                       <CreateDropdown />

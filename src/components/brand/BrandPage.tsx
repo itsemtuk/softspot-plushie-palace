@@ -14,6 +14,7 @@ import { BrandHeader } from "./BrandHeader";
 import { PlushieGrid } from "./PlushieGrid";
 import { CommunityPosts } from "./CommunityPosts";
 import { BrandFilterPanel } from "./BrandFilterPanel";
+import LoadingSpinner from "@/components/common/LoadingSpinner";
 
 const brandData: { [key: string]: { name: string; description: string; logoUrl: string; tags: string[] } } = {
   "build-a-bear": {
@@ -61,6 +62,7 @@ export const BrandPageWrapper = () => {
   
   useEffect(() => {
     if (!brandName) {
+      setLoading(false);
       return;
     }
     
@@ -137,15 +139,38 @@ export const BrandPageWrapper = () => {
   };
 
   if (loading) {
-    return <div>Loading brand data...</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <div className="container mx-auto px-4 py-8">
+          <LoadingSpinner size="lg" className="py-20" />
+        </div>
+      </div>
+    );
   }
 
   if (!brand) {
-    return <div>Brand not found.</div>;
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <div className="container mx-auto px-4 py-8">
+          <div className="text-center py-20">
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Brand not found</h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              The brand "{brandName}" could not be found.
+            </p>
+            <Button 
+              onClick={() => navigate('/marketplace')}
+              className="bg-softspot-500 hover:bg-softspot-600 text-white"
+            >
+              Browse Marketplace
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <BrandHeader brand={brand} />
       <div className="container mx-auto py-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -162,11 +187,11 @@ export const BrandPageWrapper = () => {
           </div>
           <div className="md:col-span-3">
             <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4">Featured Plushies</h2>
+              <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Featured Plushies</h2>
               <PlushieGrid plushies={plushies} onPlushieClick={handlePlushieClick} />
             </section>
             <section>
-              <h2 className="text-2xl font-bold mb-4">Community Posts</h2>
+              <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Community Posts</h2>
               <CommunityPosts posts={posts} onPostClick={handlePostClick} />
             </section>
           </div>

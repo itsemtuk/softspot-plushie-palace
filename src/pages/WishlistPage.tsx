@@ -9,6 +9,7 @@ import { ShoppingBag, Heart } from "lucide-react";
 import { Link } from 'react-router-dom';
 import { WishlistManager } from "@/components/profile/WishlistManager";
 import LoadingSpinner from "@/components/common/LoadingSpinner";
+import { useUser } from "@clerk/clerk-react";
 
 interface WishlistItem {
   id: string;
@@ -25,6 +26,7 @@ interface Wishlist {
 
 const WishlistPage = () => {
   const isMobile = useIsMobile();
+  const { user, isLoaded } = useUser();
   const [isLoading, setIsLoading] = useState(true);
   const [wishlist, setWishlist] = useState<Wishlist>({
     id: 'default',
@@ -33,6 +35,9 @@ const WishlistPage = () => {
   });
 
   useEffect(() => {
+    // Wait for user to load first
+    if (!isLoaded) return;
+    
     // Simulate loading wishlist data
     const loadWishlist = async () => {
       setIsLoading(true);
@@ -60,32 +65,7 @@ const WishlistPage = () => {
     };
 
     loadWishlist();
-  }, []);
-
-  const handleCreateNewWishlist = () => {
-    // Implement create new wishlist logic here
-    alert('Create new wishlist');
-  };
-
-  const handleRenameWishlist = () => {
-    // Implement rename wishlist logic here
-    alert('Rename wishlist');
-  };
-
-  const handleDeleteWishlist = () => {
-    // Implement delete wishlist logic here
-    alert('Delete wishlist');
-  };
-
-  const handleMoveItemToAnotherWishlist = (itemId: string) => {
-    // Implement move item to another wishlist logic here
-    alert(`Move item ${itemId} to another wishlist`);
-  };
-
-  const handleShareWishlist = () => {
-    // Implement share wishlist logic here
-    alert('Share wishlist');
-  };
+  }, [isLoaded]);
 
   const handleRemoveFromWishlist = (itemId: string) => {
     setWishlist(prevWishlist => ({
@@ -94,12 +74,36 @@ const WishlistPage = () => {
     }));
   };
 
-  if (isLoading) {
+  // Show loading while Clerk is initializing
+  if (!isLoaded || isLoading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         {isMobile ? <MobileNav /> : <Navbar />}
         <main className="container mx-auto px-4 py-8">
           <LoadingSpinner size="lg" className="py-20" />
+        </main>
+      </div>
+    );
+  }
+
+  // Show sign-in prompt if not authenticated
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        {isMobile ? <MobileNav /> : <Navbar />}
+        <main className="container mx-auto px-4 py-8">
+          <div className="text-center py-20">
+            <Heart className="h-16 w-16 mx-auto text-gray-400 dark:text-gray-500 mb-4" />
+            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Sign in to view your wishlist</h2>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
+              Create an account to save your favorite plushies!
+            </p>
+            <Link to="/sign-in">
+              <Button className="bg-softspot-500 hover:bg-softspot-600 text-white">
+                Sign In
+              </Button>
+            </Link>
+          </div>
         </main>
       </div>
     );
@@ -140,7 +144,12 @@ const WishlistPage = () => {
                   <div className="flex items-center justify-between">
                     <span className="text-gray-700 dark:text-gray-300 font-medium">${item.price.toFixed(2)}</span>
                     <div className="space-x-2">
-                      <Button size="sm" variant="outline" onClick={() => handleRemoveFromWishlist(item.id)}>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        onClick={() => handleRemoveFromWishlist(item.id)}
+                        className="border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
+                      >
                         Remove
                       </Button>
                       <Link to="/checkout">
