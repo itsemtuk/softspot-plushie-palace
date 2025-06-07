@@ -6,6 +6,8 @@ import { SellItemFormActions } from "./SellItemFormActions";
 import { SellItemErrorDisplay } from "./SellItemErrorDisplay";
 import { useSellItemForm } from "@/hooks/useSellItemForm";
 import { Spinner } from "@/components/ui/spinner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle, Loader2 } from "lucide-react";
 
 interface SellItemFormWrapperProps {
   supabaseUserId?: string | null;
@@ -25,15 +27,15 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
   if (!formValues) {
     console.log("SellItemFormWrapper: No form values, showing loading");
     return (
-      <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+      <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
         <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
-          <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Sell Your Plushie</CardTitle>
         </CardHeader>
         
         <CardContent className="pt-6">
           <div className="flex justify-center items-center p-8">
-            <Spinner size="md" />
-            <span className="ml-3 text-sm text-gray-500">Loading form...</span>
+            <Loader2 className="h-8 w-8 animate-spin text-softspot-500" />
+            <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Initializing form...</span>
           </div>
         </CardContent>
       </Card>
@@ -63,36 +65,36 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
   if (!register || !handleSubmit || !onSubmit) {
     console.log("SellItemFormWrapper: Missing critical form methods");
     return (
-      <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+      <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
         <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
-          <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Sell Your Plushie</CardTitle>
         </CardHeader>
         
         <CardContent className="pt-6">
-          <SellItemErrorDisplay 
-            error="Form is not properly initialized. Please refresh the page and try again." 
-          />
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              Form is not properly initialized. Please refresh the page and try again.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
   }
 
-  // Don't render the form until we have a valid supabaseUserId (unless it's intentionally null)
-  // The form should still work for authenticated Clerk users even without Supabase sync
-  const canRenderForm = supabaseUserId !== undefined; // Allow null, but not undefined
-
-  if (!canRenderForm) {
+  // Check if user context is still syncing
+  if (supabaseUserId === undefined) {
     console.log("SellItemFormWrapper: Waiting for user sync to complete");
     return (
-      <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+      <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
         <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
-          <CardTitle className="text-2xl font-bold">Sell Your Plushie</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Sell Your Plushie</CardTitle>
         </CardHeader>
         
         <CardContent className="pt-6">
           <div className="flex justify-center items-center p-8">
-            <Spinner size="md" />
-            <span className="ml-3 text-sm text-gray-500">Syncing your account...</span>
+            <Loader2 className="h-8 w-8 animate-spin text-softspot-500" />
+            <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Syncing your account...</span>
           </div>
         </CardContent>
       </Card>
@@ -121,7 +123,7 @@ export const SellItemFormWrapper = ({ supabaseUserId }: SellItemFormWrapperProps
   };
 
   return (
-    <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-200">
+    <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden hover:shadow-lg transition-shadow duration-200 border border-gray-200 dark:border-gray-700">
       <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Sell Your Plushie</CardTitle>
       </CardHeader>

@@ -81,16 +81,16 @@ export const CreateDropdown = () => {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-[220px] bg-white dark:bg-gray-800 shadow-xl rounded-xl border border-gray-100 dark:border-gray-700 z-50">
         <DropdownMenuLabel className="text-gray-900 dark:text-gray-100">Create New</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-300">
+        <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
+        <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-300 transition-colors">
           <Image className="mr-2 h-4 w-4" />
           <span>New Post</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleTradeRequest} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-300">
+        <DropdownMenuItem onClick={handleTradeRequest} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-300 transition-colors">
           <Handshake className="mr-2 h-4 w-4" />
           <span>Trade Request</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSellItem} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-300">
+        <DropdownMenuItem onClick={handleSellItem} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-300 transition-colors">
           <Tag className="mr-2 h-4 w-4" />
           <span>Sell Plushie</span>
         </DropdownMenuItem>

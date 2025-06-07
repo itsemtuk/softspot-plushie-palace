@@ -5,11 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { UserMenu } from "./navigation/UserMenu";
 import { SearchBar } from "./navigation/SearchBar";
+import { CreateDropdown } from "./navigation/CreateDropdown";
 import { useTheme } from "@/components/ui/theme-provider";
 import { Moon, Sun } from "lucide-react";
 import { useUser } from "@clerk/clerk-react";
-import { PlusCircle } from "lucide-react";
-import { useCreatePost } from "@/hooks/use-create-post";
 import {
   Sheet,
   SheetContent,
@@ -20,34 +19,12 @@ import {
 } from "@/components/ui/sheet"
 
 export const Navbar = () => {
-  const navigate = useNavigate();
   const { theme, setTheme } = useTheme();
   const { user } = useUser();
-  const { setIsPostCreationOpen } = useCreatePost();
 
   const handleThemeChange = (checked: boolean) => {
     setTheme(checked ? "dark" : "light");
   };
-
-  const handleCreateClick = () => {
-    if (!user) {
-      navigate('/sign-in');
-      return;
-    }
-    setIsPostCreationOpen(true);
-  };
-
-  // Single create button component to avoid duplication
-  const CreateButton = ({ className = "", isFullWidth = false }: { className?: string; isFullWidth?: boolean }) => (
-    <Button 
-      onClick={handleCreateClick}
-      className={`bg-softspot-500 hover:bg-softspot-600 text-white rounded-full px-6 py-2 shadow-lg hover:shadow-xl transition-all duration-200 ${isFullWidth ? 'w-full' : ''} ${className}`}
-      size="sm"
-    >
-      <PlusCircle className="h-4 w-4 mr-2" />
-      Create
-    </Button>
-  );
 
   return (
     <div className="bg-white dark:bg-gray-900 shadow-md sticky top-0 z-50 transition-colors duration-200">
@@ -87,10 +64,10 @@ export const Navbar = () => {
             <Moon className="h-4 w-4 text-gray-600 dark:text-gray-400" />
           </div>
 
-          {/* Create Button - Desktop Only */}
+          {/* Create Dropdown - Desktop Only */}
           {user && (
             <div className="hidden md:block">
-              <CreateButton />
+              <CreateDropdown />
             </div>
           )}
           
@@ -100,7 +77,7 @@ export const Navbar = () => {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
+                <Button variant="outline" size="icon" className="bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="24"
@@ -111,7 +88,7 @@ export const Navbar = () => {
                     strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
-                    className="lucide lucide-menu"
+                    className="lucide lucide-menu text-gray-700 dark:text-gray-300"
                   >
                     <line x1="4" x2="20" y1="12" y2="12" />
                     <line x1="4" x2="20" y1="6" y2="6" />
@@ -119,7 +96,7 @@ export const Navbar = () => {
                   </svg>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-full sm:w-64 bg-white dark:bg-gray-900">
+              <SheetContent side="right" className="w-full sm:w-64 bg-white dark:bg-gray-900 border-l border-gray-200 dark:border-gray-700">
                 <SheetHeader>
                   <SheetTitle className="text-gray-900 dark:text-white">Menu</SheetTitle>
                   <SheetDescription className="text-gray-600 dark:text-gray-400">
@@ -132,20 +109,20 @@ export const Navbar = () => {
                     <SearchBar />
                   </div>
                   
-                  <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2 text-gray-700 dark:text-gray-300">
+                  <Link to="/feed" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2 text-gray-700 dark:text-gray-300 transition-colors">
                     Feed
                   </Link>
-                  <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2 text-gray-700 dark:text-gray-300">
+                  <Link to="/discover" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2 text-gray-700 dark:text-gray-300 transition-colors">
                     Discover
                   </Link>
-                  <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2 text-gray-700 dark:text-gray-300">
+                  <Link to="/marketplace" className="hover:text-softspot-500 dark:hover:text-softspot-400 block py-2 text-gray-700 dark:text-gray-300 transition-colors">
                     Marketplace
                   </Link>
                   
-                  {/* Create Button for Mobile */}
+                  {/* Create Dropdown for Mobile */}
                   {user && (
                     <div className="py-2">
-                      <CreateButton isFullWidth={true} />
+                      <CreateDropdown />
                     </div>
                   )}
                   
