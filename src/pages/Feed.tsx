@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedGrid } from "@/components/feed/FeedGrid";
@@ -24,6 +24,9 @@ const Feed = () => {
   const { dialogState, openPostDialog, closePostDialog } = usePostDialog();
   const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
   const syncManager = useSyncManager(posts);
+
+  // Memoize heavy computations to prevent freezing
+  const memoizedPosts = useMemo(() => processedPosts, [processedPosts]);
 
   const handlePostClick = (post: ExtendedPost) => {
     try {
@@ -73,7 +76,7 @@ const Feed = () => {
   return (
     <EnhancedErrorBoundary>
       <MainLayout>
-        <div className="container mx-auto py-6">
+        <div className="container mx-auto py-6 bg-gray-50 dark:bg-gray-900">
           <SafeErrorBoundary resetKeys={[searchQuery, sortOrder]}>
             <FeedSearchAndSort
               searchQuery={searchQuery}
@@ -90,9 +93,9 @@ const Feed = () => {
               <Spinner size="lg" />
             </div>
           ) : (
-            <SafeErrorBoundary resetKeys={[processedPosts.length.toString(), layout]}>
+            <SafeErrorBoundary resetKeys={[memoizedPosts.length.toString(), layout]}>
               <FeedGrid 
-                posts={processedPosts} 
+                posts={memoizedPosts} 
                 onPostClick={handlePostClick} 
                 layout={layout} 
               />

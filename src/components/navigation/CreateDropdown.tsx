@@ -92,21 +92,21 @@ export const CreateDropdown = () => {
         <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
         <DropdownMenuItem 
           onClick={handleCreatePost} 
-          className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-300 transition-colors focus:bg-softspot-50 dark:focus:bg-softspot-900/20 focus:text-gray-900 dark:focus:text-gray-100"
+          className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-200 transition-colors focus:bg-softspot-50 dark:focus:bg-softspot-900/20 focus:text-gray-900 dark:focus:text-gray-100"
         >
           <Image className="mr-2 h-4 w-4" />
           <span>New Post</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={handleTradeRequest} 
-          className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-300 transition-colors focus:bg-softspot-50 dark:focus:bg-softspot-900/20 focus:text-gray-900 dark:focus:text-gray-100"
+          className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-200 transition-colors focus:bg-softspot-50 dark:focus:bg-softspot-900/20 focus:text-gray-900 dark:focus:text-gray-100"
         >
           <Handshake className="mr-2 h-4 w-4" />
           <span>Trade Request</span>
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={handleSellItem} 
-          className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-300 transition-colors focus:bg-softspot-50 dark:focus:bg-softspot-900/20 focus:text-gray-900 dark:focus:text-gray-100"
+          className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900/20 text-gray-700 dark:text-gray-200 transition-colors focus:bg-softspot-50 dark:focus:bg-softspot-900/20 focus:text-gray-900 dark:focus:text-gray-100"
         >
           <Tag className="mr-2 h-4 w-4" />
           <span>Sell Plushie</span>

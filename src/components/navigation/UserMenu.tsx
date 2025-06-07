@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -146,12 +147,16 @@ export const UserMenu = () => {
   return (
     <>
       <div className="flex items-center space-x-4">
-        <CreateButton />
+        {/* Desktop Create Button */}
+        <div className="hidden md:block">
+          <CreateButton />
+        </div>
+        
         <Button 
           variant="ghost" 
           size="icon"
           onClick={() => handleAuthRequiredAction("access messages", "/messages")}
-          className="hover:bg-softspot-100"
+          className="hover:bg-softspot-100 dark:hover:bg-softspot-900/20"
         >
           <MessageSquare className="h-5 w-5" />
         </Button>
@@ -159,7 +164,7 @@ export const UserMenu = () => {
           variant="ghost" 
           size="icon"
           onClick={() => handleAuthRequiredAction("view wishlist", "/wishlist")}
-          className="hover:bg-softspot-100"
+          className="hover:bg-softspot-100 dark:hover:bg-softspot-900/20"
         >
           <Bookmark className="h-5 w-5" />
         </Button>
