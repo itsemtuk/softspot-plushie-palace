@@ -17,7 +17,7 @@ export const SellItemAuthGuard = ({ children, onAuthReady }: SellItemAuthGuardPr
   const navigate = useNavigate();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
   const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
-  const { supabaseUserId, isLoading: isUserSyncLoading } = useClerkSupabaseUser(clerkUser);
+  const { supabaseUserId, isLoading: isUserSyncLoading, error: syncError } = useClerkSupabaseUser(clerkUser);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -34,16 +34,10 @@ export const SellItemAuthGuard = ({ children, onAuthReady }: SellItemAuthGuardPr
           return;
         }
         
-        const isAuthReady = await waitForAuth(2000);
+        // Wait for user sync to complete
+        if (isUserSyncLoading) return;
         
-        if (!isAuthReady) {
-          const { isAuthenticated } = await safeCheckAuth(() => {
-            navigate('/sign-in');
-          });
-          
-          if (!isAuthenticated) return;
-        }
-        
+        // Auth is ready even if Supabase sync failed
         onAuthReady();
       } catch (error) {
         console.error("Auth check error:", error);
@@ -58,7 +52,7 @@ export const SellItemAuthGuard = ({ children, onAuthReady }: SellItemAuthGuardPr
     };
     
     checkAuth();
-  }, [navigate, isClerkLoaded, clerkUser, onAuthReady]);
+  }, [navigate, isClerkLoaded, clerkUser, onAuthReady, isUserSyncLoading]);
 
   // Show loading while checking auth or syncing user
   if (isAuthChecking || isUserSyncLoading || !isClerkLoaded) {
@@ -86,6 +80,11 @@ export const SellItemAuthGuard = ({ children, onAuthReady }: SellItemAuthGuardPr
         </Alert>
       </div>
     );
+  }
+
+  // Show sync error as warning but allow access
+  if (syncError) {
+    console.warn("Supabase sync error (continuing with local auth):", syncError);
   }
 
   return <>{children}</>;

@@ -19,13 +19,6 @@ export const supabase = createClient(supabaseUrl, supabaseKey, {
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    },
-    fetch: (url, options = {}) => {
-      return fetch(url, {
-        ...options,
-        mode: 'cors',
-        credentials: 'omit'
-      });
     }
   },
   db: {
@@ -51,7 +44,6 @@ export const isSupabaseConfigured = () => {
 export const handleSupabaseError = (error: any) => {
   console.error('Supabase error:', error);
   
-  // Check for different types of network errors
   if (error.message && (
     error.message.includes('NetworkError') || 
     error.message.includes('Failed to fetch') ||
@@ -68,7 +60,6 @@ export const handleSupabaseError = (error: any) => {
     };
   }
   
-  // Handle timeout errors
   if (error.message && (
     error.message.includes('timeout') ||
     error.message.includes('aborted')
@@ -91,7 +82,7 @@ export const handleSupabaseError = (error: any) => {
 // Enhanced retry logic with exponential backoff
 export const fetchWithRetry = async <T>(
   fn: () => Promise<T>, 
-  retries = 1, // Reduced retries to avoid spamming
+  retries = 1,
   delay = 1000
 ): Promise<T> => {
   return withRetry(fn, {
@@ -99,9 +90,7 @@ export const fetchWithRetry = async <T>(
     delayMs: delay,
     backoffMultiplier: 1.5,
     shouldRetry: (error) => {
-      const handledError = handleSupabaseError(error);
-      // Don't retry on CORS errors
-      return false;
+      return false; // Don't retry on CORS errors
     }
   });
 };
@@ -115,8 +104,6 @@ export const safeQueryWithRetry = async <T>(
     return await queryFn();
   } catch (error: any) {
     const handledError = handleSupabaseError(error);
-    
-    // Log the error but don't throw
     console.warn('Query failed, using fallback:', handledError.message);
     
     return {
@@ -131,12 +118,10 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
   try {
     console.log('Testing Supabase connection...');
     
-    // Create a timeout promise
     const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Connection timeout')), timeoutMs);
     });
     
-    // Try a simple query
     const queryPromise = supabase.from('posts').select('count').limit(1);
     
     const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
@@ -153,44 +138,6 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
     const handledError = handleSupabaseError(err);
     console.warn('Supabase connection test failed:', handledError.message);
     return false;
-  }
-};
-
-// Enhanced RPC call with better error handling
-export const safeRpcCall = async (
-  functionName: string, 
-  params: any = {},
-  timeoutMs: number = 3000
-): Promise<{data: any, error: any}> => {
-  try {
-    console.log(`Making RPC call: ${functionName}`, params);
-    
-    // Create a timeout promise
-    const timeoutPromise = new Promise<never>((_, reject) => {
-      setTimeout(() => reject(new Error('RPC call timeout')), timeoutMs);
-    });
-    
-    // Make the RPC call
-    const rpcPromise = supabase.rpc(functionName, params);
-    
-    const result = await Promise.race([rpcPromise, timeoutPromise]);
-    
-    if (result.error) {
-      const handledError = handleSupabaseError(result.error);
-      console.warn(`RPC call ${functionName} failed:`, handledError.message);
-    } else {
-      console.log(`RPC call ${functionName} successful`);
-    }
-    
-    return result;
-  } catch (err: any) {
-    const handledError = handleSupabaseError(err);
-    console.warn(`RPC call ${functionName} failed:`, handledError.message);
-    
-    return {
-      data: null,
-      error: handledError
-    };
   }
 };
 
@@ -255,7 +202,6 @@ export const syncClerkUserToSupabase = async (clerkUser: any) => {
 
       if (error) {
         console.warn('User creation failed, but continuing:', error);
-        // Don't throw error, just log and continue
         return { data: null, error };
       }
 

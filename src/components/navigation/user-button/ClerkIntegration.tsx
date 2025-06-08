@@ -31,8 +31,7 @@ export const ClerkButtonComponent = () => {
       localStorage.setItem('usingClerk', 'true');
     }, []);
     
-    // If we successfully get the hooks, store their values in localStorage for components
-    // that don't have direct access to Clerk context
+    // Handle user authentication state
     useEffect(() => {
       if (userValue?.user && userValue.isSignedIn) {
         console.log("Clerk user signed in:", userValue.user);
@@ -65,79 +64,22 @@ export const ClerkButtonComponent = () => {
           setUserStatus(clerkStatus as "online" | "offline" | "away" | "busy");
         }
         
-        // Notify user of successful sign-in if this is a new session
-        const lastNotifiedSignIn = localStorage.getItem('lastNotifiedSignIn');
-        const currentTime = new Date().getTime();
-        if (!lastNotifiedSignIn || (currentTime - parseInt(lastNotifiedSignIn)) > 300000) { // 5 minutes
-          toast({
-            title: "Signed in successfully",
-            description: `Welcome back, ${userValue.user.firstName || userValue.user.username || 'User'}!`
-          });
-          localStorage.setItem('lastNotifiedSignIn', currentTime.toString());
-        }
-        
         // Dispatch event to notify components of auth state change
         window.dispatchEvent(new Event('clerk-auth-change'));
         
-        // Listen for profileImageUrl changes
-        const checkForAvatarChanges = () => {
-          const storedAvatarUrl = localStorage.getItem('userAvatarUrl');
-          if (storedAvatarUrl !== userValue?.user?.imageUrl) {
-            localStorage.setItem('userAvatarUrl', userValue?.user?.imageUrl || '');
-            // Dispatch event to notify components of profile image change
-            window.dispatchEvent(new Event('profile-image-change'));
-          }
-        };
-        
-        // Listen for status changes
-        const checkForStatusChanges = () => {
-          const storedStatus = localStorage.getItem('userStatus');
-          const clerkStatus = userValue?.user?.unsafeMetadata?.status as string;
-          
-          if (storedStatus !== clerkStatus && clerkStatus) {
-            setUserStatus(clerkStatus as "online" | "offline" | "away" | "busy");
-          }
-        };
-        
-        // Check for profile changes every 15 seconds
-        const intervalId = setInterval(() => {
-          checkForAvatarChanges();
-          checkForStatusChanges();
-        }, 15000);
-        
-        return () => clearInterval(intervalId);
       } else if (userValue?.isLoaded && !userValue?.isSignedIn) {
         // Handle sign-out or unauthenticated state
         console.log("User not signed in with Clerk");
+        localStorage.removeItem('currentUserId');
+        localStorage.removeItem('authStatus');
+        localStorage.removeItem('currentUsername');
+        localStorage.removeItem('userAvatarUrl');
+        localStorage.removeItem('userBio');
+        
+        // Dispatch event to notify components of auth state change
+        window.dispatchEvent(new Event('clerk-auth-change'));
       }
     }, [userValue?.user, userValue?.isSignedIn, userValue?.isLoaded, toast, clerkSyncValue]);
-    
-    // Debug Clerk state changes
-    useEffect(() => {
-      console.log("Clerk authentication state changed:", {
-        isLoaded: userValue?.isLoaded,
-        isSignedIn: userValue?.isSignedIn,
-        user: userValue?.user ? {
-          id: userValue.user.id,
-          firstName: userValue.user.firstName,
-          username: userValue.user.username,
-          imageUrl: userValue.user.imageUrl
-        } : null
-      });
-    }, [userValue?.isLoaded, userValue?.isSignedIn, userValue?.user]);
-    
-    // Handle social auth redirects and sign-in events
-    useEffect(() => {
-      // Check if we're returning from a social auth redirect
-      const isAuthCallback = 
-        window.location.href.includes('__clerk_status=') || 
-        window.location.href.includes('/sign-up') ||
-        window.location.href.includes('/sign-in');
-      
-      if (isAuthCallback) {
-        console.log("Detected auth callback in URL");
-      }
-    }, []);
     
   } catch (error) {
     // Silently handle the error when used outside ClerkProvider

@@ -14,6 +14,8 @@ export function useClerkSupabaseUser(clerkUser: any | null | undefined) {
     const syncUser = async () => {
       if (!clerkUser) {
         setIsLoading(false);
+        setSupabaseUserId(null);
+        setError(null);
         return;
       }
       
@@ -34,18 +36,24 @@ export function useClerkSupabaseUser(clerkUser: any | null | undefined) {
         };
         
         // Sync user to Supabase
-        const syncSuccess = await syncClerkUserToSupabase(formattedUser);
+        const { data: syncResult, error: syncError } = await syncClerkUserToSupabase(formattedUser);
         
-        if (syncSuccess) {
-          // Get the Supabase user ID
+        if (syncError) {
+          console.warn("User sync failed:", syncError);
+          // Don't treat this as a fatal error - continue with null supabaseUserId
+          setSupabaseUserId(null);
+        } else if (syncResult) {
+          console.log("User sync successful:", syncResult);
+          setSupabaseUserId(syncResult.id);
+        } else {
+          // Try to get the Supabase user ID even if sync didn't return data
           const supaId = await getSupabaseUserIdFromClerk(clerkUser.id);
           setSupabaseUserId(supaId);
-        } else {
-          console.warn("User sync completed but may not have been successful");
         }
       } catch (err) {
         console.error("Error in user sync:", err);
         setError(err instanceof Error ? err : new Error("Unknown error during user sync"));
+        setSupabaseUserId(null);
       } finally {
         setIsLoading(false);
       }
