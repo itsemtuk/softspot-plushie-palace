@@ -35,18 +35,16 @@ export function useClerkSupabaseUser(clerkUser: any | null | undefined) {
           imageUrl: clerkUser.imageUrl || ''
         };
         
-        // Sync user to Supabase
-        const { data: syncResult, error: syncError } = await syncClerkUserToSupabase(formattedUser);
+        // Sync user to Supabase - this returns a boolean
+        const syncResult = await syncClerkUserToSupabase(formattedUser);
         
-        if (syncError) {
-          console.warn("User sync failed:", syncError);
+        if (!syncResult) {
+          console.warn("User sync failed, but continuing");
           // Don't treat this as a fatal error - continue with null supabaseUserId
           setSupabaseUserId(null);
-        } else if (syncResult) {
-          console.log("User sync successful:", syncResult);
-          setSupabaseUserId(syncResult.id);
         } else {
-          // Try to get the Supabase user ID even if sync didn't return data
+          console.log("User sync successful");
+          // Try to get the Supabase user ID after successful sync
           const supaId = await getSupabaseUserIdFromClerk(clerkUser.id);
           setSupabaseUserId(supaId);
         }
