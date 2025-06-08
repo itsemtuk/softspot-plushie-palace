@@ -73,7 +73,7 @@ const SellItemPage = () => {
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh] flex-col">
           <Spinner size="lg" />
-          <p className="ml-3 text-gray-600 mt-4">
+          <p className="ml-3 text-gray-600 dark:text-gray-400 mt-4">
             {!isClerkLoaded ? "Loading authentication..." : 
              isUserSyncLoading ? "Syncing your account..." : 
              "Preparing form..."}
@@ -112,9 +112,9 @@ const SellItemPage = () => {
     return (
       <MainLayout>
         <div className="flex justify-center items-center h-[60vh] flex-col">
-          <div className="bg-white p-6 rounded-lg shadow-sm text-center max-w-md">
-            <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-            <p className="mb-4">Please sign in to list your items for sale.</p>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center max-w-md border border-gray-200 dark:border-gray-700">
+            <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Authentication Required</h2>
+            <p className="mb-4 text-gray-600 dark:text-gray-400">Please sign in to list your items for sale.</p>
             <button 
               className="bg-softspot-500 text-white px-4 py-2 rounded-md hover:bg-softspot-600 transition-colors"
               onClick={() => navigate('/sign-in')}
@@ -132,9 +132,9 @@ const SellItemPage = () => {
       <div className="max-w-2xl mx-auto py-6">
         {/* Offline mode indicator */}
         {!navigator.onLine && (
-          <Alert className="mb-4 border-yellow-200 bg-yellow-50">
-            <WifiOff className="h-4 w-4 text-yellow-600" />
-            <AlertDescription className="text-yellow-800">
+          <Alert className="mb-4 border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800">
+            <WifiOff className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+            <AlertDescription className="text-yellow-800 dark:text-yellow-200">
               <strong>Offline Mode:</strong> You're working offline. Your listing will be saved locally and synced when you reconnect.
             </AlertDescription>
           </Alert>

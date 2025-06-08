@@ -115,7 +115,7 @@ const WishlistPage = () => {
       
       <main className="container mx-auto px-4 py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-800 dark:text-gray-100 transition-colors duration-200">My Wishlist</h1>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 transition-colors duration-200">My Wishlist</h1>
           <p className="text-gray-600 dark:text-gray-400 transition-colors duration-200">Here are the plushies you're dreaming of.</p>
         </div>
         
@@ -137,7 +137,7 @@ const WishlistPage = () => {
             {wishlist.items.map(item => (
               <Card key={item.id} className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700 transition-colors duration-200">
                 <CardHeader className="p-4">
-                  <CardTitle className="text-lg font-semibold text-gray-800 dark:text-gray-200">{item.name}</CardTitle>
+                  <CardTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">{item.name}</CardTitle>
                 </CardHeader>
                 <CardContent className="p-4">
                   <img src={item.imageUrl} alt={item.name} className="w-full h-48 object-cover rounded-md mb-4" />

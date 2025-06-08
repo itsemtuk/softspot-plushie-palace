@@ -49,18 +49,18 @@ export function ProfileSettings() {
 
   if (!isSynced) {
     return (
-      <Card className="bg-white rounded-xl shadow-sm p-6">
+      <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex justify-center items-center h-40">
           <Spinner size="lg" />
-          <p className="ml-2">Loading profile data...</p>
+          <p className="ml-2 text-gray-700 dark:text-gray-300">Loading profile data...</p>
         </div>
       </Card>
     );
   }
 
   return (
-    <Card className="bg-white rounded-xl shadow-sm p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Profile Settings</h2>
+    <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+      <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">Profile Settings</h2>
       
       <ProfileSettingsTabs 
         tabs={tabs}
