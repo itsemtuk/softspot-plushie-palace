@@ -8,7 +8,7 @@ import { NotificationsButton } from "./NotificationsButton";
 import { toast } from "@/components/ui/use-toast";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { useUser } from '@clerk/clerk-react';
-import { CreateButton } from "./CreateButton";
+import { CreateDropdown } from "./CreateDropdown";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "../post/PostCreationFlow";
 import { addPost } from "@/utils/posts/postManagement";
@@ -124,32 +124,12 @@ export const UserMenu = () => {
     );
   }
 
-  const mockPost: ExtendedPost = {
-    id: 'mock-post-1',
-    userId: 'mock-user',
-    user_id: 'mock-user', // Added for compatibility
-    username: 'CurrentUser',
-    content: 'Check out my new plushie collection!', // Added required content field
-    image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400',
-    title: 'My Plushie Collection',
-    description: 'Just added some new friends to my collection!',
-    tags: ['collection', 'plushies', 'cute'],
-    likes: 15,
-    comments: 3,
-    timestamp: new Date().toISOString(),
-    createdAt: new Date().toISOString(),
-    created_at: new Date().toISOString(), // Added for compatibility
-    updatedAt: new Date().toISOString(),
-    location: 'New York, NY',
-    forSale: false // Added required forSale field
-  };
-
   return (
     <>
       <div className="flex items-center space-x-4">
-        {/* Desktop Create Button */}
+        {/* Only show Create button on desktop */}
         <div className="hidden md:block">
-          <CreateButton />
+          <CreateDropdown />
         </div>
         
         <Button 

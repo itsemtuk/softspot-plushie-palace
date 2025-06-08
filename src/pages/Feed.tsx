@@ -1,5 +1,5 @@
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedGrid } from "@/components/feed/FeedGrid";
@@ -25,28 +25,28 @@ const Feed = () => {
   const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
   const syncManager = useSyncManager(posts);
 
-  // Memoize heavy computations to prevent freezing
+  // Memoize heavy computations to prevent freezing with useCallback to prevent unnecessary re-renders
   const memoizedPosts = useMemo(() => processedPosts, [processedPosts]);
 
-  const handlePostClick = (post: ExtendedPost) => {
+  const handlePostClick = useCallback((post: ExtendedPost) => {
     try {
       openPostDialog(post);
     } catch (error) {
       console.error("Error opening post dialog:", error);
     }
-  };
+  }, [openPostDialog]);
 
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-  };
+  }, [setSearchQuery]);
 
-  const handleSortOrderChange = (value: string) => {
+  const handleSortOrderChange = useCallback((value: string) => {
     setSortOrder(value);
-  };
+  }, [setSortOrder]);
 
-  const handleLayoutChange = () => {
-    setLayout(layout === "grid" ? "list" : "grid");
-  };
+  const handleLayoutChange = useCallback(() => {
+    setLayout(prev => prev === "grid" ? "list" : "grid");
+  }, []);
 
   if (error) {
     return (
@@ -76,7 +76,7 @@ const Feed = () => {
   return (
     <EnhancedErrorBoundary>
       <MainLayout>
-        <div className="container mx-auto py-6 bg-gray-50 dark:bg-gray-900">
+        <div className="container mx-auto py-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
           <SafeErrorBoundary resetKeys={[searchQuery, sortOrder]}>
             <FeedSearchAndSort
               searchQuery={searchQuery}

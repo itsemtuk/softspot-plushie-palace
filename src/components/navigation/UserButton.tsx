@@ -54,22 +54,28 @@ export const UserButton = () => {
             status={userStatus} 
           />
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" className="bg-white z-50 shadow-lg">
-          <DropdownMenuLabel>My Account</DropdownMenuLabel>
-          <DropdownMenuItem onClick={handleProfileClick} className="flex items-center cursor-pointer">
+        <DropdownMenuContent 
+          align="end" 
+          className="bg-white dark:bg-gray-800 z-50 shadow-lg border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100"
+        >
+          <DropdownMenuLabel className="text-gray-900 dark:text-gray-100">My Account</DropdownMenuLabel>
+          <DropdownMenuItem 
+            onClick={handleProfileClick} 
+            className="flex items-center cursor-pointer text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 focus:bg-gray-100 dark:focus:bg-gray-700"
+          >
             <User className="mr-2 h-4 w-4" />
             <span>My Profile</span>
           </DropdownMenuItem>
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
           
           <UserStatusDropdown 
             currentStatus={userStatus}
             onStatusChange={handleChangeStatus}
           />
           
-          <DropdownMenuSeparator />
+          <DropdownMenuSeparator className="bg-gray-200 dark:bg-gray-700" />
           <DropdownMenuItem
-            className="text-red-600 focus:text-red-600"
+            className="text-red-600 focus:text-red-600 dark:text-red-400 dark:focus:text-red-400 hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={handleSignOut}
           >
             <LogOut className="mr-2 h-4 w-4" />
