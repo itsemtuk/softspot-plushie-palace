@@ -1,3 +1,4 @@
+
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import MainLayout from "@/components/layout/MainLayout";
@@ -15,6 +16,7 @@ import { useFeedPostCreation } from "@/hooks/useFeedPostCreation";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { SafeErrorBoundary } from "@/components/ui/safe-error-boundary";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
 
 const Feed = () => {
   const [layout, setLayout] = useState("grid");

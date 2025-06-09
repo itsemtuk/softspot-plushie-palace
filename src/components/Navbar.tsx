@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -9,11 +10,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { MobileNav } from "./navigation/MobileNav";
-import { NotificationsButton } from "./NotificationsButton";
-import { UserMenu } from "./UserMenu";
-import { SearchBar } from "./SearchBar";
+import { NotificationsButton } from "./navigation/NotificationsButton";
+import { UserMenu } from "./navigation/UserMenu";
+import { SearchBar } from "./navigation/SearchBar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export const Navbar = () => {

@@ -30,16 +30,45 @@ export function SearchSystem() {
         .or(`username.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
         .limit(10);
 
-      // Search posts
-      const { data: posts } = await supabase
+      // Search posts - convert to ExtendedPost format
+      const { data: postsData } = await supabase
         .from('posts')
         .select('*')
         .or(`title.ilike.%${query}%,description.ilike.%${query}%,brand.ilike.%${query}%`)
         .limit(20);
 
+      // Transform posts data to match ExtendedPost interface
+      const posts: ExtendedPost[] = (postsData || []).map(post => ({
+        id: post.id,
+        userId: post.user_id,
+        user_id: post.user_id,
+        username: 'Unknown User', // We'd need a join to get this
+        content: post.content || '',
+        image: post.image || '',
+        title: post.title || '',
+        description: post.description || '',
+        brand: post.brand || '',
+        price: post.price || 0,
+        condition: post.condition || '',
+        material: post.material || '',
+        filling: post.filling || '',
+        species: post.species || '',
+        delivery_method: post.delivery_method || '',
+        delivery_cost: post.delivery_cost || 0,
+        size: post.size || '',
+        color: post.color || '',
+        forSale: post.for_sale || false,
+        timestamp: post.created_at,
+        createdAt: post.created_at,
+        created_at: post.created_at,
+        updatedAt: post.created_at,
+        likes: 0,
+        comments: 0
+      }));
+
       setResults({
         users: users || [],
-        posts: posts || []
+        posts: posts
       });
     } catch (error) {
       console.error('Search error:', error);
@@ -113,7 +142,7 @@ export function SearchSystem() {
                             {post.description}
                           </p>
                           <div className="flex items-center gap-2 mt-2">
-                            {post.for_sale && post.price && (
+                            {post.forSale && post.price && (
                               <Badge variant="secondary">${post.price}</Badge>
                             )}
                             {post.brand && (
