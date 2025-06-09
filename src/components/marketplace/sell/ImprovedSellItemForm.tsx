@@ -3,30 +3,31 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
-import { useUser } from "@clerk/clerk-react";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@clerk/clerk-react";
+import { useNavigate } from "react-router-dom";
+import FileUploader from "@/components/common/FileUploader";
 
 const sellItemSchema = z.object({
-  title: z.string().min(1, "Title is required").max(100, "Title must be less than 100 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters").max(1000, "Description must be less than 1000 characters"),
-  price: z.number().min(0.01, "Price must be greater than 0").max(10000, "Price must be reasonable"),
+  title: z.string().min(2, "Title must be at least 2 characters"),
+  description: z.string().min(10, "Description must be at least 10 characters"),
+  price: z.number().min(0, "Price must be a positive number"),
   brand: z.string().optional(),
-  condition: z.enum(["new", "like-new", "good", "fair", "poor"]),
+  condition: z.enum(["new", "used", "like new"]),
   material: z.string().optional(),
   filling: z.string().optional(),
   species: z.string().optional(),
-  size: z.enum(["small", "medium", "large", "extra-large"]),
+  deliveryMethod: z.enum(["shipping", "local pickup", "both"]),
+  deliveryCost: z.number().min(0).optional(),
+  size: z.string().optional(),
   color: z.string().optional(),
-  deliveryMethod: z.enum(["shipping", "pickup", "both"]),
-  deliveryCost: z.number().min(0, "Delivery cost cannot be negative").optional(),
 });
 
 type SellItemFormData = z.infer<typeof sellItemSchema>;
@@ -35,10 +36,11 @@ interface ImprovedSellItemFormProps {
   onSuccess?: () => void;
 }
 
-export function ImprovedSellItemForm({ onSuccess }: ImprovedSellItemFormProps) {
-  const { user } = useUser();
+export const ImprovedSellItemForm = ({ onSuccess }: ImprovedSellItemFormProps) => {
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageUrl, setImageUrl] = useState("");
+  const { user } = useUser();
+  const navigate = useNavigate();
 
   const form = useForm<SellItemFormData>({
     resolver: zodResolver(sellItemSchema),
@@ -46,68 +48,100 @@ export function ImprovedSellItemForm({ onSuccess }: ImprovedSellItemFormProps) {
       title: "",
       description: "",
       price: 0,
-      condition: "good",
-      size: "medium",
+      brand: "",
+      condition: "new",
+      material: "",
+      filling: "",
+      species: "",
       deliveryMethod: "shipping",
       deliveryCost: 0,
+      size: "",
+      color: "",
     },
   });
 
+  const handleImageUpload = (path: string) => {
+    const { data } = supabase.storage.from('uploads').getPublicUrl(path);
+    setImageUrl(data.publicUrl);
+    toast({
+      title: "Image uploaded successfully",
+      description: "Your image has been uploaded and is ready to use.",
+    });
+  };
+
+  const handleImageRemove = () => {
+    setImageUrl("");
+  };
+
   const onSubmit = async (data: SellItemFormData) => {
-    if (!user?.id) {
+    if (!user) {
       toast({
         variant: "destructive",
         title: "Authentication required",
-        description: "Please sign in to create listings.",
+        description: "Please sign in to sell items",
       });
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
       const postData = {
+        content: `${data.title}\n\n${data.description}`,
+        user_id: user.id,
         title: data.title,
         description: data.description,
-        content: data.description,
         image: imageUrl,
         price: data.price,
-        brand: data.brand,
+        brand: data.brand || null,
         condition: data.condition,
-        material: data.material,
-        filling: data.filling,
-        species: data.species,
-        size: data.size,
-        color: data.color,
+        material: data.material || null,
+        filling: data.filling || null,
+        species: data.species || null,
         delivery_method: data.deliveryMethod,
-        delivery_cost: data.deliveryCost,
+        delivery_cost: data.deliveryCost || null,
+        size: data.size || null,
+        color: data.color || null,
         for_sale: true,
-        user_id: user.id,
+        tags: [],
+        created_at: new Date().toISOString(),
       };
 
-      const { error } = await supabase
+      const { data: result, error } = await supabase
         .from('posts')
-        .insert([postData]);
+        .insert([postData])
+        .select();
 
       if (error) {
-        throw error;
+        console.error("Supabase error:", error);
+        toast({
+          variant: "destructive",
+          title: "Failed to list item",
+          description: error.message || "Please try again",
+        });
+        return;
       }
 
       toast({
-        title: "Success!",
-        description: "Your item has been listed for sale.",
+        title: "Item listed successfully!",
+        description: "Your plushie has been added to the marketplace.",
       });
       
       form.reset();
       setImageUrl("");
-      onSuccess?.();
       
-    } catch (error: any) {
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/marketplace');
+      }
+      
+    } catch (error) {
       console.error("Error submitting form:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to create listing. Please try again.",
+        description: "An unexpected error occurred",
       });
     } finally {
       setIsSubmitting(false);
@@ -115,7 +149,7 @@ export function ImprovedSellItemForm({ onSuccess }: ImprovedSellItemFormProps) {
   };
 
   return (
-    <Card className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700">
+    <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
       <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">
           Sell Your Plushie
@@ -123,177 +157,180 @@ export function ImprovedSellItemForm({ onSuccess }: ImprovedSellItemFormProps) {
       </CardHeader>
       
       <CardContent className="pt-6">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 dark:text-gray-300">Title *</FormLabel>
-                  <FormControl>
-                    <Input 
-                      placeholder="e.g., Jellycat Bashful Bunny - Medium" 
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Image Upload */}
+          <div className="space-y-2">
+            <Label>Plushie Image</Label>
+            <FileUploader
+              onSuccess={handleImageUpload}
+              accept="image/*"
+              maxSize={5}
+              currentImageUrl={imageUrl}
+              onRemove={handleImageRemove}
+              className="w-full"
             />
+          </div>
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 dark:text-gray-300">Description *</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe your plushie's condition, features, and any special details..."
-                      className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
-                      rows={4}
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300">Price ($) *</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        step="0.01"
-                        placeholder="25.00"
-                        className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
-                        {...field}
-                        onChange={e => field.onChange(parseFloat(e.target.value) || 0)}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+          {/* Basic Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title *</Label>
+              <Input
+                id="title"
+                placeholder="Enter plushie title"
+                {...form.register("title")}
+                className={form.formState.errors.title ? "border-red-500" : ""}
               />
+              {form.formState.errors.title && (
+                <p className="text-sm text-red-500">{form.formState.errors.title.message}</p>
+              )}
+            </div>
 
-              <FormField
-                control={form.control}
-                name="condition"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300">Condition *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
-                          <SelectValue placeholder="Select condition" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                        <SelectItem value="new">New</SelectItem>
-                        <SelectItem value="like-new">Like New</SelectItem>
-                        <SelectItem value="good">Good</SelectItem>
-                        <SelectItem value="fair">Fair</SelectItem>
-                        <SelectItem value="poor">Poor</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div className="space-y-2">
+              <Label htmlFor="price">Price ($) *</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00"
+                {...form.register("price", { valueAsNumber: true })}
+                className={form.formState.errors.price ? "border-red-500" : ""}
+              />
+              {form.formState.errors.price && (
+                <p className="text-sm text-red-500">{form.formState.errors.price.message}</p>
+              )}
+            </div>
+          </div>
+
+          {/* Description */}
+          <div className="space-y-2">
+            <Label htmlFor="description">Description *</Label>
+            <Textarea
+              id="description"
+              placeholder="Describe your plushie..."
+              rows={4}
+              {...form.register("description")}
+              className={form.formState.errors.description ? "border-red-500" : ""}
+            />
+            {form.formState.errors.description && (
+              <p className="text-sm text-red-500">{form.formState.errors.description.message}</p>
+            )}
+          </div>
+
+          {/* Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Condition *</Label>
+              <Select onValueChange={(value) => form.setValue("condition", value as any)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select condition" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="new">New</SelectItem>
+                  <SelectItem value="like new">Like New</SelectItem>
+                  <SelectItem value="used">Used</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="brand">Brand</Label>
+              <Input
+                id="brand"
+                placeholder="e.g., Jellycat, Squishmallow"
+                {...form.register("brand")}
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="brand"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300">Brand</FormLabel>
-                    <FormControl>
-                      <Input 
-                        placeholder="e.g., Jellycat, Squishmallow"
-                        className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100"
-                        {...field} 
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="size"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-gray-700 dark:text-gray-300">Size *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
-                          <SelectValue placeholder="Select size" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                        <SelectItem value="small">Small</SelectItem>
-                        <SelectItem value="medium">Medium</SelectItem>
-                        <SelectItem value="large">Large</SelectItem>
-                        <SelectItem value="extra-large">Extra Large</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
+            <div className="space-y-2">
+              <Label htmlFor="size">Size</Label>
+              <Input
+                id="size"
+                placeholder="e.g., Small, Medium, Large"
+                {...form.register("size")}
               />
             </div>
 
-            <FormField
-              control={form.control}
-              name="deliveryMethod"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-gray-700 dark:text-gray-300">Delivery Method *</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger className="bg-white dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-900 dark:text-gray-100">
-                        <SelectValue placeholder="Select delivery method" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent className="bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700">
-                      <SelectItem value="shipping">Shipping</SelectItem>
-                      <SelectItem value="pickup">Local Pickup</SelectItem>
-                      <SelectItem value="both">Both</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div className="space-y-2">
+              <Label htmlFor="color">Color</Label>
+              <Input
+                id="color"
+                placeholder="e.g., Pink, Blue, Brown"
+                {...form.register("color")}
+              />
+            </div>
 
-            <Button 
-              type="submit" 
-              className="w-full bg-softspot-500 hover:bg-softspot-600 text-white"
+            <div className="space-y-2">
+              <Label htmlFor="species">Species</Label>
+              <Input
+                id="species"
+                placeholder="e.g., Bear, Cat, Dog"
+                {...form.register("species")}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="material">Material</Label>
+              <Input
+                id="material"
+                placeholder="e.g., Cotton, Polyester"
+                {...form.register("material")}
+              />
+            </div>
+          </div>
+
+          {/* Delivery */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Delivery Method *</Label>
+              <Select onValueChange={(value) => form.setValue("deliveryMethod", value as any)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select delivery method" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="shipping">Shipping</SelectItem>
+                  <SelectItem value="local pickup">Local Pickup</SelectItem>
+                  <SelectItem value="both">Both</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="deliveryCost">Shipping Cost ($)</Label>
+              <Input
+                id="deliveryCost"
+                type="number"
+                step="0.01"
+                min="0"
+                placeholder="0.00 (free shipping)"
+                {...form.register("deliveryCost", { valueAsNumber: true })}
+              />
+              <p className="text-sm text-muted-foreground">Enter 0 for free shipping</p>
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end space-x-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => navigate('/marketplace')}
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating Listing...
-                </>
-              ) : (
-                "Create Listing"
-              )}
+              Cancel
             </Button>
-          </form>
-        </Form>
+
+            <Button 
+              type="submit"
+              disabled={isSubmitting}
+              className="bg-softspot-600 hover:bg-softspot-700 text-white"
+            >
+              {isSubmitting ? "Listing..." : "List for Sale"}
+            </Button>
+          </div>
+        </form>
       </CardContent>
     </Card>
   );
-}
+};
