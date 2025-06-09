@@ -13,10 +13,10 @@ import {
 import { Button } from "@/components/ui/button";
 import { Menu } from "lucide-react";
 import { MobileNav } from "./navigation/MobileNav";
-import { NotificationsButton } from "./navigation/NotificationsButton";
 import { UserMenu } from "./navigation/UserMenu";
 import { SearchBar } from "./navigation/SearchBar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
+import { NavLinks } from "./navigation/NavLinks";
 
 export const Navbar = () => {
   const isMobile = useIsMobile();
@@ -48,16 +48,17 @@ export const Navbar = () => {
             </SheetContent>
           </Sheet>
         ) : (
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-6">
+            {/* Desktop Navigation Links */}
+            <NavLinks />
+            
+            {/* Search Bar */}
             <SearchBar />
             
             {/* Theme Toggle */}
             <ThemeToggle />
             
-            {/* Notification Icon */}
-            <NotificationsButton />
-            
-            {/* User Menu */}
+            {/* User Menu (includes notifications) */}
             <UserMenu />
           </div>
         )}
