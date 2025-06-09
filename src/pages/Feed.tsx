@@ -1,5 +1,4 @@
-
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedGrid } from "@/components/feed/FeedGrid";
@@ -15,6 +14,7 @@ import { useFeedFilters } from "@/hooks/useFeedFilters";
 import { useFeedPostCreation } from "@/hooks/useFeedPostCreation";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { SafeErrorBoundary } from "@/components/ui/safe-error-boundary";
+import { supabase } from "@/integrations/supabase/client";
 
 const Feed = () => {
   const [layout, setLayout] = useState("grid");
@@ -72,6 +72,37 @@ const Feed = () => {
       </EnhancedErrorBoundary>
     );
   }
+
+  // Add realtime subscription for new posts
+  useEffect(() => {
+    if (!posts.length) return;
+
+    const postsSubscription = supabase
+      .channel('posts-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'posts'
+        },
+        (payload) => {
+          console.log('New post received:', payload);
+          const newPost = payload.new as ExtendedPost;
+          setPosts(prev => [newPost, ...prev]);
+          
+          toast({
+            title: "New post available",
+            description: "A new post has been added to the feed.",
+          });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(postsSubscription);
+    };
+  }, [posts.length, setPosts]);
 
   return (
     <EnhancedErrorBoundary>

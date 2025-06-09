@@ -1,20 +1,24 @@
-
+import { useIsMobile } from "@/hooks/use-mobile";
 import { Navbar } from "@/components/Navbar";
-import { ReactNode } from "react";
+import { MobileNav } from "@/components/navigation/MobileNav";
+import Footer from "@/components/Footer";
 
 interface MainLayoutProps {
-  children: ReactNode;
-  noPadding?: boolean;
-  className?: string;
+  children: React.ReactNode;
 }
 
-const MainLayout = ({ children, noPadding = false, className = "" }: MainLayoutProps) => {
+const MainLayout = ({ children }: MainLayoutProps) => {
+  const isMobile = useIsMobile();
+
   return (
-    <div className={`min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200 ${className}`}>
-      <Navbar />
-      <main className={`bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-200 ${noPadding ? '' : 'px-4 py-6'}`}>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+      {isMobile ? <MobileNav /> : <Navbar />}
+      
+      <main className="bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
         {children}
       </main>
+      
+      <Footer />
     </div>
   );
 };

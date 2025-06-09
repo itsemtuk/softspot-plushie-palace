@@ -1,6 +1,4 @@
-
 import MainLayout from "@/components/layout/MainLayout";
-import { SellItemFormWrapper } from "@/components/marketplace/sell/SellItemFormWrapper";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Spinner } from "@/components/ui/spinner";
@@ -9,6 +7,7 @@ import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WifiOff, AlertTriangle } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { ImprovedSellItemForm } from "@/components/marketplace/sell/ImprovedSellItemForm";
 
 const SellItemPage = () => {
   const navigate = useNavigate();
@@ -66,6 +65,10 @@ const SellItemPage = () => {
 
     initializePage();
   }, [isClerkLoaded, clerkUser, isUserSyncLoading, userSyncError, navigate, supabaseUserId]);
+
+  const handleSellSuccess = () => {
+    navigate('/');
+  };
 
   // Loading state
   if (!isClerkLoaded || isUserSyncLoading || !isReady) {
@@ -129,7 +132,7 @@ const SellItemPage = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-2xl mx-auto py-6">
+      <div className="max-w-2xl mx-auto py-6 px-4">
         {/* Offline mode indicator */}
         {!navigator.onLine && (
           <Alert className="mb-4 border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800">
@@ -140,7 +143,7 @@ const SellItemPage = () => {
           </Alert>
         )}
         
-        <SellItemFormWrapper supabaseUserId={supabaseUserId} />
+        <ImprovedSellItemForm onSuccess={handleSellSuccess} />
       </div>
     </MainLayout>
   );
