@@ -15,6 +15,9 @@ import { useFeedFilters } from "@/hooks/useFeedFilters";
 import { useFeedPostCreation } from "@/hooks/useFeedPostCreation";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { SafeErrorBoundary } from "@/components/ui/safe-error-boundary";
+import { usePagination } from "@/hooks/usePagination";
+import { Pagination } from "@/components/ui/pagination";
+import { UserSearchAndFollow } from "@/components/user/UserSearchAndFollow";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 
@@ -27,8 +30,11 @@ const Feed = () => {
   const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
   const syncManager = useSyncManager(posts);
 
-  // Memoize heavy computations to prevent freezing with useCallback to prevent unnecessary re-renders
-  const memoizedPosts = useMemo(() => processedPosts, [processedPosts]);
+  // Add pagination
+  const { currentPage, totalPages, paginatedData, goToPage, hasNextPage, hasPrevPage } = usePagination({
+    data: processedPosts,
+    itemsPerPage: 20
+  });
 
   const handlePostClick = useCallback((post: ExtendedPost) => {
     try {
@@ -40,11 +46,13 @@ const Feed = () => {
 
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
-  }, [setSearchQuery]);
+    goToPage(1); // Reset to first page when searching
+  }, [setSearchQuery, goToPage]);
 
   const handleSortOrderChange = useCallback((value: string) => {
     setSortOrder(value);
-  }, [setSortOrder]);
+    goToPage(1); // Reset to first page when sorting
+  }, [setSortOrder, goToPage]);
 
   const handleLayoutChange = useCallback(() => {
     setLayout(prev => prev === "grid" ? "list" : "grid");
@@ -110,30 +118,53 @@ const Feed = () => {
     <EnhancedErrorBoundary>
       <MainLayout>
         <div className="container mx-auto py-6 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-          <SafeErrorBoundary resetKeys={[searchQuery, sortOrder]}>
-            <FeedSearchAndSort
-              searchQuery={searchQuery}
-              onSearchChange={handleSearchChange}
-              sortOrder={sortOrder}
-              onSortChange={handleSortOrderChange}
-              layout={layout}
-              onLayoutChange={handleLayoutChange}
-            />
-          </SafeErrorBoundary>
-
-          {isLoading ? (
-            <div className="flex justify-center items-center h-40">
-              <Spinner size="lg" />
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            {/* Sidebar with user search */}
+            <div className="lg:col-span-1">
+              <div className="sticky top-20">
+                <UserSearchAndFollow />
+              </div>
             </div>
-          ) : (
-            <SafeErrorBoundary resetKeys={[memoizedPosts.length.toString(), layout]}>
-              <FeedGrid 
-                posts={memoizedPosts} 
-                onPostClick={handlePostClick} 
-                layout={layout} 
-              />
-            </SafeErrorBoundary>
-          )}
+
+            {/* Main feed */}
+            <div className="lg:col-span-3">
+              <SafeErrorBoundary resetKeys={[searchQuery, sortOrder]}>
+                <FeedSearchAndSort
+                  searchQuery={searchQuery}
+                  onSearchChange={handleSearchChange}
+                  sortOrder={sortOrder}
+                  onSortChange={handleSortOrderChange}
+                  layout={layout}
+                  onLayoutChange={handleLayoutChange}
+                />
+              </SafeErrorBoundary>
+
+              {isLoading ? (
+                <div className="flex justify-center items-center h-40">
+                  <Spinner size="lg" />
+                </div>
+              ) : (
+                <>
+                  <SafeErrorBoundary resetKeys={[paginatedData.length.toString(), layout]}>
+                    <FeedGrid 
+                      posts={paginatedData} 
+                      onPostClick={handlePostClick} 
+                      layout={layout} 
+                    />
+                  </SafeErrorBoundary>
+
+                  {/* Pagination */}
+                  <div className="mt-8">
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={goToPage}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
 
           <SafeErrorBoundary resetKeys={[isPostCreationOpen.toString()]}>
             <PostCreationFlow
