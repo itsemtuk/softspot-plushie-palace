@@ -26,14 +26,14 @@ import NotFound from "@/pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Get Clerk publishable key from environment
-const clerkPubKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+// Use the Clerk publishable key directly
+const clerkPubKey = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 function App() {
   return (
     <ThemeProvider defaultTheme="light" storageKey="softspot-theme">
       <QueryClientProvider client={queryClient}>
-        <ClerkProvider publishableKey={clerkPubKey || ''}>
+        <ClerkProvider publishableKey={clerkPubKey}>
           <NotificationsProvider>
             <Router>
               <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
