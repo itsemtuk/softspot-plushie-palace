@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Card, CardProps } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 
-interface EnhancedCardProps extends CardProps {
+interface EnhancedCardProps extends React.HTMLAttributes<HTMLDivElement> {
   children: React.ReactNode;
 }
 

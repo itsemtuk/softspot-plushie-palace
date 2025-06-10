@@ -220,6 +220,50 @@ export type Database = {
         }
         Relationships: []
       }
+      trade_requests: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          message: string
+          requester_id: string
+          seller_id: string
+          status: string
+          trade_offer: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          message: string
+          requester_id: string
+          seller_id: string
+          status?: string
+          trade_offer: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          message?: string
+          requester_id?: string
+          seller_id?: string
+          status?: string
+          trade_offer?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null
