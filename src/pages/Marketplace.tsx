@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
@@ -36,7 +37,7 @@ const samplePlushies = [
 ];
 
 const Marketplace = () => {
-  const [viewMode, setViewMode<"grid" | "list">] = useState("grid");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [sortBy, setSortBy] = useState("newest");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 200]);
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
