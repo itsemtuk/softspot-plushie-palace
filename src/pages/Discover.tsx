@@ -1,210 +1,69 @@
 
-import { useState, useEffect, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
-import { Search, Filter, TrendingUp, Users, MapPin, Tag } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import MainLayout from "@/components/layout/MainLayout";
-import { ExtendedPost } from "@/types/core";
-import { getPosts } from "@/utils/postStorage";
-import { getAllPosts } from "@/utils/posts/postFetch";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { useNavigate } from "react-router-dom";
+import { SearchSystem } from "@/components/search/SearchSystem";
+import { FeaturedPlushies } from "@/components/FeaturedPlushies";
+import { TrendingCarousel } from "@/components/marketplace/TrendingCarousel";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Sparkles, TrendingUp, Star } from "lucide-react";
 
 const Discover = () => {
-  const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [posts, setPosts] = useState<ExtendedPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Get search query from URL params
-  useEffect(() => {
-    const query = searchParams.get('q');
-    if (query) {
-      setSearchTerm(query);
-    }
-  }, [searchParams]);
-
-  // Optimized data fetching with memoization
-  const fetchPosts = useMemo(() => async () => {
-    setIsLoading(true);
-    try {
-      // Use Promise.allSettled to avoid blocking on failed requests
-      const [allPostsResult, userPostsResult] = await Promise.allSettled([
-        getAllPosts(),
-        getPosts()
-      ]);
-      
-      const allPosts = allPostsResult.status === 'fulfilled' ? allPostsResult.value : [];
-      const userPosts = userPostsResult.status === 'fulfilled' ? userPostsResult.value : [];
-      
-      // Combine and deduplicate posts efficiently
-      const postMap = new Map();
-      [...allPosts, ...userPosts].forEach(post => {
-        if (post.id && !postMap.has(post.id)) {
-          postMap.set(post.id, post);
-        }
-      });
-      
-      setPosts(Array.from(postMap.values()));
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-      setPosts([]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
-
-  const handlePostClick = (postId: string) => {
-    navigate(`/post/${postId}`);
-  };
-
-  // Optimized filtering with useMemo
-  const filteredPosts = useMemo(() => {
-    if (!searchTerm.trim()) return posts;
-    
-    const searchLower = searchTerm.toLowerCase();
-    return posts.filter((post) => 
-      post.title?.toLowerCase().includes(searchLower) ||
-      post.description?.toLowerCase().includes(searchLower) ||
-      post.tags?.some(tag => tag.toLowerCase().includes(searchLower))
-    );
-  }, [posts, searchTerm]);
-
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="container mx-auto py-6">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500"></div>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-
   return (
     <MainLayout>
-      <div className="container mx-auto py-6">
-        <Card className="mb-4 rounded-2xl shadow-sm">
-          <CardHeader>
-            <CardTitle>Discover</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    type="search"
-                    placeholder="Search for posts..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 rounded-full"
-                  />
-                </div>
-              </div>
-              <div>
-                <Button className="w-full rounded-full">
-                  <Filter className="mr-2 h-4 w-4" />
-                  Filter
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="container mx-auto py-8 px-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        {/* Header */}
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center justify-center p-3 bg-softspot-100 dark:bg-softspot-900/20 rounded-full mb-4">
+            <Sparkles className="h-6 w-6 text-softspot-500" />
+          </div>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+            Discover Amazing Plushies
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+            Find your next cuddly companion from our community of plushie lovers
+          </p>
+        </div>
+        
+        {/* Search System */}
+        <div className="mb-12">
+          <SearchSystem />
+        </div>
 
-        <Tabs defaultValue="trending" className="w-full">
-          <TabsList className="bg-white shadow-sm mb-6 rounded-full w-full flex justify-center p-1">
-            <TabsTrigger value="trending" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
-              <TrendingUp className="h-4 w-4 mr-2" />
-              <span>Trending</span>
-            </TabsTrigger>
-            <TabsTrigger value="new" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
-              <Users className="h-4 w-4 mr-2" />
-              <span>New</span>
-            </TabsTrigger>
-            <TabsTrigger value="nearby" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
-              <MapPin className="h-4 w-4 mr-2" />
-              <span>Nearby</span>
-            </TabsTrigger>
-            <TabsTrigger value="tags" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
-              <Tag className="h-4 w-4 mr-2" />
-              <span>Tags</span>
-            </TabsTrigger>
-          </TabsList>
-          <TabsContent value="trending">
-            {filteredPosts.length === 0 ? (
-              <Card className="text-center py-12 rounded-2xl">
-                <CardContent>
-                  <div className="text-gray-500 mb-4">
-                    <Search className="h-12 w-12 mx-auto mb-4" />
-                    <h3 className="text-lg font-medium">No posts found</h3>
-                    <p>Try a different search term or explore without filters</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {filteredPosts.map((post) => (
-                  <Card
-                    key={post.id}
-                    className="overflow-hidden cursor-pointer hover:shadow-lg transition-all duration-200 group rounded-2xl"
-                    onClick={() => handlePostClick(post.id)}
-                  >
-                    <AspectRatio ratio={1} className="bg-gray-100">
-                      <img
-                        src={post.image || '/placeholder.svg'}
-                        alt={post.title || ''}
-                        className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
-                      />
-                    </AspectRatio>
-
-                    <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center opacity-0 hover:opacity-100">
-                      <div className="text-white font-medium p-2 text-center">
-                        <h3 className="text-lg line-clamp-2">{post.title || ''}</h3>
-                        <div className="flex items-center justify-center gap-4 mt-2">
-                          {post.tags && post.tags.length > 0 && (
-                            <div className="flex items-center">
-                              <Tag className="h-4 w-4 mr-1" />
-                              <span>{post.tags.length}</span>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
+          <Link to="/marketplace" className="group">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 group-hover:border-softspot-300">
+              <div className="flex items-center mb-3">
+                <TrendingUp className="h-5 w-5 text-softspot-500 mr-2" />
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">Trending Now</h3>
               </div>
-            )}
-          </TabsContent>
-          <TabsContent value="new">
-            <div className="text-center py-12 text-gray-500">
-              <h3 className="text-lg font-medium">New Posts</h3>
-              <p>Latest posts from the community</p>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Discover what's popular in the marketplace</p>
             </div>
-          </TabsContent>
-          <TabsContent value="nearby">
-            <div className="text-center py-12 text-gray-500">
-              <h3 className="text-lg font-medium">Nearby Posts</h3>
-              <p>Posts from users in your area</p>
+          </Link>
+          
+          <Link to="/marketplace?featured=new" className="group">
+            <div className="bg-white dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-200 group-hover:border-softspot-300">
+              <div className="flex items-center mb-3">
+                <Star className="h-5 w-5 text-softspot-500 mr-2" />
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">New Arrivals</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">Check out the latest plushies added</p>
             </div>
-          </TabsContent>
-          <TabsContent value="tags">
-            <div className="text-center py-12 text-gray-500">
-              <h3 className="text-lg font-medium">Browse by Tags</h3>
-              <p>Explore posts by popular tags</p>
+          </Link>
+          
+          <Link to="/marketplace/sell" className="group">
+            <div className="bg-softspot-50 dark:bg-softspot-900/20 rounded-lg p-6 border border-softspot-200 dark:border-softspot-700 hover:shadow-lg transition-all duration-200 group-hover:border-softspot-300">
+              <div className="flex items-center mb-3">
+                <Sparkles className="h-5 w-5 text-softspot-500 mr-2" />
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100">Sell Yours</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-400 text-sm">List your plushies for sale or trade</p>
             </div>
-          </TabsContent>
-        </Tabs>
+          </Link>
+        </div>
+
+        {/* Featured Content */}
+        <FeaturedPlushies />
       </div>
     </MainLayout>
   );

@@ -13,6 +13,7 @@ import Profile from "@/pages/Profile";
 import UserProfile from "@/pages/UserProfile";
 import Marketplace from "@/pages/Marketplace";
 import SearchPage from "@/pages/SearchPage";
+import Discover from "@/pages/Discover";
 import SellItemPage from "@/pages/SellItemPage";
 import SignIn from "@/pages/SignIn";
 import SignUp from "@/pages/SignUp";
@@ -44,6 +45,7 @@ function App() {
                   <Route path="/profile/:userId" element={<UserProfile />} />
                   <Route path="/marketplace" element={<Marketplace />} />
                   <Route path="/search" element={<SearchPage />} />
+                  <Route path="/discover" element={<Discover />} />
                   <Route path="/marketplace/sell" element={<SellItemPage />} />
                   <Route path="/sign-in" element={<SignIn />} />
                   <Route path="/sign-up" element={<SignUp />} />

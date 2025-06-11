@@ -3,6 +3,7 @@ import { FixedSizeGrid as Grid } from 'react-window';
 import { ExtendedPost } from "@/types/core";
 import { PostCard } from "@/components/post/PostCard";
 import { useMemo } from "react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface VirtualizedFeedGridProps {
   posts: ExtendedPost[];
@@ -15,18 +16,24 @@ const ITEM_WIDTH = 300;
 const GAP = 16;
 
 export function VirtualizedFeedGrid({ posts, onPostClick, layout = "grid" }: VirtualizedFeedGridProps) {
+  const isMobile = useIsMobile();
+  
   const { containerWidth, containerHeight, columnCount } = useMemo(() => {
     const screenWidth = window.innerWidth;
-    const maxWidth = Math.min(screenWidth - 32, 1200); // 32px for padding, max 1200px
-    const columns = Math.floor((maxWidth + GAP) / (ITEM_WIDTH + GAP));
-    const actualColumns = Math.max(1, Math.min(columns, 4)); // Between 1-4 columns
+    const maxWidth = Math.min(screenWidth - 32, 1200);
+    
+    let columns = 1;
+    if (!isMobile) {
+      columns = Math.floor((maxWidth + GAP) / (ITEM_WIDTH + GAP));
+      columns = Math.max(1, Math.min(columns, 4));
+    }
     
     return {
-      containerWidth: actualColumns * (ITEM_WIDTH + GAP) - GAP,
-      containerHeight: Math.min(800, window.innerHeight - 200), // Max height with some padding
-      columnCount: actualColumns
+      containerWidth: columns * (ITEM_WIDTH + GAP) - GAP,
+      containerHeight: Math.min(800, window.innerHeight - 200),
+      columnCount: columns
     };
-  }, []);
+  }, [isMobile]);
 
   const rowCount = Math.ceil(posts.length / columnCount);
 
@@ -46,7 +53,9 @@ export function VirtualizedFeedGrid({ posts, onPostClick, layout = "grid" }: Vir
           height: style.height - GAP,
         }}
       >
-        <PostCard post={post} onPostClick={onPostClick} />
+        <div className="cursor-pointer" onClick={() => onPostClick(post)}>
+          <PostCard post={post} />
+        </div>
       </div>
     );
   };
@@ -59,12 +68,14 @@ export function VirtualizedFeedGrid({ posts, onPostClick, layout = "grid" }: Vir
     );
   }
 
-  // For small lists, don't use virtualization
-  if (posts.length < 20) {
+  // For small lists or mobile, don't use virtualization
+  if (posts.length < 20 || isMobile) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
         {posts.map((post) => (
-          <PostCard key={post.id} post={post} onPostClick={onPostClick} />
+          <div key={post.id} className="cursor-pointer" onClick={() => onPostClick(post)}>
+            <PostCard post={post} />
+          </div>
         ))}
       </div>
     );

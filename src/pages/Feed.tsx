@@ -2,7 +2,7 @@
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { Spinner } from "@/components/ui/spinner";
 import MainLayout from "@/components/layout/MainLayout";
-import { FeedGrid } from "@/components/feed/FeedGrid";
+import { VirtualizedFeedGrid } from "@/components/feed/VirtualizedFeedGrid";
 import { FeedSearchAndSort } from "@/components/feed/FeedSearchAndSort";
 import { ExtendedPost } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
@@ -30,10 +30,10 @@ const Feed = () => {
   const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
   const syncManager = useSyncManager(posts);
 
-  // Add pagination
+  // Add pagination for performance
   const { currentPage, totalPages, paginatedData, goToPage, hasNextPage, hasPrevPage } = usePagination({
     data: processedPosts,
-    itemsPerPage: 20
+    itemsPerPage: 50 // Increased for better UX with virtualization
   });
 
   const handlePostClick = useCallback((post: ExtendedPost) => {
@@ -146,7 +146,7 @@ const Feed = () => {
               ) : (
                 <>
                   <SafeErrorBoundary resetKeys={[paginatedData.length.toString(), layout]}>
-                    <FeedGrid 
+                    <VirtualizedFeedGrid 
                       posts={paginatedData} 
                       onPostClick={handlePostClick} 
                       layout={layout} 
@@ -154,13 +154,15 @@ const Feed = () => {
                   </SafeErrorBoundary>
 
                   {/* Pagination */}
-                  <div className="mt-8">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      onPageChange={goToPage}
-                    />
-                  </div>
+                  {totalPages > 1 && (
+                    <div className="mt-8">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={goToPage}
+                      />
+                    </div>
+                  )}
                 </>
               )}
             </div>
