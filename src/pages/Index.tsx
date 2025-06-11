@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Footer from "@/components/Footer";
+import { QuickActionsFAB } from "@/components/navigation/mobile/QuickActionsFAB";
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -31,6 +32,9 @@ const Index = () => {
           </div>
         )}
       </main>
+      
+      {/* Quick Actions FAB for mobile users */}
+      {isMobile && isSignedIn && <QuickActionsFAB />}
       
       <Footer />
     </div>

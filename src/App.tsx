@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { NotificationsProvider } from "@/contexts/NotificationsContext";
 import { ClerkProvider } from '@clerk/clerk-react';
+import { AppErrorBoundary } from "@/components/ui/app-error-boundary";
 
 // Import all pages
 import Index from "@/pages/Index";
@@ -32,38 +33,40 @@ const clerkPubKey = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ
 
 function App() {
   return (
-    <ThemeProvider defaultTheme="light" storageKey="softspot-theme">
-      <QueryClientProvider client={queryClient}>
-        <ClerkProvider publishableKey={clerkPubKey}>
-          <NotificationsProvider>
-            <Router>
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-                <Routes>
-                  <Route path="/" element={<Index />} />
-                  <Route path="/feed" element={<Feed />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/profile/:userId" element={<UserProfile />} />
-                  <Route path="/marketplace" element={<Marketplace />} />
-                  <Route path="/search" element={<SearchPage />} />
-                  <Route path="/discover" element={<Discover />} />
-                  <Route path="/marketplace/sell" element={<SellItemPage />} />
-                  <Route path="/sign-in" element={<SignIn />} />
-                  <Route path="/sign-up" element={<SignUp />} />
-                  <Route path="/settings" element={<Settings />} />
-                  <Route path="/edit-profile" element={<EditProfile />} />
-                  <Route path="/onboarding" element={<Onboarding />} />
-                  <Route path="/messages" element={<Messages />} />
-                  <Route path="/notifications" element={<NotificationsPage />} />
-                  <Route path="/wishlist" element={<WishlistPage />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </div>
-              <Toaster />
-            </Router>
-          </NotificationsProvider>
-        </ClerkProvider>
-      </QueryClientProvider>
-    </ThemeProvider>
+    <AppErrorBoundary>
+      <ThemeProvider defaultTheme="light" storageKey="softspot-theme">
+        <QueryClientProvider client={queryClient}>
+          <ClerkProvider publishableKey={clerkPubKey}>
+            <NotificationsProvider>
+              <Router>
+                <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+                  <Routes>
+                    <Route path="/" element={<Index />} />
+                    <Route path="/feed" element={<Feed />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route path="/profile/:userId" element={<UserProfile />} />
+                    <Route path="/marketplace" element={<Marketplace />} />
+                    <Route path="/search" element={<SearchPage />} />
+                    <Route path="/discover" element={<Discover />} />
+                    <Route path="/marketplace/sell" element={<SellItemPage />} />
+                    <Route path="/sign-in" element={<SignIn />} />
+                    <Route path="/sign-up" element={<SignUp />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/edit-profile" element={<EditProfile />} />
+                    <Route path="/onboarding" element={<Onboarding />} />
+                    <Route path="/messages" element={<Messages />} />
+                    <Route path="/notifications" element={<NotificationsPage />} />
+                    <Route path="/wishlist" element={<WishlistPage />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </div>
+                <Toaster />
+              </Router>
+            </NotificationsProvider>
+          </ClerkProvider>
+        </QueryClientProvider>
+      </ThemeProvider>
+    </AppErrorBoundary>
   );
 }
 
