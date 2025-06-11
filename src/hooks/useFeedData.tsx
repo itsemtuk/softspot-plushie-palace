@@ -1,58 +1,41 @@
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ExtendedPost } from "@/types/core";
-import { toast } from "@/components/ui/use-toast";
-import { getAllPosts } from "@/utils/posts/postFetch";
-import { getPosts } from "@/utils/postStorage";
+import { fetchPosts } from "@/utils/posts/postFetch";
 
-export const useFeedData = () => {
+export function useFeedData() {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(false);
 
-  const fetchPosts = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
+  const loadPosts = useCallback(async () => {
     try {
-      const [allPostsResult, userPostsResult] = await Promise.allSettled([
-        getAllPosts(),
-        getPosts()
-      ]);
-      
-      const allPosts = allPostsResult.status === 'fulfilled' ? allPostsResult.value : [];
-      const userPosts = userPostsResult.status === 'fulfilled' ? userPostsResult.value : [];
-      
-      const postMap = new Map();
-      [...allPosts, ...userPosts].forEach(post => {
-        if (post.id && !postMap.has(post.id)) {
-          postMap.set(post.id, post);
-        }
-      });
-      
-      setPosts(Array.from(postMap.values()));
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-      const errorMessage = "Failed to load posts. Please try again.";
-      setError(errorMessage);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: errorMessage,
-      });
+      setIsLoading(true);
+      setError(false);
+      const fetchedPosts = await fetchPosts();
+      setPosts(fetchedPosts || []);
+    } catch (err) {
+      console.error("Error loading posts:", err);
+      setError(true);
+      setPosts([]);
     } finally {
       setIsLoading(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchPosts();
-  }, [fetchPosts]);
+    loadPosts();
+  }, [loadPosts]);
+
+  const updatePosts = useCallback((updatedPosts: ExtendedPost[]) => {
+    setPosts(updatedPosts);
+  }, []);
 
   return {
     posts,
-    setPosts,
+    setPosts: updatePosts,
     isLoading,
     error,
-    fetchPosts
+    refetch: loadPosts
   };
-};
+}

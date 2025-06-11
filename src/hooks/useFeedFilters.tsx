@@ -1,42 +1,58 @@
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { ExtendedPost } from "@/types/core";
 
-export const useFeedFilters = (posts: ExtendedPost[]) => {
+export function useFeedFilters(posts: ExtendedPost[]) {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOrder, setSortOrder] = useState("newest");
 
   const processedPosts = useMemo(() => {
-    let filtered = posts;
+    if (!posts || posts.length === 0) return [];
     
+    let filtered = [...posts];
+    
+    // Apply search filter
     if (searchQuery.trim()) {
-      const searchLower = searchQuery.toLowerCase();
-      filtered = posts.filter((post) =>
-        post.title?.toLowerCase().includes(searchLower) ||
-        post.description?.toLowerCase().includes(searchLower) ||
-        post.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(post => 
+        post.title?.toLowerCase().includes(query) ||
+        post.content?.toLowerCase().includes(query) ||
+        post.tags?.some(tag => tag.toLowerCase().includes(query))
       );
     }
-
-    const sorted = [...filtered].sort((a, b) => {
-      if (sortOrder === "newest") {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      } else if (sortOrder === "oldest") {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
-      } else if (sortOrder === "popular") {
-        return (b.likes || 0) - (a.likes || 0);
+    
+    // Apply sorting
+    filtered.sort((a, b) => {
+      switch (sortOrder) {
+        case "newest":
+          return new Date(b.timestamp || b.created_at || 0).getTime() - 
+                 new Date(a.timestamp || a.created_at || 0).getTime();
+        case "oldest":
+          return new Date(a.timestamp || a.created_at || 0).getTime() - 
+                 new Date(b.timestamp || b.created_at || 0).getTime();
+        case "popular":
+          return (b.likes || 0) - (a.likes || 0);
+        default:
+          return 0;
       }
-      return 0;
     });
-
-    return sorted;
+    
+    return filtered;
   }, [posts, searchQuery, sortOrder]);
+
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
+  const handleSortChange = useCallback((sort: string) => {
+    setSortOrder(sort);
+  }, []);
 
   return {
     searchQuery,
-    setSearchQuery,
+    setSearchQuery: handleSearchChange,
     sortOrder,
-    setSortOrder,
+    setSortOrder: handleSortChange,
     processedPosts
   };
-};
+}

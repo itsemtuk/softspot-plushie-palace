@@ -2,7 +2,7 @@
 import { FixedSizeGrid as Grid } from 'react-window';
 import { ExtendedPost } from "@/types/core";
 import { PostCard } from "@/components/post/PostCard";
-import { useMemo } from "react";
+import { useMemo, useCallback } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface VirtualizedFeedGridProps {
@@ -18,27 +18,26 @@ const GAP = 16;
 export function VirtualizedFeedGrid({ posts, onPostClick, layout = "grid" }: VirtualizedFeedGridProps) {
   const isMobile = useIsMobile();
   
-  const { containerWidth, containerHeight, columnCount } = useMemo(() => {
-    const screenWidth = window.innerWidth;
+  const gridConfig = useMemo(() => {
+    const screenWidth = typeof window !== 'undefined' ? window.innerWidth : 1200;
     const maxWidth = Math.min(screenWidth - 32, 1200);
     
     let columns = 1;
-    if (!isMobile) {
+    if (!isMobile && layout === "grid") {
       columns = Math.floor((maxWidth + GAP) / (ITEM_WIDTH + GAP));
       columns = Math.max(1, Math.min(columns, 4));
     }
     
     return {
       containerWidth: columns * (ITEM_WIDTH + GAP) - GAP,
-      containerHeight: Math.min(800, window.innerHeight - 200),
-      columnCount: columns
+      containerHeight: Math.min(600, typeof window !== 'undefined' ? window.innerHeight - 200 : 600),
+      columnCount: columns,
+      rowCount: Math.ceil(posts.length / columns)
     };
-  }, [isMobile]);
+  }, [isMobile, layout, posts.length]);
 
-  const rowCount = Math.ceil(posts.length / columnCount);
-
-  const Cell = ({ columnIndex, rowIndex, style }: any) => {
-    const postIndex = rowIndex * columnCount + columnIndex;
+  const Cell = useCallback(({ columnIndex, rowIndex, style }: any) => {
+    const postIndex = rowIndex * gridConfig.columnCount + columnIndex;
     const post = posts[postIndex];
 
     if (!post) return null;
@@ -58,9 +57,9 @@ export function VirtualizedFeedGrid({ posts, onPostClick, layout = "grid" }: Vir
         </div>
       </div>
     );
-  };
+  }, [posts, gridConfig.columnCount, onPostClick]);
 
-  if (posts.length === 0) {
+  if (!posts || posts.length === 0) {
     return (
       <div className="text-center py-12">
         <p className="text-gray-500 dark:text-gray-400">No posts available.</p>
@@ -68,10 +67,10 @@ export function VirtualizedFeedGrid({ posts, onPostClick, layout = "grid" }: Vir
     );
   }
 
-  // For small lists or mobile, don't use virtualization
-  if (posts.length < 20 || isMobile) {
+  // For small lists or mobile, use simple grid
+  if (posts.length < 10 || isMobile) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+      <div className={`grid gap-4 ${layout === "grid" ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"}`}>
         {posts.map((post) => (
           <div key={post.id} className="cursor-pointer" onClick={() => onPostClick(post)}>
             <PostCard post={post} />
@@ -84,12 +83,12 @@ export function VirtualizedFeedGrid({ posts, onPostClick, layout = "grid" }: Vir
   return (
     <div className="flex justify-center">
       <Grid
-        columnCount={columnCount}
+        columnCount={gridConfig.columnCount}
         columnWidth={ITEM_WIDTH + GAP}
-        height={containerHeight}
-        rowCount={rowCount}
+        height={gridConfig.containerHeight}
+        rowCount={gridConfig.rowCount}
         rowHeight={ITEM_HEIGHT + GAP}
-        width={containerWidth}
+        width={gridConfig.containerWidth}
         className="scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600"
       >
         {Cell}

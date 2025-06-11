@@ -7,7 +7,6 @@ import { FeedSearchAndSort } from "@/components/feed/FeedSearchAndSort";
 import { ExtendedPost } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { useCreatePost } from "@/hooks/use-create-post";
-import { useSyncManager } from "@/hooks/useSyncManager";
 import { PostDialog } from "@/components/PostDialog";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { useFeedData } from "@/hooks/useFeedData";
@@ -18,8 +17,6 @@ import { SafeErrorBoundary } from "@/components/ui/safe-error-boundary";
 import { usePagination } from "@/hooks/usePagination";
 import { Pagination } from "@/components/ui/pagination";
 import { UserSearchAndFollow } from "@/components/user/UserSearchAndFollow";
-import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
 
 const Feed = () => {
   const [layout, setLayout] = useState("grid");
@@ -28,12 +25,11 @@ const Feed = () => {
   const { handlePostCreated } = useFeedPostCreation(setPosts);
   const { dialogState, openPostDialog, closePostDialog } = usePostDialog();
   const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
-  const syncManager = useSyncManager(posts);
 
   // Add pagination for performance
-  const { currentPage, totalPages, paginatedData, goToPage, hasNextPage, hasPrevPage } = usePagination({
+  const { currentPage, totalPages, paginatedData, goToPage } = usePagination({
     data: processedPosts,
-    itemsPerPage: 50 // Increased for better UX with virtualization
+    itemsPerPage: 20 // Reduced for better performance
   });
 
   const handlePostClick = useCallback((post: ExtendedPost) => {
@@ -82,37 +78,6 @@ const Feed = () => {
       </EnhancedErrorBoundary>
     );
   }
-
-  // Add realtime subscription for new posts
-  useEffect(() => {
-    if (!posts.length) return;
-
-    const postsSubscription = supabase
-      .channel('posts-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'posts'
-        },
-        (payload) => {
-          console.log('New post received:', payload);
-          const newPost = payload.new as ExtendedPost;
-          setPosts(prev => [newPost, ...prev]);
-          
-          toast({
-            title: "New post available",
-            description: "A new post has been added to the feed.",
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(postsSubscription);
-    };
-  }, [posts.length, setPosts]);
 
   return (
     <EnhancedErrorBoundary>
