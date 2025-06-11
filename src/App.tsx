@@ -49,6 +49,7 @@ function App() {
                     <Route path="/search" element={<SearchPage />} />
                     <Route path="/discover" element={<Discover />} />
                     <Route path="/marketplace/sell" element={<SellItemPage />} />
+                    <Route path="/sell" element={<SellItemPage />} />
                     <Route path="/sign-in" element={<SignIn />} />
                     <Route path="/sign-up" element={<SignUp />} />
                     <Route path="/settings" element={<Settings />} />
