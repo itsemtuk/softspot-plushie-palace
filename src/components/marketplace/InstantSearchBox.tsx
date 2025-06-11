@@ -14,17 +14,21 @@ interface SearchResult {
 }
 
 interface InstantSearchBoxProps {
+  value?: string;
+  onChange?: (value: string) => void;
   onSearchSelect?: (result: SearchResult) => void;
   placeholder?: string;
   className?: string;
 }
 
 export function InstantSearchBox({ 
+  value = "",
+  onChange,
   onSearchSelect, 
   placeholder = "Search plushies, users, brands...",
   className 
 }: InstantSearchBoxProps) {
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
   const [results, setResults] = useState<SearchResult[]>([]);
   const [recentSearches] = useState<string[]>(["Jellycat Bunny", "Squishmallow Axolotl", "Pokemon Pikachu"]);
@@ -39,6 +43,11 @@ export function InstantSearchBox({
     { id: "3", title: "@plushielover123", type: "user" },
     { id: "4", title: "Squishmallow Axolotl", type: "plushie", price: "$18" },
   ];
+
+  // Sync internal state with external value prop
+  useEffect(() => {
+    setQuery(value);
+  }, [value]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -68,23 +77,28 @@ export function InstantSearchBox({
   }, [query]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
+    const newValue = e.target.value;
+    setQuery(newValue);
+    onChange?.(newValue);
     setIsOpen(true);
   };
 
   const handleResultClick = (result: SearchResult) => {
     setQuery(result.title);
+    onChange?.(result.title);
     setIsOpen(false);
     onSearchSelect?.(result);
   };
 
   const handleTrendingClick = (search: string) => {
     setQuery(search);
+    onChange?.(search);
     setIsOpen(false);
   };
 
   const clearSearch = () => {
     setQuery("");
+    onChange?.("");
     setIsOpen(false);
     inputRef.current?.focus();
   };

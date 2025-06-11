@@ -15,14 +15,19 @@ import { MarketplaceFilters } from "@/types/marketplace";
 import { ChevronRight } from "lucide-react";
 
 interface FilterPanelProps {
-  filters: MarketplaceFilters;
-  onFilterChange: (filters: MarketplaceFilters) => void;
-  priceRange: [number, number];
-  setPriceRange: (range: [number, number]) => void;
-  freeShippingOnly: boolean;
-  setFreeShippingOnly: (value: boolean) => void;
-  verifiedSellersOnly: boolean;
-  setVerifiedSellersOnly: (value: boolean) => void;
+  filters?: MarketplaceFilters;
+  onFilterChange?: (filters: MarketplaceFilters) => void;
+  priceRange?: [number, number];
+  setPriceRange?: (range: [number, number]) => void;
+  onPriceRangeChange?: (range: number[]) => void;
+  freeShippingOnly?: boolean;
+  setFreeShippingOnly?: (value: boolean) => void;
+  verifiedSellersOnly?: boolean;
+  setVerifiedSellersOnly?: (value: boolean) => void;
+  selectedBrands?: string[];
+  onBrandChange?: (brands: string[]) => void;
+  selectedConditions?: string[];
+  onConditionChange?: (conditions: string[]) => void;
 }
 
 const colorOptions = [
@@ -86,17 +91,24 @@ const conditionOptions = [
 ];
 
 export function FilterPanel({
-  filters,
+  filters = { brands: [], conditions: [], materials: [], fillings: [], species: [], sizes: [], deliveryMethods: [], brand: [], condition: [], material: [], filling: [], color: [], size: [], deliveryMethod: [] },
   onFilterChange,
-  priceRange,
+  priceRange = [0, 100],
   setPriceRange,
-  freeShippingOnly,
+  onPriceRangeChange,
+  freeShippingOnly = false,
   setFreeShippingOnly,
-  verifiedSellersOnly,
+  verifiedSellersOnly = false,
   setVerifiedSellersOnly,
+  selectedBrands = [],
+  onBrandChange,
+  selectedConditions = [],
+  onConditionChange,
 }: FilterPanelProps) {
+  
   const handleFilterChange = (category: keyof MarketplaceFilters, value: string, isChecked: boolean) => {
-    // Handle array-type filters - use the correct property names
+    if (!onFilterChange) return;
+    
     const currentValues = (filters[category] as string[]) || [];
     
     let newValues: string[];
@@ -111,9 +123,46 @@ export function FilterPanel({
       [category]: newValues
     });
   };
+
+  const handlePriceRangeChange = (value: number[]) => {
+    const range = [value[0] || 0, value[1] || 100] as [number, number];
+    if (setPriceRange) {
+      setPriceRange(range);
+    }
+    if (onPriceRangeChange) {
+      onPriceRangeChange(value);
+    }
+  };
+
+  const handleBrandChange = (brand: string, isChecked: boolean) => {
+    if (onBrandChange) {
+      let newBrands: string[];
+      if (isChecked) {
+        newBrands = [...selectedBrands, brand];
+      } else {
+        newBrands = selectedBrands.filter(b => b !== brand);
+      }
+      onBrandChange(newBrands);
+    } else {
+      handleFilterChange("brand", brand, isChecked);
+    }
+  };
+
+  const handleConditionChange = (condition: string, isChecked: boolean) => {
+    if (onConditionChange) {
+      let newConditions: string[];
+      if (isChecked) {
+        newConditions = [...selectedConditions, condition];
+      } else {
+        newConditions = selectedConditions.filter(c => c !== condition);
+      }
+      onConditionChange(newConditions);
+    } else {
+      handleFilterChange("condition", condition, isChecked);
+    }
+  };
   
   const handleResetFilters = () => {
-    // Create default empty filters with all required properties
     const defaultFilters: MarketplaceFilters = {
       brands: [],
       conditions: [],
@@ -131,15 +180,37 @@ export function FilterPanel({
       deliveryMethod: []
     };
     
-    onFilterChange(defaultFilters);
-    setPriceRange([0, 100]);
-    setFreeShippingOnly(false);
-    setVerifiedSellersOnly(false);
+    if (onFilterChange) {
+      onFilterChange(defaultFilters);
+    }
+    if (setPriceRange) {
+      setPriceRange([0, 100]);
+    }
+    if (setFreeShippingOnly) {
+      setFreeShippingOnly(false);
+    }
+    if (setVerifiedSellersOnly) {
+      setVerifiedSellersOnly(false);
+    }
+    if (onBrandChange) {
+      onBrandChange([]);
+    }
+    if (onConditionChange) {
+      onConditionChange([]);
+    }
   };
   
   const isFilterSelected = (category: keyof MarketplaceFilters, value: string) => {
     const categoryValues = filters[category] as string[] | undefined;
     return categoryValues?.includes(value) || false;
+  };
+
+  const isBrandSelected = (brand: string) => {
+    return selectedBrands.includes(brand) || isFilterSelected("brand", brand);
+  };
+
+  const isConditionSelected = (condition: string) => {
+    return selectedConditions.includes(condition) || isFilterSelected("condition", condition);
   };
   
   return (
@@ -162,7 +233,7 @@ export function FilterPanel({
           <Slider
             defaultValue={[priceRange[0], priceRange[1]]}
             value={[priceRange[0], priceRange[1]]}
-            onValueChange={(value) => setPriceRange(value as [number, number])}
+            onValueChange={handlePriceRangeChange}
             min={0}
             max={100}
             step={1}
@@ -351,9 +422,9 @@ export function FilterPanel({
                 <div key={option.value} className="flex items-center space-x-2">
                   <Checkbox 
                     id={`brand-${option.value}`}
-                    checked={isFilterSelected("brand", option.value)}
+                    checked={isBrandSelected(option.value)}
                     onCheckedChange={(checked) => 
-                      handleFilterChange("brand", option.value, checked as boolean)
+                      handleBrandChange(option.value, checked as boolean)
                     }
                   />
                   <Label 
@@ -383,9 +454,9 @@ export function FilterPanel({
                 <div key={option.value} className="flex items-center space-x-2">
                   <Checkbox 
                     id={`condition-${option.value}`}
-                    checked={isFilterSelected("condition", option.value)}
+                    checked={isConditionSelected(option.value)}
                     onCheckedChange={(checked) => 
-                      handleFilterChange("condition", option.value, checked as boolean)
+                      handleConditionChange(option.value, checked as boolean)
                     }
                   />
                   <Label 

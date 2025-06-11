@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import {
@@ -13,38 +14,46 @@ import { Filter } from "lucide-react";
 import { MarketplaceFilters } from "@/types/marketplace";
 
 interface MobileFilterDrawerProps {
-  filters: MarketplaceFilters;
-  onFilterChange: (filters: MarketplaceFilters) => void;
-  priceRange: [number, number];
-  setPriceRange: (range: [number, number]) => void;
-  freeShippingOnly: boolean;
-  setFreeShippingOnly: (value: boolean) => void;
-  verifiedSellersOnly: boolean;
-  setVerifiedSellersOnly: (value: boolean) => void;
-  onApplyFilters: () => void;
-  onResetFilters: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
+  filters?: MarketplaceFilters;
+  onFilterChange?: (filters: MarketplaceFilters) => void;
+  priceRange?: [number, number];
+  setPriceRange?: (range: [number, number]) => void;
+  onPriceRangeChange?: (range: number[]) => void;
+  freeShippingOnly?: boolean;
+  setFreeShippingOnly?: (value: boolean) => void;
+  verifiedSellersOnly?: boolean;
+  setVerifiedSellersOnly?: (value: boolean) => void;
+  selectedBrands?: string[];
+  onBrandChange?: (brands: string[]) => void;
+  selectedConditions?: string[];
+  onConditionChange?: (conditions: string[]) => void;
+  onApplyFilters?: () => void;
+  onResetFilters?: () => void;
 }
 
 export function MobileFilterDrawer({
+  isOpen = false,
+  onClose,
   filters,
   onFilterChange,
-  priceRange,
+  priceRange = [0, 100],
   setPriceRange,
-  freeShippingOnly,
+  onPriceRangeChange,
+  freeShippingOnly = false,
   setFreeShippingOnly,
-  verifiedSellersOnly,
+  verifiedSellersOnly = false,
   setVerifiedSellersOnly,
+  selectedBrands = [],
+  onBrandChange,
+  selectedConditions = [],
+  onConditionChange,
   onApplyFilters,
   onResetFilters
 }: MobileFilterDrawerProps) {
   return (
-    <Sheet>
-      <SheetTrigger asChild>
-        <Button variant="outline" className="lg:hidden flex items-center">
-          <Filter className="h-4 w-4 mr-2" />
-          Filters
-        </Button>
-      </SheetTrigger>
+    <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent side="left" className="w-full sm:max-w-md overflow-auto">
         <SheetHeader>
           <SheetTitle>Filter Products</SheetTitle>
@@ -56,10 +65,15 @@ export function MobileFilterDrawer({
             onFilterChange={onFilterChange}
             priceRange={priceRange}
             setPriceRange={setPriceRange}
+            onPriceRangeChange={onPriceRangeChange}
             freeShippingOnly={freeShippingOnly}
             setFreeShippingOnly={setFreeShippingOnly}
             verifiedSellersOnly={verifiedSellersOnly}
             setVerifiedSellersOnly={setVerifiedSellersOnly}
+            selectedBrands={selectedBrands}
+            onBrandChange={onBrandChange}
+            selectedConditions={selectedConditions}
+            onConditionChange={onConditionChange}
           />
         </div>
         

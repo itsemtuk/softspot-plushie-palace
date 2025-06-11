@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
@@ -13,12 +12,13 @@ import { Button } from "@/components/ui/button";
 import { Grid3X3, List, SlidersHorizontal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { MarketplaceFilters, MarketplacePlushie } from "@/types/marketplace";
 
 // Sample data - replace with actual data fetching
-const samplePlushies = [
+const samplePlushies: MarketplacePlushie[] = [
   {
     id: "1",
-    image: "/placeholder.svg",
+    imageUrl: "/placeholder.svg",
     title: "Jellycat Bashful Bunny",
     username: "plushielover23",
     likes: 24,
@@ -31,7 +31,10 @@ const samplePlushies = [
     material: "Polyester",
     filling: "Polyester fiberfill",
     species: "Bunny",
-    brand: "Jellycat"
+    brand: "Jellycat",
+    location: "New York",
+    deliveryCost: 0,
+    discount: 0
   },
   // Add more sample data as needed
 ];
@@ -44,6 +47,24 @@ const Marketplace = () => {
   const [selectedConditions, setSelectedConditions] = useState<string[]>([]);
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [filters, setFilters] = useState<MarketplaceFilters>({
+    brands: [],
+    conditions: [],
+    materials: [],
+    fillings: [],
+    species: [],
+    sizes: [],
+    deliveryMethods: [],
+    brand: [],
+    condition: [],
+    material: [],
+    filling: [],
+    color: [],
+    size: [],
+    deliveryMethod: []
+  });
+  const [freeShippingOnly, setFreeShippingOnly] = useState(false);
+  const [verifiedSellersOnly, setVerifiedSellersOnly] = useState(false);
   const isMobile = useIsMobile();
 
   // Filtering logic
@@ -57,6 +78,10 @@ const Marketplace = () => {
 
   const handleConditionChange = (conditions: string[]) => {
     setSelectedConditions(conditions);
+  };
+
+  const handleFilterChange = (newFilters: MarketplaceFilters) => {
+    setFilters(newFilters);
   };
 
   const toggleFilterDrawer = () => {
@@ -77,6 +102,15 @@ const Marketplace = () => {
 
   const handleViewModeChange = (mode: "grid" | "list") => {
     setViewMode(mode);
+  };
+
+  const handleProductClick = (product: MarketplacePlushie) => {
+    console.log("Product clicked:", product);
+  };
+
+  const handleWishlistToggle = (id: string, event: React.MouseEvent) => {
+    event.stopPropagation();
+    console.log("Wishlist toggled for:", id);
   };
 
   const filteredPlushies = samplePlushies.filter(plushie => {
@@ -163,12 +197,18 @@ const Marketplace = () => {
             {!isMobile && (
               <div className="w-80 flex-shrink-0">
                 <FilterPanel
+                  filters={filters}
+                  onFilterChange={handleFilterChange}
                   priceRange={priceRange}
                   onPriceRangeChange={handlePriceRangeChange}
                   selectedBrands={selectedBrands}
                   onBrandChange={handleBrandChange}
                   selectedConditions={selectedConditions}
                   onConditionChange={handleConditionChange}
+                  freeShippingOnly={freeShippingOnly}
+                  setFreeShippingOnly={setFreeShippingOnly}
+                  verifiedSellersOnly={verifiedSellersOnly}
+                  setVerifiedSellersOnly={setVerifiedSellersOnly}
                 />
               </div>
             )}
@@ -184,22 +224,10 @@ const Marketplace = () => {
                 {filteredPlushies.map((item) => (
                   <ProductCard
                     key={item.id}
-                    id={item.id}
-                    image={item.image}
-                    title={item.title}
-                    username={item.username}
-                    likes={item.likes}
-                    comments={item.comments}
-                    price={item.price}
-                    forSale={item.forSale}
-                    condition={item.condition}
-                    description={item.description}
-                    color={item.color}
-                    material={item.material}
-                    filling={item.filling}
-                    species={item.species}
-                    brand={item.brand}
-                    viewMode={viewMode}
+                    product={item}
+                    onProductClick={handleProductClick}
+                    onWishlistToggle={handleWishlistToggle}
+                    isWishlisted={false}
                   />
                 ))}
               </div>
@@ -217,12 +245,18 @@ const Marketplace = () => {
         <MobileFilterDrawer
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
+          filters={filters}
+          onFilterChange={handleFilterChange}
           priceRange={priceRange}
           onPriceRangeChange={handlePriceRangeChange}
           selectedBrands={selectedBrands}
           onBrandChange={handleBrandChange}
           selectedConditions={selectedConditions}
           onConditionChange={handleConditionChange}
+          freeShippingOnly={freeShippingOnly}
+          setFreeShippingOnly={setFreeShippingOnly}
+          verifiedSellersOnly={verifiedSellersOnly}
+          setVerifiedSellersOnly={setVerifiedSellersOnly}
         />
       </div>
     </MainLayout>
