@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { uploadImage } from "@/utils/storage/imageStorage";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";

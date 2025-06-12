@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuHeader,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -139,7 +138,7 @@ export function NotificationsDropdown() {
         align="end" 
         className="w-80 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
       >
-        <DropdownMenuHeader className="p-4">
+        <div className="p-4">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold text-gray-900 dark:text-gray-100">Notifications</h3>
             {unreadCount > 0 && (
@@ -153,7 +152,7 @@ export function NotificationsDropdown() {
               </Button>
             )}
           </div>
-        </DropdownMenuHeader>
+        </div>
         
         <DropdownMenuSeparator />
 

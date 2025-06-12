@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SellItemImageUploader } from "./SellItemImageUploader";
 import { SellItemFormFields } from "./SellItemFormFields";
 import { SellItemFormActions } from "./SellItemFormActions";
-import { SellItemErrorDisplay } from "./SellItemErrorDisplay";
 import { useSellItemForm } from "@/hooks/useSellItemForm";
 import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";

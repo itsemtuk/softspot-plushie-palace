@@ -1,15 +1,15 @@
 
 import React from "react";
-import { Card, CardProps } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-interface ConsistentCardProps extends CardProps {
+interface ConsistentCardProps extends React.HTMLAttributes<HTMLDivElement> {
   padding?: "none" | "sm" | "md" | "lg";
   shadow?: "none" | "sm" | "md" | "lg";
 }
 
 export const ConsistentCard = React.forwardRef<HTMLDivElement, ConsistentCardProps>(
-  ({ className, padding = "md", shadow = "sm", ...props }, ref) => {
+  ({ className, padding = "md", shadow = "sm", children, ...props }, ref) => {
     const paddingStyles = {
       none: "",
       sm: "p-3",
@@ -34,7 +34,9 @@ export const ConsistentCard = React.forwardRef<HTMLDivElement, ConsistentCardPro
           className
         )}
         {...props}
-      />
+      >
+        {children}
+      </Card>
     );
   }
 );
