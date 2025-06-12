@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { UserButton } from "./UserButton";
 import { NotificationsDropdown } from "./NotificationsDropdown";
+import { CreateButton } from "./CreateButton";
 import { isAuthenticated } from "@/utils/auth/authState";
 
 export const UserMenu = () => {
@@ -30,6 +31,7 @@ export const UserMenu = () => {
 
   return (
     <div className="flex items-center space-x-2">
+      <CreateButton />
       <NotificationsDropdown />
       <UserButton />
     </div>

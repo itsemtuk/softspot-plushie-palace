@@ -3,8 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusCircle, Search, RefreshCw, Users } from "lucide-react";
 import { isAuthenticated } from "@/utils/auth/authState";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useCreatePost } from "@/hooks/use-create-post";
 
 interface FeedHeaderProps {
   searchQuery: string;
@@ -24,6 +25,7 @@ export const FeedHeader = ({
   onToggleUserSearch
 }: FeedHeaderProps) => {
   const navigate = useNavigate();
+  const { setIsPostCreationOpen } = useCreatePost();
   
   const handleCreatePost = () => {
     console.log("FeedHeader: Create post button clicked");
@@ -37,6 +39,7 @@ export const FeedHeader = ({
       return;
     }
     
+    setIsPostCreationOpen(true);
     onCreatePost();
   };
   
