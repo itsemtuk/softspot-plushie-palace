@@ -1,62 +1,72 @@
 
-import MainLayout from "@/components/layout/MainLayout";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { Spinner } from "@/components/ui/spinner";
+import MainLayout from "@/components/layout/MainLayout";
+import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
+import { SellItemFormWrapper } from "@/components/marketplace/sell/SellItemFormWrapper";
 import { useUser } from "@clerk/clerk-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
-import { ImprovedSellItemForm } from "@/components/marketplace/sell/ImprovedSellItemForm";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const SellItemPage = () => {
-  const navigate = useNavigate();
+  const { user, isLoaded } = useUser();
   const [isReady, setIsReady] = useState(false);
-  
-  const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
-    if (isClerkLoaded) {
-      if (!clerkUser) {
-        navigate('/sign-in');
-        return;
-      }
+    if (isLoaded) {
       setIsReady(true);
     }
-  }, [isClerkLoaded, clerkUser, navigate]);
+  }, [isLoaded]);
 
-  const handleSellSuccess = () => {
-    navigate('/marketplace');
-  };
-
-  // Loading state
-  if (!isClerkLoaded || !isReady) {
+  if (!isLoaded || !isReady) {
     return (
       <MainLayout>
-        <div className="flex justify-center items-center h-[60vh] flex-col">
-          <Spinner size="lg" />
-          <p className="ml-3 text-gray-600 dark:text-gray-400 mt-4">
-            Loading...
-          </p>
+        <div className="max-w-2xl mx-auto py-6">
+          <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+            <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
+              <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Sell Your Plushie</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <div className="flex justify-center items-center p-8">
+                <Spinner size="lg" />
+                <span className="ml-3 text-sm text-gray-500 dark:text-gray-400">Loading...</span>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </MainLayout>
     );
   }
 
-  // Not authenticated
-  if (!clerkUser) {
+  if (!user) {
     return (
       <MainLayout>
-        <div className="flex justify-center items-center h-[60vh] flex-col">
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-sm text-center max-w-md border border-gray-200 dark:border-gray-700">
-            <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">Authentication Required</h2>
-            <p className="mb-4 text-gray-600 dark:text-gray-400">Please sign in to list your items for sale.</p>
-            <button 
-              className="bg-softspot-500 text-white px-4 py-2 rounded-md hover:bg-softspot-600 transition-colors"
-              onClick={() => navigate('/sign-in')}
-            >
-              Sign In
-            </button>
-          </div>
+        <div className="max-w-2xl mx-auto py-6">
+          <Card className="rounded-2xl bg-white dark:bg-gray-800 shadow-sm overflow-hidden border border-gray-200 dark:border-gray-700">
+            <CardHeader className="bg-gradient-to-r from-purple-100 to-softspot-100 dark:from-purple-900 dark:to-softspot-900">
+              <CardTitle className="text-2xl font-bold text-gray-900 dark:text-white">Sell Your Plushie</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
+              <Alert>
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  You need to be signed in to sell items. Please sign in and try again.
+                </AlertDescription>
+              </Alert>
+              <div className="mt-4 flex gap-2">
+                <Button onClick={() => navigate("/sign-in")} className="bg-softspot-500 hover:bg-softspot-600">
+                  Sign In
+                </Button>
+                <Button variant="outline" onClick={() => navigate("/marketplace")}>
+                  Back to Marketplace
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </MainLayout>
     );
@@ -64,9 +74,11 @@ const SellItemPage = () => {
 
   return (
     <MainLayout>
-      <div className="max-w-2xl mx-auto py-6 px-4">
-        <ImprovedSellItemForm onSuccess={handleSellSuccess} />
-      </div>
+      <EnhancedErrorBoundary>
+        <div className="max-w-2xl mx-auto py-6">
+          <SellItemFormWrapper supabaseUserId={user.id} />
+        </div>
+      </EnhancedErrorBoundary>
     </MainLayout>
   );
 };

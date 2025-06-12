@@ -17,11 +17,11 @@ const MainLayout = ({ children, noPadding = false, className = "" }: MainLayoutP
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {isMobile ? <MobileNav /> : <Navbar />}
       
-      <main className={`bg-gray-50 dark:bg-gray-900 transition-colors duration-200 ${className} ${noPadding ? '' : 'p-4'}`}>
+      <main className={`bg-gray-50 dark:bg-gray-900 transition-colors duration-200 ${className} ${noPadding ? '' : 'p-4'} ${isMobile ? 'pb-20' : ''}`}>
         {children}
       </main>
       
-      <Footer />
+      {!isMobile && <Footer />}
     </div>
   );
 };

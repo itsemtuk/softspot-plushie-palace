@@ -46,9 +46,9 @@ function App() {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/profile/:userId" element={<UserProfile />} />
                     <Route path="/marketplace" element={<Marketplace />} />
-                    <Route path="/search" element={<SearchPage />} />
-                    <Route path="/discover" element={<Discover />} />
                     <Route path="/marketplace/sell" element={<SellItemPage />} />
+                    <Route path="/search" element={<SearchPage />} />
+                    <Route path="/discover" element={<SearchPage />} />
                     <Route path="/sell" element={<SellItemPage />} />
                     <Route path="/sign-in" element={<SignIn />} />
                     <Route path="/sign-up" element={<SignUp />} />

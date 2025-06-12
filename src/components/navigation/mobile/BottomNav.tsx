@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { CreatePostSheet } from "./CreatePostSheet";
 import { isAuthenticated } from "@/utils/auth/authState";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 
 interface BottomNavLinkProps {
@@ -26,7 +26,7 @@ const BottomNavLink = ({ to, icon, isActive }: BottomNavLinkProps) => (
     to={to}
     className={cn(
       "flex flex-col items-center justify-center text-center py-3 flex-1",
-      isActive ? "text-softspot-500" : "text-gray-500"
+      isActive ? "text-softspot-500" : "text-gray-500 dark:text-gray-400"
     )}
   >
     <div className="flex items-center justify-center w-6 h-6">
@@ -56,7 +56,7 @@ export function BottomNav() {
 
   return (
     <>
-      <div className="fixed bottom-0 left-0 right-0 flex bg-white border-t border-gray-200 h-16 z-20 pb-safe">
+      <div className="fixed bottom-0 left-0 right-0 flex bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 h-16 z-20 pb-safe">
         <BottomNavLink 
           to="/feed" 
           icon={<Home className="w-5 h-5" />} 
@@ -64,16 +64,16 @@ export function BottomNav() {
         />
         
         <BottomNavLink 
-          to="/discover" 
+          to="/search" 
           icon={<Search className="w-5 h-5" />} 
-          isActive={pathname === "/discover"}
+          isActive={pathname === "/search" || pathname === "/discover"}
         />
         
         <div className="flex flex-col items-center justify-center flex-1 py-3">
           <Button 
             variant="outline" 
             size="sm" 
-            className="h-10 w-10 rounded-full border-softspot-200 flex items-center justify-center p-0 bg-softspot-500 border-none"
+            className="h-10 w-10 rounded-full border-softspot-200 flex items-center justify-center p-0 bg-softspot-500 border-none hover:bg-softspot-600"
             onClick={handleCreateButtonClick}
           >
             <PlusSquare className="h-5 w-5 text-white" />
