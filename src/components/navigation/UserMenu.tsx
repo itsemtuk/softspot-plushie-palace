@@ -1,123 +1,27 @@
 
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React from "react";
+import { useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
-import { MessageSquare, Bookmark } from "lucide-react";
+import { Link } from "react-router-dom";
 import { UserButton } from "./UserButton";
-import { NotificationsButton } from "./NotificationsButton";
-import { toast } from "@/components/ui/use-toast";
+import { NotificationsDropdown } from "./NotificationsDropdown";
 import { isAuthenticated } from "@/utils/auth/authState";
-import { useUser } from '@clerk/clerk-react';
-import { CreateDropdown } from "./CreateDropdown";
-import { useCreatePost } from "@/hooks/use-create-post";
-import PostCreationFlow from "../post/PostCreationFlow";
-import { addPost } from "@/utils/posts/postManagement";
-import { PostCreationData, ExtendedPost } from "@/types/core";
 
 export const UserMenu = () => {
-  const [isSignedIn, setIsSignedIn] = useState(false);
-  const { isPostCreationOpen, setIsPostCreationOpen, onClosePostCreation } = useCreatePost();
-  const isClerkConfigured = localStorage.getItem('usingClerk') === 'true';
-  const { isLoaded: isClerkLoaded, isSignedIn: isClerkSignedIn, user } = 
-    isClerkConfigured ? useUser() : { isLoaded: true, isSignedIn: false, user: null };
-  const navigate = useNavigate();
-  
-  // Check authentication status when component mounts or updates
-  useEffect(() => {
-    const checkAuthStatus = () => {
-      if (isClerkConfigured) {
-        // Wait for Clerk to load
-        if (isClerkLoaded) {
-          setIsSignedIn(isClerkSignedIn);
-        }
-      } else {
-        // Use local auth state
-        const authState = isAuthenticated();
-        setIsSignedIn(authState);
-      }
-    };
-    
-    // Check initial status
-    checkAuthStatus();
-    
-    // Set up storage event listener to detect auth changes in other tabs
-    const handleStorageChange = (event: StorageEvent) => {
-      if (event.key === 'authStatus' || event.key === 'currentUserId') {
-        checkAuthStatus();
-      }
-    };
-    
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('clerk-auth-change', checkAuthStatus);
-    
-    // Check auth status periodically
-    const intervalId = setInterval(checkAuthStatus, 3000);
-    
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('clerk-auth-change', checkAuthStatus);
-      clearInterval(intervalId);
-    };
-  }, [isClerkConfigured, isClerkLoaded, isClerkSignedIn]);
+  const { isSignedIn } = useUser();
+  const authenticated = isAuthenticated();
 
-  const handlePostCreated = async (data: PostCreationData) => {
-    try {
-      // Create the post using the utility function
-      const username = user?.username || user?.firstName || "Anonymous";
-      const userId = user?.id || localStorage.getItem('currentUserId');
-      
-      await addPost({
-        ...data,
-        id: `post-${Date.now()}`,
-        userId: userId as string,
-        user_id: userId as string,
-        username: username as string,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        likes: 0,
-        comments: 0,
-        content: data.description,
-        forSale: false
-      });
-      
-      return Promise.resolve();
-    } catch (error) {
-      console.error("Error creating post:", error);
-      return Promise.reject(error);
-    }
-  };
-  
-  const handleAuthRequiredAction = (action: string, path: string) => {
-    if (!isSignedIn) {
-      toast({
-        title: "Authentication Required",
-        description: `Please sign in to ${action}.`,
-      });
-      navigate("/sign-in");
-      return false;
-    }
-    
-    navigate(path);
-    return true;
-  };
-
-  // Show loading state while Clerk is loading
-  if (isClerkConfigured && !isClerkLoaded) {
-    return (
-      <div className="flex items-center space-x-2">
-        <div className="h-10 w-24 bg-gray-200 animate-pulse rounded"></div>
-      </div>
-    );
-  }
-
-  if (!isSignedIn) {
+  if (!isSignedIn && !authenticated) {
     return (
       <div className="flex items-center space-x-2">
         <Link to="/sign-in">
-          <Button className="bg-softspot-400 hover:bg-softspot-500 text-white">
+          <Button variant="ghost" className="text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
             Sign In
+          </Button>
+        </Link>
+        <Link to="/sign-up">
+          <Button className="bg-softspot-500 hover:bg-softspot-600 text-white">
+            Sign Up
           </Button>
         </Link>
       </div>
@@ -125,40 +29,9 @@ export const UserMenu = () => {
   }
 
   return (
-    <>
-      <div className="flex items-center space-x-4">
-        {/* Only show Create button on desktop */}
-        <div className="hidden md:block">
-          <CreateDropdown />
-        </div>
-        
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => handleAuthRequiredAction("access messages", "/messages")}
-          className="hover:bg-softspot-100 dark:hover:bg-softspot-900/20"
-        >
-          <MessageSquare className="h-5 w-5" />
-        </Button>
-        <Button 
-          variant="ghost" 
-          size="icon"
-          onClick={() => handleAuthRequiredAction("view wishlist", "/wishlist")}
-          className="hover:bg-softspot-100 dark:hover:bg-softspot-900/20"
-        >
-          <Bookmark className="h-5 w-5" />
-        </Button>
-        <NotificationsButton />
-        <div className="relative">
-          <UserButton />
-        </div>
-      </div>
-      
-      <PostCreationFlow
-        isOpen={isPostCreationOpen}
-        onClose={onClosePostCreation}
-        onPostCreated={handlePostCreated}
-      />
-    </>
+    <div className="flex items-center space-x-2">
+      <NotificationsDropdown />
+      <UserButton />
+    </div>
   );
 };
