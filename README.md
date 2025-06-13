@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Build Status](https://img.shields.io/github/actions/workflow/status/itsemtuk/softspot-plushie-palace/main.yml?branch=main)](https://github.com/itsemtuk/softspot-plushie-palace/actions)
 
-Welcome to **SoftSpot Plushie Palace** - The ultimate social marketplace for plushie enthusiasts to connect, collect, and trade!
+Welcome to **SoftSpot** - The ultimate social marketplace for plushie enthusiasts to connect, collect, and trade!
 
 ## 🌟 Features
 
