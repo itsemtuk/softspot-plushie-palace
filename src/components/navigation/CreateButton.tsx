@@ -15,11 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useCreatePost } from "@/hooks/use-create-post";
 
-interface CreateButtonProps {
-  onCreatePost?: () => void;
-}
-
-export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
+export const CreateButton = () => {
   const { user } = useUser();
   const navigate = useNavigate();
   const { setIsPostCreationOpen } = useCreatePost();
@@ -38,10 +34,6 @@ export const CreateButton = ({ onCreatePost }: CreateButtonProps) => {
     setIsDropdownOpen(false);
     console.log("Opening post creation dialog");
     setIsPostCreationOpen(true);
-    
-    if (onCreatePost) {
-      onCreatePost();
-    }
   };
 
   const handleSellItem = () => {

@@ -154,21 +154,63 @@ export type Database = {
       }
       posts: {
         Row: {
+          brand: string | null
+          color: string | null
+          condition: string | null
           content: string
           created_at: string | null
+          delivery_cost: number | null
+          delivery_method: string | null
+          description: string | null
+          filling: string | null
+          for_sale: boolean | null
           id: string
+          image: string | null
+          material: string | null
+          price: number | null
+          size: string | null
+          species: string | null
+          title: string | null
           user_id: string | null
         }
         Insert: {
+          brand?: string | null
+          color?: string | null
+          condition?: string | null
           content: string
           created_at?: string | null
+          delivery_cost?: number | null
+          delivery_method?: string | null
+          description?: string | null
+          filling?: string | null
+          for_sale?: boolean | null
           id?: string
+          image?: string | null
+          material?: string | null
+          price?: number | null
+          size?: string | null
+          species?: string | null
+          title?: string | null
           user_id?: string | null
         }
         Update: {
+          brand?: string | null
+          color?: string | null
+          condition?: string | null
           content?: string
           created_at?: string | null
+          delivery_cost?: number | null
+          delivery_method?: string | null
+          description?: string | null
+          filling?: string | null
+          for_sale?: boolean | null
           id?: string
+          image?: string | null
+          material?: string | null
+          price?: number | null
+          size?: string | null
+          species?: string | null
+          title?: string | null
           user_id?: string | null
         }
         Relationships: [

@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { toast } from "@/hooks/use-toast";
+import { CurrencySelector } from "./CurrencySelector";
 
 interface MarketplaceHeaderProps {
   searchQuery: string;
@@ -44,12 +45,15 @@ export function MarketplaceHeader({ searchQuery, onSearchChange }: MarketplaceHe
             </div>
           </div>
           
-          <Button 
-            onClick={handleSellClick}
-            className="bg-softspot-500 hover:bg-softspot-600 text-white whitespace-nowrap"
-          >
-            Sell Your Plushie
-          </Button>
+          <div className="flex items-center gap-2">
+            <CurrencySelector />
+            <Button 
+              onClick={handleSellClick}
+              className="bg-softspot-500 hover:bg-softspot-600 text-white whitespace-nowrap"
+            >
+              Sell Your Plushie
+            </Button>
+          </div>
         </div>
       </div>
     </div>

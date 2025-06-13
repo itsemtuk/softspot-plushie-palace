@@ -6,11 +6,15 @@ import { Link } from "react-router-dom";
 import { UserButton } from "./UserButton";
 import { NotificationsDropdown } from "./NotificationsDropdown";
 import { CreateButton } from "./CreateButton";
+import { Switch } from "@/components/ui/switch";
+import { Moon, Sun, MessageSquare } from "lucide-react";
+import { useTheme } from "next-themes";
 import { isAuthenticated } from "@/utils/auth/authState";
 
 export const UserMenu = () => {
   const { isSignedIn } = useUser();
   const authenticated = isAuthenticated();
+  const { theme, setTheme } = useTheme();
 
   if (!isSignedIn && !authenticated) {
     return (
@@ -32,7 +36,26 @@ export const UserMenu = () => {
   return (
     <div className="flex items-center space-x-2">
       <CreateButton />
+      
+      {/* Messages Button */}
+      <Link to="/messages">
+        <Button variant="ghost" size="icon" title="Messages">
+          <MessageSquare className="h-5 w-5" />
+        </Button>
+      </Link>
+      
       <NotificationsDropdown />
+      
+      {/* Dark Mode Switch */}
+      <div className="flex items-center space-x-1">
+        <Sun className="h-4 w-4" />
+        <Switch
+          checked={theme === "dark"}
+          onCheckedChange={(checked) => setTheme(checked ? "dark" : "light")}
+        />
+        <Moon className="h-4 w-4" />
+      </div>
+      
       <UserButton />
     </div>
   );

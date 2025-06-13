@@ -1,4 +1,3 @@
-
 import MainLayout from "@/components/layout/MainLayout";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
@@ -12,6 +11,8 @@ import { useMarketplaceFilters } from "@/hooks/useMarketplaceFilters";
 import { useMarketplaceView } from "@/hooks/useMarketplaceView";
 import { MarketplacePlushie } from "@/types/marketplace";
 import { samplePlushies } from "@/data/sampleMarketplaceData";
+import { MarketplaceHero } from "@/components/marketplace/MarketplaceHero";
+import { MarketplaceNavigation } from "@/components/marketplace/MarketplaceNavigation";
 
 const Marketplace = () => {
   const isMobile = useIsMobile();
@@ -62,8 +63,9 @@ const Marketplace = () => {
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
         />
-        <QuickSellBanner />
-        <TrendingCarousel />
+        
+        <MarketplaceHero />
+        <MarketplaceNavigation onFilterToggle={toggleFilterDrawer} />
         
         <div className="max-w-7xl mx-auto px-4 py-6">
           <MarketplaceControls
