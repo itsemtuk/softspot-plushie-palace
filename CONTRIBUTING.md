@@ -1,6 +1,6 @@
 # 🤝 Contributing to SoftSpot
 
-Welcome! 🎉 We’re excited that you’re interested in helping make SoftSpot Plushie Palace better for plushie lovers everywhere. Whether you’re fixing bugs, improving documentation, adding features, or suggesting ideas, your contribution is valued.
+Welcome! 🎉 We’re excited that you’re interested in helping make SoftSpot better for plushie lovers everywhere. Whether you’re fixing bugs, improving documentation, adding features, or suggesting ideas, your contribution is valued.
 
 ---
 
