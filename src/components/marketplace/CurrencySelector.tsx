@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DollarSign, Euro, PoundSterling, Yen } from "lucide-react";
+import { DollarSign, Euro, PoundSterling, CircleDollarSign } from "lucide-react";
 
 export function CurrencySelector() {
   const [currency, setCurrency] = useState("USD");
@@ -16,7 +16,7 @@ export function CurrencySelector() {
     { code: "USD", symbol: "$", label: "US Dollar", icon: DollarSign },
     { code: "EUR", symbol: "€", label: "Euro", icon: Euro },
     { code: "GBP", symbol: "£", label: "British Pound", icon: PoundSterling },
-    { code: "JPY", symbol: "¥", label: "Japanese Yen", icon: Yen },
+    { code: "JPY", symbol: "¥", label: "Japanese Yen", icon: CircleDollarSign },
   ];
 
   const currentCurrency = currencies.find(c => c.code === currency);

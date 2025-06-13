@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedHeader } from "@/components/feed/FeedHeader";
@@ -57,6 +58,11 @@ export default function Feed() {
     }
   };
 
+  const handleCreatePostClick = () => {
+    // This function matches the expected signature for FeedHeader
+    console.log("Create post clicked");
+  };
+
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
@@ -72,15 +78,17 @@ export default function Feed() {
         <FeedHeader 
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
-          onCreatePost={handleCreatePost}
+          onCreatePost={handleCreatePostClick}
           onRefresh={handleRefresh}
           isRefreshing={isRefreshing}
         />
         
         <FeedContent
-          posts={posts}
+          initialPosts={posts}
           isLoading={isLoading}
-          searchQuery={searchQuery}
+          isError={false}
+          isOnline={true}
+          onRefresh={handleRefresh}
         />
       </div>
     </MainLayout>

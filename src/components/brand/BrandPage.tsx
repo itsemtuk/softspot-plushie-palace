@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -7,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { MarketplacePlushie } from "@/types/marketplace";
 import { ExtendedPost } from "@/types/core";
-import { getPosts } from "@/utils/posts/postFetch";
+import { getPosts, getAllPosts } from "@/utils/posts/postFetch";
 import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
 import { convertPostsToExtendedPosts } from "@/utils/postConversion";
 import { BrandHeader } from "./BrandHeader";
@@ -93,13 +92,12 @@ export const BrandPageWrapper = () => {
           setPlushies(brandPlushies);
           
           // Fetch posts mentioning this brand and convert to ExtendedPost
-          const allPosts = await getPosts();
+          const allPosts = await getAllPosts();
           const brandPosts = allPosts.filter(post => 
             post.tags?.some(tag => tag.toLowerCase() === currentBrand.name.toLowerCase()) ||
             (post.description && post.description.toLowerCase().includes(currentBrand.name.toLowerCase()))
           );
-          const extendedPosts = convertPostsToExtendedPosts(brandPosts);
-          setPosts(extendedPosts);
+          setPosts(brandPosts);
         } else {
           // Try fuzzy matching or handle unknown brand
           toast({
