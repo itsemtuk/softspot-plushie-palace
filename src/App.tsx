@@ -1,73 +1,67 @@
 
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Suspense, lazy } from "react";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ClerkProvider } from "@clerk/clerk-react";
 import { ThemeProvider } from "@/components/ui/theme-provider";
-import { NotificationsProvider } from "@/contexts/NotificationsContext";
-import { ClerkProvider } from '@clerk/clerk-react';
-import { AppErrorBoundary } from "@/components/ui/app-error-boundary";
+import Index from "./pages/Index";
+import LoadingSpinner from "./components/common/LoadingSpinner";
 
-// Import all pages
-import Index from "@/pages/Index";
-import Feed from "@/pages/Feed";
-import Profile from "@/pages/Profile";
-import UserProfile from "@/pages/UserProfile";
-import Marketplace from "@/pages/Marketplace";
-import SearchPage from "@/pages/SearchPage";
-import Discover from "@/pages/Discover";
-import SellItemPage from "@/pages/SellItemPage";
-import SignIn from "@/pages/SignIn";
-import SignUp from "@/pages/SignUp";
-import Settings from "@/pages/Settings";
-import EditProfile from "@/pages/EditProfile";
-import Onboarding from "@/pages/Onboarding";
-import Messages from "@/pages/Messages";
-import NotificationsPage from "@/pages/NotificationsPage";
-import WishlistPage from "@/pages/WishlistPage";
-import NotFound from "@/pages/NotFound";
+// Lazy load pages for better performance
+const Feed = lazy(() => import("./pages/Feed"));
+const Marketplace = lazy(() => import("./pages/Marketplace"));
+const BrandPage = lazy(() => import("./pages/BrandPage"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Settings = lazy(() => import("./pages/Settings"));
+const SignIn = lazy(() => import("./pages/SignIn"));
+const SignUp = lazy(() => import("./pages/SignUp"));
+const SellItemPage = lazy(() => import("./pages/SellItemPage"));
+const Messages = lazy(() => import("./pages/Messages"));
+const SearchPage = lazy(() => import("./pages/SearchPage"));
+const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 
 const queryClient = new QueryClient();
 
-// Use the Clerk publishable key directly
-const clerkPubKey = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Publishable Key");
+}
 
 function App() {
   return (
-    <AppErrorBoundary>
-      <ThemeProvider defaultTheme="light" storageKey="softspot-theme">
-        <QueryClientProvider client={queryClient}>
-          <ClerkProvider publishableKey={clerkPubKey}>
-            <NotificationsProvider>
-              <Router>
-                <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-                  <Routes>
-                    <Route path="/" element={<Index />} />
-                    <Route path="/feed" element={<Feed />} />
-                    <Route path="/profile" element={<Profile />} />
-                    <Route path="/profile/:userId" element={<UserProfile />} />
-                    <Route path="/marketplace" element={<Marketplace />} />
-                    <Route path="/marketplace/sell" element={<SellItemPage />} />
-                    <Route path="/search" element={<SearchPage />} />
-                    <Route path="/discover" element={<SearchPage />} />
-                    <Route path="/sell" element={<SellItemPage />} />
-                    <Route path="/sign-in" element={<SignIn />} />
-                    <Route path="/sign-up" element={<SignUp />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/edit-profile" element={<EditProfile />} />
-                    <Route path="/onboarding" element={<Onboarding />} />
-                    <Route path="/messages" element={<Messages />} />
-                    <Route path="/notifications" element={<NotificationsPage />} />
-                    <Route path="/wishlist" element={<WishlistPage />} />
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </div>
-                <Toaster />
-              </Router>
-            </NotificationsProvider>
-          </ClerkProvider>
-        </QueryClientProvider>
-      </ThemeProvider>
-    </AppErrorBoundary>
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Suspense fallback={<LoadingSpinner size="lg" className="min-h-screen" />}>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/feed" element={<Feed />} />
+                  <Route path="/marketplace" element={<Marketplace />} />
+                  <Route path="/marketplace/brands/:brandName" element={<BrandPage />} />
+                  <Route path="/profile" element={<Profile />} />
+                  <Route path="/profile/:userId" element={<Profile />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/sign-in" element={<SignIn />} />
+                  <Route path="/sign-up" element={<SignUp />} />
+                  <Route path="/sell" element={<SellItemPage />} />
+                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/search" element={<SearchPage />} />
+                  <Route path="/checkout/:id" element={<CheckoutPage />} />
+                </Routes>
+              </Suspense>
+            </BrowserRouter>
+          </TooltipProvider>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ClerkProvider>
   );
 }
 

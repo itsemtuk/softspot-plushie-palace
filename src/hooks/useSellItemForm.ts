@@ -8,6 +8,7 @@ import { uploadImage } from "@/utils/storage/imageStorage";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 
 const sellItemSchema = z.object({
   title: z.string().min(2, {
@@ -36,6 +37,7 @@ export const useSellItemForm = () => {
   const [imageUrl, setImageUrl] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useUser();
+  const { supabaseUserId } = useClerkSupabaseUser(user);
   const navigate = useNavigate();
 
   const form = useForm<SellItemFormData>({
@@ -96,7 +98,7 @@ export const useSellItemForm = () => {
   };
 
   const onSubmit: SubmitHandler<SellItemFormData> = async (data) => {
-    if (!user) {
+    if (!user || !supabaseUserId) {
       toast({
         variant: "destructive",
         title: "Authentication required",
@@ -109,11 +111,12 @@ export const useSellItemForm = () => {
 
     try {
       console.log("Submitting form data:", data);
+      console.log("Using Supabase user ID:", supabaseUserId);
       
-      // Create the post object for Supabase
+      // Create the post object for Supabase using the Supabase user ID
       const postData = {
         content: `${data.title}\n\n${data.description}`,
-        user_id: user.id, // Use Clerk user ID directly
+        user_id: supabaseUserId, // Use Supabase UUID instead of Clerk ID
         title: data.title,
         description: data.description,
         image: imageUrl,

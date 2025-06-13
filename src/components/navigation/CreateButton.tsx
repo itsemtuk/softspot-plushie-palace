@@ -22,7 +22,10 @@ export const CreateButton = () => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   const handleCreatePost = () => {
+    console.log("CreateButton: handleCreatePost called");
+    
     if (!user) {
+      console.log("CreateButton: No user, redirecting to sign in");
       toast({
         title: "Authentication Required",
         description: "Please sign in to create a post."
@@ -32,8 +35,12 @@ export const CreateButton = () => {
     }
 
     setIsDropdownOpen(false);
-    console.log("Opening post creation dialog");
-    setIsPostCreationOpen(true);
+    console.log("CreateButton: Setting post creation open to true");
+    
+    // Add a small delay to ensure the dropdown closes first
+    setTimeout(() => {
+      setIsPostCreationOpen(true);
+    }, 100);
   };
 
   const handleSellItem = () => {
@@ -80,18 +87,27 @@ export const CreateButton = () => {
           <span>Create</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[220px] bg-white shadow-xl rounded-xl border border-gray-100 z-50">
+      <DropdownMenuContent align="end" className="w-[220px] bg-white dark:bg-gray-800 shadow-xl rounded-xl border border-gray-100 dark:border-gray-700 z-50">
         <DropdownMenuLabel>Create New</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleCreatePost} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50">
+        <DropdownMenuItem 
+          onClick={handleCreatePost} 
+          className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900"
+        >
           <Image className="mr-2 h-4 w-4" />
           <span>New Post</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleTradeRequest} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50">
+        <DropdownMenuItem 
+          onClick={handleTradeRequest} 
+          className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900"
+        >
           <Handshake className="mr-2 h-4 w-4" />
           <span>Trade Request</span>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleSellItem} className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50">
+        <DropdownMenuItem 
+          onClick={handleSellItem} 
+          className="cursor-pointer rounded-lg mx-1 hover:bg-softspot-50 dark:hover:bg-softspot-900"
+        >
           <Tag className="mr-2 h-4 w-4" />
           <span>Sell Plushie</span>
         </DropdownMenuItem>
