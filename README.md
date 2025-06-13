@@ -75,8 +75,8 @@ We welcome contributions! Please read our [CONTRIBUTING.md](CONTRIBUTING.md) for
 
 ## 📞 Contact
 Have questions or suggestions?  
-📧 Email: [your@email.com](mailto:your@email.com)  
-🐦 Twitter: [@softspotapp](https://twitter.com/softspotapp)
+📧 Email: [softspotplushies@gmail.com](mailto:softspotplushies@gmail.com)  
+🐦 Twitter: [@softspotweb](https://twitter.com/softspotweb)
 
 ## 📄 License
 Distributed under the MIT License. See `LICENSE` for more information.
