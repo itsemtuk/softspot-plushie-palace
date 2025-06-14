@@ -81,8 +81,11 @@ export const useSupabaseProfile = () => {
       if (data) {
         setProfile(data);
       } else {
-        // Create initial profile if it doesn't exist
-        const newProfile = { user_id: supabaseUserId };
+        // Create initial profile if it doesn't exist - need to provide user_uuid
+        const newProfile = { 
+          user_id: parseInt(supabaseUserId), // Convert to number for user_id
+          user_uuid: supabaseUserId // Also set user_uuid as string
+        };
         const { data: created, error: createError } = await supabase
           .from('profiles')
           .insert(newProfile)
@@ -121,7 +124,7 @@ export const useSupabaseProfile = () => {
           ...updates,
           updated_at: new Date().toISOString()
         })
-        .eq('user_id', supabaseUserId)
+        .eq('user_id', parseInt(supabaseUserId)) // Convert to number for comparison
         .select()
         .single();
 
