@@ -49,11 +49,7 @@ if (!PUBLISHABLE_KEY) {
     </div>
   );
   
-  function App() {
-    return <ErrorComponent />;
-  }
-  
-  export default App;
+  export default ErrorComponent;
 }
 
 function App() {
