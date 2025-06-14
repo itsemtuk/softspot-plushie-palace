@@ -25,7 +25,7 @@ const CheckoutPage = lazy(() => import("./pages/CheckoutPage"));
 
 const queryClient = new QueryClient();
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 // Error component for missing publishable key
 const ErrorComponent = () => (
