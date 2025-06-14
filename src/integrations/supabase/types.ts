@@ -225,22 +225,100 @@ export type Database = {
       }
       profiles: {
         Row: {
+          address_line_1: string | null
+          address_line_2: string | null
+          bio: string | null
+          city: string | null
+          country: string | null
           created_at: string
+          favorite_brands: string[] | null
+          favorite_types: string[] | null
+          full_name: string | null
+          hide_from_search: boolean | null
           id: number | null
+          instagram: string | null
+          is_private: boolean | null
+          location: string | null
+          new_release_alerts: boolean | null
+          phone_number: string | null
+          postal_code: string | null
+          receive_email_updates: boolean | null
+          receive_marketing_emails: boolean | null
+          receive_wishlist_alerts: boolean | null
+          show_activity_status: boolean | null
+          show_collection: boolean | null
+          show_wishlist: boolean | null
+          state_province: string | null
+          twitter: string | null
+          updated_at: string | null
           user_id: number
           user_uuid: string
+          website: string | null
+          youtube: string | null
         }
         Insert: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          favorite_brands?: string[] | null
+          favorite_types?: string[] | null
+          full_name?: string | null
+          hide_from_search?: boolean | null
           id?: number | null
+          instagram?: string | null
+          is_private?: boolean | null
+          location?: string | null
+          new_release_alerts?: boolean | null
+          phone_number?: string | null
+          postal_code?: string | null
+          receive_email_updates?: boolean | null
+          receive_marketing_emails?: boolean | null
+          receive_wishlist_alerts?: boolean | null
+          show_activity_status?: boolean | null
+          show_collection?: boolean | null
+          show_wishlist?: boolean | null
+          state_province?: string | null
+          twitter?: string | null
+          updated_at?: string | null
           user_id?: number
           user_uuid: string
+          website?: string | null
+          youtube?: string | null
         }
         Update: {
+          address_line_1?: string | null
+          address_line_2?: string | null
+          bio?: string | null
+          city?: string | null
+          country?: string | null
           created_at?: string
+          favorite_brands?: string[] | null
+          favorite_types?: string[] | null
+          full_name?: string | null
+          hide_from_search?: boolean | null
           id?: number | null
+          instagram?: string | null
+          is_private?: boolean | null
+          location?: string | null
+          new_release_alerts?: boolean | null
+          phone_number?: string | null
+          postal_code?: string | null
+          receive_email_updates?: boolean | null
+          receive_marketing_emails?: boolean | null
+          receive_wishlist_alerts?: boolean | null
+          show_activity_status?: boolean | null
+          show_collection?: boolean | null
+          show_wishlist?: boolean | null
+          state_province?: string | null
+          twitter?: string | null
+          updated_at?: string | null
           user_id?: number
           user_uuid?: string
+          website?: string | null
+          youtube?: string | null
         }
         Relationships: []
       }

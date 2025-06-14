@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useUser, useClerk } from "@clerk/clerk-react";
 import { toast } from "@/components/ui/use-toast";
+import { useSupabaseProfile } from "./useSupabaseProfile";
 
 interface SocialLink {
   platform: string;
@@ -23,6 +24,16 @@ interface ProfileSettingsFormData {
   instagram?: string;
   twitter?: string;
   youtube?: string;
+  website?: string;
+  location?: string;
+  full_name?: string;
+  phone_number?: string;
+  address_line_1?: string;
+  address_line_2?: string;
+  city?: string;
+  state_province?: string;
+  postal_code?: string;
+  country?: string;
   isPrivate?: boolean;
   hideFromSearch?: boolean;
   showActivityStatus?: boolean;
@@ -45,6 +56,8 @@ export const useProfileSettings = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
 
+  const { profile, loading: profileLoading, saving: profileSaving, saveProfile: saveSupabaseProfile } = useSupabaseProfile();
+
   const form = useForm<ProfileSettingsFormData>({
     defaultValues: {
       username: "",
@@ -52,6 +65,16 @@ export const useProfileSettings = () => {
       email: "",
       phone: "",
       avatarUrl: "",
+      full_name: "",
+      phone_number: "",
+      address_line_1: "",
+      address_line_2: "",
+      city: "",
+      state_province: "",
+      postal_code: "",
+      country: "us",
+      website: "",
+      location: "",
       isPrivate: false,
       hideFromSearch: true,
       showActivityStatus: true,
@@ -68,35 +91,45 @@ export const useProfileSettings = () => {
     }
   });
 
-  // Load user data from Clerk when available
+  // Load user data from Clerk and Supabase when available
   useEffect(() => {
-    if (isUserLoaded && isSignedIn && user) {
+    if (isUserLoaded && isSignedIn && user && profile !== null && !profileLoading) {
       const loadProfileData = async () => {
         try {
           // Get meta data with defaults
           const meta = user.unsafeMetadata || {};
           
-          // Populate form with Clerk user data
+          // Populate form with combined Clerk and Supabase data
           form.reset({
             username: user.username || user.firstName || "",
-            bio: meta.bio as string || "",
+            bio: profile?.bio || meta.bio as string || "",
             email: user.emailAddresses[0]?.emailAddress || "",
             phone: user.phoneNumbers[0]?.phoneNumber || "",
             avatarUrl: user.imageUrl || "",
-            instagram: meta.instagram as string || "",
-            twitter: meta.twitter as string || "",
-            youtube: meta.youtube as string || "",
-            isPrivate: meta.isPrivate as boolean || false,
-            hideFromSearch: meta.hideFromSearch as boolean || true,
-            showActivityStatus: meta.showActivityStatus as boolean || true,
-            showCollection: meta.showCollection as boolean || true,
-            showWishlist: meta.showWishlist as boolean || true,
-            receiveEmailUpdates: meta.receiveEmailUpdates as boolean || true,
-            receiveMarketingEmails: meta.receiveMarketingEmails as boolean || false,
-            receiveWishlistAlerts: meta.receiveWishlistAlerts as boolean || false,
-            newReleaseAlerts: meta.newReleaseAlerts as boolean || false,
-            favoriteBrands: meta.favoriteBrands as string[] || [],
-            favoriteTypes: meta.favoriteTypes as string[] || [],
+            full_name: profile?.full_name || "",
+            phone_number: profile?.phone_number || "",
+            address_line_1: profile?.address_line_1 || "",
+            address_line_2: profile?.address_line_2 || "",
+            city: profile?.city || "",
+            state_province: profile?.state_province || "",
+            postal_code: profile?.postal_code || "",
+            country: profile?.country || "us",
+            website: profile?.website || "",
+            location: profile?.location || "",
+            instagram: profile?.instagram || meta.instagram as string || "",
+            twitter: profile?.twitter || meta.twitter as string || "",
+            youtube: profile?.youtube || meta.youtube as string || "",
+            isPrivate: profile?.is_private ?? meta.isPrivate as boolean ?? false,
+            hideFromSearch: profile?.hide_from_search ?? meta.hideFromSearch as boolean ?? true,
+            showActivityStatus: profile?.show_activity_status ?? meta.showActivityStatus as boolean ?? true,
+            showCollection: profile?.show_collection ?? meta.showCollection as boolean ?? true,
+            showWishlist: profile?.show_wishlist ?? meta.showWishlist as boolean ?? true,
+            receiveEmailUpdates: profile?.receive_email_updates ?? meta.receiveEmailUpdates as boolean ?? true,
+            receiveMarketingEmails: profile?.receive_marketing_emails ?? meta.receiveMarketingEmails as boolean ?? false,
+            receiveWishlistAlerts: profile?.receive_wishlist_alerts ?? meta.receiveWishlistAlerts as boolean ?? false,
+            newReleaseAlerts: profile?.new_release_alerts ?? meta.newReleaseAlerts as boolean ?? false,
+            favoriteBrands: profile?.favorite_brands || meta.favoriteBrands as string[] || [],
+            favoriteTypes: profile?.favorite_types || meta.favoriteTypes as string[] || [],
             socialLinks: meta.socialLinks as SocialLink[] || [],
             storeLinks: meta.storeLinks as StoreLink[] || [],
           });
@@ -114,7 +147,7 @@ export const useProfileSettings = () => {
 
       loadProfileData();
     }
-  }, [isUserLoaded, isSignedIn, user, form]);
+  }, [isUserLoaded, isSignedIn, user, profile, profileLoading, form]);
 
   // Save profile data
   const saveProfile = async (data: ProfileSettingsFormData) => {
@@ -133,24 +166,42 @@ export const useProfileSettings = () => {
     try {
       console.log("Saving profile data:", data);
       
-      // Build updated metadata object
-      const updatedMetadata = {
-        ...user.unsafeMetadata,
+      // Save to Supabase profiles table
+      const supabaseSuccess = await saveSupabaseProfile({
+        full_name: data.full_name,
+        phone_number: data.phone_number,
+        address_line_1: data.address_line_1,
+        address_line_2: data.address_line_2,
+        city: data.city,
+        state_province: data.state_province,
+        postal_code: data.postal_code,
+        country: data.country,
         bio: data.bio,
+        website: data.website,
+        location: data.location,
         instagram: data.instagram,
         twitter: data.twitter,
         youtube: data.youtube,
-        isPrivate: data.isPrivate,
-        hideFromSearch: data.hideFromSearch,
-        showActivityStatus: data.showActivityStatus,
-        showCollection: data.showCollection,
-        showWishlist: data.showWishlist,
-        receiveEmailUpdates: data.receiveEmailUpdates,
-        receiveMarketingEmails: data.receiveMarketingEmails,
-        receiveWishlistAlerts: data.receiveWishlistAlerts,
-        newReleaseAlerts: data.newReleaseAlerts,
-        favoriteBrands: data.favoriteBrands,
-        favoriteTypes: data.favoriteTypes,
+        is_private: data.isPrivate,
+        hide_from_search: data.hideFromSearch,
+        show_activity_status: data.showActivityStatus,
+        show_collection: data.showCollection,
+        show_wishlist: data.showWishlist,
+        receive_email_updates: data.receiveEmailUpdates,
+        receive_marketing_emails: data.receiveMarketingEmails,
+        receive_wishlist_alerts: data.receiveWishlistAlerts,
+        new_release_alerts: data.newReleaseAlerts,
+        favorite_brands: data.favoriteBrands,
+        favorite_types: data.favoriteTypes,
+      });
+
+      if (!supabaseSuccess) {
+        throw new Error("Failed to save to Supabase");
+      }
+      
+      // Build updated Clerk metadata object (for social links, etc.)
+      const updatedMetadata = {
+        ...user.unsafeMetadata,
         socialLinks: data.socialLinks,
         storeLinks: data.storeLinks,
         // Sync plushie interests with favorite collections
@@ -212,11 +263,6 @@ export const useProfileSettings = () => {
         detail: { username: data.username, avatarUrl: user.imageUrl } 
       }));
       
-      toast({
-        title: "Profile updated",
-        description: "Your profile settings have been saved successfully."
-      });
-      
       return true;
       
     } catch (error) {
@@ -234,8 +280,8 @@ export const useProfileSettings = () => {
 
   return {
     form,
-    isSubmitting,
-    isSynced,
+    isSubmitting: isSubmitting || profileSaving,
+    isSynced: isSynced && !profileLoading,
     activeTab,
     setActiveTab,
     saveProfile,
