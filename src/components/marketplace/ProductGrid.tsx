@@ -34,10 +34,10 @@ export function ProductGrid({
       {plushies.map((item) => (
         <ProductCard
           key={item.id}
-          product={item}
+          plushie={item}
           onProductClick={onProductClick}
           onWishlistToggle={onWishlistToggle}
-          isWishlisted={false}
+          viewMode={viewMode}
         />
       ))}
     </div>
