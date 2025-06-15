@@ -36,23 +36,30 @@ export const useClerkSupabaseUser = (clerkUser: ReturnType<typeof useUser>['user
           console.log('Found existing user:', existingUser.id);
           setSupabaseUserId(existingUser.id);
         } else {
-          // Create new user
+          // Create new user with proper data structure
           console.log('Creating new user for Clerk ID:', clerkUser.id);
+          
+          const userData = {
+            clerk_id: clerkUser.id,
+            email: clerkUser.emailAddresses?.[0]?.emailAddress || null,
+            first_name: clerkUser.firstName || null,
+            last_name: clerkUser.lastName || null,
+            username: clerkUser.username || clerkUser.firstName || 'User',
+            avatar_url: clerkUser.imageUrl || null
+          };
+
           const { data: newUser, error: createError } = await supabase
             .from('users')
-            .insert({
-              clerk_id: clerkUser.id,
-              email: clerkUser.emailAddresses[0]?.emailAddress || null,
-              first_name: clerkUser.firstName || null,
-              last_name: clerkUser.lastName || null,
-              username: clerkUser.username || null,
-              avatar_url: clerkUser.imageUrl || null
-            })
+            .insert([userData])
             .select('id')
             .single();
 
           if (createError) {
             console.error('Error creating user:', createError);
+            // If it's an RLS error, try to provide more context
+            if (createError.code === '42501') {
+              throw new Error('User creation blocked by security policy. Please check RLS configuration.');
+            }
             throw createError;
           }
 
@@ -63,7 +70,8 @@ export const useClerkSupabaseUser = (clerkUser: ReturnType<typeof useUser>['user
         setError(null);
       } catch (err) {
         console.error('User sync error:', err);
-        setError(err instanceof Error ? err.message : 'Failed to sync user');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to sync user';
+        setError(errorMessage);
         setSupabaseUserId(null);
       } finally {
         setIsLoading(false);
@@ -71,7 +79,7 @@ export const useClerkSupabaseUser = (clerkUser: ReturnType<typeof useUser>['user
     };
 
     syncUser();
-  }, [clerkUser?.id]);
+  }, [clerkUser?.id, clerkUser?.emailAddresses, clerkUser?.firstName, clerkUser?.lastName, clerkUser?.username, clerkUser?.imageUrl]);
 
   return { supabaseUserId, isLoading, error };
 };

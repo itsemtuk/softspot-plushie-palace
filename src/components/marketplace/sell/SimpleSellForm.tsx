@@ -15,6 +15,8 @@ import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { useClerkSupabaseUser } from '@/hooks/useClerkSupabaseUser';
 import { Spinner } from '@/components/ui/spinner';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertTriangle, Loader2 } from 'lucide-react';
 
 const sellFormSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
@@ -51,7 +53,7 @@ export const SimpleSellForm = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Please sign in to list items",
+        description: "User authentication required. Please try refreshing the page.",
       });
       return;
     }
@@ -114,22 +116,49 @@ export const SimpleSellForm = () => {
       <Card className="max-w-2xl mx-auto">
         <CardContent className="pt-6">
           <div className="flex items-center justify-center p-8">
-            <Spinner size="md" />
-            <span className="ml-3">Setting up your account...</span>
+            <Loader2 className="h-6 w-6 animate-spin mr-3" />
+            <span>Setting up your account...</span>
           </div>
         </CardContent>
       </Card>
     );
   }
 
-  if (userError || !supabaseUserId) {
+  if (userError) {
     return (
       <Card className="max-w-2xl mx-auto">
         <CardContent className="pt-6">
-          <div className="text-center p-8">
-            <p className="text-red-600">Failed to sync your account. Please try refreshing the page.</p>
-            <p className="text-sm text-gray-500 mt-2">{userError}</p>
-          </div>
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-2">
+                <p>Unable to sync your account:</p>
+                <p className="text-sm text-gray-600">{userError}</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => window.location.reload()}
+                >
+                  Try Again
+                </Button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!supabaseUserId) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="pt-6">
+          <Alert variant="destructive">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              User authentication required. Please sign in and try again.
+            </AlertDescription>
+          </Alert>
         </CardContent>
       </Card>
     );
@@ -235,7 +264,7 @@ export const SimpleSellForm = () => {
             <Button type="submit" disabled={isSubmitting}>
               {isSubmitting ? (
                 <>
-                  <Spinner size="sm" className="mr-2" />
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
                   Listing...
                 </>
               ) : (
