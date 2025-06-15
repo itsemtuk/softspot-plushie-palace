@@ -56,7 +56,7 @@ export const useProfileSettings = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSynced, setIsSynced] = useState(false);
 
-  const { profile, loading: profileLoading, saving: profileSaving, saveProfile: saveSupabaseProfile } = useSupabaseProfile();
+  const { profile, loading: profileLoading, saving: profileSaving, saveProfile: saveSupabaseProfile, userSyncError } = useSupabaseProfile();
 
   const form = useForm<ProfileSettingsFormData>({
     defaultValues: {
@@ -93,7 +93,7 @@ export const useProfileSettings = () => {
 
   // Load user data from Clerk and Supabase when available
   useEffect(() => {
-    if (isUserLoaded && isSignedIn && user && profile !== null && !profileLoading) {
+    if (isUserLoaded && isSignedIn && user && profile !== null && !profileLoading && !userSyncError) {
       const loadProfileData = async () => {
         try {
           // Get meta data with defaults
@@ -147,7 +147,7 @@ export const useProfileSettings = () => {
 
       loadProfileData();
     }
-  }, [isUserLoaded, isSignedIn, user, profile, profileLoading, form]);
+  }, [isUserLoaded, isSignedIn, user, profile, profileLoading, userSyncError, form]);
 
   // Save profile data
   const saveProfile = async (data: ProfileSettingsFormData) => {
@@ -281,7 +281,7 @@ export const useProfileSettings = () => {
   return {
     form,
     isSubmitting: isSubmitting || profileSaving,
-    isSynced: isSynced && !profileLoading,
+    isSynced: isSynced && !profileLoading && !userSyncError,
     activeTab,
     setActiveTab,
     saveProfile,

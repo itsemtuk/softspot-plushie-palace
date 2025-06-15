@@ -13,9 +13,13 @@ import { StoreLinksTab } from "@/components/settings/tabs/StoreLinksTab";
 import { DeliveryPaymentTab } from "@/components/settings/tabs/DeliveryPaymentTab";
 import { toast } from "@/components/ui/use-toast";
 import { Spinner } from "@/components/ui/spinner";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertTriangle } from "lucide-react";
+import { useSupabaseProfile } from "@/hooks/useSupabaseProfile";
 
 export function ProfileSettings() {
   const { form, isSubmitting, activeTab, setActiveTab, saveProfile, isSynced } = useProfileSettings();
+  const { userSyncError, refreshProfile } = useSupabaseProfile();
 
   const tabs = [
     { id: "basic-info", label: "Basic Info" },
@@ -46,6 +50,28 @@ export function ProfileSettings() {
       });
     }
   };
+
+  if (userSyncError) {
+    return (
+      <Card className="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-6 border border-gray-200 dark:border-gray-700">
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-2">
+              <p>{userSyncError}</p>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={refreshProfile}
+              >
+                Try Again
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      </Card>
+    );
+  }
 
   if (!isSynced) {
     return (
