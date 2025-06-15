@@ -1,147 +1,186 @@
-import React from 'react';
-import { Heart, Star, MapPin, Truck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { MarketplacePlushie } from '@/types/marketplace';
-import { RobustImage } from '@/components/ui/robust-image';
+
+import React from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Heart, MessageCircle } from "lucide-react";
+import { MarketplacePlushie } from "@/types/marketplace";
 
 interface ProductCardProps {
-  product: MarketplacePlushie;
-  onProductClick: (product: MarketplacePlushie) => void;
+  plushie: MarketplacePlushie;
+  onProductClick: (plushie: MarketplacePlushie) => void;
   onWishlistToggle: (id: string, event: React.MouseEvent) => void;
-  isWishlisted: boolean;
+  viewMode?: "grid" | "list";
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({
-  product,
+  plushie,
   onProductClick,
   onWishlistToggle,
-  isWishlisted
+  viewMode = "grid"
 }) => {
-  // Add null checks and fallbacks
-  if (!product) {
-    return null;
+  const handleCardClick = () => {
+    onProductClick(plushie);
+  };
+
+  const handleWishlistClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onWishlistToggle(plushie.id, e);
+  };
+
+  if (viewMode === "list") {
+    return (
+      <Card 
+        className="cursor-pointer hover:shadow-lg transition-shadow duration-200 mb-4"
+        onClick={handleCardClick}
+      >
+        <CardContent className="p-4">
+          <div className="flex gap-4">
+            <div className="w-24 h-24 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
+              {plushie.image || plushie.imageUrl ? (
+                <img
+                  src={plushie.image || plushie.imageUrl}
+                  alt={plushie.title}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  No Image
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1 min-w-0">
+              <div className="flex justify-between items-start mb-2">
+                <h3 className="font-semibold text-lg truncate">{plushie.title}</h3>
+                <div className="flex items-center gap-2 ml-4">
+                  <span className="text-xl font-bold text-green-600">
+                    ${plushie.price?.toFixed(2) || '0.00'}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleWishlistClick}
+                    className="p-1"
+                  >
+                    <Heart className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+              
+              <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                {plushie.description}
+              </p>
+              
+              <div className="flex items-center gap-2 mb-2">
+                {plushie.condition && (
+                  <Badge variant="secondary" className="text-xs">
+                    {plushie.condition}
+                  </Badge>
+                )}
+                {plushie.brand && (
+                  <Badge variant="outline" className="text-xs">
+                    {plushie.brand}
+                  </Badge>
+                )}
+              </div>
+              
+              <div className="flex items-center justify-between text-sm text-gray-500">
+                <span>@{plushie.username || 'Unknown'}</span>
+                <div className="flex items-center gap-4">
+                  <span className="flex items-center gap-1">
+                    <Heart className="h-3 w-3" />
+                    {plushie.likes || 0}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <MessageCircle className="h-3 w-3" />
+                    {plushie.comments || 0}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   }
 
-  const {
-    id = '',
-    title = 'Unnamed Plushie',
-    price = 0,
-    imageUrl = '',
-    image = '',
-    username = 'Unknown',
-    location = '',
-    deliveryCost = 0,
-    discount = 0,
-    originalPrice = null,
-    likes = 0,
-    condition = 'Unknown'
-  } = product;
-
-  // Ensure price is a number
-  const safePrice = typeof price === 'number' ? price : parseFloat(String(price)) || 0;
-  const safeDeliveryCost = typeof deliveryCost === 'number' ? deliveryCost : parseFloat(String(deliveryCost)) || 0;
-  const safeDiscount = typeof discount === 'number' ? discount : parseFloat(String(discount)) || 0;
-  const safeLikes = typeof likes === 'number' ? likes : parseInt(String(likes)) || 0;
-  
-  const displayPrice = safePrice.toFixed(2);
-  const isOnSale = safeDiscount > 0;
-  const originalPriceValue = originalPrice ? (typeof originalPrice === 'number' ? originalPrice : parseFloat(String(originalPrice))) : null;
-  
-  // Use imageUrl first, fallback to image, then to placeholder
-  const displayImage = imageUrl || image || '/placeholder.svg';
-
-  const handleCardClick = () => {
-    onProductClick(product);
-  };
-
-  const handleWishlistClick = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    onWishlistToggle(id, event);
-  };
-
   return (
-    <Card className="group cursor-pointer hover:shadow-lg transition-all duration-200 overflow-hidden">
-      <div className="relative" onClick={handleCardClick}>
-        <div className="aspect-square overflow-hidden bg-gray-100">
-          <RobustImage
-            src={displayImage}
-            alt={title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200"
-            showLoadingSpinner={true}
+    <Card 
+      className="cursor-pointer hover:shadow-lg transition-shadow duration-200 overflow-hidden"
+      onClick={handleCardClick}
+    >
+      <div className="aspect-square relative">
+        {plushie.image || plushie.imageUrl ? (
+          <img
+            src={plushie.image || plushie.imageUrl}
+            alt={plushie.title}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              e.currentTarget.src = '/placeholder.svg';
+            }}
           />
-        </div>
+        ) : (
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center text-gray-400">
+            No Image
+          </div>
+        )}
         
-        {/* Wishlist button */}
         <Button
           variant="ghost"
-          size="icon"
-          className={`absolute top-2 right-2 h-8 w-8 rounded-full ${
-            isWishlisted 
-              ? 'bg-red-100 text-red-500 hover:bg-red-200' 
-              : 'bg-white/80 text-gray-600 hover:bg-white hover:text-red-500'
-          }`}
+          size="sm"
+          className="absolute top-2 right-2 bg-white/80 hover:bg-white"
           onClick={handleWishlistClick}
         >
-          <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} />
+          <Heart className="h-4 w-4" />
         </Button>
-
-        {/* Discount badge */}
-        {isOnSale && (
-          <Badge className="absolute top-2 left-2 bg-red-500 hover:bg-red-600 text-white">
-            -{safeDiscount}%
-          </Badge>
-        )}
-
-        {/* Free shipping badge */}
-        {safeDeliveryCost === 0 && (
-          <Badge className="absolute bottom-2 left-2 bg-green-500 hover:bg-green-600 text-white text-xs">
-            <Truck className="h-3 w-3 mr-1" />
-            Free Shipping
+        
+        {plushie.discount && (
+          <Badge className="absolute top-2 left-2 bg-red-500">
+            -{plushie.discount}%
           </Badge>
         )}
       </div>
-
-      <CardContent className="p-3" onClick={handleCardClick}>
-        <div className="space-y-2">
-          {/* Title */}
-          <h3 className="font-medium text-sm line-clamp-2 min-h-[2.5rem]">
-            {title}
-          </h3>
-
-          {/* Price */}
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-lg text-softspot-600">
-              ${displayPrice}
-            </span>
-            {isOnSale && originalPriceValue && (
-              <span className="text-sm text-gray-500 line-through">
-                ${originalPriceValue.toFixed(2)}
-              </span>
-            )}
-          </div>
-
-          {/* Seller info */}
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            <span>{username}</span>
-            <div className="flex items-center gap-1">
-              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-              <span>{safeLikes}</span>
-            </div>
-          </div>
-
-          {/* Location and condition */}
-          <div className="flex items-center justify-between text-xs text-gray-500">
-            {location && (
-              <div className="flex items-center gap-1">
-                <MapPin className="h-3 w-3" />
-                <span>{location}</span>
-              </div>
-            )}
-            <Badge variant="outline" className="text-xs">
-              {condition}
+      
+      <CardContent className="p-4">
+        <div className="flex justify-between items-start mb-2">
+          <h3 className="font-semibold truncate flex-1">{plushie.title}</h3>
+          <span className="text-lg font-bold text-green-600 ml-2">
+            ${plushie.price?.toFixed(2) || '0.00'}
+          </span>
+        </div>
+        
+        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+          {plushie.description}
+        </p>
+        
+        <div className="flex items-center gap-2 mb-3">
+          {plushie.condition && (
+            <Badge variant="secondary" className="text-xs">
+              {plushie.condition}
             </Badge>
+          )}
+          {plushie.brand && (
+            <Badge variant="outline" className="text-xs">
+              {plushie.brand}
+            </Badge>
+          )}
+        </div>
+        
+        <div className="flex items-center justify-between text-sm text-gray-500">
+          <span>@{plushie.username || 'Unknown'}</span>
+          <div className="flex items-center gap-3">
+            <span className="flex items-center gap-1">
+              <Heart className="h-3 w-3" />
+              {plushie.likes || 0}
+            </span>
+            <span className="flex items-center gap-1">
+              <MessageCircle className="h-3 w-3" />
+              {plushie.comments || 0}
+            </span>
           </div>
         </div>
       </CardContent>
