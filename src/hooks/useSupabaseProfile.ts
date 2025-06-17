@@ -54,7 +54,7 @@ export const useSupabaseProfile = () => {
       }
 
       if (!data && retryCount < 3) {
-        // User not found, try to sync from Clerk
+        // User not found, try to sync from Clerk using the safe function
         console.log('User not found in Supabase, attempting sync...');
         await syncClerkUser(clerkId);
         
@@ -70,7 +70,7 @@ export const useSupabaseProfile = () => {
     }
   };
 
-  // Sync Clerk user to Supabase users table
+  // Sync Clerk user to Supabase users table using the safe RPC function
   const syncClerkUser = async (clerkId: string) => {
     if (!user) return;
 
@@ -84,13 +84,31 @@ export const useSupabaseProfile = () => {
         avatar_url: user.imageUrl || null
       };
 
-      const { error } = await supabase
-        .from('users')
-        .insert([userData]);
+      // Try to create user with service role bypass using rpc
+      const { data: newUser, error: createError } = await supabase.rpc('create_user_safe', {
+        user_data: userData
+      });
 
-      if (error && !error.message.includes('duplicate key')) {
-        console.error('Error syncing Clerk user:', error);
-        throw error;
+      if (createError) {
+        console.error('RPC create user failed:', createError);
+        // If RPC fails, the user might already exist due to conflict
+        // Let's try to fetch them again
+        const { data: existingUser } = await supabase
+          .from('users')
+          .select('id')
+          .eq('clerk_id', clerkId)
+          .maybeSingle();
+          
+        if (!existingUser) {
+          throw new Error('User creation failed and user not found');
+        }
+      } else {
+        // Add null checks for TypeScript
+        if (newUser && Array.isArray(newUser) && newUser.length > 0 && newUser[0]?.id) {
+          console.log('Created user via RPC:', newUser[0].id);
+        } else {
+          console.log('User creation returned empty result - user may already exist');
+        }
       }
     } catch (error) {
       console.error('Failed to sync Clerk user:', error);
