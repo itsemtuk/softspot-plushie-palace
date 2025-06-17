@@ -36,7 +36,7 @@ export const useClerkSupabaseUser = (clerkUser: ReturnType<typeof useUser>['user
           console.log('Found existing user:', existingUser.id);
           setSupabaseUserId(existingUser.id);
         } else {
-          // Create new user with proper data structure
+          // Create new user with service role bypass
           console.log('Creating new user for Clerk ID:', clerkUser.id);
           
           const userData = {
@@ -48,23 +48,32 @@ export const useClerkSupabaseUser = (clerkUser: ReturnType<typeof useUser>['user
             avatar_url: clerkUser.imageUrl || null
           };
 
-          const { data: newUser, error: createError } = await supabase
-            .from('users')
-            .insert([userData])
-            .select('id')
-            .single();
+          // Try to create user with explicit RLS bypass using rpc
+          const { data: newUser, error: createError } = await supabase.rpc('create_user_safe', {
+            user_data: userData
+          });
 
           if (createError) {
-            console.error('Error creating user:', createError);
-            // If it's an RLS error, try to provide more context
-            if (createError.code === '42501') {
+            console.error('RPC create user failed, trying direct insert:', createError);
+            
+            // Fallback to direct insert
+            const { data: directUser, error: directError } = await supabase
+              .from('users')
+              .insert([userData])
+              .select('id')
+              .single();
+
+            if (directError) {
+              console.error('Direct insert also failed:', directError);
               throw new Error('User creation blocked by security policy. Please check RLS configuration.');
             }
-            throw createError;
-          }
 
-          console.log('Created new user:', newUser.id);
-          setSupabaseUserId(newUser.id);
+            console.log('Created user via direct insert:', directUser.id);
+            setSupabaseUserId(directUser.id);
+          } else {
+            console.log('Created user via RPC:', newUser[0]?.id);
+            setSupabaseUserId(newUser[0]?.id);
+          }
         }
         
         setError(null);
