@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -91,8 +90,14 @@ export const useSupabaseProfile = () => {
 
       if (createError) {
         console.error('RPC create user failed:', createError);
-        // If RPC fails, the user might already exist due to conflict
-        // Let's try to fetch them again
+        
+        // Check if it's a duplicate key error (user already exists)
+        if (createError.code === '23505' || createError.message?.includes('duplicate key')) {
+          console.log('User already exists during sync - this is expected');
+          return; // This is success, user already exists
+        }
+        
+        // For other errors, try to check if user exists anyway
         const { data: existingUser } = await supabase
           .from('users')
           .select('id')

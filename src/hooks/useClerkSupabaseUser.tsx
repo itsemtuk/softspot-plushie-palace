@@ -54,24 +54,36 @@ export const useClerkSupabaseUser = (clerkUser: ReturnType<typeof useUser>['user
           });
 
           if (createError) {
-            console.error('RPC create user failed, trying direct insert:', createError);
+            console.error('RPC create user failed:', createError);
             
-            // Fallback to direct insert
-            const { data: directUser, error: directError } = await supabase
-              .from('users')
-              .insert([userData])
-              .select('id')
-              .single();
+            // Check if it's a duplicate key error (user already exists)
+            if (createError.code === '23505' || createError.message?.includes('duplicate key')) {
+              console.log('User already exists, fetching existing user...');
+              
+              // Try to fetch the existing user
+              const { data: existingUser, error: refetchError } = await supabase
+                .from('users')
+                .select('id')
+                .eq('clerk_id', clerkUser.id)
+                .maybeSingle();
 
-            if (directError) {
-              console.error('Direct insert also failed:', directError);
-              throw new Error('User creation blocked by security policy. Please check RLS configuration.');
+              if (refetchError) {
+                console.error('Error refetching user:', refetchError);
+                throw new Error('User exists but could not be retrieved');
+              }
+
+              if (existingUser) {
+                console.log('Successfully retrieved existing user:', existingUser.id);
+                setSupabaseUserId(existingUser.id);
+              } else {
+                throw new Error('User should exist but was not found');
+              }
+            } else {
+              // For other errors, this is a real failure
+              throw new Error('User creation failed: ' + createError.message);
             }
-
-            console.log('Created user via direct insert:', directUser.id);
-            setSupabaseUserId(directUser.id);
           } else {
-            // Add null checks for TypeScript
+            // User creation succeeded
             if (newUser && Array.isArray(newUser) && newUser.length > 0 && newUser[0]?.id) {
               console.log('Created user via RPC:', newUser[0].id);
               setSupabaseUserId(newUser[0].id);
