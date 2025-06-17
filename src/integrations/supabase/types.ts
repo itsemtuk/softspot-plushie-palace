@@ -425,6 +425,18 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_user_safe: {
+        Args: { user_data: Json }
+        Returns: {
+          id: string
+          clerk_id: string
+          username: string
+          first_name: string
+          last_name: string
+          email: string
+          avatar_url: string
+        }[]
+      }
       set_current_user_id: {
         Args: { user_id_param: string }
         Returns: undefined

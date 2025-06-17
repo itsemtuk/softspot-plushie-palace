@@ -71,8 +71,13 @@ export const useClerkSupabaseUser = (clerkUser: ReturnType<typeof useUser>['user
             console.log('Created user via direct insert:', directUser.id);
             setSupabaseUserId(directUser.id);
           } else {
-            console.log('Created user via RPC:', newUser[0]?.id);
-            setSupabaseUserId(newUser[0]?.id);
+            // Add null checks for TypeScript
+            if (newUser && Array.isArray(newUser) && newUser.length > 0 && newUser[0]?.id) {
+              console.log('Created user via RPC:', newUser[0].id);
+              setSupabaseUserId(newUser[0].id);
+            } else {
+              throw new Error('User creation returned invalid data');
+            }
           }
         }
         
