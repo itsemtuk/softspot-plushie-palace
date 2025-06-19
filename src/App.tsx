@@ -19,8 +19,8 @@ import { ClerkButtonComponent } from './components/navigation/user-button/ClerkI
 import AboutWithSocialMedia from './pages/AboutWithSocialMedia';
 import Users from './pages/Users';
 
-// Use environment variable or fallback to a placeholder
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY || "pk_test_placeholder";
+// Use the provided Clerk publishable key
+const CLERK_PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 function App() {
   // Check if we have a valid Clerk key
