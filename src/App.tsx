@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import Home from './pages/Home';
+import Index from './pages/Index';
 import Marketplace from './pages/Marketplace';
-import SellItem from './pages/SellItem';
+import SellItemPage from './pages/SellItemPage';
 import Profile from './pages/Profile';
 import Settings from './pages/Settings';
 import Feed from './pages/Feed';
@@ -13,10 +14,10 @@ import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut } from '@clerk/clerk-rea
 import { SignIn } from "@clerk/clerk-react";
 import { SignUp } from "@clerk/clerk-react";
 import { Navigate } from 'react-router-dom';
-import { MainLayout } from './layouts/MainLayout';
-import { AuthenticationLayout } from './layouts/AuthenticationLayout';
+import MainLayout from './components/layout/MainLayout';
 import { ClerkButtonComponent } from './components/navigation/user-button/ClerkIntegration';
 import AboutWithSocialMedia from './pages/AboutWithSocialMedia';
+import Users from './pages/Users';
 
 function App() {
   return (
@@ -30,29 +31,29 @@ function App() {
             <Routes>
               <Route path="/sign-in" element={
                 <SignedOut>
-                  <AuthenticationLayout>
+                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
                     <SignIn path="/sign-in" routing="path" />
-                  </AuthenticationLayout>
+                  </div>
                 </SignedOut>
               } />
               <Route path="/sign-up" element={
                 <SignedOut>
-                  <AuthenticationLayout>
+                  <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
                     <SignUp path="/sign-up" routing="path" />
-                  </AuthenticationLayout>
+                  </div>
                 </SignedOut>
               } />
               <Route path="/" element={
                 <SignedIn>
                   <MainLayout>
-                    <Home />
+                    <Index />
                   </MainLayout>
                 </SignedIn>
               } />
               <Route path="/home" element={
                 <SignedIn>
                   <MainLayout>
-                    <Home />
+                    <Index />
                   </MainLayout>
                 </SignedIn>
               } />
@@ -66,7 +67,7 @@ function App() {
               <Route path="/sell" element={
                 <SignedIn>
                   <MainLayout>
-                    <SellItem />
+                    <SellItemPage />
                   </MainLayout>
                 </SignedIn>
               } />
@@ -98,8 +99,14 @@ function App() {
                   </MainLayout>
                 </SignedIn>
               } />
+              <Route path="/users" element={
+                <SignedIn>
+                  <MainLayout>
+                    <Users />
+                  </MainLayout>
+                </SignedIn>
+              } />
               <Route path="*" element={<NotFound />} />
-              <Route path="/" element={<Navigate to="/home" />} />
               <Route path="/about" element={<AboutWithSocialMedia />} />
             </Routes>
             <ClerkButtonComponent />

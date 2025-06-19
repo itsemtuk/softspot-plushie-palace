@@ -48,7 +48,7 @@ export const EnhancedUserSearch = () => {
     try {
       const { data, error } = await supabase
         .from('users')
-        .select('id, username, first_name, last_name, avatar_url')
+        .select('id, username, first_name, last_name, avatar_url, email')
         .or(`username.ilike.%${searchTerm}%,first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%`)
         .limit(10);
 
