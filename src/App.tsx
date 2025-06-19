@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Index from './pages/Index';
@@ -24,85 +23,8 @@ const CLERK_PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291b
 
 function App() {
   // Check if we have a valid Clerk key
-  const hasValidClerkKey = CLERK_PUBLISHABLE_KEY !== "pk_test_placeholder" && 
-                          CLERK_PUBLISHABLE_KEY && 
+  const hasValidClerkKey = CLERK_PUBLISHABLE_KEY && 
                           CLERK_PUBLISHABLE_KEY.startsWith('pk_');
-
-  // If no valid Clerk key, render app without Clerk authentication
-  if (!hasValidClerkKey) {
-    console.warn('No valid Clerk publishable key found. Running without Clerk authentication.');
-    return (
-      <Router>
-        <div className="App">
-          <Routes>
-            <Route path="/sign-in" element={
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold mb-4">Authentication Setup Required</h2>
-                  <p className="text-gray-600">Please configure your Clerk publishable key to enable authentication.</p>
-                </div>
-              </div>
-            } />
-            <Route path="/sign-up" element={
-              <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                <div className="text-center">
-                  <h2 className="text-2xl font-bold mb-4">Authentication Setup Required</h2>
-                  <p className="text-gray-600">Please configure your Clerk publishable key to enable authentication.</p>
-                </div>
-              </div>
-            } />
-            <Route path="/" element={
-              <MainLayout>
-                <Index />
-              </MainLayout>
-            } />
-            <Route path="/home" element={
-              <MainLayout>
-                <Index />
-              </MainLayout>
-            } />
-            <Route path="/marketplace" element={
-              <MainLayout>
-                <Marketplace />
-              </MainLayout>
-            } />
-            <Route path="/sell" element={
-              <MainLayout>
-                <SellItemPage />
-              </MainLayout>
-            } />
-            <Route path="/profile/:username" element={
-              <MainLayout>
-                <Profile />
-              </MainLayout>
-            } />
-            <Route path="/settings" element={
-              <MainLayout>
-                <Settings />
-              </MainLayout>
-            } />
-            <Route path="/feed" element={
-              <MainLayout>
-                <Feed />
-              </MainLayout>
-            } />
-            <Route path="/messages" element={
-              <MainLayout>
-                <Messages />
-              </MainLayout>
-            } />
-            <Route path="/users" element={
-              <MainLayout>
-                <Users />
-              </MainLayout>
-            } />
-            <Route path="*" element={<NotFound />} />
-            <Route path="/about" element={<AboutWithSocialMedia />} />
-          </Routes>
-        </div>
-      </Router>
-    );
-  }
 
   // Render with Clerk authentication if valid key is present
   return (
