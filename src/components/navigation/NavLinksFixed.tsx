@@ -34,8 +34,8 @@ export const NavLinksFixed = () => {
 
       {/* Action Buttons */}
       <div className="flex items-center space-x-2">
-        <ThemeToggle />
         <NotificationsButton />
+        <ThemeToggle />
         <CreateButton />
         <UserButton />
       </div>

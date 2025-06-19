@@ -66,30 +66,22 @@ function App() {
               {/* Protected routes - require authentication */}
               <Route path="/" element={
                 <SignedIn>
-                  <MainLayout>
-                    <Index />
-                  </MainLayout>
+                  <Index />
                 </SignedIn>
               } />
               <Route path="/home" element={
                 <SignedIn>
-                  <MainLayout>
-                    <Index />
-                  </MainLayout>
+                  <Index />
                 </SignedIn>
               } />
               <Route path="/feed" element={
                 <SignedIn>
-                  <MainLayout>
-                    <Feed />
-                  </MainLayout>
+                  <Feed />
                 </SignedIn>
               } />
               <Route path="/marketplace" element={
                 <SignedIn>
-                  <MainLayout>
-                    <Marketplace />
-                  </MainLayout>
+                  <Marketplace />
                 </SignedIn>
               } />
               <Route path="/sell" element={
@@ -135,9 +127,7 @@ function App() {
               } />
               <Route path="/messages" element={
                 <SignedIn>
-                  <MainLayout>
-                    <Messages />
-                  </MainLayout>
+                  <Messages />
                 </SignedIn>
               } />
               <Route path="/users" element={

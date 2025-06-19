@@ -11,31 +11,24 @@ import { addPost } from "@/utils/posts/postManagement";
 export default function Feed() {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [isInitialized, setIsInitialized] = useState(false);
-  const { isPostCreationOpen } = useCreatePost();
+  const { isPostCreationOpen, setIsPostCreationOpen } = useCreatePost();
 
   const fetchAndSetPosts = useCallback(async () => {
-    if (!isInitialized) {
-      setIsLoading(true);
-    }
     try {
       const fetchedPosts = await getAllPosts();
       setPosts(fetchedPosts);
-      if (!isInitialized) {
-        setIsInitialized(true);
-      }
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [isInitialized]);
+  }, []);
 
   useEffect(() => {
     fetchAndSetPosts();
-  }, [fetchAndSetPosts, isPostCreationOpen]);
+  }, [fetchAndSetPosts]);
 
   const handleCreatePost = async (postData: PostCreationData) => {
     try {
@@ -66,6 +59,7 @@ export default function Feed() {
 
   const handleCreatePostClick = () => {
     console.log("Create post clicked");
+    setIsPostCreationOpen(true);
   };
 
   const handleRefresh = async () => {
@@ -76,19 +70,6 @@ export default function Feed() {
       setIsRefreshing(false);
     }
   };
-
-  // Don't render until initialized to prevent freezing
-  if (!isInitialized && isLoading) {
-    return (
-      <MainLayout>
-        <div className="max-w-4xl mx-auto py-8 px-4">
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500"></div>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
 
   return (
     <MainLayout>

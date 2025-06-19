@@ -1,12 +1,17 @@
+
 import { useState } from "react";
-import { Search, User, Package, Hash, Filter } from "lucide-react";
+import { Search, User, Package, Hash, Filter, UserPlus, Eye } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { ExtendedPost } from "@/types/core";
+import { useNavigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
+import { toast } from "@/hooks/use-toast";
 
 interface SearchResult {
   users: any[];
@@ -19,6 +24,9 @@ export function UnifiedSearchSystem() {
   const [results, setResults] = useState<SearchResult>({ users: [], posts: [], marketplace: [] });
   const [isLoading, setIsLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("all");
+  const [followingUsers, setFollowingUsers] = useState<Set<string>>(new Set());
+  const navigate = useNavigate();
+  const { user: currentUser } = useUser();
 
   const handleSearch = async () => {
     if (!query.trim()) return;
@@ -82,6 +90,95 @@ export function UnifiedSearchSystem() {
       setIsLoading(false);
     }
   };
+
+  const handleFollow = async (userId: string) => {
+    if (!currentUser) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to follow users",
+      });
+      return;
+    }
+
+    try {
+      // TODO: Implement actual follow functionality
+      setFollowingUsers(prev => new Set(prev).add(userId));
+      toast({
+        title: "Success",
+        description: "You are now following this user!",
+      });
+    } catch (error) {
+      console.error('Error following user:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to follow user",
+      });
+    }
+  };
+
+  const handleViewProfile = (userId: string, username: string | null) => {
+    const profilePath = username ? `/user/${username}` : `/user/${userId}`;
+    navigate(profilePath);
+  };
+
+  const getDisplayName = (user: any) => {
+    if (user.username) return user.username;
+    if (user.first_name && user.last_name) return `${user.first_name} ${user.last_name}`;
+    if (user.first_name) return user.first_name;
+    return 'Anonymous User';
+  };
+
+  const getInitials = (user: any) => {
+    const displayName = getDisplayName(user);
+    return displayName.slice(0, 2).toUpperCase();
+  };
+
+  const UserCard = ({ user }: { user: any }) => (
+    <div className="flex items-center justify-between p-4 rounded-lg border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700">
+      <div className="flex items-center space-x-3">
+        <Avatar className="h-12 w-12">
+          <AvatarImage src={user.avatar_url || ''} />
+          <AvatarFallback className="bg-softspot-500 text-white">
+            {getInitials(user)}
+          </AvatarFallback>
+        </Avatar>
+        <div>
+          <h3 className="font-medium text-gray-900 dark:text-white">
+            {getDisplayName(user)}
+          </h3>
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            @{user.username || 'user'}
+          </p>
+        </div>
+      </div>
+      
+      {currentUser && currentUser.id !== user.id && (
+        <div className="flex items-center space-x-2">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => handleViewProfile(user.id, user.username)}
+            className="text-softspot-600 border-softspot-300 hover:bg-softspot-50"
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            View
+          </Button>
+          <Button
+            size="sm"
+            variant={followingUsers.has(user.id) ? "secondary" : "default"}
+            onClick={() => handleFollow(user.id)}
+            disabled={followingUsers.has(user.id)}
+            className="bg-softspot-500 hover:bg-softspot-600 text-white"
+          >
+            <UserPlus className="h-4 w-4 mr-1" />
+            {followingUsers.has(user.id) ? 'Following' : 'Follow'}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
 
   const totalResults = results.users.length + results.posts.length + results.marketplace.length;
 
@@ -155,19 +252,9 @@ export function UnifiedSearchSystem() {
                     <User className="h-4 w-4" />
                     Users
                   </h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     {results.users.slice(0, 3).map((user) => (
-                      <div key={user.id} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <div className="h-8 w-8 rounded-full bg-softspot-500 flex items-center justify-center text-white text-sm">
-                          {user.username?.[0]?.toUpperCase() || user.first_name?.[0]?.toUpperCase() || 'U'}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-gray-100">
-                            {user.username || `${user.first_name} ${user.last_name}`.trim()}
-                          </p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
-                        </div>
-                      </div>
+                      <UserCard key={user.id} user={user} />
                     ))}
                   </div>
                 </CardContent>
@@ -207,19 +294,9 @@ export function UnifiedSearchSystem() {
                   <User className="h-4 w-4" />
                   Users
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {results.users.map((user) => (
-                    <div key={user.id} className="flex items-center gap-3 p-2 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
-                      <div className="h-8 w-8 rounded-full bg-softspot-500 flex items-center justify-center text-white text-sm">
-                        {user.username?.[0]?.toUpperCase() || user.first_name?.[0]?.toUpperCase() || 'U'}
-                      </div>
-                      <div>
-                        <p className="font-medium text-gray-900 dark:text-gray-100">
-                          {user.username || `${user.first_name} ${user.last_name}`.trim()}
-                        </p>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>
-                      </div>
-                    </div>
+                    <UserCard key={user.id} user={user} />
                   ))}
                 </div>
               </CardContent>
