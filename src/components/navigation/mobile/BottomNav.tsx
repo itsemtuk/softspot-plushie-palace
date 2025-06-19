@@ -60,7 +60,7 @@ export function BottomNav() {
         <BottomNavLink 
           to="/feed" 
           icon={<Home className="w-5 h-5" />} 
-          isActive={pathname === "/feed"}
+          isActive={pathname === "/feed" || pathname === "/"}
         />
         
         <BottomNavLink 

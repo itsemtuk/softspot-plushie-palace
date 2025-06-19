@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Index from './pages/Index';
@@ -8,6 +9,8 @@ import Settings from './pages/Settings';
 import Feed from './pages/Feed';
 import Messages from './pages/Messages';
 import NotFound from './pages/NotFound';
+import SearchPage from './pages/SearchPage';
+import UserProfile from './pages/UserProfile';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { ClerkLoaded, ClerkLoading, SignedIn, SignedOut } from '@clerk/clerk-react';
 import { SignIn } from "@clerk/clerk-react";
@@ -32,24 +35,35 @@ function App() {
       <div className="App">
         <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
           <ClerkLoading>
-            <div>Loading...</div>
+            <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+              <div className="text-center">
+                <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-softspot-500 mx-auto mb-4"></div>
+                <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+              </div>
+            </div>
           </ClerkLoading>
           <ClerkLoaded>
             <Routes>
+              {/* Auth routes - accessible when signed out */}
               <Route path="/sign-in" element={
                 <SignedOut>
                   <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                    <SignIn path="/sign-in" routing="path" />
+                    <SignIn path="/sign-in" routing="path" signUpUrl="/sign-up" />
                   </div>
                 </SignedOut>
               } />
               <Route path="/sign-up" element={
                 <SignedOut>
                   <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-                    <SignUp path="/sign-up" routing="path" />
+                    <SignUp path="/sign-up" routing="path" signInUrl="/sign-in" />
                   </div>
                 </SignedOut>
               } />
+              
+              {/* Public routes */}
+              <Route path="/about" element={<AboutWithSocialMedia />} />
+              
+              {/* Protected routes - require authentication */}
               <Route path="/" element={
                 <SignedIn>
                   <MainLayout>
@@ -61,6 +75,13 @@ function App() {
                 <SignedIn>
                   <MainLayout>
                     <Index />
+                  </MainLayout>
+                </SignedIn>
+              } />
+              <Route path="/feed" element={
+                <SignedIn>
+                  <MainLayout>
+                    <Feed />
                   </MainLayout>
                 </SignedIn>
               } />
@@ -78,24 +99,37 @@ function App() {
                   </MainLayout>
                 </SignedIn>
               } />
-              <Route path="/profile/:username" element={
+              <Route path="/search" element={
+                <SignedIn>
+                  <SearchPage />
+                </SignedIn>
+              } />
+              <Route path="/discover" element={
+                <SignedIn>
+                  <SearchPage />
+                </SignedIn>
+              } />
+              <Route path="/profile" element={
                 <SignedIn>
                   <MainLayout>
                     <Profile />
                   </MainLayout>
                 </SignedIn>
               } />
+              <Route path="/profile/:username" element={
+                <SignedIn>
+                  <UserProfile />
+                </SignedIn>
+              } />
+              <Route path="/user/:username" element={
+                <SignedIn>
+                  <UserProfile />
+                </SignedIn>
+              } />
               <Route path="/settings" element={
                 <SignedIn>
                   <MainLayout>
                     <Settings />
-                  </MainLayout>
-                </SignedIn>
-              } />
-              <Route path="/feed" element={
-                <SignedIn>
-                  <MainLayout>
-                    <Feed />
                   </MainLayout>
                 </SignedIn>
               } />
@@ -113,8 +147,20 @@ function App() {
                   </MainLayout>
                 </SignedIn>
               } />
-              <Route path="*" element={<NotFound />} />
-              <Route path="/about" element={<AboutWithSocialMedia />} />
+              
+              {/* Redirect signed out users to sign in */}
+              <Route path="*" element={
+                <SignedOut>
+                  <Navigate to="/sign-in" replace />
+                </SignedOut>
+              } />
+              
+              {/* 404 for signed in users */}
+              <Route path="*" element={
+                <SignedIn>
+                  <NotFound />
+                </SignedIn>
+              } />
             </Routes>
             <ClerkButtonComponent />
           </ClerkLoaded>
