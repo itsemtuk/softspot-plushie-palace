@@ -81,6 +81,8 @@ export const ProfileLayout = () => {
       const result = await addPost(newPost);
       if (result.success) {
         setIsPostCreationOpen(false);
+        // Refresh the page to show the new post
+        window.location.reload();
       } else {
         console.error("Failed to add post:", result.error);
       }

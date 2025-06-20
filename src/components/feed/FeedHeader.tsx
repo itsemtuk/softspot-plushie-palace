@@ -46,7 +46,7 @@ export const FeedHeader = ({
   return (
     <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
       <div className="flex items-center gap-2">
-        <h1 className="text-3xl font-bold text-gray-900">Community Feed</h1>
+        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Community Feed</h1>
         {onRefresh && (
           <Button
             variant="ghost"
@@ -66,7 +66,7 @@ export const FeedHeader = ({
           <Input
             type="text"
             placeholder="Search posts or #tags..."
-            className="pl-9 bg-white"
+            className="pl-9 bg-white dark:bg-gray-800"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />

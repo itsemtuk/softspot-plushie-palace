@@ -6,6 +6,7 @@ import { Logo } from "@/components/navigation/Logo";
 import { MobileNotifications } from "./MobileNotifications";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { toast } from "@/components/ui/use-toast";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export function TopNav() {
   const isSignedIn = isAuthenticated();
@@ -29,7 +30,7 @@ export function TopNav() {
   };
   
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-softspot-100">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-softspot-100 dark:bg-gray-800/80 dark:border-gray-700">
       <div className="flex items-center justify-between px-4 h-16">
         <div className="flex items-center">
           {isSignedIn ? (
@@ -44,6 +45,7 @@ export function TopNav() {
         </div>
         
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           {isSignedIn && (
             <>
               <Button 
