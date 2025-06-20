@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Send, Plus, Search, Phone, Video, MoreVertical, Paperclip, Smile } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -268,7 +267,6 @@ export const MessengerInterface = () => {
                     onChange={(e) => setNewMessage(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                     className="pr-20 py-3 rounded-full bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600"
-                    multiline
                   />
                   <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-gray-500 hover:text-gray-700">

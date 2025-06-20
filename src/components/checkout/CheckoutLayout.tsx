@@ -11,7 +11,7 @@ interface CheckoutLayoutProps {
 
 export function CheckoutLayout({ children, currentStep, totalSteps }: CheckoutLayoutProps) {
   return (
-    <MainLayout noPadding={false} className="min-h-screen">
+    <MainLayout noPadding={false}>
       <div className="max-w-md mx-auto py-6 px-4">
         <CheckoutProgress currentStep={currentStep} totalSteps={totalSteps} />
         <div className="mt-6">

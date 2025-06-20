@@ -1,6 +1,6 @@
 
 import { Instagram, Facebook, Twitter, Heart, Users, Sparkles, Shield } from 'lucide-react';
-import { FooterWithSocialMedia } from '@/components/FooterWithSocialMedia';
+import FooterWithSocialMedia from '@/components/FooterWithSocialMedia';
 
 export default function AboutWithSocialMedia() {
   return (
