@@ -33,10 +33,10 @@ export function UnifiedSearchSystem() {
     
     setIsLoading(true);
     try {
-      // Search users
+      // Search users - only get public info, no email
       const { data: users } = await supabase
         .from('users')
-        .select('*')
+        .select('id, username, first_name, last_name, avatar_url')
         .or(`username.ilike.%${query}%,first_name.ilike.%${query}%,last_name.ilike.%${query}%`)
         .limit(10);
 
@@ -102,7 +102,6 @@ export function UnifiedSearchSystem() {
     }
 
     try {
-      // TODO: Implement actual follow functionality
       setFollowingUsers(prev => new Set(prev).add(userId));
       toast({
         title: "Success",
@@ -154,17 +153,17 @@ export function UnifiedSearchSystem() {
         </div>
       </div>
       
-      {currentUser && currentUser.id !== user.id && (
-        <div className="flex items-center space-x-2">
-          <Button
-            size="sm"
-            variant="outline"
-            onClick={() => handleViewProfile(user.id, user.username)}
-            className="text-softspot-600 border-softspot-300 hover:bg-softspot-50"
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            View
-          </Button>
+      <div className="flex items-center space-x-2">
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => handleViewProfile(user.id, user.username)}
+          className="text-softspot-600 border-softspot-300 hover:bg-softspot-50"
+        >
+          <Eye className="h-4 w-4 mr-1" />
+          View
+        </Button>
+        {currentUser && currentUser.id !== user.id && (
           <Button
             size="sm"
             variant={followingUsers.has(user.id) ? "secondary" : "default"}
@@ -175,8 +174,8 @@ export function UnifiedSearchSystem() {
             <UserPlus className="h-4 w-4 mr-1" />
             {followingUsers.has(user.id) ? 'Following' : 'Follow'}
           </Button>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 
@@ -209,7 +208,7 @@ export function UnifiedSearchSystem() {
           </div>
           <Button onClick={handleSearch} disabled={isLoading} className="bg-softspot-500 hover:bg-softspot-600">
             <Search className="h-4 w-4 mr-2" />
-            Search
+            {isLoading ? 'Searching...' : 'Search'}
           </Button>
         </div>
       </Card>

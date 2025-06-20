@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedHeader } from "@/components/feed/FeedHeader";
 import { FeedContent } from "@/components/feed/FeedContent";
@@ -7,6 +7,7 @@ import { useCreatePost } from "@/hooks/use-create-post";
 import { getAllPosts } from "@/utils/posts/postFetch";
 import { PostCreationData, ExtendedPost } from "@/types/core";
 import { addPost } from "@/utils/posts/postManagement";
+import PostCreationFlow from "@/components/post/PostCreationFlow";
 
 export default function Feed() {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
@@ -30,6 +31,16 @@ export default function Feed() {
     fetchAndSetPosts();
   }, [fetchAndSetPosts]);
 
+  // Memoize filtered posts to prevent unnecessary re-renders
+  const filteredPosts = useMemo(() => {
+    if (!searchQuery.trim()) return posts;
+    return posts.filter(post => 
+      post.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      post.username?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [posts, searchQuery]);
+
   const handleCreatePost = async (postData: PostCreationData) => {
     try {
       const newPost: ExtendedPost = {
@@ -49,6 +60,7 @@ export default function Feed() {
       const result = await addPost(newPost);
       if (result.success) {
         setPosts([newPost, ...posts]);
+        setIsPostCreationOpen(false);
       } else {
         console.error("Failed to add post:", result.error);
       }
@@ -83,13 +95,20 @@ export default function Feed() {
         />
         
         <FeedContent
-          initialPosts={posts}
+          initialPosts={filteredPosts}
           isLoading={isLoading}
           isError={false}
           isOnline={true}
           onRefresh={handleRefresh}
         />
       </div>
+
+      {/* Post Creation Flow */}
+      <PostCreationFlow
+        isOpen={isPostCreationOpen}
+        onClose={() => setIsPostCreationOpen(false)}
+        onPostCreated={handleCreatePost}
+      />
     </MainLayout>
   );
 }
