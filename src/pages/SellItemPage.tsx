@@ -84,9 +84,11 @@ const SellItemPage = () => {
         .eq('clerk_id', user.id)
         .maybeSingle();
 
+      let userId: string;
+
       if (!userData) {
         // Create user if doesn't exist
-        const { data: newUser } = await supabase.rpc('create_user_safe', {
+        const { data: createdUser } = await supabase.rpc('create_user_safe', {
           user_data: {
             clerk_id: user.id,
             username: user.username || user.firstName || 'User',
@@ -97,12 +99,13 @@ const SellItemPage = () => {
           }
         });
 
-        if (!newUser || newUser.length === 0) {
+        if (!createdUser || createdUser.length === 0) {
           throw new Error('Failed to create user');
         }
+        userId = createdUser[0].id;
+      } else {
+        userId = userData.id;
       }
-
-      const userId = userData?.id || newUser?.[0]?.id;
 
       // For now, just store the first image file name as a placeholder
       // In a real app, you'd upload to storage and get URLs
