@@ -20,16 +20,12 @@ import MainLayout from './components/layout/MainLayout';
 import { ClerkButtonComponent } from './components/navigation/user-button/ClerkIntegration';
 import AboutWithSocialMedia from './pages/AboutWithSocialMedia';
 import Users from './pages/Users';
+import NotificationsPage from './pages/NotificationsPage';
 
 // Use the provided Clerk publishable key
 const CLERK_PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 function App() {
-  // Check if we have a valid Clerk key
-  const hasValidClerkKey = CLERK_PUBLISHABLE_KEY && 
-                          CLERK_PUBLISHABLE_KEY.startsWith('pk_');
-
-  // Render with Clerk authentication if valid key is present
   return (
     <Router>
       <div className="App">
@@ -60,20 +56,12 @@ function App() {
                 </SignedOut>
               } />
               
-              {/* Public routes */}
+              {/* Public routes - accessible to all */}
+              <Route path="/" element={<Index />} />
+              <Route path="/home" element={<Index />} />
               <Route path="/about" element={<AboutWithSocialMedia />} />
               
               {/* Protected routes - require authentication */}
-              <Route path="/" element={
-                <SignedIn>
-                  <Index />
-                </SignedIn>
-              } />
-              <Route path="/home" element={
-                <SignedIn>
-                  <Index />
-                </SignedIn>
-              } />
               <Route path="/feed" element={
                 <SignedIn>
                   <Feed />
@@ -130,6 +118,11 @@ function App() {
                   <Messages />
                 </SignedIn>
               } />
+              <Route path="/notifications" element={
+                <SignedIn>
+                  <NotificationsPage />
+                </SignedIn>
+              } />
               <Route path="/users" element={
                 <SignedIn>
                   <MainLayout>
@@ -138,10 +131,10 @@ function App() {
                 </SignedIn>
               } />
               
-              {/* Redirect signed out users to sign in */}
+              {/* Redirect signed out users to home, not sign in */}
               <Route path="*" element={
                 <SignedOut>
-                  <Navigate to="/sign-in" replace />
+                  <Index />
                 </SignedOut>
               } />
               

@@ -18,6 +18,7 @@ export default function Feed() {
 
   const fetchAndSetPosts = useCallback(async () => {
     try {
+      setIsLoading(true);
       const fetchedPosts = await getAllPosts();
       setPosts(fetchedPosts);
     } catch (error) {
@@ -34,14 +35,15 @@ export default function Feed() {
   // Memoize filtered posts to prevent unnecessary re-renders
   const filteredPosts = useMemo(() => {
     if (!searchQuery.trim()) return posts;
+    const query = searchQuery.toLowerCase();
     return posts.filter(post => 
-      post.content?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      post.username?.toLowerCase().includes(searchQuery.toLowerCase())
+      post.content?.toLowerCase().includes(query) ||
+      post.title?.toLowerCase().includes(query) ||
+      post.username?.toLowerCase().includes(query)
     );
   }, [posts, searchQuery]);
 
-  const handleCreatePost = async (postData: PostCreationData) => {
+  const handleCreatePost = useCallback(async (postData: PostCreationData) => {
     try {
       const newPost: ExtendedPost = {
         ...postData,
@@ -59,7 +61,7 @@ export default function Feed() {
 
       const result = await addPost(newPost);
       if (result.success) {
-        setPosts([newPost, ...posts]);
+        setPosts(prevPosts => [newPost, ...prevPosts]);
         setIsPostCreationOpen(false);
       } else {
         console.error("Failed to add post:", result.error);
@@ -67,21 +69,21 @@ export default function Feed() {
     } catch (error) {
       console.error("Error creating post:", error);
     }
-  };
+  }, [setIsPostCreationOpen]);
 
-  const handleCreatePostClick = () => {
+  const handleCreatePostClick = useCallback(() => {
     console.log("Create post clicked");
     setIsPostCreationOpen(true);
-  };
+  }, [setIsPostCreationOpen]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
       await fetchAndSetPosts();
     } finally {
       setIsRefreshing(false);
     }
-  };
+  }, [fetchAndSetPosts]);
 
   return (
     <MainLayout>

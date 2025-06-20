@@ -14,15 +14,12 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children, noPadding = false }) 
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Only show Navbar on desktop, MobileNav handles mobile navigation */}
-      {!isMobile && <Navbar />}
+      {/* Always show appropriate navigation */}
+      {isMobile ? <MobileNav /> : <Navbar />}
       
       <main className={`${noPadding ? '' : 'container mx-auto px-4 py-8'} ${!isMobile ? 'pt-20' : 'pt-16'}`}>
         {children}
       </main>
-      
-      {/* Mobile navigation */}
-      {isMobile && <MobileNav />}
     </div>
   );
 };

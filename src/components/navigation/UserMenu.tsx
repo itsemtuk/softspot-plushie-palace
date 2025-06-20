@@ -8,7 +8,6 @@ import { NotificationsDropdown } from "./NotificationsDropdown";
 import { CreateButton } from "./CreateButton";
 import { MessageSquare } from "lucide-react";
 import { isAuthenticated } from "@/utils/auth/authState";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export const UserMenu = () => {
   const { isSignedIn } = useUser();
@@ -41,12 +40,7 @@ export const UserMenu = () => {
       </Link>
       
       <NotificationsDropdown />
-      
-      {/* Dark Mode Toggle - positioned before Create Button */}
-      <ThemeToggle />
-      
       <CreateButton />
-      
       <UserButton />
     </div>
   );
