@@ -1,12 +1,11 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "./ui/button";
 import { ProfileAvatar } from "./profile/ProfileAvatar";
 import { ProfileHeaderStats } from "./profile/ProfileHeaderStats";
 import { ProfileInfo } from "./profile/ProfileInfo";
 import { ProfileActionButton } from "./profile/ProfileActionButton";
 import { Badge } from "./ui/badge";
-import { ProfileBadges } from "./profile/ProfileBadges";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -14,6 +13,7 @@ import { MarketplaceReviews } from "./profile/MarketplaceReviews";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "./ui/progress";
 import { Lock, Pencil } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 interface UserProfileHeaderProps {
   username: string;
@@ -23,24 +23,46 @@ interface UserProfileHeaderProps {
     interests: string[];
     isPrivate: boolean;
   };
+  userId?: string;
 }
 
-function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileHeaderProps) {
-  const [isFollowing, setIsFollowing] = useState(false);
+function UserProfileHeader({ username, isOwnProfile, profileData, userId }: UserProfileHeaderProps) {
   const navigate = useNavigate();
   const { user } = useUser();
   const isMobile = useIsMobile();
+  const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
 
-  const handleFollowToggle = () => {
-    setIsFollowing(!isFollowing);
-    // In a real app, you would update the follow status in your backend
-  };
+  // Get the correct avatar URL for the profile being viewed
+  useEffect(() => {
+    const fetchUserAvatar = async () => {
+      if (isOwnProfile) {
+        // For own profile, use Clerk user image
+        setUserAvatarUrl(user?.imageUrl || localStorage.getItem('userAvatarUrl') || "/assets/avatars/PLUSH_Bear.PNG");
+      } else if (userId) {
+        // For other users, fetch from Supabase
+        try {
+          const { data } = await supabase
+            .from('users')
+            .select('avatar_url')
+            .eq('id', userId)
+            .maybeSingle();
+          
+          setUserAvatarUrl(data?.avatar_url || "/assets/avatars/PLUSH_Bear.PNG");
+        } catch (error) {
+          console.error('Error fetching user avatar:', error);
+          setUserAvatarUrl("/assets/avatars/PLUSH_Bear.PNG");
+        }
+      } else {
+        setUserAvatarUrl("/assets/avatars/PLUSH_Bear.PNG");
+      }
+    };
+
+    fetchUserAvatar();
+  }, [isOwnProfile, userId, user?.imageUrl]);
   
   const handleEditProfileClick = () => {
     navigate('/settings');
   };
-  
-  const userAvatarUrl = user?.imageUrl || localStorage.getItem('userAvatarUrl') || "/assets/avatars/PLUSH_Bear.PNG";
   
   // Calculate profile completion percentage
   const completedSteps = [
@@ -81,10 +103,8 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
                   </Button>
                 ) : (
                   <ProfileActionButton 
-                    isFollowing={isFollowing} 
-                    onFollowToggle={handleFollowToggle} 
+                    userId={userId}
                     isOwnProfile={false}
-                    isPending={false}
                   />
                 )}
               </div>
@@ -186,7 +206,7 @@ function UserProfileHeader({ username, isOwnProfile, profileData }: UserProfileH
               </TabsContent>
               
               <TabsContent value="reviews" className="mt-4">
-                <MarketplaceReviews userId={user?.id || ''} />
+                <MarketplaceReviews userId={userId || ''} />
               </TabsContent>
             </Tabs>
           </div>

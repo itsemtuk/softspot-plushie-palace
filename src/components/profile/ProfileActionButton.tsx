@@ -1,38 +1,48 @@
 
 import React from 'react';
-import { Button } from '../ui/button';
-import { UserPlus, UserCheck, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { UserPlus, UserMinus } from 'lucide-react';
+import { useFollowUser } from '@/hooks/useFollowUser';
 
-export interface ProfileActionButtonProps {
-  isFollowing: boolean;
-  onFollowToggle: () => void;
+interface ProfileActionButtonProps {
+  userId?: string;
   isOwnProfile: boolean;
-  isPending: boolean;
 }
 
-export function ProfileActionButton({ 
-  isFollowing, 
-  onFollowToggle, 
-  isOwnProfile, 
-  isPending 
-}: ProfileActionButtonProps) {
-  
-  if (isOwnProfile) return null;
-  
+export const ProfileActionButton: React.FC<ProfileActionButtonProps> = ({ 
+  userId, 
+  isOwnProfile 
+}) => {
+  const { isFollowing, isLoading, toggleFollow } = useFollowUser(userId);
+
+  if (isOwnProfile) {
+    return null;
+  }
+
   return (
     <Button
-      variant={isFollowing ? "secondary" : "default"}
-      onClick={onFollowToggle}
-      disabled={isPending}
+      onClick={toggleFollow}
+      disabled={isLoading}
+      variant={isFollowing ? "outline" : "default"}
+      className={`rounded-full px-6 ${
+        isFollowing 
+          ? 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700' 
+          : 'bg-softspot-500 hover:bg-softspot-600 text-white'
+      }`}
     >
-      {isPending ? (
-        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+      {isLoading ? (
+        'Loading...'
       ) : isFollowing ? (
-        <UserCheck className="h-4 w-4 mr-2" />
+        <>
+          <UserMinus className="mr-2 h-4 w-4" />
+          Unfollow
+        </>
       ) : (
-        <UserPlus className="h-4 w-4 mr-2" />
+        <>
+          <UserPlus className="mr-2 h-4 w-4" />
+          Follow
+        </>
       )}
-      {isFollowing ? 'Following' : 'Follow'}
     </Button>
   );
-}
+};
