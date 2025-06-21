@@ -66,6 +66,11 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     navigate('/settings');
   };
 
+  // Generate initials for fallback avatar
+  const getInitials = (name: string) => {
+    return name.slice(0, 2).toUpperCase();
+  };
+
   return (
     <Card className="mb-8 overflow-hidden">
       <div className="bg-gradient-to-r from-softspot-100 to-purple-100 dark:from-softspot-900 dark:to-purple-900 px-6 py-8">
@@ -73,15 +78,25 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
           {/* Profile Picture */}
           <div className="flex-shrink-0">
             <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
-              <img
-                src={userInfo.avatar_url || '/placeholder.svg'}
-                alt={username}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.src = '/placeholder.svg';
-                }}
-              />
+              {userInfo.avatar_url ? (
+                <img
+                  src={userInfo.avatar_url}
+                  alt={username}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `<div class="w-full h-full bg-softspot-500 flex items-center justify-center text-white text-xl font-semibold">${getInitials(displayName)}</div>`;
+                    }
+                  }}
+                />
+              ) : (
+                <div className="w-full h-full bg-softspot-500 flex items-center justify-center text-white text-xl font-semibold">
+                  {getInitials(displayName)}
+                </div>
+              )}
             </div>
           </div>
 

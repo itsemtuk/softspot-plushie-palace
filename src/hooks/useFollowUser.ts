@@ -66,34 +66,34 @@ export const useFollowUser = (targetUserId?: string) => {
 
     setIsLoading(true);
     try {
-      const currentUserSupabaseId = await getCurrentUserSupabaseId();
+      let currentUserSupabaseId = await getCurrentUserSupabaseId();
+      
       if (!currentUserSupabaseId) {
         // Create user if doesn't exist
-        const { data: createdUser } = await supabase.rpc('create_user_safe', {
-          user_data: {
+        const { data: createdUser, error: createError } = await supabase
+          .from('users')
+          .insert({
             clerk_id: user.id,
             username: user.username || user.firstName || 'User',
             first_name: user.firstName,
             last_name: user.lastName,
             email: user.emailAddresses?.[0]?.emailAddress,
             avatar_url: user.imageUrl
-          }
-        });
+          })
+          .select()
+          .single();
 
-        if (!createdUser || createdUser.length === 0) {
-          throw new Error('Failed to create user');
+        if (createError) {
+          console.error('Error creating user:', createError);
+          toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Unable to follow user. Please try refreshing the page.'
+          });
+          return;
         }
-      }
 
-      // Get the actual Supabase ID again after potential creation
-      const actualSupabaseId = await getCurrentUserSupabaseId();
-      if (!actualSupabaseId) {
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Unable to follow user. Please try refreshing the page.'
-        });
-        return;
+        currentUserSupabaseId = createdUser.id;
       }
 
       if (isFollowing) {
@@ -101,7 +101,7 @@ export const useFollowUser = (targetUserId?: string) => {
         const { error } = await supabase
           .from('followers')
           .delete()
-          .eq('follower_id', actualSupabaseId)
+          .eq('follower_id', currentUserSupabaseId)
           .eq('following_id', targetUserId);
 
         if (error) throw error;
@@ -117,7 +117,7 @@ export const useFollowUser = (targetUserId?: string) => {
         const { error } = await supabase
           .from('followers')
           .insert({
-            follower_id: actualSupabaseId,
+            follower_id: currentUserSupabaseId,
             following_id: targetUserId
           });
 

@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { Search, UserPlus, Users as UsersIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,6 +23,7 @@ interface User {
 
 const Users = () => {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const initialQuery = searchParams.get('q') || '';
   const [searchTerm, setSearchTerm] = useState(initialQuery);
   const [users, setUsers] = useState<User[]>([]);
@@ -83,20 +84,30 @@ const Users = () => {
     return name.slice(0, 2).toUpperCase();
   };
 
+  const handleUserClick = (user: User) => {
+    const username = user.username || user.first_name || 'user';
+    navigate(`/user/${username}`);
+  };
+
   const UserCard = ({ user }: { user: User }) => {
     const { isFollowing, isLoading, toggleFollow } = useFollowUser(user.id);
 
     return (
-      <Card className="bg-white dark:bg-gray-800 hover:shadow-lg transition-shadow">
+      <Card className="bg-white dark:bg-gray-800 hover:shadow-lg transition-shadow cursor-pointer">
         <CardContent className="p-6">
           <div className="flex items-center space-x-4">
-            <Avatar className="h-16 w-16">
-              <AvatarImage src={user.avatar_url || ''} />
-              <AvatarFallback className="bg-softspot-500 text-white text-lg">
-                {getInitials(user)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
+            <div onClick={() => handleUserClick(user)}>
+              <Avatar className="h-16 w-16">
+                <AvatarImage 
+                  src={user.avatar_url || ''} 
+                  alt={getDisplayName(user)}
+                />
+                <AvatarFallback className="bg-softspot-500 text-white text-lg">
+                  {getInitials(user)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="flex-1 min-w-0" onClick={() => handleUserClick(user)}>
               <h3 className="font-semibold text-gray-900 dark:text-white text-lg">
                 {getDisplayName(user)}
               </h3>
@@ -113,7 +124,10 @@ const Users = () => {
               <Button
                 size="sm"
                 variant={isFollowing ? "outline" : "default"}
-                onClick={toggleFollow}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleFollow();
+                }}
                 disabled={isLoading}
                 className={`${
                   isFollowing 
