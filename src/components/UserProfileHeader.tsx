@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Calendar, Users, UserPlus, UserMinus, Edit } from 'lucide-react';
+import { Calendar, Users, Edit } from 'lucide-react';
 import { ProfileActionButton } from '@/components/profile/ProfileActionButton';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -26,6 +27,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   profileData,
   userId 
 }) => {
+  const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState<{
     avatar_url?: string;
     first_name?: string;
@@ -59,6 +61,10 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   const displayName = userInfo.first_name 
     ? `${userInfo.first_name} ${userInfo.last_name || ''}`.trim()
     : username;
+
+  const handleEditProfile = () => {
+    navigate('/settings');
+  };
 
   return (
     <Card className="mb-8 overflow-hidden">
@@ -111,7 +117,11 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
               {/* Action Button */}
               <div className="flex-shrink-0">
                 {isOwnProfile ? (
-                  <Button variant="outline" className="rounded-full">
+                  <Button 
+                    variant="outline" 
+                    className="rounded-full"
+                    onClick={handleEditProfile}
+                  >
                     <Edit className="mr-2 h-4 w-4" />
                     Edit Profile
                   </Button>

@@ -4,8 +4,6 @@ import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { ExtendedPost } from "@/types/core";
 import { FeedGrid } from "./FeedGrid";
-import { useSyncManager } from "@/hooks/useSyncManager";
-import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { WifiOff } from "lucide-react";
 
@@ -19,42 +17,16 @@ interface FeedContentProps {
 
 export const FeedContent = ({ initialPosts, isLoading, isError, isOnline, onRefresh }: FeedContentProps) => {
   const { openPostDialog } = usePostDialog();
-  const [posts, setPosts] = useState<ExtendedPost[]>(initialPosts);
-  const syncManager = useSyncManager(posts);
-  const { addOfflinePost, removeOfflinePost } = useOfflinePostOperations();
+  const [posts, setPosts] = useState<ExtendedPost[]>([]);
 
-  const handlePostClick = (post: ExtendedPost) => {
-    openPostDialog(post);
-  };
-
-  const handlePostCreated = useCallback(
-    (newPost: ExtendedPost) => {
-      setPosts((prevPosts) => [newPost, ...prevPosts]);
-      addOfflinePost(newPost);
-    },
-    [addOfflinePost]
-  );
-
-  const handlePostDeleted = useCallback(
-    (postId: string) => {
-      setPosts((prevPosts) => prevPosts.filter((post) => post.id !== postId));
-      removeOfflinePost(postId);
-    },
-    [removeOfflinePost]
-  );
-
-  const handlePostsRefreshed = useCallback(
-    (refreshedPosts: ExtendedPost[]) => {
-      setPosts(refreshedPosts);
-    },
-    []
-  );
-
+  // Update posts when initialPosts change
   useEffect(() => {
-    if (isOnline && syncManager.refreshPosts) {
-      syncManager.refreshPosts();
-    }
-  }, [isOnline, syncManager]);
+    setPosts(initialPosts);
+  }, [initialPosts]);
+
+  const handlePostClick = useCallback((post: ExtendedPost) => {
+    openPostDialog(post);
+  }, [openPostDialog]);
 
   if (isLoading) {
     return (

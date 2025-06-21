@@ -1,11 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { Navbar } from "@/components/Navbar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProfileInformation from "@/components/settings/ProfileInformation";
 import AccountSettings from "@/components/settings/AccountSettings";
-import { MobileNav } from "@/components/navigation/MobileNav";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { useSignOut } from "@/hooks/useSignOut";
 import { Button } from "@/components/ui/button";
@@ -15,10 +12,10 @@ import LoadingSpinner from "@/components/common/LoadingSpinner";
 import { DarkModeSettings } from "@/components/settings/DarkModeSettings";
 import { useUser } from "@clerk/clerk-react";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
+import MainLayout from "@/components/layout/MainLayout";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
-  const isMobile = useIsMobile();
   const { handleSignOut } = useSignOut();
   const { status } = useStatus();
   const { user, isLoaded } = useUser();
@@ -32,19 +29,17 @@ const Settings = () => {
   
   if (isLoading || !isLoaded) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        {isMobile ? <MobileNav /> : <Navbar />}
+      <MainLayout>
         <div className="container mx-auto px-4 py-8">
           <LoadingSpinner size="lg" className="py-20" />
         </div>
-      </div>
+      </MainLayout>
     );
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        {isMobile ? <MobileNav /> : <Navbar />}
+      <MainLayout>
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-20">
             <h2 className="text-xl font-semibold text-gray-900 dark:text-gray-100 mb-4">
@@ -55,15 +50,13 @@ const Settings = () => {
             </Button>
           </div>
         </div>
-      </div>
+      </MainLayout>
     );
   }
   
   return (
     <EnhancedErrorBoundary>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-        {isMobile ? <MobileNav /> : <Navbar />}
-        
+      <MainLayout>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
@@ -116,7 +109,7 @@ const Settings = () => {
             </TabsContent>
           </Tabs>
         </div>
-      </div>
+      </MainLayout>
     </EnhancedErrorBoundary>
   );
 };
