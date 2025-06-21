@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, UserPlus, MessageSquare, MoreHorizontal } from "lucide-react";
@@ -20,7 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 const UserProfilePage = () => {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
-  const [userPosts, setUserP osts] = useState<ExtendedPost[]>([]);
+  const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
