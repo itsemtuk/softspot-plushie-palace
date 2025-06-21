@@ -1,104 +1,118 @@
 
-import { useState, useEffect } from "react";
-import { Button } from "./ui/button";
-import { ProfileAvatar } from "./profile/ProfileAvatar";
-import { ProfileHeaderStats } from "./profile/ProfileHeaderStats";
-import { ProfileInfo } from "./profile/ProfileInfo";
-import { ProfileActionButton } from "./profile/ProfileActionButton";
-import { Badge } from "./ui/badge";
-import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { MarketplaceReviews } from "./profile/MarketplaceReviews";
-import { Tabs, TabsContent } from "@/components/ui/tabs";
-import { Progress } from "./ui/progress";
-import { Lock, Pencil } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useState, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { MapPin, Calendar, Users, UserPlus, UserMinus, Edit } from 'lucide-react';
+import { ProfileActionButton } from '@/components/profile/ProfileActionButton';
+import { supabase } from '@/integrations/supabase/client';
+
+interface UserProfileData {
+  bio: string;
+  interests: string[];
+  isPrivate: boolean;
+}
 
 interface UserProfileHeaderProps {
   username: string;
   isOwnProfile: boolean;
-  profileData: {
-    bio: string;
-    interests: string[];
-    isPrivate: boolean;
-  };
+  profileData?: UserProfileData;
   userId?: string;
 }
 
-function UserProfileHeader({ username, isOwnProfile, profileData, userId }: UserProfileHeaderProps) {
-  const navigate = useNavigate();
-  const { user } = useUser();
-  const isMobile = useIsMobile();
-  const [userAvatarUrl, setUserAvatarUrl] = useState<string>("");
+const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({ 
+  username, 
+  isOwnProfile, 
+  profileData,
+  userId 
+}) => {
+  const [userInfo, setUserInfo] = useState<{
+    avatar_url?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
+  }>({});
 
-  // Get the correct avatar URL for the profile being viewed
+  // Fetch user info from Supabase users table
   useEffect(() => {
-    const fetchUserAvatar = async () => {
-      if (isOwnProfile) {
-        // For own profile, use Clerk user image
-        setUserAvatarUrl(user?.imageUrl || localStorage.getItem('userAvatarUrl') || "/assets/avatars/PLUSH_Bear.PNG");
-      } else if (userId) {
-        // For other users, fetch from Supabase
-        try {
-          const { data } = await supabase
-            .from('users')
-            .select('avatar_url')
-            .eq('id', userId)
-            .maybeSingle();
-          
-          setUserAvatarUrl(data?.avatar_url || "/assets/avatars/PLUSH_Bear.PNG");
-        } catch (error) {
-          console.error('Error fetching user avatar:', error);
-          setUserAvatarUrl("/assets/avatars/PLUSH_Bear.PNG");
+    const fetchUserInfo = async () => {
+      if (!userId) return;
+
+      try {
+        const { data } = await supabase
+          .from('users')
+          .select('avatar_url, first_name, last_name, email')
+          .eq('id', userId)
+          .maybeSingle();
+
+        if (data) {
+          setUserInfo(data);
         }
-      } else {
-        setUserAvatarUrl("/assets/avatars/PLUSH_Bear.PNG");
+      } catch (error) {
+        console.error('Error fetching user info:', error);
       }
     };
 
-    fetchUserAvatar();
-  }, [isOwnProfile, userId, user?.imageUrl]);
-  
-  const handleEditProfileClick = () => {
-    navigate('/settings');
-  };
-  
-  // Calculate profile completion percentage
-  const completedSteps = [
-    true, // Profile Photo (has default)
-    profileData.interests && profileData.interests.length > 0, // Plushie Preferences
-    profileData.bio && profileData.bio.length > 5, // Complete Profile
-  ];
-  
-  const completionPercentage = Math.round(
-    (completedSteps.filter(Boolean).length / completedSteps.length) * 100
-  );
-  
+    fetchUserInfo();
+  }, [userId]);
+
+  const displayName = userInfo.first_name 
+    ? `${userInfo.first_name} ${userInfo.last_name || ''}`.trim()
+    : username;
+
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-sm rounded-xl mb-6 border border-gray-200 dark:border-gray-700 transition-colors duration-200">
-      <div className="container mx-auto px-4 py-6 max-w-4xl">
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="flex-shrink-0 flex justify-center">
-            <ProfileAvatar profileImage={userAvatarUrl} />
+    <Card className="mb-8 overflow-hidden">
+      <div className="bg-gradient-to-r from-softspot-100 to-purple-100 dark:from-softspot-900 dark:to-purple-900 px-6 py-8">
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+          {/* Profile Picture */}
+          <div className="flex-shrink-0">
+            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
+              <img
+                src={userInfo.avatar_url || '/placeholder.svg'}
+                alt={username}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = '/placeholder.svg';
+                }}
+              />
+            </div>
           </div>
-          
-          <div className="flex-grow">
-            <div className="flex justify-between items-center flex-wrap gap-2">
+
+          {/* Profile Info */}
+          <div className="flex-grow min-w-0">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors duration-200">{username}</h1>
-                <p className="text-gray-500 dark:text-gray-400 text-sm transition-colors duration-200">Plushie collector</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                  {displayName}
+                </h1>
+                <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                  @{username}
+                </p>
+                
+                {profileData?.bio && (
+                  <p className="text-gray-700 dark:text-gray-300 mb-3 max-w-md">
+                    {profileData.bio}
+                  </p>
+                )}
+
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>Joined 2024</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    <span>0 followers</span>
+                  </div>
+                </div>
               </div>
-              
-              <div className="flex gap-2">
+
+              {/* Action Button */}
+              <div className="flex-shrink-0">
                 {isOwnProfile ? (
-                  <Button 
-                    variant="outline"
-                    size={isMobile ? "sm" : "default"}
-                    onClick={handleEditProfileClick}
-                    className="rounded-full px-6 border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-900 dark:text-white transition-colors duration-200"
-                  >
-                    <Pencil className="mr-2 h-4 w-4" />
+                  <Button variant="outline" className="rounded-full">
+                    <Edit className="mr-2 h-4 w-4" />
                     Edit Profile
                   </Button>
                 ) : (
@@ -109,111 +123,26 @@ function UserProfileHeader({ username, isOwnProfile, profileData, userId }: User
                 )}
               </div>
             </div>
-            
-            <ProfileHeaderStats 
-              postsCount={0} 
-              followersCount={0} 
-              followingCount={0} 
-            />
-            
-            <Tabs defaultValue="about">
-              <TabsContent value="about" className="mt-4">
-                <ProfileInfo 
-                  bio={profileData.bio} 
-                  displayName={username}
-                  interests={profileData.interests}
-                  username={username}
-                  status="online"
-                />
-                
-                {profileData.isPrivate && (
-                  <Badge variant="outline" className="mt-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300">
-                    Private Account
+
+            {/* Interests/Tags */}
+            {profileData?.interests && profileData.interests.length > 0 && (
+              <div className="flex flex-wrap gap-2 mt-4">
+                {profileData.interests.slice(0, 5).map((interest, index) => (
+                  <Badge 
+                    key={index} 
+                    variant="secondary"
+                    className="bg-white/70 dark:bg-gray-800/70 text-gray-700 dark:text-gray-300"
+                  >
+                    {interest}
                   </Badge>
-                )}
-              </TabsContent>
-              
-              <TabsContent value="badges" className="mt-4">
-                <div className="bg-white dark:bg-gray-800 rounded-lg transition-colors duration-200">
-                  <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Badges</h2>
-                  
-                  <div className="mb-6">
-                    <div className="flex justify-between mb-2">
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">Profile completion</span>
-                      <span className="text-sm font-medium text-gray-900 dark:text-white">{completionPercentage}%</span>
-                    </div>
-                    <Progress value={completionPercentage} className="h-2 bg-gray-100 dark:bg-gray-700" />
-                  </div>
-                  
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                    {/* Unlocked badges */}
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-4 flex flex-col items-center text-center transition-colors duration-200">
-                      <div className="w-12 h-12 bg-softspot-100 dark:bg-softspot-900 rounded-full flex items-center justify-center mb-2">
-                        <img 
-                          src="/assets/Badges/Changed_Profile_Photo.PNG" 
-                          alt="Profile Photo Badge" 
-                          className="w-10 h-10 object-cover rounded-full" 
-                        />
-                      </div>
-                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">Profile Photo</h3>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-4 flex flex-col items-center text-center transition-colors duration-200">
-                      <div className="w-12 h-12 bg-softspot-100 dark:bg-softspot-900 rounded-full flex items-center justify-center mb-2">
-                        <img 
-                          src="/assets/Badges/Plushie_Preferences.PNG" 
-                          alt="Plushie Preferences Badge" 
-                          className="w-10 h-10 object-cover rounded-full" 
-                        />
-                      </div>
-                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">Plushie Preferences</h3>
-                    </div>
-                    
-                    <div className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-lg p-4 flex flex-col items-center text-center transition-colors duration-200">
-                      <div className="w-12 h-12 bg-softspot-100 dark:bg-softspot-900 rounded-full flex items-center justify-center mb-2">
-                        <img 
-                          src="/assets/Badges/Completed_Profile.PNG" 
-                          alt="Complete Profile Badge" 
-                          className="w-10 h-10 object-cover rounded-full" 
-                        />
-                      </div>
-                      <h3 className="text-sm font-medium text-gray-900 dark:text-white">Complete Profile</h3>
-                    </div>
-                    
-                    {/* Locked badges */}
-                    <div className="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col items-center text-center opacity-70 transition-colors duration-200">
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-2">
-                        <Lock className="w-6 h-6 text-gray-400 dark:text-gray-500" />
-                      </div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">First Post</h3>
-                    </div>
-                    
-                    <div className="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col items-center text-center opacity-70 transition-colors duration-200">
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-2">
-                        <Lock className="w-6 h-6 text-gray-400 dark:text-gray-500" />
-                      </div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Marketplace Vendor</h3>
-                    </div>
-                    
-                    <div className="bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 flex flex-col items-center text-center opacity-70 transition-colors duration-200">
-                      <div className="w-12 h-12 bg-gray-200 dark:bg-gray-600 rounded-full flex items-center justify-center mb-2">
-                        <Lock className="w-6 h-6 text-gray-400 dark:text-gray-500" />
-                      </div>
-                      <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">First Sale</h3>
-                    </div>
-                  </div>
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="reviews" className="mt-4">
-                <MarketplaceReviews userId={userId || ''} />
-              </TabsContent>
-            </Tabs>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
-}
+};
 
 export default UserProfileHeader;

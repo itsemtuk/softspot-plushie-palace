@@ -68,6 +68,26 @@ export const useFollowUser = (targetUserId?: string) => {
     try {
       const currentUserSupabaseId = await getCurrentUserSupabaseId();
       if (!currentUserSupabaseId) {
+        // Create user if doesn't exist
+        const { data: createdUser } = await supabase.rpc('create_user_safe', {
+          user_data: {
+            clerk_id: user.id,
+            username: user.username || user.firstName || 'User',
+            first_name: user.firstName,
+            last_name: user.lastName,
+            email: user.emailAddresses?.[0]?.emailAddress,
+            avatar_url: user.imageUrl
+          }
+        });
+
+        if (!createdUser || createdUser.length === 0) {
+          throw new Error('Failed to create user');
+        }
+      }
+
+      // Get the actual Supabase ID again after potential creation
+      const actualSupabaseId = await getCurrentUserSupabaseId();
+      if (!actualSupabaseId) {
         toast({
           variant: 'destructive',
           title: 'Error',
@@ -81,7 +101,7 @@ export const useFollowUser = (targetUserId?: string) => {
         const { error } = await supabase
           .from('followers')
           .delete()
-          .eq('follower_id', currentUserSupabaseId)
+          .eq('follower_id', actualSupabaseId)
           .eq('following_id', targetUserId);
 
         if (error) throw error;
@@ -97,7 +117,7 @@ export const useFollowUser = (targetUserId?: string) => {
         const { error } = await supabase
           .from('followers')
           .insert({
-            follower_id: currentUserSupabaseId,
+            follower_id: actualSupabaseId,
             following_id: targetUserId
           });
 
