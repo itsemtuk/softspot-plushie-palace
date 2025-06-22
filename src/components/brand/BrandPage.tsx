@@ -110,10 +110,13 @@ export const BrandPageWrapper = () => {
               condition: "new",
               forSale: true,
               location: "Online",
-              seller: "Sample Seller",
+              username: "Sample Seller",
+              userId: "sample-user-1",
               description: `A wonderful ${currentBrand.name} plushie`,
-              rating: 4.5,
-              reviews: 10
+              tags: [currentBrand.name.toLowerCase()],
+              likes: 10,
+              comments: 5,
+              timestamp: new Date().toISOString()
             },
             {
               id: `${normalizedBrandName}-2`,
@@ -125,10 +128,13 @@ export const BrandPageWrapper = () => {
               condition: "like-new",
               forSale: true,
               location: "Online",
-              seller: "Sample Seller",
+              username: "Sample Seller",
+              userId: "sample-user-2",
               description: `Another great ${currentBrand.name} plushie`,
-              rating: 4.8,
-              reviews: 15
+              tags: [currentBrand.name.toLowerCase()],
+              likes: 15,
+              comments: 8,
+              timestamp: new Date().toISOString()
             }
           ];
           setPlushies(samplePlushies);
