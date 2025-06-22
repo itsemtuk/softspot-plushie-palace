@@ -2,7 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PlusCircle, Search, RefreshCw, Users } from "lucide-react";
-import { isAuthenticated } from "@/utils/auth/authState";
+import { useUser } from "@clerk/clerk-react";
 import { toast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useCreatePost } from "@/hooks/use-create-post";
@@ -25,12 +25,22 @@ export const FeedHeader = ({
   onToggleUserSearch
 }: FeedHeaderProps) => {
   const navigate = useNavigate();
+  const { user, isLoaded } = useUser();
   const { setIsPostCreationOpen } = useCreatePost();
   
   const handleCreatePost = () => {
     console.log("FeedHeader: Create post button clicked");
     
-    if (!isAuthenticated()) {
+    if (!isLoaded) {
+      toast({
+        title: "Loading...",
+        description: "Please wait while we load your account information."
+      });
+      return;
+    }
+    
+    if (!user?.id) {
+      console.log("User not authenticated, redirecting to sign in");
       toast({
         title: "Authentication Required",
         description: "Please sign in to create posts."
@@ -39,6 +49,7 @@ export const FeedHeader = ({
       return;
     }
     
+    console.log("FeedHeader: Opening post creation dialog");
     setIsPostCreationOpen(true);
     onCreatePost();
   };

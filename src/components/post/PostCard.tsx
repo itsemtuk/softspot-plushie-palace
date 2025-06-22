@@ -15,7 +15,13 @@ interface PostCardProps {
 export const PostCard = ({ post, onPostClick }: PostCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    // Don't trigger if clicking on interactive elements
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    
+    console.log("PostCard clicked:", post);
     if (onPostClick) {
       onPostClick(post);
     }
@@ -24,28 +30,48 @@ export const PostCard = ({ post, onPostClick }: PostCardProps) => {
   const handleLike = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsLiked(!isLiked);
+    console.log("Post liked:", post.id);
+  };
+
+  const handleComment = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("Comment clicked for post:", post.id);
+    if (onPostClick) {
+      onPostClick(post);
+    }
+  };
+
+  const handleShare = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    console.log("Share clicked for post:", post.id);
+    // Add share functionality here
   };
 
   return (
     <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow" onClick={handleClick}>
-      <AspectRatio ratio={1} className="bg-gray-100">
-        <img
-          src={post.image}
-          alt={post.title}
-          className="object-cover w-full h-full"
-        />
-      </AspectRatio>
+      {post.image && (
+        <AspectRatio ratio={1} className="bg-gray-100">
+          <img
+            src={post.image}
+            alt={post.title || post.content}
+            className="object-cover w-full h-full"
+            onError={(e) => {
+              (e.target as HTMLImageElement).src = '/placeholder-plushie.jpg';
+            }}
+          />
+        </AspectRatio>
+      )}
       
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium">{post.username}</span>
-          <Button variant="ghost" size="sm">
+          <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
             <MoreHorizontal className="h-4 w-4" />
           </Button>
         </div>
         
-        <h3 className="font-semibold mb-2 line-clamp-2">{post.title}</h3>
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.description}</p>
+        {post.title && <h3 className="font-semibold mb-2 line-clamp-2">{post.title}</h3>}
+        <p className="text-sm text-gray-600 mb-3 line-clamp-2">{post.description || post.content}</p>
         
         {post.tags && post.tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
@@ -74,17 +100,29 @@ export const PostCard = ({ post, onPostClick }: PostCardProps) => {
               <span className="ml-1 text-xs">{post.likes || 0}</span>
             </Button>
             
-            <Button variant="ghost" size="sm" className="p-1 text-gray-500">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-1 text-gray-500"
+              onClick={handleComment}
+            >
               <MessageCircle className="h-4 w-4" />
               <span className="ml-1 text-xs">{post.comments || 0}</span>
             </Button>
             
-            <Button variant="ghost" size="sm" className="p-1 text-gray-500">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="p-1 text-gray-500"
+              onClick={handleShare}
+            >
               <Share2 className="h-4 w-4" />
             </Button>
           </div>
           
-          <span className="text-xs text-gray-400">{post.timestamp}</span>
+          <span className="text-xs text-gray-400">
+            {new Date(post.timestamp).toLocaleDateString()}
+          </span>
         </div>
       </CardContent>
     </Card>

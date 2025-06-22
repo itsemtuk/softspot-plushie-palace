@@ -8,6 +8,9 @@ import { getAllPosts } from "@/utils/posts/postFetch";
 import { PostCreationData, ExtendedPost } from "@/types/core";
 import { addPost } from "@/utils/posts/postManagement";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
+import { useUser } from "@clerk/clerk-react";
+import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
+import { toast } from "@/components/ui/use-toast";
 
 export default function Feed() {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
@@ -15,12 +18,16 @@ export default function Feed() {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { isPostCreationOpen, setIsPostCreationOpen } = useCreatePost();
+  const { user } = useUser();
+  const { supabaseUserId } = useClerkSupabaseUser(user);
 
   const fetchAndSetPosts = useCallback(async () => {
     try {
       setIsLoading(true);
       const fetchedPosts = await getAllPosts();
-      setPosts(fetchedPosts);
+      // Filter out marketplace items (posts with for_sale = true)
+      const feedPosts = fetchedPosts.filter(post => !post.forSale);
+      setPosts(feedPosts);
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
@@ -44,32 +51,58 @@ export default function Feed() {
   }, [posts, searchQuery]);
 
   const handleCreatePost = useCallback(async (postData: PostCreationData) => {
+    if (!user || !supabaseUserId) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to create posts."
+      });
+      return;
+    }
+
     try {
+      console.log("Creating new feed post:", postData);
+      
       const newPost: ExtendedPost = {
         ...postData,
         id: `post-${Date.now()}`,
-        userId: "test-user-id",
-        user_id: "test-user-id",
-        username: "Test User",
+        userId: supabaseUserId,
+        user_id: supabaseUserId,
+        username: user.username || user.firstName || "User",
         likes: 0,
         comments: 0,
         timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        forSale: false, // This is a feed post, not a marketplace item
       };
 
       const result = await addPost(newPost);
       if (result.success) {
         setPosts(prevPosts => [newPost, ...prevPosts]);
         setIsPostCreationOpen(false);
+        toast({
+          title: "Post created!",
+          description: "Your post has been added to the feed."
+        });
       } else {
         console.error("Failed to add post:", result.error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: result.error || "Failed to create post. Please try again."
+        });
       }
     } catch (error) {
       console.error("Error creating post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred while creating your post."
+      });
     }
-  }, [setIsPostCreationOpen]);
+  }, [user, supabaseUserId, setIsPostCreationOpen]);
 
   const handleCreatePostClick = useCallback(() => {
     console.log("Create post clicked");

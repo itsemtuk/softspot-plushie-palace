@@ -69,7 +69,7 @@ export const useSellItemForm = () => {
       reader.onload = async (e) => {
         const dataUrl = e.target?.result as string;
         if (dataUrl) {
-          const imageId = `post_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          const imageId = `marketplace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
           const result = await uploadImage(dataUrl, imageId);
           if (result.imageUrl) {
             setImageUrl(result.imageUrl);
@@ -110,12 +110,12 @@ export const useSellItemForm = () => {
     setIsSubmitting(true);
 
     try {
-      console.log("Submitting form data:", data);
+      console.log("Submitting marketplace listing:", data);
       console.log("Using Supabase user ID:", supabaseUserId);
       
-      // Create the post object for Supabase using the Supabase user ID
-      const postData = {
-        content: `${data.title}\n\n${data.description}`,
+      // Create the marketplace listing in the posts table with for_sale = true
+      const listingData = {
+        content: `Marketplace listing: ${data.title}`,
         user_id: supabaseUserId,
         title: data.title,
         description: data.description,
@@ -130,15 +130,15 @@ export const useSellItemForm = () => {
         delivery_cost: data.deliveryCost || null,
         size: data.size || null,
         color: data.color || null,
-        for_sale: true,
+        for_sale: true, // This marks it as a marketplace item
         created_at: new Date().toISOString(),
       };
 
-      console.log("Inserting into Supabase:", postData);
+      console.log("Inserting marketplace listing into Supabase:", listingData);
 
       const { data: result, error } = await supabase
         .from('posts')
-        .insert([postData])
+        .insert([listingData])
         .select();
 
       if (error) {
@@ -151,7 +151,7 @@ export const useSellItemForm = () => {
         return;
       }
 
-      console.log("Successfully created post:", result);
+      console.log("Successfully created marketplace listing:", result);
       
       toast({
         title: "Item listed successfully!",
@@ -161,7 +161,7 @@ export const useSellItemForm = () => {
       form.reset();
       setImageUrl("");
       
-      // Don't navigate immediately, stay on the form to show success
+      // Navigate to marketplace after success
       setTimeout(() => {
         navigate('/marketplace');
       }, 2000);

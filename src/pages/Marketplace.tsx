@@ -1,3 +1,4 @@
+
 import MainLayout from "@/components/layout/MainLayout";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
@@ -13,9 +14,13 @@ import { MarketplacePlushie } from "@/types/marketplace";
 import { samplePlushies } from "@/data/sampleMarketplaceData";
 import { MarketplaceHero } from "@/components/marketplace/MarketplaceHero";
 import { MarketplaceNavigation } from "@/components/marketplace/MarketplaceNavigation";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Marketplace = () => {
   const isMobile = useIsMobile();
+  const [marketplaceItems, setMarketplaceItems] = useState<MarketplacePlushie[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   const {
     priceRange,
@@ -45,6 +50,72 @@ const Marketplace = () => {
     closeFilterDrawer
   } = useMarketplaceView();
 
+  // Fetch marketplace items from Supabase
+  useEffect(() => {
+    const fetchMarketplaceItems = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Fetch posts that are marked for sale
+        const { data: posts, error } = await supabase
+          .from('posts')
+          .select(`
+            *,
+            users!inner(username, first_name, avatar_url)
+          `)
+          .eq('for_sale', true)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error("Error fetching marketplace items:", error);
+          // Fall back to sample data
+          setMarketplaceItems(samplePlushies);
+          return;
+        }
+
+        if (posts && posts.length > 0) {
+          const formattedItems: MarketplacePlushie[] = posts.map(post => ({
+            id: post.id,
+            title: post.title || 'Untitled Item',
+            name: post.title || 'Untitled Item',
+            price: post.price || 0,
+            image: post.image || '/placeholder-plushie.jpg',
+            brand: post.brand || 'Unknown',
+            condition: post.condition || 'used',
+            description: post.description || '',
+            tags: post.brand ? [post.brand.toLowerCase()] : [],
+            likes: 0,
+            comments: 0,
+            forSale: true,
+            userId: post.user_id,
+            username: post.users?.username || post.users?.first_name || 'User',
+            timestamp: post.created_at,
+            location: 'Online',
+            material: post.material,
+            filling: post.filling,
+            species: post.species,
+            deliveryMethod: post.delivery_method,
+            deliveryCost: post.delivery_cost,
+            size: post.size,
+            color: post.color
+          }));
+          
+          setMarketplaceItems(formattedItems);
+        } else {
+          // Show sample data if no real items
+          setMarketplaceItems(samplePlushies);
+        }
+      } catch (error) {
+        console.error("Error fetching marketplace items:", error);
+        setMarketplaceItems(samplePlushies);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchMarketplaceItems();
+  }, []);
+
   const handleProductClick = (product: MarketplacePlushie) => {
     console.log("Product clicked:", product);
   };
@@ -54,7 +125,20 @@ const Marketplace = () => {
     console.log("Wishlist toggled for:", id);
   };
 
-  const filteredPlushies = applyFilters(samplePlushies, searchQuery);
+  const filteredPlushies = applyFilters(marketplaceItems, searchQuery);
+
+  if (isLoading) {
+    return (
+      <MainLayout>
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-softspot-500 mx-auto mb-4"></div>
+            <p className="text-gray-600 dark:text-gray-300">Loading marketplace...</p>
+          </div>
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
