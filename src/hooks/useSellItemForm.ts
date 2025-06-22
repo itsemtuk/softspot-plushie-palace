@@ -116,7 +116,7 @@ export const useSellItemForm = () => {
       // Create the post object for Supabase using the Supabase user ID
       const postData = {
         content: `${data.title}\n\n${data.description}`,
-        user_id: supabaseUserId, // Use Supabase UUID instead of Clerk ID
+        user_id: supabaseUserId,
         title: data.title,
         description: data.description,
         image: imageUrl,
@@ -160,7 +160,11 @@ export const useSellItemForm = () => {
       
       form.reset();
       setImageUrl("");
-      navigate('/marketplace');
+      
+      // Don't navigate immediately, stay on the form to show success
+      setTimeout(() => {
+        navigate('/marketplace');
+      }, 2000);
       
     } catch (error) {
       console.error("Error submitting form:", error);

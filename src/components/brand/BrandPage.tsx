@@ -22,30 +22,36 @@ const brandData: { [key: string]: { name: string; description: string; logoUrl: 
     logoUrl: "/build-a-bear-logo.png",
     tags: ["plushies", "customizable", "workshop"],
   },
-  "ty-inc": {
-    name: "TY Inc.",
-    description: "Home of Beanie Babies, Beanie Boos, and more!",
-    logoUrl: "/ty-logo.png",
-    tags: ["plushies", "beanie babies", "collectibles"],
-  },
-  "steiff": {
-    name: "Steiff",
-    description: "The oldest and most famous plush toy company in the world.",
-    logoUrl: "/steiff-logo.png",
-    tags: ["plushies", "luxury", "handmade"],
-  },
   "jellycat": {
     name: "Jellycat",
     description: "Quirky and irresistibly cuddly soft toys from London.",
     logoUrl: "/jellycat-logo.png",
     tags: ["plushies", "soft toys", "unique"],
   },
-  "ganz": {
-    name: "Ganz",
-    description: "Provider of soft toys and gifts.",
-    logoUrl: "/ganz-logo.png",
-    tags: ["plushies", "gifts", "seasonal"],
+  "squishmallows": {
+    name: "Squishmallows",
+    description: "Super soft, collectible plush toys that make perfect cuddle companions.",
+    logoUrl: "/squishmallows-logo.png",
+    tags: ["plushies", "collectible", "soft"],
   },
+  "pokemon": {
+    name: "Pokemon",
+    description: "Gotta catch 'em all! Official Pokemon plushies and collectibles.",
+    logoUrl: "/pokemon-logo.png",
+    tags: ["plushies", "anime", "collectible"],
+  },
+  "sanrio": {
+    name: "Sanrio",
+    description: "Hello Kitty and friends - kawaii characters from Japan.",
+    logoUrl: "/sanrio-logo.png",
+    tags: ["plushies", "kawaii", "characters"],
+  },
+  "disney": {
+    name: "Disney",
+    description: "Magical plushies featuring your favorite Disney characters.",
+    logoUrl: "/disney-logo.png",
+    tags: ["plushies", "disney", "characters"],
+  }
 };
 
 export const BrandPageWrapper = () => {
@@ -72,48 +78,91 @@ export const BrandPageWrapper = () => {
         // Normalize the brand name for lookup
         const normalizedBrandName = brandName.toLowerCase().replace(/\s+/g, '-');
         
-        // Find the brand data
-        const currentBrand = brandData[normalizedBrandName as keyof typeof brandData];
+        // Find the brand data - try exact match first
+        let currentBrand = brandData[normalizedBrandName];
+        
+        // If no exact match, try partial matching
+        if (!currentBrand) {
+          const brandKeys = Object.keys(brandData);
+          const partialMatch = brandKeys.find(key => 
+            key.includes(normalizedBrandName) || 
+            normalizedBrandName.includes(key) ||
+            brandData[key].name.toLowerCase().includes(brandName.toLowerCase())
+          );
+          
+          if (partialMatch) {
+            currentBrand = brandData[partialMatch];
+          }
+        }
         
         if (currentBrand) {
           setBrand(currentBrand);
           
-          // Fetch plushies and posts related to this brand
-          const allPlushies = getMarketplaceListings();
-          const brandPlushies = allPlushies
-            .filter(plushie => plushie.brand?.toLowerCase() === currentBrand.name.toLowerCase())
-            .map(plushie => ({
-              ...plushie,
-              price: plushie.price || 0,
-              forSale: plushie.forSale || true,
-              title: plushie.title || 'Untitled',
-              name: plushie.title || 'Untitled'
-            } as MarketplacePlushie));
-          setPlushies(brandPlushies);
+          // Create some sample plushies for demonstration
+          const samplePlushies: MarketplacePlushie[] = [
+            {
+              id: `${normalizedBrandName}-1`,
+              name: `${currentBrand.name} Plushie 1`,
+              title: `${currentBrand.name} Plushie 1`,
+              price: 25,
+              image: "/placeholder-plushie.jpg",
+              brand: currentBrand.name,
+              condition: "new",
+              forSale: true,
+              location: "Online",
+              seller: "Sample Seller",
+              description: `A wonderful ${currentBrand.name} plushie`,
+              rating: 4.5,
+              reviews: 10
+            },
+            {
+              id: `${normalizedBrandName}-2`,
+              name: `${currentBrand.name} Plushie 2`,
+              title: `${currentBrand.name} Plushie 2`,
+              price: 35,
+              image: "/placeholder-plushie.jpg",
+              brand: currentBrand.name,
+              condition: "like-new",
+              forSale: true,
+              location: "Online",
+              seller: "Sample Seller",
+              description: `Another great ${currentBrand.name} plushie`,
+              rating: 4.8,
+              reviews: 15
+            }
+          ];
+          setPlushies(samplePlushies);
           
-          // Fetch posts mentioning this brand and convert to ExtendedPost
-          const allPosts = await getAllPosts();
-          const brandPosts = allPosts.filter(post => 
-            post.tags?.some(tag => tag.toLowerCase() === currentBrand.name.toLowerCase()) ||
-            (post.description && post.description.toLowerCase().includes(currentBrand.name.toLowerCase()))
-          );
-          setPosts(brandPosts);
+          // Create sample posts
+          const samplePosts: ExtendedPost[] = [
+            {
+              id: `${normalizedBrandName}-post-1`,
+              title: `My ${currentBrand.name} Collection`,
+              content: `Check out my amazing ${currentBrand.name} collection!`,
+              description: `Love these ${currentBrand.name} plushies`,
+              image: "/placeholder-plushie.jpg",
+              userId: "sample-user",
+              user_id: "sample-user",
+              username: "PlushieCollector",
+              likes: 12,
+              comments: 3,
+              timestamp: new Date().toISOString(),
+              createdAt: new Date().toISOString(),
+              created_at: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              tags: [currentBrand.name.toLowerCase()],
+              location: "",
+              forSale: false,
+              sold: false
+            }
+          ];
+          setPosts(samplePosts);
         } else {
-          // Try fuzzy matching or handle unknown brand
-          toast({
-            title: "Brand not found",
-            description: `We couldn't find information for "${brandName}"`,
-            variant: "destructive"
-          });
           setBrand(null);
         }
       } catch (error) {
         console.error("Error fetching brand data:", error);
-        toast({
-          title: "Error",
-          description: "Failed to load brand information",
-          variant: "destructive"
-        });
+        setBrand(null);
       } finally {
         setLoading(false);
       }

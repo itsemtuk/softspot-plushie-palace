@@ -15,6 +15,8 @@ import { toast } from "@/components/ui/use-toast";
 import { UserProfile } from "@/types/user";
 import { Spinner } from "@/components/ui/spinner";
 import { supabase } from "@/integrations/supabase/client";
+import { PostCreationData } from "@/types/core";
+import { addPost } from "@/utils/posts/postManagement";
 
 const UserProfilePage = () => {
   const { username } = useParams<{ username: string }>();
@@ -102,6 +104,46 @@ const UserProfilePage = () => {
     openPostDialog(post);
   };
 
+  const handlePostCreated = async (postData: PostCreationData) => {
+    if (!userData) return;
+    
+    try {
+      const newPost: ExtendedPost = {
+        ...postData,
+        id: `post-${Date.now()}`,
+        userId: userData.id,
+        user_id: userData.id,
+        username: userData.username || userData.first_name || 'User',
+        likes: 0,
+        comments: 0,
+        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        location: '',
+        forSale: false,
+        tags: [],
+        sold: false
+      };
+
+      const result = await addPost(newPost);
+      if (result.success) {
+        setUserPosts(prevPosts => [newPost, ...prevPosts]);
+        toast({
+          title: "Post created!",
+          description: "Your post has been added successfully.",
+        });
+      }
+    } catch (error) {
+      console.error("Error creating post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create post. Please try again.",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <MainLayout>
@@ -150,12 +192,13 @@ const UserProfilePage = () => {
 
             <TabsContent value="posts">
               <Card className="overflow-hidden bg-transparent shadow-none">
-                {userPosts.length > 0 ? (
+                {userPosts.length > 0 || true ? (
                   <ProfilePostsGrid
                     posts={userPosts}
                     onPostClick={handlePostClick}
                     isOwnProfile={false}
                     showCreateButton={false}
+                    onPostCreated={handlePostCreated}
                   />
                 ) : (
                   <div className="text-center py-16">
