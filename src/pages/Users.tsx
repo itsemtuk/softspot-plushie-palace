@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { Search, UserPlus, Users as UsersIcon } from "lucide-react";
+import { Search, UserPlus, UserMinus, Users as UsersIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -139,7 +139,7 @@ const Users = () => {
                   'Loading...'
                 ) : isFollowing ? (
                   <>
-                    <UserPlus className="h-4 w-4 mr-1" />
+                    <UserMinus className="h-4 w-4 mr-1" />
                     Following
                   </>
                 ) : (

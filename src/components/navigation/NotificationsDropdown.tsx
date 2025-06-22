@@ -16,8 +16,22 @@ import { toast } from "@/hooks/use-toast";
 
 export function NotificationsDropdown() {
   const navigate = useNavigate();
-  const [notifications] = useState<any[]>([]); // Empty notifications array
-  const [unreadCount] = useState(0); // No unread notifications
+  const [notifications] = useState<any[]>([]);
+  const [unreadCount] = useState(0);
+
+  const handleViewAllNotifications = () => {
+    if (!isAuthenticated()) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to view notifications."
+      });
+      navigate("/sign-in");
+      return;
+    }
+    
+    // Navigate to notifications page
+    navigate("/notifications");
+  };
 
   if (!isAuthenticated()) {
     return (
@@ -78,7 +92,10 @@ export function NotificationsDropdown() {
 
         <DropdownMenuSeparator />
         
-        <DropdownMenuItem className="p-4 text-center">
+        <DropdownMenuItem 
+          className="p-4 text-center cursor-pointer"
+          onClick={handleViewAllNotifications}
+        >
           <span className="text-softspot-600 hover:text-softspot-700 font-medium">
             View all notifications
           </span>

@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ProfileInformation from "@/components/settings/ProfileInformation";
 import AccountSettings from "@/components/settings/AccountSettings";
 import { ProfileSettings } from "@/components/settings/ProfileSettings";
 import { useSignOut } from "@/hooks/useSignOut";
@@ -57,7 +56,7 @@ const Settings = () => {
   return (
     <EnhancedErrorBoundary>
       <MainLayout>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
             
@@ -86,25 +85,19 @@ const Settings = () => {
             
             <TabsContent value="profile" className="space-y-6">
               <EnhancedErrorBoundary>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                  <ProfileSettings />
-                </div>
+                <ProfileSettings />
               </EnhancedErrorBoundary>
             </TabsContent>
             
             <TabsContent value="account" className="space-y-6">
               <EnhancedErrorBoundary>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                  <AccountSettings />
-                </div>
+                <AccountSettings />
               </EnhancedErrorBoundary>
             </TabsContent>
             
             <TabsContent value="appearance" className="space-y-6">
               <EnhancedErrorBoundary>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-                  <DarkModeSettings />
-                </div>
+                <DarkModeSettings />
               </EnhancedErrorBoundary>
             </TabsContent>
           </Tabs>

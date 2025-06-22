@@ -6,11 +6,15 @@ import { useTheme } from "@/components/ui/theme-provider";
 export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
+
   return (
     <Button
       variant="ghost"
       size="sm"
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      onClick={toggleTheme}
       className="h-9 w-9 px-0 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border-0"
     >
       <Sun className="h-4 w-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-gray-600 dark:text-gray-400" />

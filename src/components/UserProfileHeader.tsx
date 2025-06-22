@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Users, Edit } from 'lucide-react';
 import { ProfileActionButton } from '@/components/profile/ProfileActionButton';
 import { supabase } from '@/integrations/supabase/client';
+import { useFollowUser } from '@/hooks/useFollowUser';
 
 interface UserProfileData {
   bio: string;
@@ -34,29 +35,55 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     last_name?: string;
     email?: string;
   }>({});
+  const [stats, setStats] = useState({
+    postsCount: 0,
+    followersCount: 0,
+    followingCount: 0
+  });
 
-  // Fetch user info from Supabase users table
+  const { followerCount } = useFollowUser(userId);
+
+  // Fetch user info and stats from Supabase
   useEffect(() => {
-    const fetchUserInfo = async () => {
+    const fetchUserData = async () => {
       if (!userId) return;
 
       try {
-        const { data } = await supabase
+        // Fetch user info
+        const { data: userInfoData } = await supabase
           .from('users')
           .select('avatar_url, first_name, last_name, email')
           .eq('id', userId)
           .maybeSingle();
 
-        if (data) {
-          setUserInfo(data);
+        if (userInfoData) {
+          setUserInfo(userInfoData);
         }
+
+        // Fetch posts count
+        const { count: postsCount } = await supabase
+          .from('posts')
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', userId);
+
+        // Fetch following count (how many people this user follows)
+        const { count: followingCount } = await supabase
+          .from('followers')
+          .select('*', { count: 'exact', head: true })
+          .eq('follower_id', userId);
+
+        setStats({
+          postsCount: postsCount || 0,
+          followersCount: followerCount,
+          followingCount: followingCount || 0
+        });
       } catch (error) {
-        console.error('Error fetching user info:', error);
+        console.error('Error fetching user data:', error);
       }
     };
 
-    fetchUserInfo();
-  }, [userId]);
+    fetchUserData();
+  }, [userId, followerCount]);
 
   const displayName = userInfo.first_name 
     ? `${userInfo.first_name} ${userInfo.last_name || ''}`.trim()
@@ -124,7 +151,15 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                   </div>
                   <div className="flex items-center gap-1">
                     <Users className="w-4 h-4" />
-                    <span>0 followers</span>
+                    <span>{stats.postsCount} posts</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    <span>{stats.followersCount} followers</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="w-4 h-4" />
+                    <span>{stats.followingCount} following</span>
                   </div>
                 </div>
               </div>
