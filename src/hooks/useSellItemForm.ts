@@ -1,4 +1,6 @@
+
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { supabase } from "@/integrations/supabase/client";
@@ -39,9 +41,27 @@ export const useSellItemForm = () => {
     image: ""
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [imageUrl, setImageUrl] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const { register, handleSubmit, formState: { errors }, setValue } = useForm<FormData>({
+    defaultValues: formData
+  });
+
+  const handleImageSelect = (file: File | null) => {
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setImageUrl(url);
+      setFormData(prev => ({ ...prev, image: url }));
+      setValue("image", url);
+    }
+  };
+
+  const handleSelectChange = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setValue(field, value);
+  };
+
+  const onSubmit = async (data: FormData) => {
     
     if (!user || !supabaseUserId) {
       toast({
@@ -52,7 +72,7 @@ export const useSellItemForm = () => {
       return;
     }
 
-    if (!formData.title || !formData.price || !formData.condition || !formData.brand) {
+    if (!data.title || !data.price || !data.condition || !data.brand) {
       toast({
         variant: "destructive",
         title: "Missing required fields",
@@ -67,27 +87,27 @@ export const useSellItemForm = () => {
       const postData = {
         id: `marketplace-${Date.now()}`,
         user_id: supabaseUserId,
-        title: formData.title,
-        description: formData.description,
-        content: formData.description || formData.title,
-        image: formData.image || null,
-        price: parseFloat(formData.price),
-        brand: formData.brand,
-        condition: formData.condition,
-        material: formData.material || null,
-        filling: formData.filling || null,
-        species: formData.species || null,
-        delivery_method: formData.deliveryMethod || null,
-        delivery_cost: formData.deliveryCost ? parseFloat(formData.deliveryCost) : null,
-        size: formData.size || null,
-        color: formData.color || null,
-        for_sale: true, // This is crucial - marks it as a marketplace item
+        title: data.title,
+        description: data.description,
+        content: data.description || data.title,
+        image: imageUrl || null,
+        price: parseFloat(data.price),
+        brand: data.brand,
+        condition: data.condition,
+        material: data.material || null,
+        filling: data.filling || null,
+        species: data.species || null,
+        delivery_method: data.deliveryMethod || null,
+        delivery_cost: data.deliveryCost ? parseFloat(data.deliveryCost) : null,
+        size: data.size || null,
+        color: data.color || null,
+        for_sale: true,
         created_at: new Date().toISOString()
       };
 
       console.log('Submitting marketplace item:', postData);
 
-      const { data, error } = await supabase
+      const { data: result, error } = await supabase
         .from('posts')
         .insert([postData])
         .select()
@@ -98,7 +118,7 @@ export const useSellItemForm = () => {
         throw error;
       }
 
-      console.log('Marketplace item created successfully:', data);
+      console.log('Marketplace item created successfully:', result);
 
       toast({
         title: "Success!",
@@ -121,6 +141,7 @@ export const useSellItemForm = () => {
         color: "",
         image: ""
       });
+      setImageUrl("");
 
       setIsSubmitting(false);
       
@@ -142,6 +163,12 @@ export const useSellItemForm = () => {
     formData,
     setFormData,
     isSubmitting,
-    handleSubmit
+    handleSubmit,
+    onSubmit,
+    register,
+    errors,
+    imageUrl,
+    handleImageSelect,
+    handleSelectChange
   };
 };

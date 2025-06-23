@@ -60,7 +60,7 @@ export const ProductGrid = ({
       {selectedPlushie && (
         <PlushieDetailDialog
           plushie={selectedPlushie}
-          isOpen={!!selectedPlushie}
+          open={!!selectedPlushie}
           onClose={handleCloseDialog}
         />
       )}
