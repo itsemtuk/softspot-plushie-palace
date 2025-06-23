@@ -14,8 +14,8 @@ export function MobileNotifications() {
   useEffect(() => {
     if (!isAuthenticated()) return;
 
-    // Simulate unread count for demo
-    setUnreadCount(2);
+    // Clear the demo unread count for now
+    setUnreadCount(0);
   }, []);
 
   const handleClick = () => {
@@ -36,7 +36,7 @@ export function MobileNotifications() {
       variant="ghost" 
       size="icon"
       onClick={handleClick}
-      className="relative"
+      className="relative h-9 w-9"
     >
       {unreadCount > 0 ? (
         <BellDot className="h-5 w-5" />
@@ -45,7 +45,7 @@ export function MobileNotifications() {
       )}
       {unreadCount > 0 && (
         <Badge 
-          className="absolute -top-1 -right-1 h-4 w-4 flex items-center justify-center p-0 bg-red-500 text-white text-xs"
+          className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 bg-red-500 text-white text-xs min-w-[20px] rounded-full"
           variant="destructive"
         >
           {unreadCount > 9 ? '9+' : unreadCount}

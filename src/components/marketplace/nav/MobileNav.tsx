@@ -10,7 +10,7 @@ import {
   SheetClose
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Store, Search, ChevronDown, X, ShoppingBag, Tag, Percent } from "lucide-react";
+import { Store, Search, ChevronDown, X, ShoppingBag, Tag } from "lucide-react";
 import { brandData, speciesData } from "./data";
 
 interface MobileNavProps {
@@ -23,7 +23,6 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const navigate = useNavigate();
   
-  // Helper to determine if a category button should have active styling
   const isActive = (category: string) => selectedCategory === category;
 
   const handleCategorySelect = (category: string) => {
@@ -38,59 +37,41 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
 
   return (
     <div className="lg:hidden">
-      <div className="flex items-center justify-between h-12">
+      <div className="flex items-center justify-between h-12 px-2">
         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2">
+            <Button variant="ghost" className="flex items-center gap-2 text-sm">
               <Store className="w-4 h-4" />
-              <span>Shop</span>
+              <span className="hidden xs:inline">Categories</span>
               <ChevronDown className="w-4 h-4" />
             </Button>
           </SheetTrigger>
           <SheetContent side="bottom" className="h-[85vh] rounded-t-xl">
             <SheetHeader className="flex flex-row items-center justify-between border-b pb-2">
-              <SheetTitle className="text-xl">Shop Categories</SheetTitle>
+              <SheetTitle className="text-lg">Shop Categories</SheetTitle>
               <SheetClose className="rounded-full h-8 w-8 flex items-center justify-center">
                 <X className="h-4 w-4" />
               </SheetClose>
             </SheetHeader>
             
-            <div className="py-4 space-y-4">
+            <div className="py-4 space-y-3 max-h-[70vh] overflow-y-auto">
               <Button 
                 variant={isActive("all") ? "default" : "ghost"}
-                className={`w-full justify-start ${isActive("all") ? "bg-softspot-500" : ""}`}
+                className={`w-full justify-start text-sm ${isActive("all") ? "bg-softspot-500" : ""}`}
                 onClick={() => handleCategorySelect("all")}
               >
                 <ShoppingBag className="mr-2 h-4 w-4" />
                 Shop All
               </Button>
               
-              <div className="border-t pt-2">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Featured</h3>
+              <div className="border-t pt-3">
+                <h3 className="text-sm font-medium text-gray-500 mb-2 px-2">Animals</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  <Button variant="outline" asChild className="justify-start h-auto py-3">
-                    <Link to="/marketplace?featured=new">New Arrivals</Link>
-                  </Button>
-                  <Button variant="outline" asChild className="justify-start h-auto py-3">
-                    <Link to="/marketplace?featured=trending">Trending</Link>
-                  </Button>
-                  <Button variant="outline" asChild className="justify-start h-auto py-3">
-                    <Link to="/marketplace?featured=limited">Limited Editions</Link>
-                  </Button>
-                  <Button variant="outline" asChild className="justify-start h-auto py-3 text-red-500">
-                    <Link to="/marketplace?sale=true">Sale Items</Link>
-                  </Button>
-                </div>
-              </div>
-              
-              <div className="border-t pt-2">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Animals</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {speciesData.map(animal => (
+                  {speciesData.slice(0, 8).map(animal => (
                     <Button 
                       key={animal.id} 
                       variant={isActive(animal.id) ? "default" : "outline"}
-                      className={`justify-start h-auto py-3 ${isActive(animal.id) ? "bg-softspot-500" : ""}`}
+                      className={`justify-start h-auto py-2 px-3 text-xs ${isActive(animal.id) ? "bg-softspot-500" : ""}`}
                       onClick={() => handleCategorySelect(animal.id)}
                     >
                       {animal.name}
@@ -99,15 +80,15 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
                 </div>
               </div>
               
-              <div className="border-t pt-2">
-                <h3 className="text-sm font-medium text-gray-500 mb-2">Brands</h3>
+              <div className="border-t pt-3">
+                <h3 className="text-sm font-medium text-gray-500 mb-2 px-2">Brands</h3>
                 <div className="grid grid-cols-2 gap-2">
-                  {brandData.map(brand => (
+                  {brandData.slice(0, 6).map(brand => (
                     <Button 
                       key={brand.id} 
                       variant="outline" 
                       asChild
-                      className="justify-start h-auto py-3"
+                      className="justify-start h-auto py-2 px-3 text-xs"
                     >
                       <Link to={`/brand/${brand.id}`}>{brand.name}</Link>
                     </Button>
@@ -115,9 +96,9 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
                 </div>
               </div>
               
-              <div className="border-t pt-4 mt-4">
+              <div className="border-t pt-3 mt-4">
                 <Button 
-                  className="w-full bg-softspot-500 hover:bg-softspot-600"
+                  className="w-full bg-softspot-500 hover:bg-softspot-600 text-sm"
                   onClick={navigateToSellItem}
                 >
                   <Tag className="mr-2 h-4 w-4" /> 
@@ -129,8 +110,13 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
         </Sheet>
         
         <div className="flex items-center">
-          <Button variant="ghost" size="icon" onClick={() => setIsSearchVisible(!isSearchVisible)}>
-            <Search className="h-5 w-5" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={() => setIsSearchVisible(!isSearchVisible)}
+            className="h-8 w-8"
+          >
+            <Search className="h-4 w-4" />
           </Button>
         </div>
       </div>

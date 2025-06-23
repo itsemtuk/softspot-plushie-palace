@@ -1,108 +1,62 @@
-
 import { useState } from "react";
-import { useForm, SubmitHandler } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { toast } from "@/hooks/use-toast";
-import { uploadImage } from "@/utils/storage/imageStorage";
 import { useUser } from "@clerk/clerk-react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/components/ui/use-toast";
 
-const sellItemSchema = z.object({
-  title: z.string().min(2, {
-    message: "Title must be at least 2 characters.",
-  }),
-  description: z.string().min(10, {
-    message: "Description must be at least 10 characters.",
-  }),
-  price: z.number().min(0, {
-    message: "Price must be a positive number.",
-  }),
-  brand: z.string().optional(),
-  condition: z.enum(["new", "used", "like new"]),
-  material: z.string().optional(),
-  filling: z.string().optional(),
-  species: z.string().optional(),
-  deliveryMethod: z.enum(["shipping", "local pickup", "both"]),
-  deliveryCost: z.number().optional(),
-  size: z.string().optional(),
-  color: z.string().optional(),
-});
-
-export type SellItemFormData = z.infer<typeof sellItemSchema>;
+interface FormData {
+  title: string;
+  description: string;
+  price: string;
+  condition: string;
+  brand: string;
+  material: string;
+  filling: string;
+  species: string;
+  deliveryMethod: string;
+  deliveryCost: string;
+  size: string;
+  color: string;
+  image: string;
+}
 
 export const useSellItemForm = () => {
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useUser();
   const { supabaseUserId } = useClerkSupabaseUser(user);
-  const navigate = useNavigate();
-
-  const form = useForm<SellItemFormData>({
-    resolver: zodResolver(sellItemSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      price: 0,
-      brand: "",
-      condition: "new",
-      material: "",
-      filling: "",
-      species: "",
-      deliveryMethod: "shipping",
-      deliveryCost: 0,
-      size: "",
-      color: "",
-    },
+  const [formData, setFormData] = useState<FormData>({
+    title: "",
+    description: "",
+    price: "",
+    condition: "",
+    brand: "",
+    material: "",
+    filling: "",
+    species: "",
+    deliveryMethod: "",
+    deliveryCost: "",
+    size: "",
+    color: "",
+    image: ""
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleImageSelect = async (file: File | null) => {
-    if (!file) {
-      setImageUrl("");
-      return;
-    }
-
-    try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const dataUrl = e.target?.result as string;
-        if (dataUrl) {
-          const imageId = `marketplace_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-          const result = await uploadImage(dataUrl, imageId);
-          if (result.imageUrl) {
-            setImageUrl(result.imageUrl);
-          } else {
-            toast({
-              variant: "destructive",
-              title: "Upload failed",
-              description: result.error || "Failed to upload image",
-            });
-          }
-        }
-      };
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error("Image upload error:", error);
-      toast({
-        variant: "destructive",
-        title: "Upload error",
-        description: "An unexpected error occurred while uploading the image",
-      });
-    }
-  };
-
-  const handleSelectChange = (field: string, value: string) => {
-    form.setValue(field as keyof SellItemFormData, value);
-  };
-
-  const onSubmit: SubmitHandler<SellItemFormData> = async (data) => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     if (!user || !supabaseUserId) {
       toast({
         variant: "destructive",
         title: "Authentication required",
-        description: "Please sign in to sell items",
+        description: "Please sign in to sell items."
+      });
+      return;
+    }
+
+    if (!formData.title || !formData.price || !formData.condition || !formData.brand) {
+      toast({
+        variant: "destructive",
+        title: "Missing required fields",
+        description: "Please fill in all required fields."
       });
       return;
     }
@@ -110,82 +64,84 @@ export const useSellItemForm = () => {
     setIsSubmitting(true);
 
     try {
-      console.log("Submitting marketplace listing:", data);
-      console.log("Using Supabase user ID:", supabaseUserId);
-      
-      // Create the marketplace listing in the posts table with for_sale = true
-      const listingData = {
-        content: `Marketplace listing: ${data.title}`,
+      const postData = {
+        id: `marketplace-${Date.now()}`,
         user_id: supabaseUserId,
-        title: data.title,
-        description: data.description,
-        image: imageUrl,
-        price: data.price,
-        brand: data.brand || null,
-        condition: data.condition,
-        material: data.material || null,
-        filling: data.filling || null,
-        species: data.species || null,
-        delivery_method: data.deliveryMethod,
-        delivery_cost: data.deliveryCost || null,
-        size: data.size || null,
-        color: data.color || null,
-        for_sale: true, // This marks it as a marketplace item
-        created_at: new Date().toISOString(),
+        title: formData.title,
+        description: formData.description,
+        content: formData.description || formData.title,
+        image: formData.image || null,
+        price: parseFloat(formData.price),
+        brand: formData.brand,
+        condition: formData.condition,
+        material: formData.material || null,
+        filling: formData.filling || null,
+        species: formData.species || null,
+        delivery_method: formData.deliveryMethod || null,
+        delivery_cost: formData.deliveryCost ? parseFloat(formData.deliveryCost) : null,
+        size: formData.size || null,
+        color: formData.color || null,
+        for_sale: true, // This is crucial - marks it as a marketplace item
+        created_at: new Date().toISOString()
       };
 
-      console.log("Inserting marketplace listing into Supabase:", listingData);
+      console.log('Submitting marketplace item:', postData);
 
-      const { data: result, error } = await supabase
+      const { data, error } = await supabase
         .from('posts')
-        .insert([listingData])
-        .select();
+        .insert([postData])
+        .select()
+        .single();
 
       if (error) {
-        console.error("Supabase error:", error);
-        toast({
-          variant: "destructive",
-          title: "Failed to list item",
-          description: error.message || "Please try again",
-        });
-        return;
+        console.error("Error creating marketplace listing:", error);
+        throw error;
       }
 
-      console.log("Successfully created marketplace listing:", result);
-      
+      console.log('Marketplace item created successfully:', data);
+
       toast({
-        title: "Item listed successfully!",
-        description: "Your plushie has been added to the marketplace.",
+        title: "Success!",
+        description: "Your item has been listed for sale."
       });
+
+      // Reset form
+      setFormData({
+        title: "",
+        description: "",
+        price: "",
+        condition: "",
+        brand: "",
+        material: "",
+        filling: "",
+        species: "",
+        deliveryMethod: "",
+        deliveryCost: "",
+        size: "",
+        color: "",
+        image: ""
+      });
+
+      setIsSubmitting(false);
       
-      form.reset();
-      setImageUrl("");
-      
-      // Navigate to marketplace after success
-      setTimeout(() => {
-        navigate('/marketplace');
-      }, 2000);
+      // Navigate to marketplace
+      window.location.href = '/marketplace';
       
     } catch (error) {
-      console.error("Error submitting form:", error);
+      console.error("Error creating listing:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "An unexpected error occurred",
+        description: "Failed to create listing. Please try again."
       });
-    } finally {
       setIsSubmitting(false);
     }
   };
 
   return {
-    imageUrl,
+    formData,
+    setFormData,
     isSubmitting,
-    register: form.register,
-    handleSubmit: form.handleSubmit,
-    onSubmit,
-    errors: form.formState.errors,
-    handleImageSelect,
-    handleSelectChange,
+    handleSubmit
   };
 };

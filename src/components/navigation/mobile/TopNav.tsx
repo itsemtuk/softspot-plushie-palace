@@ -28,20 +28,22 @@ export function TopNav() {
     navigate(path);
     return true;
   };
+
+  const handleLogoClick = () => {
+    if (isSignedIn) {
+      navigate("/feed");
+    } else {
+      navigate("/");
+    }
+  };
   
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-sm border-b border-softspot-100 dark:bg-gray-800/80 dark:border-gray-700">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-softspot-100 dark:border-gray-700">
       <div className="flex items-center justify-between px-4 h-16">
         <div className="flex items-center">
-          {isSignedIn ? (
-            <Link to="/feed">
-              <Logo />
-            </Link>
-          ) : (
-            <Link to="/">
-              <Logo />
-            </Link>
-          )}
+          <button onClick={handleLogoClick}>
+            <Logo />
+          </button>
         </div>
         
         <div className="flex items-center gap-2">
@@ -66,7 +68,7 @@ export function TopNav() {
             </>
           )}
           
-          {!isSignedIn && isHomepage && !isSignInPage && (
+          {!isSignedIn && (
             <Link to="/sign-in">
               <Button variant="ghost" size="icon">
                 <LogIn className="h-5 w-5" />

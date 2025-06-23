@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -74,13 +73,10 @@ export const BrandPageWrapper = () => {
       setLoading(true);
       
       try {
-        // Normalize the brand name for lookup
         const normalizedBrandName = brandName.toLowerCase().replace(/\s+/g, '-');
         
-        // Find the brand data - try exact match first
         let currentBrand = brandData[normalizedBrandName];
         
-        // If no exact match, try partial matching
         if (!currentBrand) {
           const brandKeys = Object.keys(brandData);
           const partialMatch = brandKeys.find(key => 
@@ -97,7 +93,6 @@ export const BrandPageWrapper = () => {
         if (currentBrand) {
           setBrand(currentBrand);
           
-          // Fetch real marketplace items for this brand
           const { data: marketplaceData, error: marketplaceError } = await supabase
             .from('posts')
             .select(`
@@ -136,7 +131,6 @@ export const BrandPageWrapper = () => {
             setPlushies([]);
           }
           
-          // Fetch real community posts for this brand
           const { data: postsData, error: postsError } = await supabase
             .from('posts')
             .select(`
@@ -235,9 +229,9 @@ export const BrandPageWrapper = () => {
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       <BrandHeader brand={brand} />
-      <div className="container mx-auto py-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-1">
+      <div className="container mx-auto py-6 px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="lg:col-span-1">
             <BrandFilterPanel 
               searchQuery={searchQuery}
               setSearchQuery={setSearchQuery}
@@ -248,7 +242,7 @@ export const BrandPageWrapper = () => {
               onFilterChange={handleFilterChange}
             />
           </div>
-          <div className="md:col-span-3">
+          <div className="lg:col-span-3">
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Featured Plushies</h2>
               {plushies.length > 0 ? (

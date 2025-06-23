@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { ChevronLeft, User, Shield, Bell, Palette, Store, Link2, Truck, CreditCard } from "lucide-react";
+import { ChevronLeft, User, Shield, Bell, Palette, Store, Link2, Truck } from "lucide-react";
 
 interface MobileSettingsTabsProps {
   activeTab: string;
@@ -15,13 +15,13 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
 
   const tabs = [
     { id: "basic", label: "Basic Info", icon: User },
-    { id: "privacy", label: "Privacy & Security", icon: Shield },
+    { id: "privacy", label: "Privacy", icon: Shield },
     { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "avatar", label: "Plushie Avatar", icon: Palette },
-    { id: "preferences", label: "Plushie Preferences", icon: User },
-    { id: "social", label: "Social Media", icon: Link2 },
-    { id: "store", label: "Store Links", icon: Store },
-    { id: "delivery", label: "Delivery & Payment", icon: Truck },
+    { id: "avatar", label: "Avatar", icon: Palette },
+    { id: "preferences", label: "Preferences", icon: User },
+    { id: "social", label: "Social", icon: Link2 },
+    { id: "store", label: "Store", icon: Store },
+    { id: "delivery", label: "Delivery", icon: Truck },
   ];
 
   const currentTab = tabs.find(tab => tab.id === activeTab);
@@ -73,7 +73,7 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
               }}
             >
               <tab.icon className="mr-3 h-5 w-5" />
-              {tab.label}
+              <span className="text-sm">{tab.label}</span>
             </Button>
           ))}
         </div>
