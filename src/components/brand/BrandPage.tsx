@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
@@ -6,9 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { MarketplacePlushie } from "@/types/marketplace";
 import { ExtendedPost } from "@/types/core";
-import { getPosts, getAllPosts } from "@/utils/posts/postFetch";
-import { getMarketplaceListings } from "@/utils/storage/localStorageUtils";
-import { convertPostsToExtendedPosts } from "@/utils/postConversion";
+import { supabase } from "@/integrations/supabase/client";
 import { BrandHeader } from "./BrandHeader";
 import { PlushieGrid } from "./PlushieGrid";
 import { CommunityPosts } from "./CommunityPosts";
@@ -98,71 +97,84 @@ export const BrandPageWrapper = () => {
         if (currentBrand) {
           setBrand(currentBrand);
           
-          // Create some sample plushies for demonstration
-          const samplePlushies: MarketplacePlushie[] = [
-            {
-              id: `${normalizedBrandName}-1`,
-              name: `${currentBrand.name} Plushie 1`,
-              title: `${currentBrand.name} Plushie 1`,
-              price: 25,
-              image: "/placeholder-plushie.jpg",
-              brand: currentBrand.name,
-              condition: "new",
+          // Fetch real marketplace items for this brand
+          const { data: marketplaceData, error: marketplaceError } = await supabase
+            .from('posts')
+            .select(`
+              *,
+              users!inner(username, first_name, avatar_url)
+            `)
+            .eq('for_sale', true)
+            .ilike('brand', `%${currentBrand.name}%`)
+            .order('created_at', { ascending: false });
+
+          if (marketplaceError) {
+            console.error("Error fetching marketplace items:", marketplaceError);
+            setPlushies([]);
+          } else if (marketplaceData && marketplaceData.length > 0) {
+            const formattedItems: MarketplacePlushie[] = marketplaceData.map(post => ({
+              id: post.id,
+              title: post.title || 'Untitled Item',
+              name: post.title || 'Untitled Item',
+              price: post.price || 0,
+              image: post.image || '/placeholder-plushie.jpg',
+              brand: post.brand || 'Unknown',
+              condition: post.condition || 'used',
+              description: post.description || '',
+              tags: post.brand ? [post.brand.toLowerCase()] : [],
+              likes: 0,
+              comments: 0,
               forSale: true,
-              location: "Online",
-              username: "Sample Seller",
-              userId: "sample-user-1",
-              description: `A wonderful ${currentBrand.name} plushie`,
-              tags: [currentBrand.name.toLowerCase()],
-              likes: 10,
-              comments: 5,
-              timestamp: new Date().toISOString()
-            },
-            {
-              id: `${normalizedBrandName}-2`,
-              name: `${currentBrand.name} Plushie 2`,
-              title: `${currentBrand.name} Plushie 2`,
-              price: 35,
-              image: "/placeholder-plushie.jpg",
-              brand: currentBrand.name,
-              condition: "like-new",
-              forSale: true,
-              location: "Online",
-              username: "Sample Seller",
-              userId: "sample-user-2",
-              description: `Another great ${currentBrand.name} plushie`,
-              tags: [currentBrand.name.toLowerCase()],
-              likes: 15,
-              comments: 8,
-              timestamp: new Date().toISOString()
-            }
-          ];
-          setPlushies(samplePlushies);
+              userId: post.user_id,
+              username: post.users?.username || post.users?.first_name || 'User',
+              timestamp: post.created_at,
+              location: 'Online'
+            }));
+            
+            setPlushies(formattedItems);
+          } else {
+            setPlushies([]);
+          }
           
-          // Create sample posts
-          const samplePosts: ExtendedPost[] = [
-            {
-              id: `${normalizedBrandName}-post-1`,
-              title: `My ${currentBrand.name} Collection`,
-              content: `Check out my amazing ${currentBrand.name} collection!`,
-              description: `Love these ${currentBrand.name} plushies`,
-              image: "/placeholder-plushie.jpg",
-              userId: "sample-user",
-              user_id: "sample-user",
-              username: "PlushieCollector",
-              likes: 12,
-              comments: 3,
-              timestamp: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-              created_at: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              tags: [currentBrand.name.toLowerCase()],
+          // Fetch real community posts for this brand
+          const { data: postsData, error: postsError } = await supabase
+            .from('posts')
+            .select(`
+              *,
+              users!inner(username, first_name, avatar_url)
+            `)
+            .eq('for_sale', false)
+            .or(`brand.ilike.%${currentBrand.name}%,content.ilike.%${currentBrand.name}%,title.ilike.%${currentBrand.name}%`)
+            .order('created_at', { ascending: false });
+
+          if (postsError) {
+            console.error("Error fetching posts:", postsError);
+            setPosts([]);
+          } else if (postsData && postsData.length > 0) {
+            const formattedPosts: ExtendedPost[] = postsData.map(post => ({
+              id: post.id,
+              title: post.title || '',
+              content: post.content || '',
+              description: post.description || '',
+              image: post.image || '',
+              userId: post.user_id,
+              user_id: post.user_id,
+              username: post.users?.username || post.users?.first_name || 'User',
+              likes: 0,
+              comments: 0,
+              timestamp: post.created_at,
+              createdAt: post.created_at,
+              created_at: post.created_at,
+              updatedAt: post.created_at,
+              tags: post.brand ? [post.brand.toLowerCase()] : [],
               location: "",
               forSale: false,
               sold: false
-            }
-          ];
-          setPosts(samplePosts);
+            }));
+            setPosts(formattedPosts);
+          } else {
+            setPosts([]);
+          }
         } else {
           setBrand(null);
         }
@@ -182,12 +194,10 @@ export const BrandPageWrapper = () => {
   };
 
   const handlePostClick = (post: ExtendedPost) => {
-    // Handle post click - could open a dialog or navigate to post page
     console.log("Post clicked:", post);
   };
 
   const handleFilterChange = (filterType: string, value: string[]) => {
-    // Handle filter changes
     console.log("Filter changed:", filterType, value);
   };
 
@@ -241,11 +251,23 @@ export const BrandPageWrapper = () => {
           <div className="md:col-span-3">
             <section className="mb-8">
               <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Featured Plushies</h2>
-              <PlushieGrid plushies={plushies} onPlushieClick={handlePlushieClick} />
+              {plushies.length > 0 ? (
+                <PlushieGrid plushies={plushies} onPlushieClick={handlePlushieClick} />
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400">No {brand.name} items available yet.</p>
+                </div>
+              )}
             </section>
             <section>
               <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Community Posts</h2>
-              <CommunityPosts posts={posts} onPostClick={handlePostClick} />
+              {posts.length > 0 ? (
+                <CommunityPosts posts={posts} onPostClick={handlePostClick} />
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 dark:text-gray-400">No community posts about {brand.name} yet.</p>
+                </div>
+              )}
             </section>
           </div>
         </div>

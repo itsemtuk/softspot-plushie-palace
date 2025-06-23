@@ -11,7 +11,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useMarketplaceFilters } from "@/hooks/useMarketplaceFilters";
 import { useMarketplaceView } from "@/hooks/useMarketplaceView";
 import { MarketplacePlushie } from "@/types/marketplace";
-import { samplePlushies } from "@/data/sampleMarketplaceData";
 import { MarketplaceHero } from "@/components/marketplace/MarketplaceHero";
 import { MarketplaceNavigation } from "@/components/marketplace/MarketplaceNavigation";
 import { useState, useEffect } from "react";
@@ -68,8 +67,7 @@ const Marketplace = () => {
 
         if (error) {
           console.error("Error fetching marketplace items:", error);
-          // Fall back to sample data
-          setMarketplaceItems(samplePlushies);
+          setMarketplaceItems([]);
           return;
         }
 
@@ -102,12 +100,11 @@ const Marketplace = () => {
           
           setMarketplaceItems(formattedItems);
         } else {
-          // Show sample data if no real items
-          setMarketplaceItems(samplePlushies);
+          setMarketplaceItems([]);
         }
       } catch (error) {
         console.error("Error fetching marketplace items:", error);
-        setMarketplaceItems(samplePlushies);
+        setMarketplaceItems([]);
       } finally {
         setIsLoading(false);
       }
@@ -186,12 +183,19 @@ const Marketplace = () => {
 
             {/* Products Grid/List */}
             <div className="flex-1">
-              <ProductGrid
-                plushies={filteredPlushies}
-                viewMode={viewMode}
-                onProductClick={handleProductClick}
-                onWishlistToggle={handleWishlistToggle}
-              />
+              {filteredPlushies.length > 0 ? (
+                <ProductGrid
+                  plushies={filteredPlushies}
+                  viewMode={viewMode}
+                  onProductClick={handleProductClick}
+                  onWishlistToggle={handleWishlistToggle}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No items found</h3>
+                  <p className="text-gray-500 dark:text-gray-400">Try adjusting your filters or check back later for new listings.</p>
+                </div>
+              )}
             </div>
           </div>
         </div>
