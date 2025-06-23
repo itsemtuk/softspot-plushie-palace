@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -15,10 +16,10 @@ import { toast } from "@/components/ui/use-toast";
 interface PlushieDetailDialogProps {
   plushie: MarketplacePlushie;
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
 }
 
-export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDetailDialogProps) => {
+export const PlushieDetailDialog = ({ plushie, open, onClose }: PlushieDetailDialogProps) => {
   const navigate = useNavigate();
   const [selectedTab, setSelectedTab] = useState("details");
   const [isAddingToCart, setIsAddingToCart] = useState(false);
@@ -46,7 +47,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
       title: "Contact initiated",
       description: "Redirecting to messages to contact the seller."
     });
-    onOpenChange(false);
+    onClose();
   };
   
   const handleToggleWishlist = () => {
@@ -81,7 +82,7 @@ export const PlushieDetailDialog = ({ plushie, open, onOpenChange }: PlushieDeta
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-3xl p-0 overflow-hidden max-h-[90vh] overflow-y-auto bg-white rounded-lg">
         {/* Single close button in top right */}
         <DialogClose className="absolute top-4 right-4 rounded-full hover:bg-gray-100 p-1 opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none z-10">

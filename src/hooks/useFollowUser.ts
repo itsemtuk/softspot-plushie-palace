@@ -130,6 +130,9 @@ export const useFollowUser = (targetUserId?: string) => {
           description: 'You are now following this user.'
         });
       }
+      
+      // Refresh the follow status to ensure consistency
+      await checkFollowStatus();
     } catch (error) {
       console.error('Error toggling follow:', error);
       toast({
@@ -143,7 +146,7 @@ export const useFollowUser = (targetUserId?: string) => {
   };
 
   useEffect(() => {
-    if (targetUserId) {
+    if (targetUserId && user?.id) {
       checkFollowStatus();
       getFollowerCount();
     }

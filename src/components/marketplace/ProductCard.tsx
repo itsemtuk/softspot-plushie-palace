@@ -19,7 +19,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onWishlistToggle,
   viewMode = "grid"
 }) => {
-  const handleCardClick = () => {
+  const handleCardClick = (e: React.MouseEvent) => {
+    // Prevent card click when clicking on wishlist button
+    if ((e.target as HTMLElement).closest('button')) {
+      return;
+    }
+    console.log("ProductCard: Card clicked, calling onProductClick");
     onProductClick(plushie);
   };
 
