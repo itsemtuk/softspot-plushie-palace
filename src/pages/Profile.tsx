@@ -3,13 +3,15 @@ import { ProfileLayout } from "@/components/profile/ProfileLayout";
 import { TabsContent } from "@/components/ui/tabs";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { useState, useEffect } from "react";
-import { ExtendedPost } from "@/types/core";
+import { ExtendedPost, PostCreationData } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { getPosts } from "@/utils/postStorage";
 import { useUser } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { addPost } from "@/utils/posts/postManagement";
+import { toast } from "@/components/ui/use-toast";
 
 const Profile = () => {
   console.log("Profile page: Rendering");
@@ -99,6 +101,86 @@ const Profile = () => {
     openPostDialog(post);
   };
 
+  const handleRegularPostCreated = async (postData: PostCreationData) => {
+    if (!userData) return;
+    
+    try {
+      const newPost: ExtendedPost = {
+        ...postData,
+        id: `post-${Date.now()}`,
+        userId: userData.id,
+        user_id: userData.id,
+        username: userData.username || userData.first_name || 'User',
+        likes: 0,
+        comments: 0,
+        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        location: '',
+        forSale: false,
+        tags: [],
+        sold: false
+      };
+
+      const result = await addPost(newPost);
+      if (result.success) {
+        setUserPosts(prevPosts => [newPost, ...prevPosts]);
+        toast({
+          title: "Post created!",
+          description: "Your post has been added successfully.",
+        });
+      }
+    } catch (error) {
+      console.error("Error creating regular post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create post. Please try again.",
+      });
+    }
+  };
+
+  const handleMarketplacePostCreated = async (postData: PostCreationData) => {
+    if (!userData) return;
+    
+    try {
+      const newPost: ExtendedPost = {
+        ...postData,
+        id: `post-${Date.now()}`,
+        userId: userData.id,
+        user_id: userData.id,
+        username: userData.username || userData.first_name || 'User',
+        likes: 0,
+        comments: 0,
+        timestamp: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        location: '',
+        forSale: true,
+        tags: [],
+        sold: false
+      };
+
+      const result = await addPost(newPost);
+      if (result.success) {
+        setMarketplacePosts(prevPosts => [newPost, ...prevPosts]);
+        toast({
+          title: "Marketplace item listed!",
+          description: "Your item has been added to the marketplace.",
+        });
+      }
+    } catch (error) {
+      console.error("Error creating marketplace post:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to list item. Please try again.",
+      });
+    }
+  };
+
   if (isLoading) {
     return (
       <ProfileLayout>
@@ -117,7 +199,7 @@ const Profile = () => {
           onPostClick={handlePostClick}
           isOwnProfile={true}
           showCreateButton={true}
-          onPostCreated={() => {}}
+          onPostCreated={handleRegularPostCreated}
         />
       </TabsContent>
       
@@ -127,7 +209,7 @@ const Profile = () => {
           onPostClick={handlePostClick}
           isOwnProfile={true}
           showCreateButton={false}
-          onPostCreated={() => {}}
+          onPostCreated={handleMarketplacePostCreated}
         />
       </TabsContent>
       
