@@ -139,15 +139,15 @@ export const BrandPageWrapper = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <BrandHeader 
-        brandName={brand.name}
-        brandDescription={brand.description}
-        brandLogo={logo}
-        backgroundColor={brand.color}
-        itemCount={brandPlushies.length}
-      />
-      
       <div className="container mx-auto px-4 py-6">
+        <BrandHeader 
+          brandName={brand.name}
+          brandDescription={brand.description}
+          brandLogo={logo}
+          backgroundColor={brand.color}
+          itemCount={brandPlushies.length}
+        />
+        
         <Tabs defaultValue="marketplace" className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-6">
             <TabsTrigger value="marketplace">
@@ -159,17 +159,10 @@ export const BrandPageWrapper = () => {
           </TabsList>
           
           <TabsContent value="marketplace">
-            {isLoading ? (
-              <div className="text-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500 mx-auto"></div>
-                <p className="text-gray-600 dark:text-gray-300 mt-2">Loading items...</p>
-              </div>
-            ) : (
-              <PlushieGrid 
-                plushies={brandPlushies.filter(p => p.forSale)}
-                isLoading={isLoading}
-              />
-            )}
+            <PlushieGrid 
+              plushies={brandPlushies.filter(p => p.forSale)}
+              isLoading={isLoading}
+            />
           </TabsContent>
           
           <TabsContent value="community">

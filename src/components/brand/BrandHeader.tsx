@@ -32,7 +32,7 @@ export const BrandHeader = ({
             />
             <AvatarFallback className="bg-softspot-100 text-softspot-500 text-2xl">
               {brandName.charAt(0)}
-            </AvatarFallable>
+            </AvatarFallback>
           </Avatar>
         </div>
         

@@ -131,8 +131,11 @@ export const useFollowUser = (targetUserId?: string) => {
         });
       }
       
-      // Refresh the follow status to ensure consistency
-      await checkFollowStatus();
+      // Force refresh the follow status to ensure consistency
+      setTimeout(() => {
+        checkFollowStatus();
+        getFollowerCount();
+      }, 500);
     } catch (error) {
       console.error('Error toggling follow:', error);
       toast({
@@ -151,6 +154,17 @@ export const useFollowUser = (targetUserId?: string) => {
       getFollowerCount();
     }
   }, [user?.id, targetUserId]);
+
+  // Refetch follow status when component mounts or user changes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (targetUserId && user?.id) {
+        checkFollowStatus();
+      }
+    }, 5000); // Check every 5 seconds for real-time updates
+
+    return () => clearInterval(interval);
+  }, [targetUserId, user?.id]);
 
   return {
     isFollowing,
