@@ -1,14 +1,25 @@
+
 import { ImagePlus, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { ExtendedPost } from "@/types/core";
+import { MarketplacePlushie } from "@/types/marketplace";
 
 interface CommunityPostsProps {
-  posts: ExtendedPost[];
-  onPostClick: (post: ExtendedPost) => void;
+  posts: MarketplacePlushie[];
+  isLoading?: boolean;
+  onPostClick?: (post: MarketplacePlushie) => void;
 }
 
-export const CommunityPosts = ({ posts, onPostClick }: CommunityPostsProps) => {
+export const CommunityPosts = ({ posts, isLoading, onPostClick }: CommunityPostsProps) => {
+  if (isLoading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500 mx-auto"></div>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">Loading posts...</p>
+      </div>
+    );
+  }
+
   if (posts.length === 0) {
     return (
       <div className="py-12 text-center">
@@ -32,7 +43,7 @@ export const CommunityPosts = ({ posts, onPostClick }: CommunityPostsProps) => {
         <div 
           key={post.id}
           className="relative cursor-pointer hover:opacity-95 transition-opacity"
-          onClick={() => onPostClick(post)}
+          onClick={() => onPostClick?.(post)}
         >
           <AspectRatio ratio={1} className="bg-gray-100">
             <img

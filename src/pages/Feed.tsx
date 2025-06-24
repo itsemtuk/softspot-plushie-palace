@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedHeader } from "@/components/feed/FeedHeader";
@@ -76,8 +75,7 @@ export default function Feed() {
         createdAt: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        forSale: false, // Explicitly set to false for feed posts
-        for_sale: false, // Also set the database field
+        forSale: false, // Use forSale instead of for_sale for ExtendedPost type
       };
 
       const result = await addPost(newPost);

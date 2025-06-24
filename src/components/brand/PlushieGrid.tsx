@@ -5,10 +5,20 @@ import { MarketplacePlushie } from "@/types/marketplace";
 
 interface PlushieGridProps {
   plushies: MarketplacePlushie[];
-  onPlushieClick: (plushie: MarketplacePlushie) => void;
+  isLoading?: boolean;
+  onPlushieClick?: (plushie: MarketplacePlushie) => void;
 }
 
-export const PlushieGrid = ({ plushies, onPlushieClick }: PlushieGridProps) => {
+export const PlushieGrid = ({ plushies, isLoading, onPlushieClick }: PlushieGridProps) => {
+  if (isLoading) {
+    return (
+      <div className="text-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500 mx-auto"></div>
+        <p className="text-gray-600 dark:text-gray-300 mt-2">Loading items...</p>
+      </div>
+    );
+  }
+
   if (plushies.length === 0) {
     return (
       <div className="col-span-3 text-center py-6">
@@ -20,7 +30,7 @@ export const PlushieGrid = ({ plushies, onPlushieClick }: PlushieGridProps) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {plushies.map((plushie) => (
-        <Card key={plushie.id} className="cursor-pointer" onClick={() => onPlushieClick(plushie)}>
+        <Card key={plushie.id} className="cursor-pointer" onClick={() => onPlushieClick?.(plushie)}>
           <CardContent className="aspect-square relative">
             <img
               src={plushie.image}
