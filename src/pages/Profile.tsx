@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { addPost } from "@/utils/posts/postManagement";
 import { toast } from "@/components/ui/use-toast";
+import UserProfileHeader from "@/components/UserProfileHeader";
 
 const Profile = () => {
   console.log("Profile page: Rendering");
@@ -183,83 +184,90 @@ const Profile = () => {
 
   if (isLoading) {
     return (
-      <ProfileLayout>
-        <div className="flex items-center justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500"></div>
-        </div>
-      </ProfileLayout>
+      <div className="flex items-center justify-center py-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500"></div>
+      </div>
     );
   }
 
   return (
-    <ProfileLayout>
-      <TabsContent value="posts" className="mt-6">
-        <ProfilePostsGrid
-          posts={userPosts}
-          onPostClick={handlePostClick}
-          isOwnProfile={true}
-          showCreateButton={true}
-          onPostCreated={handleRegularPostCreated}
-        />
-      </TabsContent>
-      
-      <TabsContent value="marketplace" className="mt-6">
-        <ProfilePostsGrid
-          posts={marketplacePosts}
-          onPostClick={handlePostClick}
-          isOwnProfile={true}
-          showCreateButton={false}
-          onPostCreated={handleMarketplacePostCreated}
-        />
-      </TabsContent>
-      
-      <TabsContent value="about" className="mt-6">
-        <Card>
-          <CardContent className="p-6">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-              About You
-            </h3>
-            <div className="space-y-4">
-              {profileData?.bio ? (
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Bio</h4>
-                  <p className="text-gray-600 dark:text-gray-400 mt-1">{profileData.bio}</p>
-                </div>
-              ) : (
-                <p className="text-gray-500 dark:text-gray-400">
-                  Add a bio in your profile settings to tell others about yourself.
-                </p>
-              )}
-              
-              {profileData?.interests && profileData.interests.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Favorite Brands</h4>
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {profileData.interests.map((interest: string, index: number) => (
-                      <Badge key={index} variant="secondary">{interest}</Badge>
-                    ))}
+    <div className="container mx-auto px-4 py-8 max-w-6xl">
+      <UserProfileHeader
+        username={userData?.username || userData?.first_name || user?.username || 'User'}
+        isOwnProfile={true}
+        profileData={profileData}
+        userId={userData?.id}
+      />
+
+      <ProfileLayout>
+        <TabsContent value="posts" className="mt-6">
+          <ProfilePostsGrid
+            posts={userPosts}
+            onPostClick={handlePostClick}
+            isOwnProfile={true}
+            showCreateButton={true}
+            onPostCreated={handleRegularPostCreated}
+          />
+        </TabsContent>
+        
+        <TabsContent value="marketplace" className="mt-6">
+          <ProfilePostsGrid
+            posts={marketplacePosts}
+            onPostClick={handlePostClick}
+            isOwnProfile={true}
+            showCreateButton={false}
+            onPostCreated={handleMarketplacePostCreated}
+          />
+        </TabsContent>
+        
+        <TabsContent value="about" className="mt-6">
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                About You
+              </h3>
+              <div className="space-y-4">
+                {profileData?.bio ? (
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Bio</h4>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">{profileData.bio}</p>
                   </div>
-                </div>
-              )}
-              
-              <div>
-                <h4 className="font-medium text-gray-900 dark:text-white">Stats</h4>
-                <div className="grid grid-cols-2 gap-4 mt-2">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-softspot-500">{userPosts.length}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Posts</div>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Add a bio in your profile settings to tell others about yourself.
+                  </p>
+                )}
+                
+                {profileData?.interests && profileData.interests.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Favorite Brands</h4>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {profileData.interests.map((interest: string, index: number) => (
+                        <Badge key={index} variant="secondary">{interest}</Badge>
+                      ))}
+                    </div>
                   </div>
-                  <div className="text-center">
-                    <div className="text-2xl font-bold text-softspot-500">{marketplacePosts.length}</div>
-                    <div className="text-sm text-gray-600 dark:text-gray-400">Marketplace Items</div>
+                )}
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Stats</h4>
+                  <div className="grid grid-cols-2 gap-4 mt-2">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-softspot-500">{userPosts.length}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Posts</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold text-softspot-500">{marketplacePosts.length}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">Marketplace Items</div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
-      </TabsContent>
-    </ProfileLayout>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </ProfileLayout>
+    </div>
   );
 };
 
