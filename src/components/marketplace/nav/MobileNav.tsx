@@ -40,10 +40,10 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
       <div className="flex items-center justify-between h-12 px-2">
         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-2 text-sm">
+            <Button variant="ghost" className="flex items-center gap-2 text-sm h-8 px-2">
               <Store className="w-4 h-4" />
-              <span className="hidden xs:inline">Categories</span>
-              <ChevronDown className="w-4 h-4" />
+              <span className="text-xs">Categories</span>
+              <ChevronDown className="w-3 h-3" />
             </Button>
           </SheetTrigger>
           <SheetContent side="bottom" className="h-[85vh] rounded-t-xl">
@@ -57,7 +57,7 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
             <div className="py-4 space-y-3 max-h-[70vh] overflow-y-auto">
               <Button 
                 variant={isActive("all") ? "default" : "ghost"}
-                className={`w-full justify-start text-sm ${isActive("all") ? "bg-softspot-500" : ""}`}
+                className={`w-full justify-start text-sm h-10 ${isActive("all") ? "bg-softspot-500" : ""}`}
                 onClick={() => handleCategorySelect("all")}
               >
                 <ShoppingBag className="mr-2 h-4 w-4" />
@@ -71,7 +71,7 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
                     <Button 
                       key={animal.id} 
                       variant={isActive(animal.id) ? "default" : "outline"}
-                      className={`justify-start h-auto py-2 px-3 text-xs ${isActive(animal.id) ? "bg-softspot-500" : ""}`}
+                      className={`justify-start h-9 py-2 px-3 text-xs ${isActive(animal.id) ? "bg-softspot-500" : ""}`}
                       onClick={() => handleCategorySelect(animal.id)}
                     >
                       {animal.name}
@@ -88,7 +88,7 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
                       key={brand.id} 
                       variant="outline" 
                       asChild
-                      className="justify-start h-auto py-2 px-3 text-xs"
+                      className="justify-start h-9 py-2 px-3 text-xs"
                     >
                       <Link to={`/brand/${brand.id}`}>{brand.name}</Link>
                     </Button>
@@ -98,7 +98,7 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
               
               <div className="border-t pt-3 mt-4">
                 <Button 
-                  className="w-full bg-softspot-500 hover:bg-softspot-600 text-sm"
+                  className="w-full bg-softspot-500 hover:bg-softspot-600 text-sm h-10"
                   onClick={navigateToSellItem}
                 >
                   <Tag className="mr-2 h-4 w-4" /> 

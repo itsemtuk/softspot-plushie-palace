@@ -27,6 +27,7 @@ export default function Feed() {
       const fetchedPosts = await getAllPosts();
       // Filter out marketplace items (posts with for_sale = true)
       const feedPosts = fetchedPosts.filter(post => !post.forSale);
+      console.log("Feed posts fetched:", feedPosts.length);
       setPosts(feedPosts);
     } catch (error) {
       console.error("Error fetching posts:", error);
@@ -75,7 +76,8 @@ export default function Feed() {
         createdAt: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        forSale: false, // This is a feed post, not a marketplace item
+        forSale: false, // Explicitly set to false for feed posts
+        for_sale: false, // Also set the database field
       };
 
       const result = await addPost(newPost);

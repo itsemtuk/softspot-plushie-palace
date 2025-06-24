@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +7,7 @@ import { Heart, ShoppingBag, Search } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { Spinner } from "@/components/ui/spinner";
+import { toast } from "@/components/ui/use-toast";
 
 interface WishlistItem {
   id: string;
@@ -23,8 +25,9 @@ const WishlistPage = () => {
 
   useEffect(() => {
     if (isLoaded) {
-      // TODO: Implement actual wishlist fetching from Supabase
+      // Simulate loading wishlist items
       setTimeout(() => {
+        // For now, return empty array - in future, fetch from Supabase
         setWishlistItems([]);
         setIsLoading(false);
       }, 1000);
@@ -34,7 +37,7 @@ const WishlistPage = () => {
   if (!isLoaded || isLoading) {
     return (
       <MainLayout>
-        <div className="container mx-auto py-6">
+        <div className="container mx-auto py-6 px-4 max-w-4xl">
           <div className="flex justify-center items-center h-40">
             <Spinner size="lg" />
           </div>
@@ -46,8 +49,8 @@ const WishlistPage = () => {
   if (!user) {
     return (
       <MainLayout>
-        <div className="container mx-auto py-6 px-4">
-          <Card className="max-w-md mx-auto">
+        <div className="container mx-auto py-6 px-4 max-w-4xl">
+          <Card>
             <CardHeader className="text-center">
               <CardTitle className="flex items-center justify-center gap-2">
                 <Heart className="h-6 w-6 text-red-500" />
@@ -72,7 +75,7 @@ const WishlistPage = () => {
 
   return (
     <MainLayout>
-      <div className="container mx-auto py-6 px-4">
+      <div className="container mx-auto py-6 px-4 max-w-4xl">
         <div className="mb-6">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
             <Heart className="h-6 w-6 text-red-500" />
@@ -83,7 +86,7 @@ const WishlistPage = () => {
           </p>
         </div>
 
-        <Card className="max-w-md mx-auto">
+        <Card>
           <CardContent className="text-center py-12 space-y-4">
             <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
               <Heart className="h-8 w-8 text-gray-400" />

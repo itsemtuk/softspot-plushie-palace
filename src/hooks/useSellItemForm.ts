@@ -101,7 +101,7 @@ export const useSellItemForm = () => {
         delivery_cost: data.deliveryCost ? parseFloat(data.deliveryCost) : null,
         size: data.size || null,
         color: data.color || null,
-        for_sale: true,
+        for_sale: true, // Ensure this is set to true for marketplace items
         created_at: new Date().toISOString()
       };
 

@@ -1,270 +1,184 @@
+
+import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { toast } from "@/components/ui/use-toast";
-import { MarketplacePlushie } from "@/types/marketplace";
-import { ExtendedPost } from "@/types/core";
-import { supabase } from "@/integrations/supabase/client";
 import { BrandHeader } from "./BrandHeader";
 import { PlushieGrid } from "./PlushieGrid";
 import { CommunityPosts } from "./CommunityPosts";
 import { BrandFilterPanel } from "./BrandFilterPanel";
-import LoadingSpinner from "@/components/common/LoadingSpinner";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { supabase } from "@/integrations/supabase/client";
+import { MarketplacePlushie } from "@/types/marketplace";
 
-const brandData: { [key: string]: { name: string; description: string; logoUrl: string; tags: string[] } } = {
+const brandLogos: Record<string, string> = {
+  jellycat: "/assets/Brand_Logos/Jellycat.JPG",
+  squishmallows: "/assets/Brand_Logos/Squishmallows.JPG",
+  disney: "/assets/Brand_Logos/Disney.JPG",
+  sanrio: "/assets/Brand_Logos/Sanrio.PNG",
+  pokemon: "/assets/Brand_Logos/Pokemon.PNG",
+  "build-a-bear": "/assets/Brand_Logos/Build a Bear.JPG"
+};
+
+const brandInfo: Record<string, { name: string; description: string; color: string }> = {
+  jellycat: {
+    name: "Jellycat",
+    description: "Premium soft toys known for their luxurious fabrics and adorable designs.",
+    color: "bg-pink-100"
+  },
+  squishmallows: {
+    name: "Squishmallows",
+    description: "Super soft, collectible plush toys perfect for cuddling and collecting.",
+    color: "bg-purple-100"
+  },
+  disney: {
+    name: "Disney",
+    description: "Magical plush characters from your favorite Disney movies and shows.",
+    color: "bg-blue-100"
+  },
+  sanrio: {
+    name: "Sanrio",
+    description: "Kawaii characters including Hello Kitty, My Melody, and Cinnamoroll.",
+    color: "bg-pink-100"
+  },
+  pokemon: {
+    name: "Pokémon",
+    description: "Gotta catch 'em all! Plush versions of your favorite Pokémon.",
+    color: "bg-yellow-100"
+  },
   "build-a-bear": {
     name: "Build-A-Bear",
-    description: "Create your own personalized furry friend at Build-A-Bear Workshop!",
-    logoUrl: "/build-a-bear-logo.png",
-    tags: ["plushies", "customizable", "workshop"],
-  },
-  "jellycat": {
-    name: "Jellycat",
-    description: "Quirky and irresistibly cuddly soft toys from London.",
-    logoUrl: "/jellycat-logo.png",
-    tags: ["plushies", "soft toys", "unique"],
-  },
-  "squishmallows": {
-    name: "Squishmallows",
-    description: "Super soft, collectible plush toys that make perfect cuddle companions.",
-    logoUrl: "/squishmallows-logo.png",
-    tags: ["plushies", "collectible", "soft"],
-  },
-  "pokemon": {
-    name: "Pokemon",
-    description: "Gotta catch 'em all! Official Pokemon plushies and collectibles.",
-    logoUrl: "/pokemon-logo.png",
-    tags: ["plushies", "anime", "collectible"],
-  },
-  "sanrio": {
-    name: "Sanrio",
-    description: "Hello Kitty and friends - kawaii characters from Japan.",
-    logoUrl: "/sanrio-logo.png",
-    tags: ["plushies", "kawaii", "characters"],
-  },
-  "disney": {
-    name: "Disney",
-    description: "Magical plushies featuring your favorite Disney characters.",
-    logoUrl: "/disney-logo.png",
-    tags: ["plushies", "disney", "characters"],
+    description: "Customizable teddy bears and plush animals you can build yourself.",
+    color: "bg-brown-100"
   }
 };
 
 export const BrandPageWrapper = () => {
-  const { brandName } = useParams<{ brandName: string }>();
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [brand, setBrand] = useState<any>(null);
-  const [plushies, setPlushies] = useState<MarketplacePlushie[]>([]);
-  const [posts, setPosts] = useState<ExtendedPost[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [priceRange, setPriceRange] = useState<number[]>([0, 100]);
-  const [availableOnly, setAvailableOnly] = useState(false);
+  const { brandId } = useParams<{ brandId: string }>();
+  const [brandPlushies, setBrandPlushies] = useState<MarketplacePlushie[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
+  const brand = brandId ? brandInfo[brandId.toLowerCase()] : null;
+  const logo = brandId ? brandLogos[brandId.toLowerCase()] : null;
+
   useEffect(() => {
-    if (!brandName) {
-      setLoading(false);
-      return;
-    }
-    
-    const fetchBrandData = async () => {
-      setLoading(true);
+    const fetchBrandItems = async () => {
+      if (!brandId || !brand) return;
       
+      setIsLoading(true);
       try {
-        const normalizedBrandName = brandName.toLowerCase().replace(/\s+/g, '-');
-        
-        let currentBrand = brandData[normalizedBrandName];
-        
-        if (!currentBrand) {
-          const brandKeys = Object.keys(brandData);
-          const partialMatch = brandKeys.find(key => 
-            key.includes(normalizedBrandName) || 
-            normalizedBrandName.includes(key) ||
-            brandData[key].name.toLowerCase().includes(brandName.toLowerCase())
-          );
-          
-          if (partialMatch) {
-            currentBrand = brandData[partialMatch];
-          }
+        const { data: posts, error } = await supabase
+          .from('posts')
+          .select(`
+            *,
+            users!inner(username, first_name, avatar_url)
+          `)
+          .ilike('brand', `%${brand.name}%`)
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          console.error("Error fetching brand items:", error);
+          setBrandPlushies([]);
+          return;
         }
-        
-        if (currentBrand) {
-          setBrand(currentBrand);
-          
-          const { data: marketplaceData, error: marketplaceError } = await supabase
-            .from('posts')
-            .select(`
-              *,
-              users!inner(username, first_name, avatar_url)
-            `)
-            .eq('for_sale', true)
-            .ilike('brand', `%${currentBrand.name}%`)
-            .order('created_at', { ascending: false });
 
-          if (marketplaceError) {
-            console.error("Error fetching marketplace items:", marketplaceError);
-            setPlushies([]);
-          } else if (marketplaceData && marketplaceData.length > 0) {
-            const formattedItems: MarketplacePlushie[] = marketplaceData.map(post => ({
-              id: post.id,
-              title: post.title || 'Untitled Item',
-              name: post.title || 'Untitled Item',
-              price: post.price || 0,
-              image: post.image || '/placeholder-plushie.jpg',
-              brand: post.brand || 'Unknown',
-              condition: post.condition || 'used',
-              description: post.description || '',
-              tags: post.brand ? [post.brand.toLowerCase()] : [],
-              likes: 0,
-              comments: 0,
-              forSale: true,
-              userId: post.user_id,
-              username: post.users?.username || post.users?.first_name || 'User',
-              timestamp: post.created_at,
-              location: 'Online'
-            }));
-            
-            setPlushies(formattedItems);
-          } else {
-            setPlushies([]);
-          }
+        if (posts && posts.length > 0) {
+          const formattedItems: MarketplacePlushie[] = posts.map(post => ({
+            id: post.id,
+            title: post.title || 'Untitled Item',
+            name: post.title || 'Untitled Item',
+            price: post.price || 0,
+            image: post.image || '/placeholder-plushie.jpg',
+            brand: post.brand || brand.name,
+            condition: post.condition || 'used',
+            description: post.description || '',
+            tags: [brand.name.toLowerCase()],
+            likes: 0,
+            comments: 0,
+            forSale: post.for_sale || false,
+            userId: post.user_id,
+            username: post.users?.username || post.users?.first_name || 'User',
+            timestamp: post.created_at,
+            location: 'Online',
+            material: post.material,
+            filling: post.filling,
+            species: post.species,
+            deliveryMethod: post.delivery_method,
+            deliveryCost: post.delivery_cost,
+            size: post.size,
+            color: post.color
+          }));
           
-          const { data: postsData, error: postsError } = await supabase
-            .from('posts')
-            .select(`
-              *,
-              users!inner(username, first_name, avatar_url)
-            `)
-            .eq('for_sale', false)
-            .or(`brand.ilike.%${currentBrand.name}%,content.ilike.%${currentBrand.name}%,title.ilike.%${currentBrand.name}%`)
-            .order('created_at', { ascending: false });
-
-          if (postsError) {
-            console.error("Error fetching posts:", postsError);
-            setPosts([]);
-          } else if (postsData && postsData.length > 0) {
-            const formattedPosts: ExtendedPost[] = postsData.map(post => ({
-              id: post.id,
-              title: post.title || '',
-              content: post.content || '',
-              description: post.description || '',
-              image: post.image || '',
-              userId: post.user_id,
-              user_id: post.user_id,
-              username: post.users?.username || post.users?.first_name || 'User',
-              likes: 0,
-              comments: 0,
-              timestamp: post.created_at,
-              createdAt: post.created_at,
-              created_at: post.created_at,
-              updatedAt: post.created_at,
-              tags: post.brand ? [post.brand.toLowerCase()] : [],
-              location: "",
-              forSale: false,
-              sold: false
-            }));
-            setPosts(formattedPosts);
-          } else {
-            setPosts([]);
-          }
+          setBrandPlushies(formattedItems);
         } else {
-          setBrand(null);
+          setBrandPlushies([]);
         }
       } catch (error) {
-        console.error("Error fetching brand data:", error);
-        setBrand(null);
+        console.error("Error fetching brand items:", error);
+        setBrandPlushies([]);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
-    
-    fetchBrandData();
-  }, [brandName]);
 
-  const handlePlushieClick = (plushie: MarketplacePlushie) => {
-    navigate(`/checkout/${plushie.id}`);
-  };
-
-  const handlePostClick = (post: ExtendedPost) => {
-    console.log("Post clicked:", post);
-  };
-
-  const handleFilterChange = (filterType: string, value: string[]) => {
-    console.log("Filter changed:", filterType, value);
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-        <div className="container mx-auto px-4 py-8">
-          <LoadingSpinner size="lg" className="py-20" />
-        </div>
-      </div>
-    );
-  }
+    fetchBrandItems();
+  }, [brandId, brand]);
 
   if (!brand) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-        <div className="container mx-auto px-4 py-8">
-          <div className="text-center py-20">
-            <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 mb-2">Brand not found</h2>
-            <p className="text-gray-500 dark:text-gray-400 mb-6">
-              The brand "{brandName}" could not be found.
-            </p>
-            <Button 
-              onClick={() => navigate('/marketplace')}
-              className="bg-softspot-500 hover:bg-softspot-600 text-white"
-            >
-              Browse Marketplace
-            </Button>
-          </div>
-        </div>
+      <div className="container mx-auto py-8 px-4">
+        <Card>
+          <CardContent className="text-center py-12">
+            <h2 className="text-xl font-semibold mb-2">Brand not found</h2>
+            <p className="text-gray-600">The brand you're looking for doesn't exist.</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
-      <BrandHeader brand={brand} />
-      <div className="container mx-auto py-6 px-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="lg:col-span-1">
-            <BrandFilterPanel 
-              searchQuery={searchQuery}
-              setSearchQuery={setSearchQuery}
-              priceRange={priceRange}
-              setPriceRange={setPriceRange}
-              availableOnly={availableOnly}
-              setAvailableOnly={setAvailableOnly}
-              onFilterChange={handleFilterChange}
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <BrandHeader 
+        brandName={brand.name}
+        brandDescription={brand.description}
+        brandLogo={logo}
+        backgroundColor={brand.color}
+        itemCount={brandPlushies.length}
+      />
+      
+      <div className="container mx-auto px-4 py-6">
+        <Tabs defaultValue="marketplace" className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="marketplace">
+              Marketplace ({brandPlushies.filter(p => p.forSale).length})
+            </TabsTrigger>
+            <TabsTrigger value="community">
+              Community ({brandPlushies.filter(p => !p.forSale).length})
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="marketplace">
+            {isLoading ? (
+              <div className="text-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500 mx-auto"></div>
+                <p className="text-gray-600 dark:text-gray-300 mt-2">Loading items...</p>
+              </div>
+            ) : (
+              <PlushieGrid 
+                plushies={brandPlushies.filter(p => p.forSale)}
+                isLoading={isLoading}
+              />
+            )}
+          </TabsContent>
+          
+          <TabsContent value="community">
+            <CommunityPosts 
+              posts={brandPlushies.filter(p => !p.forSale)}
+              isLoading={isLoading}
             />
-          </div>
-          <div className="lg:col-span-3">
-            <section className="mb-8">
-              <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Featured Plushies</h2>
-              {plushies.length > 0 ? (
-                <PlushieGrid plushies={plushies} onPlushieClick={handlePlushieClick} />
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">No {brand.name} items available yet.</p>
-                </div>
-              )}
-            </section>
-            <section>
-              <h2 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">Community Posts</h2>
-              {posts.length > 0 ? (
-                <CommunityPosts posts={posts} onPostClick={handlePostClick} />
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 dark:text-gray-400">No community posts about {brand.name} yet.</p>
-                </div>
-              )}
-            </section>
-          </div>
-        </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

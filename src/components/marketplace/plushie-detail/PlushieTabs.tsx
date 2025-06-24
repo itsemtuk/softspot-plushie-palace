@@ -7,101 +7,64 @@ import { MarketplacePlushie } from "@/types/marketplace";
 interface PlushieTabsProps {
   plushie: MarketplacePlushie;
   selectedTab: string;
-  onTabChange: (value: string) => void;
+  onTabChange: (tab: string) => void;
 }
 
 export const PlushieTabs = ({ plushie, selectedTab, onTabChange }: PlushieTabsProps) => {
-  const deliveryCost = typeof plushie.deliveryCost === 'number' ? plushie.deliveryCost : 0;
-
   return (
-    <Tabs value={selectedTab} onValueChange={onTabChange} className="mb-4">
-      <TabsList className="grid grid-cols-2 bg-gray-50 rounded-lg">
-        <TabsTrigger value="details" className="rounded-md">Details</TabsTrigger>
-        <TabsTrigger value="shipping" className="rounded-md">Shipping</TabsTrigger>
+    <Tabs value={selectedTab} onValueChange={onTabChange} className="mb-6">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="details">Details</TabsTrigger>
+        <TabsTrigger value="description">Description</TabsTrigger>
+        <TabsTrigger value="seller">Seller</TabsTrigger>
       </TabsList>
       
-      <TabsContent value="details" className="space-y-3 pt-2">
-        <p className="text-gray-700">{plushie.description}</p>
-        
-        <div className="grid grid-cols-2 gap-2 text-sm">
+      <TabsContent value="details" className="space-y-3">
+        <div className="space-y-2">
           {plushie.condition && (
-            <div>
-              <span className="font-medium">Condition: </span>
-              <span>{plushie.condition}</span>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Condition:</span>
+              <Badge variant="secondary">{plushie.condition}</Badge>
             </div>
           )}
-          
-          {plushie.species && (
-            <div>
-              <span className="font-medium">Species: </span>
-              <span>{plushie.species}</span>
-            </div>
-          )}
-          
-          {plushie.material && (
-            <div>
-              <span className="font-medium">Material: </span>
-              <span>{plushie.material}</span>
-            </div>
-          )}
-          
           {plushie.size && (
-            <div>
-              <span className="font-medium">Size: </span>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Size:</span>
               <span>{plushie.size}</span>
             </div>
           )}
-          
+          {plushie.material && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Material:</span>
+              <span>{plushie.material}</span>
+            </div>
+          )}
           {plushie.color && (
-            <div>
-              <span className="font-medium">Color: </span>
+            <div className="flex justify-between">
+              <span className="text-gray-600">Color:</span>
               <span>{plushie.color}</span>
             </div>
           )}
-          
-          {plushie.filling && (
-            <div>
-              <span className="font-medium">Filling: </span>
-              <span>{plushie.filling}</span>
+          {plushie.species && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">Species:</span>
+              <span>{plushie.species}</span>
             </div>
           )}
         </div>
-        
-        {plushie.tags && plushie.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-3">
-            {plushie.tags.map((tag, i) => (
-              <Badge key={i} variant="secondary" className="cursor-pointer rounded-md">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        )}
       </TabsContent>
       
-      <TabsContent value="shipping" className="space-y-3 pt-2">
-        <div>
-          <h4 className="font-medium mb-1">Shipping Details</h4>
-          <p className="text-sm text-gray-700">
-            {deliveryCost === 0 
-              ? "This item includes free shipping."
-              : `Shipping cost: $${deliveryCost.toFixed(2)}`
-            }
-          </p>
-        </div>
-        
-        {plushie.location && (
-          <div>
-            <h4 className="font-medium mb-1">Location</h4>
-            <p className="text-sm text-gray-700">{plushie.location}</p>
-          </div>
-        )}
-        
-        <div>
-          <h4 className="font-medium mb-1">Shipping Policy</h4>
-          <p className="text-sm text-gray-700">
-            Seller typically ships within 2-3 business days.
-            Returns accepted within 14 days of delivery.
-          </p>
+      <TabsContent value="description">
+        <p className="text-gray-700 text-sm leading-relaxed">
+          {plushie.description || "No description provided."}
+        </p>
+      </TabsContent>
+      
+      <TabsContent value="seller">
+        <div className="text-center space-y-2">
+          <p className="text-sm text-gray-600">Listed by</p>
+          <p className="font-medium">{plushie.username || 'Anonymous'}</p>
+          <p className="text-xs text-gray-500">Member since 2024</p>
         </div>
       </TabsContent>
     </Tabs>

@@ -84,7 +84,7 @@ const mockMessages: Message[] = [
 ];
 
 export const MessengerInterface = () => {
-  const [selectedConversation, setSelecte dConversation] = useState<string>('');
+  const [selectedConversation, setSelectedConversation] = useState<string>('');
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const isMobile = useIsMobile();
