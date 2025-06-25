@@ -35,18 +35,20 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
   if (!showTabs) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3 sticky top-0 z-10">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowTabs(true)}
-            className="p-2 h-10 w-10"
+            className="p-2 h-10 w-10 flex-shrink-0"
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <div className="flex items-center gap-3">
-            {currentTab && <currentTab.icon className="h-5 w-5 text-softspot-600" />}
-            <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{currentTab?.label}</h2>
+          <div className="flex items-center gap-3 min-w-0">
+            {currentTab && <currentTab.icon className="h-5 w-5 text-softspot-600 flex-shrink-0" />}
+            <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate">
+              {currentTab?.label}
+            </h2>
           </div>
         </div>
         <div className="p-4">
@@ -58,11 +60,11 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-0 z-10">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
       </div>
       
-      {/* Mobile optimized tabs - larger grid with better spacing */}
+      {/* Mobile optimized tabs - improved grid layout */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
         <ScrollArea className="w-full">
           <div className="grid grid-cols-2 gap-3 pb-2">
@@ -71,10 +73,10 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
                 key={tab.id}
                 variant={activeTab === tab.id ? "default" : "ghost"}
                 size="sm"
-                className={`flex flex-col items-center justify-center h-20 py-3 px-3 text-xs min-w-0 ${
+                className={`flex flex-col items-center justify-center h-20 py-3 px-3 text-xs min-w-0 transition-all duration-200 ${
                   activeTab === tab.id 
-                    ? "bg-softspot-500 text-white" 
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    ? "bg-softspot-500 text-white hover:bg-softspot-600 transform scale-[0.98]" 
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-[1.02]"
                 }`}
                 onClick={() => {
                   onTabChange(tab.id);

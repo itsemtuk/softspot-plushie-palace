@@ -113,7 +113,7 @@ export const useFollowUser = (targetUserId?: string) => {
           description: 'You are no longer following this user.'
         });
       } else {
-        // Follow
+        // Follow - this will trigger the notification via database trigger
         const { error } = await supabase
           .from('followers')
           .insert({
@@ -155,15 +155,26 @@ export const useFollowUser = (targetUserId?: string) => {
     }
   }, [user?.id, targetUserId]);
 
-  // Refetch follow status when component mounts or user changes
+  // Real-time updates for follow status
   useEffect(() => {
-    const interval = setInterval(() => {
-      if (targetUserId && user?.id) {
-        checkFollowStatus();
-      }
-    }, 5000); // Check every 5 seconds for real-time updates
+    if (!targetUserId) return;
 
-    return () => clearInterval(interval);
+    const channel = supabase
+      .channel('followers_changes')
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'followers',
+        filter: `following_id=eq.${targetUserId}`
+      }, () => {
+        checkFollowStatus();
+        getFollowerCount();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [targetUserId, user?.id]);
 
   return {
