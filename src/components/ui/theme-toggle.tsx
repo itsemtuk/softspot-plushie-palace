@@ -10,6 +10,16 @@ export function ThemeToggle() {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
     console.log("Theme switched to:", newTheme);
+    
+    // Force immediate DOM update
+    const root = document.documentElement;
+    const body = document.body;
+    
+    root.classList.remove("light", "dark");
+    body.classList.remove("light", "dark");
+    root.classList.add(newTheme);
+    body.classList.add(newTheme);
+    root.setAttribute('data-theme', newTheme);
   };
 
   return (

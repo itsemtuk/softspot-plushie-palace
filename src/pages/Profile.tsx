@@ -5,7 +5,6 @@ import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { useState, useEffect } from "react";
 import { ExtendedPost, PostCreationData } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
-import { getPosts } from "@/utils/postStorage";
 import { useUser } from "@clerk/clerk-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
@@ -15,6 +14,7 @@ import { toast } from "@/components/ui/use-toast";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import MarketplaceReviews from "@/components/profile/MarketplaceReviews";
 import { ProfileBadges } from "@/components/profile/ProfileBadges";
+import { Star, User, Heart, MessageSquare } from "lucide-react";
 
 const Profile = () => {
   console.log("Profile page: Rendering");
@@ -39,6 +39,32 @@ const Profile = () => {
       name: "Complete Profile",
       image: "/assets/Badges/Completed_Profile.PNG",
       description: "Completed profile setup"
+    },
+    {
+      id: "first-post",
+      name: "First Post",
+      image: "/assets/Badges/First_Post.PNG",
+      description: "Created your first post"
+    }
+  ];
+
+  // Mock reviews data
+  const mockReviews = [
+    {
+      id: "1",
+      reviewer: "PlushieLover92",
+      rating: 5,
+      comment: "Great seller! Item was exactly as described and shipped quickly.",
+      date: "2 weeks ago",
+      item: "Jellycat Bunny"
+    },
+    {
+      id: "2", 
+      reviewer: "CuddleCollector",
+      rating: 4,
+      comment: "Very responsive and helpful. Would buy again!",
+      date: "1 month ago",
+      item: "Squishmallow Set"
     }
   ];
 
@@ -290,7 +316,62 @@ const Profile = () => {
         </TabsContent>
 
         <TabsContent value="reviews" className="mt-6">
-          {userData?.id && <MarketplaceReviews userId={userData.id} />}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Marketplace Reviews
+                </h3>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center">
+                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                    <span className="text-sm font-medium ml-1">4.8</span>
+                  </div>
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
+                    ({mockReviews.length} reviews)
+                  </span>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                {mockReviews.map((review) => (
+                  <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                          <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-900 dark:text-white">{review.reviewer}</p>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">{review.date}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                    <p className="text-gray-700 dark:text-gray-300 mb-1">{review.comment}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Item: {review.item}</p>
+                  </div>
+                ))}
+                
+                {mockReviews.length === 0 && (
+                  <div className="text-center py-8">
+                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">No reviews yet</h4>
+                    <p className="text-gray-500 dark:text-gray-400">
+                      Start selling items to receive reviews from buyers.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
       </ProfileLayout>
     </div>

@@ -10,7 +10,7 @@ import {
   SheetClose
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Store, Search, ChevronDown, X, ShoppingBag, Tag } from "lucide-react";
+import { Store, Search, ChevronDown, X, ShoppingBag, Tag, Grid3X3 } from "lucide-react";
 import { brandData, speciesData } from "./data";
 
 interface MobileNavProps {
@@ -41,8 +41,8 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2 text-sm h-10 px-3">
-              <Store className="w-4 h-4" />
-              <span className="text-sm">Categories</span>
+              <Grid3X3 className="w-4 h-4" />
+              <span className="text-sm">Browse</span>
               <ChevronDown className="w-4 h-4" />
             </Button>
           </SheetTrigger>
@@ -57,21 +57,21 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
             <div className="py-4 space-y-3 max-h-[70vh] overflow-y-auto">
               <Button 
                 variant={isActive("all") ? "default" : "ghost"}
-                className={`w-full justify-start text-sm h-10 ${isActive("all") ? "bg-softspot-500" : ""}`}
+                className={`w-full justify-start text-sm h-12 ${isActive("all") ? "bg-softspot-500" : ""}`}
                 onClick={() => handleCategorySelect("all")}
               >
-                <ShoppingBag className="mr-3 h-4 w-4" />
+                <ShoppingBag className="mr-3 h-5 w-5" />
                 All Items
               </Button>
               
               <div className="border-t pt-3">
                 <h3 className="text-sm font-medium text-gray-500 mb-3 px-3">Animals</h3>
-                <div className="grid grid-cols-2 gap-2">
-                  {speciesData.slice(0, 8).map(animal => (
+                <div className="grid grid-cols-1 gap-2">
+                  {speciesData.slice(0, 6).map(animal => (
                     <Button 
                       key={animal.id} 
                       variant={isActive(animal.id) ? "default" : "outline"}
-                      className={`justify-start h-10 py-2 px-3 text-sm ${isActive(animal.id) ? "bg-softspot-500" : ""}`}
+                      className={`justify-start h-11 py-2 px-4 text-sm ${isActive(animal.id) ? "bg-softspot-500" : ""}`}
                       onClick={() => handleCategorySelect(animal.id)}
                     >
                       {animal.name}
@@ -83,12 +83,12 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
               <div className="border-t pt-3">
                 <h3 className="text-sm font-medium text-gray-500 mb-3 px-3">Popular Brands</h3>
                 <div className="grid grid-cols-1 gap-2">
-                  {brandData.slice(0, 6).map(brand => (
+                  {brandData.slice(0, 4).map(brand => (
                     <Button 
                       key={brand.id} 
                       variant="outline" 
                       asChild
-                      className="justify-start h-10 py-2 px-3 text-sm"
+                      className="justify-start h-11 py-2 px-4 text-sm"
                     >
                       <Link to={`/brand/${brand.id}`}>{brand.name}</Link>
                     </Button>

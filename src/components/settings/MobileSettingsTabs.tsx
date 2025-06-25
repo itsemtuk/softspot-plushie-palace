@@ -21,14 +21,13 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
   const [showTabs, setShowTabs] = useState(true);
 
   const tabs: MobileSettingsTab[] = [
-    { id: "basic", label: "Basic Info", shortLabel: "Basic", icon: User },
-    { id: "privacy", label: "Privacy", icon: Shield },
+    { id: "basic-info", label: "Basic Info", shortLabel: "Basic", icon: User },
+    { id: "privacy-security", label: "Privacy", shortLabel: "Privacy", icon: Shield },
     { id: "notifications", label: "Notifications", shortLabel: "Alerts", icon: Bell },
-    { id: "avatar", label: "Avatar", icon: Palette },
-    { id: "preferences", label: "Preferences", shortLabel: "Prefs", icon: User },
-    { id: "social", label: "Social", icon: Link2 },
-    { id: "store", label: "Store", icon: Store },
-    { id: "delivery", label: "Delivery", icon: Truck },
+    { id: "plush-preferences", label: "Preferences", shortLabel: "Prefs", icon: Palette },
+    { id: "social-media", label: "Social", shortLabel: "Social", icon: Link2 },
+    { id: "store-links", label: "Store", shortLabel: "Store", icon: Store },
+    { id: "delivery-payment", label: "Delivery", shortLabel: "Delivery", icon: Truck },
   ];
 
   const currentTab = tabs.find(tab => tab.id === activeTab);
@@ -63,8 +62,8 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
       </div>
       
-      {/* Mobile optimized tabs */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3">
+      {/* Mobile optimized tabs - larger grid with better spacing */}
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
         <ScrollArea className="w-full">
           <div className="grid grid-cols-2 gap-3 pb-2">
             {tabs.map((tab) => (
@@ -72,7 +71,7 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
                 key={tab.id}
                 variant={activeTab === tab.id ? "default" : "ghost"}
                 size="sm"
-                className={`flex flex-col items-center justify-center h-16 py-2 px-2 text-xs min-w-0 ${
+                className={`flex flex-col items-center justify-center h-20 py-3 px-3 text-xs min-w-0 ${
                   activeTab === tab.id 
                     ? "bg-softspot-500 text-white" 
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -82,8 +81,8 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
                   setShowTabs(false);
                 }}
               >
-                <tab.icon className="h-5 w-5 mb-1 flex-shrink-0" />
-                <span className="text-xs leading-tight text-center break-words">
+                <tab.icon className="h-6 w-6 mb-2 flex-shrink-0" />
+                <span className="text-xs leading-tight text-center break-words max-w-full">
                   {tab.shortLabel || tab.label}
                 </span>
               </Button>

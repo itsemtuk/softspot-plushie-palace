@@ -13,7 +13,9 @@ const BrandPage = () => {
       {isMobile ? <MobileNav /> : <Navbar />}
       
       <main className="bg-gray-50 dark:bg-gray-900">
-        <BrandPageWrapper />
+        <div className="pt-16">
+          <BrandPageWrapper />
+        </div>
       </main>
       
       <Footer />

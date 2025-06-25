@@ -1,21 +1,18 @@
 
 import { useLocation, Link, useNavigate } from "react-router-dom";
-import { MessageSquare, LogIn, Bell, Bookmark, Menu } from "lucide-react";
+import { MessageSquare, LogIn, Bell, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/navigation/Logo";
 import { MobileNotifications } from "./MobileNotifications";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { toast } from "@/components/ui/use-toast";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { useState } from "react";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 export function TopNav() {
   const isSignedIn = isAuthenticated();
   const location = useLocation();
   const navigate = useNavigate();
   const isHomepage = location.pathname === '/';
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
   
   const handleAuthRequiredAction = (action: string, path: string) => {
     if (!isSignedIn) {
@@ -37,11 +34,6 @@ export function TopNav() {
     } else {
       navigate("/");
     }
-  };
-
-  const handleNavigation = (path: string) => {
-    navigate(path);
-    setIsMenuOpen(false);
   };
   
   return (
@@ -73,47 +65,6 @@ export function TopNav() {
                 <Bookmark className="h-5 w-5" />
               </Button>
               <MobileNotifications />
-              
-              {/* Hamburger Menu for signed-in users */}
-              <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="right" className="w-64">
-                  <div className="flex flex-col space-y-4 mt-6">
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start"
-                      onClick={() => handleNavigation("/feed")}
-                    >
-                      Feed
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start"
-                      onClick={() => handleNavigation("/marketplace")}
-                    >
-                      Marketplace
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start"
-                      onClick={() => handleNavigation("/profile")}
-                    >
-                      Profile
-                    </Button>
-                    <Button 
-                      variant="ghost" 
-                      className="justify-start"
-                      onClick={() => handleNavigation("/settings")}
-                    >
-                      Settings
-                    </Button>
-                  </div>
-                </SheetContent>
-              </Sheet>
             </>
           ) : (
             <Link to="/sign-in">
