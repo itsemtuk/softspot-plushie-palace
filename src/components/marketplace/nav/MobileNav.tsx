@@ -37,41 +37,41 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
 
   return (
     <div className="lg:hidden">
-      <div className="flex items-center justify-between h-12 px-2">
+      <div className="flex items-center justify-between h-14 px-3">
         <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" className="flex items-center gap-1 text-xs h-8 px-2">
-              <Store className="w-3 h-3" />
-              <span className="text-xs">Menu</span>
-              <ChevronDown className="w-3 h-3" />
+            <Button variant="ghost" className="flex items-center gap-2 text-sm h-10 px-3">
+              <Store className="w-4 h-4" />
+              <span className="text-sm">Categories</span>
+              <ChevronDown className="w-4 h-4" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="bottom" className="h-[80vh] rounded-t-xl">
-            <SheetHeader className="flex flex-row items-center justify-between border-b pb-2">
-              <SheetTitle className="text-base">Categories</SheetTitle>
-              <SheetClose className="rounded-full h-6 w-6 flex items-center justify-center">
-                <X className="h-3 w-3" />
+          <SheetContent side="bottom" className="h-[85vh] rounded-t-xl">
+            <SheetHeader className="flex flex-row items-center justify-between border-b pb-3">
+              <SheetTitle className="text-lg">Browse Categories</SheetTitle>
+              <SheetClose className="rounded-full h-8 w-8 flex items-center justify-center">
+                <X className="h-4 w-4" />
               </SheetClose>
             </SheetHeader>
             
-            <div className="py-3 space-y-2 max-h-[65vh] overflow-y-auto">
+            <div className="py-4 space-y-3 max-h-[70vh] overflow-y-auto">
               <Button 
                 variant={isActive("all") ? "default" : "ghost"}
-                className={`w-full justify-start text-xs h-8 ${isActive("all") ? "bg-softspot-500" : ""}`}
+                className={`w-full justify-start text-sm h-10 ${isActive("all") ? "bg-softspot-500" : ""}`}
                 onClick={() => handleCategorySelect("all")}
               >
-                <ShoppingBag className="mr-2 h-3 w-3" />
+                <ShoppingBag className="mr-3 h-4 w-4" />
                 All Items
               </Button>
               
-              <div className="border-t pt-2">
-                <h3 className="text-xs font-medium text-gray-500 mb-2 px-2">Animals</h3>
-                <div className="grid grid-cols-2 gap-1">
-                  {speciesData.slice(0, 6).map(animal => (
+              <div className="border-t pt-3">
+                <h3 className="text-sm font-medium text-gray-500 mb-3 px-3">Animals</h3>
+                <div className="grid grid-cols-2 gap-2">
+                  {speciesData.slice(0, 8).map(animal => (
                     <Button 
                       key={animal.id} 
                       variant={isActive(animal.id) ? "default" : "outline"}
-                      className={`justify-start h-7 py-1 px-2 text-xs ${isActive(animal.id) ? "bg-softspot-500" : ""}`}
+                      className={`justify-start h-10 py-2 px-3 text-sm ${isActive(animal.id) ? "bg-softspot-500" : ""}`}
                       onClick={() => handleCategorySelect(animal.id)}
                     >
                       {animal.name}
@@ -80,15 +80,15 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
                 </div>
               </div>
               
-              <div className="border-t pt-2">
-                <h3 className="text-xs font-medium text-gray-500 mb-2 px-2">Brands</h3>
-                <div className="grid grid-cols-2 gap-1">
-                  {brandData.slice(0, 4).map(brand => (
+              <div className="border-t pt-3">
+                <h3 className="text-sm font-medium text-gray-500 mb-3 px-3">Popular Brands</h3>
+                <div className="grid grid-cols-1 gap-2">
+                  {brandData.slice(0, 6).map(brand => (
                     <Button 
                       key={brand.id} 
                       variant="outline" 
                       asChild
-                      className="justify-start h-7 py-1 px-2 text-xs"
+                      className="justify-start h-10 py-2 px-3 text-sm"
                     >
                       <Link to={`/brand/${brand.id}`}>{brand.name}</Link>
                     </Button>
@@ -96,13 +96,13 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
                 </div>
               </div>
               
-              <div className="border-t pt-2 mt-3">
+              <div className="border-t pt-3 mt-4">
                 <Button 
-                  className="w-full bg-softspot-500 hover:bg-softspot-600 text-xs h-8"
+                  className="w-full bg-softspot-500 hover:bg-softspot-600 text-sm h-12"
                   onClick={navigateToSellItem}
                 >
-                  <Tag className="mr-2 h-3 w-3" /> 
-                  Sell Item
+                  <Tag className="mr-2 h-4 w-4" /> 
+                  List Your Item
                 </Button>
               </div>
             </div>
@@ -114,21 +114,21 @@ export function MobileNav({ selectedCategory, onCategoryChange }: MobileNavProps
             variant="ghost" 
             size="icon" 
             onClick={() => setIsSearchVisible(!isSearchVisible)}
-            className="h-8 w-8"
+            className="h-10 w-10"
           >
-            <Search className="h-3 w-3" />
+            <Search className="h-4 w-4" />
           </Button>
         </div>
       </div>
       
       {isSearchVisible && (
-        <div className="p-2 border-t">
+        <div className="p-3 border-t">
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3 w-3 text-gray-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
               type="text"
-              placeholder="Search..."
-              className="w-full pl-8 pr-3 py-2 text-xs border rounded-full focus:outline-none focus:ring-1 focus:ring-softspot-300 focus:border-transparent"
+              placeholder="Search marketplace..."
+              className="w-full pl-10 pr-4 py-3 text-sm border rounded-lg focus:outline-none focus:ring-2 focus:ring-softspot-300 focus:border-transparent"
             />
           </div>
         </div>

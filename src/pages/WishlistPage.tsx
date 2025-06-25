@@ -50,9 +50,9 @@ const WishlistPage = () => {
     return (
       <MainLayout>
         <div className="container mx-auto py-6 px-4 max-w-4xl">
-          <Card>
+          <Card className="border border-gray-200 dark:border-gray-700">
             <CardHeader className="text-center">
-              <CardTitle className="flex items-center justify-center gap-2">
+              <CardTitle className="flex items-center justify-center gap-2 text-gray-900 dark:text-white">
                 <Heart className="h-6 w-6 text-red-500" />
                 My Wishlist
               </CardTitle>
@@ -86,7 +86,7 @@ const WishlistPage = () => {
           </p>
         </div>
 
-        <Card>
+        <Card className="border border-gray-200 dark:border-gray-700">
           <CardContent className="text-center py-12 space-y-4">
             <div className="w-16 h-16 mx-auto bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center">
               <Heart className="h-8 w-8 text-gray-400" />
@@ -107,7 +107,7 @@ const WishlistPage = () => {
                 </Button>
               </Link>
               <Link to="/search" className="block">
-                <Button variant="outline" className="w-full">
+                <Button variant="outline" className="w-full border-gray-300 dark:border-gray-600">
                   <Search className="h-4 w-4 mr-2" />
                   Search Plushies
                 </Button>

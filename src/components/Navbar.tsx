@@ -2,17 +2,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu } from "lucide-react";
-import { MobileNav } from "./navigation/MobileNav";
 import { UserMenu } from "./navigation/UserMenu";
 import { SearchBar } from "./navigation/SearchBar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -29,24 +19,14 @@ export const Navbar = () => {
           SoftSpot
         </Link>
 
-        {/* Mobile Navigation */}
         {isMobile ? (
-          <Sheet>
-            <SheetTrigger asChild>
-              <Button variant="ghost" size="sm">
-                <Menu className="h-5 w-5" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-full sm:w-64 bg-white dark:bg-gray-800">
-              <SheetHeader>
-                <SheetTitle className="text-lg font-semibold text-gray-900 dark:text-gray-100">Menu</SheetTitle>
-                <SheetDescription className="text-sm text-gray-500 dark:text-gray-400">
-                  Explore SoftSpot
-                </SheetDescription>
-              </SheetHeader>
-              <MobileNav />
-            </SheetContent>
-          </Sheet>
+          <div className="flex items-center space-x-2">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+            
+            {/* User Menu */}
+            <UserMenu />
+          </div>
         ) : (
           <div className="flex items-center space-x-6">
             {/* Desktop Navigation Links */}

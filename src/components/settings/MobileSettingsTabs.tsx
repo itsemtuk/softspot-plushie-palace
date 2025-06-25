@@ -21,7 +21,7 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
   const [showTabs, setShowTabs] = useState(true);
 
   const tabs: MobileSettingsTab[] = [
-    { id: "basic", label: "Basic Info", shortLabel: "Info", icon: User },
+    { id: "basic", label: "Basic Info", shortLabel: "Basic", icon: User },
     { id: "privacy", label: "Privacy", icon: Shield },
     { id: "notifications", label: "Notifications", shortLabel: "Alerts", icon: Bell },
     { id: "avatar", label: "Avatar", icon: Palette },
@@ -36,21 +36,21 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
   if (!showTabs) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3">
           <Button
             variant="ghost"
             size="sm"
             onClick={() => setShowTabs(true)}
-            className="p-1 h-8 w-8"
+            className="p-2 h-10 w-10"
           >
-            <ChevronLeft className="h-4 w-4" />
+            <ChevronLeft className="h-5 w-5" />
           </Button>
-          <div className="flex items-center gap-2">
-            {currentTab && <currentTab.icon className="h-4 w-4 text-softspot-600" />}
-            <h2 className="font-semibold text-base text-gray-900 dark:text-gray-100">{currentTab?.label}</h2>
+          <div className="flex items-center gap-3">
+            {currentTab && <currentTab.icon className="h-5 w-5 text-softspot-600" />}
+            <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100">{currentTab?.label}</h2>
           </div>
         </div>
-        <div className="p-3">
+        <div className="p-4">
           {children}
         </div>
       </div>
@@ -59,20 +59,20 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3">
-        <h1 className="text-lg font-bold text-gray-900 dark:text-gray-100">Settings</h1>
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+        <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
       </div>
       
       {/* Mobile optimized tabs */}
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-2">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3">
         <ScrollArea className="w-full">
-          <div className="grid grid-cols-4 gap-1 pb-2">
+          <div className="grid grid-cols-2 gap-3 pb-2">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
                 variant={activeTab === tab.id ? "default" : "ghost"}
                 size="sm"
-                className={`flex flex-col items-center justify-center h-auto py-2 px-1 text-xs ${
+                className={`flex flex-col items-center justify-center h-16 py-2 px-2 text-xs min-w-0 ${
                   activeTab === tab.id 
                     ? "bg-softspot-500 text-white" 
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -82,16 +82,18 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
                   setShowTabs(false);
                 }}
               >
-                <tab.icon className="h-4 w-4 mb-1" />
-                <span className="text-xs leading-tight">{tab.shortLabel || tab.label}</span>
+                <tab.icon className="h-5 w-5 mb-1 flex-shrink-0" />
+                <span className="text-xs leading-tight text-center break-words">
+                  {tab.shortLabel || tab.label}
+                </span>
               </Button>
             ))}
           </div>
         </ScrollArea>
       </div>
       
-      <ScrollArea className="h-[calc(100vh-140px)]">
-        <div className="p-3">
+      <ScrollArea className="h-[calc(100vh-200px)]">
+        <div className="p-4">
           {children}
         </div>
       </ScrollArea>

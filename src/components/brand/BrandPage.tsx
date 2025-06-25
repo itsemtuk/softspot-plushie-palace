@@ -24,32 +24,32 @@ const brandInfo: Record<string, { name: string; description: string; color: stri
   jellycat: {
     name: "Jellycat",
     description: "Premium soft toys known for their luxurious fabrics and adorable designs.",
-    color: "bg-pink-100"
+    color: "bg-pink-100 dark:bg-pink-900/20"
   },
   squishmallows: {
     name: "Squishmallows",
     description: "Super soft, collectible plush toys perfect for cuddling and collecting.",
-    color: "bg-purple-100"
+    color: "bg-purple-100 dark:bg-purple-900/20"
   },
   disney: {
     name: "Disney",
     description: "Magical plush characters from your favorite Disney movies and shows.",
-    color: "bg-blue-100"
+    color: "bg-blue-100 dark:bg-blue-900/20"
   },
   sanrio: {
     name: "Sanrio",
     description: "Kawaii characters including Hello Kitty, My Melody, and Cinnamoroll.",
-    color: "bg-pink-100"
+    color: "bg-pink-100 dark:bg-pink-900/20"
   },
   pokemon: {
     name: "Pokémon",
     description: "Gotta catch 'em all! Plush versions of your favorite Pokémon.",
-    color: "bg-yellow-100"
+    color: "bg-yellow-100 dark:bg-yellow-900/20"
   },
   "build-a-bear": {
     name: "Build-A-Bear",
     description: "Customizable teddy bears and plush animals you can build yourself.",
-    color: "bg-brown-100"
+    color: "bg-brown-100 dark:bg-brown-900/20"
   }
 };
 
@@ -127,10 +127,10 @@ export const BrandPageWrapper = () => {
   if (!brand) {
     return (
       <div className="container mx-auto py-8 px-4">
-        <Card>
+        <Card className="border border-gray-200 dark:border-gray-700">
           <CardContent className="text-center py-12">
-            <h2 className="text-xl font-semibold mb-2">Brand not found</h2>
-            <p className="text-gray-600">The brand you're looking for doesn't exist.</p>
+            <h2 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">Brand not found</h2>
+            <p className="text-gray-600 dark:text-gray-400">The brand you're looking for doesn't exist.</p>
           </CardContent>
         </Card>
       </div>
@@ -149,11 +149,11 @@ export const BrandPageWrapper = () => {
         />
         
         <Tabs defaultValue="marketplace" className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
-            <TabsTrigger value="marketplace">
+          <TabsList className="grid w-full grid-cols-2 mb-6 bg-white dark:bg-gray-800">
+            <TabsTrigger value="marketplace" className="data-[state=active]:bg-softspot-500 data-[state=active]:text-white">
               Marketplace ({brandPlushies.filter(p => p.forSale).length})
             </TabsTrigger>
-            <TabsTrigger value="community">
+            <TabsTrigger value="community" className="data-[state=active]:bg-softspot-500 data-[state=active]:text-white">
               Community ({brandPlushies.filter(p => !p.forSale).length})
             </TabsTrigger>
           </TabsList>

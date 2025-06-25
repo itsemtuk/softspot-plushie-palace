@@ -112,7 +112,7 @@ export const MessengerInterface = () => {
     <div className="h-screen bg-white dark:bg-gray-900 flex overflow-hidden">
       {/* Conversations Sidebar */}
       {showConversationList && (
-        <div className="w-full md:w-80 border-r border-gray-200 dark:border-gray-700 flex flex-col">
+        <div className={`${isMobile ? 'w-full' : 'w-80'} border-r border-gray-200 dark:border-gray-700 flex flex-col`}>
           <ConversationHeader
             searchTerm={searchTerm}
             onSearchChange={setSearchTerm}
@@ -129,7 +129,7 @@ export const MessengerInterface = () => {
 
       {/* Chat Area */}
       {showChatArea && (
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col min-w-0">
           {selectedConv ? (
             <>
               <ChatHeader
@@ -138,32 +138,36 @@ export const MessengerInterface = () => {
                 onBackToList={handleBackToList}
               />
 
-              <ChatMessages
-                messages={mockMessages}
-                conversation={selectedConv}
-              />
+              <div className="flex-1 overflow-hidden">
+                <ChatMessages
+                  messages={mockMessages}
+                  conversation={selectedConv}
+                />
+              </div>
 
-              <MessageInput
-                message={newMessage}
-                onMessageChange={setNewMessage}
-                onSendMessage={handleSendMessage}
-              />
+              <div className="border-t border-gray-200 dark:border-gray-700 p-3">
+                <MessageInput
+                  message={newMessage}
+                  onMessageChange={setNewMessage}
+                  onSendMessage={handleSendMessage}
+                />
+              </div>
             </>
           ) : (
-            <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-              <div className="text-center">
+            <div className="flex-1 flex items-center justify-center bg-gray-50 dark:bg-gray-900 p-4">
+              <div className="text-center max-w-sm">
                 <div className="w-20 h-20 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Send className="h-8 w-8 text-gray-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
                   Your Messages
                 </h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-4">
+                <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm">
                   Send private messages to friends and other collectors
                 </p>
                 <Button 
                   onClick={handleNewConversation}
-                  className="bg-softspot-500 hover:bg-softspot-600 text-white"
+                  className="bg-softspot-500 hover:bg-softspot-600 text-white w-full"
                 >
                   Send Message
                 </Button>
