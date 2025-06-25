@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedHeader } from "@/components/feed/FeedHeader";
@@ -25,8 +24,8 @@ export default function Feed() {
     try {
       setIsLoading(true);
       const fetchedPosts = await getAllPosts();
-      // Filter out marketplace items (posts with for_sale = true OR forSale = true)
-      const feedPosts = fetchedPosts.filter(post => !post.forSale && !post.for_sale);
+      // Filter out marketplace items (posts with forSale = true)
+      const feedPosts = fetchedPosts.filter(post => !post.forSale);
       console.log("Feed posts fetched (excluding marketplace):", feedPosts.length);
       setPosts(feedPosts);
     } catch (error) {
@@ -77,7 +76,6 @@ export default function Feed() {
         created_at: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         forSale: false, // Ensure feed posts are not for sale
-        for_sale: false, // Also set the database field
       };
 
       const result = await addPost(newPost);

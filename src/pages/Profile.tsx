@@ -99,8 +99,8 @@ const Profile = () => {
             }));
             
             // Separate regular posts from marketplace items
-            const regularPosts = formattedPosts.filter(post => !post.forSale && !post.for_sale);
-            const marketplaceItems = formattedPosts.filter(post => post.forSale || post.for_sale);
+            const regularPosts = formattedPosts.filter(post => !post.forSale);
+            const marketplaceItems = formattedPosts.filter(post => post.forSale);
             
             setUserPosts(regularPosts);
             setMarketplacePosts(marketplaceItems);
