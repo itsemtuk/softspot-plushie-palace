@@ -13,6 +13,8 @@ import { Badge } from "@/components/ui/badge";
 import { addPost } from "@/utils/posts/postManagement";
 import { toast } from "@/components/ui/use-toast";
 import UserProfileHeader from "@/components/UserProfileHeader";
+import MarketplaceReviews from "@/components/profile/MarketplaceReviews";
+import { ProfileBadges } from "@/components/profile/ProfileBadges";
 
 const Profile = () => {
   console.log("Profile page: Rendering");
@@ -23,6 +25,22 @@ const Profile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const { openPostDialog } = usePostDialog();
+
+  // Mock badges data
+  const userBadges = [
+    {
+      id: "profile-photo",
+      name: "Profile Photo",
+      image: "/assets/Badges/Changed_Profile_Photo.PNG",
+      description: "Added a profile photo"
+    },
+    {
+      id: "completed-profile",
+      name: "Complete Profile",
+      image: "/assets/Badges/Completed_Profile.PNG",
+      description: "Completed profile setup"
+    }
+  ];
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -81,8 +99,8 @@ const Profile = () => {
             }));
             
             // Separate regular posts from marketplace items
-            const regularPosts = formattedPosts.filter(post => !post.forSale);
-            const marketplaceItems = formattedPosts.filter(post => post.forSale);
+            const regularPosts = formattedPosts.filter(post => !post.forSale && !post.for_sale);
+            const marketplaceItems = formattedPosts.filter(post => post.forSale || post.for_sale);
             
             setUserPosts(regularPosts);
             setMarketplacePosts(marketplaceItems);
@@ -265,6 +283,14 @@ const Profile = () => {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="badges" className="mt-6">
+          <ProfileBadges badges={userBadges} />
+        </TabsContent>
+
+        <TabsContent value="reviews" className="mt-6">
+          {userData?.id && <MarketplaceReviews userId={userData.id} />}
         </TabsContent>
       </ProfileLayout>
     </div>
