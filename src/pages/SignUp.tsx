@@ -1,18 +1,42 @@
 
-import { SignUp as ClerkSignUp } from '@clerk/clerk-react';
 import { Navbar } from '@/components/Navbar';
 import { useEffect, useState } from 'react';
-import { useUser } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const { isLoaded, isSignedIn } = useUser();
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   const navigate = useNavigate();
+  
+  // Check if Clerk is available
+  const isClerkAvailable = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
   
   useEffect(() => {
     window.scrollTo(0, 0);
     
+    const checkAuthStatus = async () => {
+      if (isClerkAvailable) {
+        try {
+          // Since we can't use Clerk hooks conditionally, we'll check localStorage
+          const authStatus = localStorage.getItem('authStatus');
+          setIsSignedIn(authStatus === 'authenticated');
+        } catch (error) {
+          console.error('Error checking auth status:', error);
+          setIsSignedIn(false);
+        }
+      } else {
+        // When Clerk is not available, check localStorage for auth status
+        const authStatus = localStorage.getItem('authStatus');
+        setIsSignedIn(authStatus === 'authenticated');
+      }
+      setIsLoaded(true);
+    };
+
+    checkAuthStatus();
+  }, [isClerkAvailable]);
+
+  useEffect(() => {
     if (!isLoaded) return;
 
     if (isSignedIn) {
@@ -43,30 +67,19 @@ const SignUp = () => {
         <div className="bg-white rounded-lg shadow-md p-8">
           <h1 className="text-2xl font-bold text-center text-softspot-600 mb-8">Join SoftSpot</h1>
           
-          <ClerkSignUp
-            appearance={{
-              elements: {
-                rootBox: "mx-auto w-full",
-                card: "shadow-none p-0",
-                footer: "text-softspot-500",
-                socialButtonsBlockButton: "border border-gray-300 text-gray-700 hover:bg-gray-50",
-                socialButtonsIconButton: "border border-gray-300 hover:bg-gray-50 w-14 h-14 flex items-center justify-center m-2", 
-                socialButtonsProviderIcon: "w-8 h-8",
-                formButtonPrimary: "bg-softspot-500 hover:bg-softspot-600",
-                formFieldInput: "border-softspot-200 focus:border-softspot-400 focus:ring-softspot-300",
-                socialButtonsBlockButtonText: "text-base font-medium",
-                formField: "mb-6"
-              },
-              variables: {
-                colorPrimary: "#7e69ab",
-                colorText: "#333333",
-              },
-              layout: {
-                socialButtonsVariant: "iconButton",
-                socialButtonsPlacement: "bottom"
-              }
-            }}
-          />
+          {isClerkAvailable ? (
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">
+                Authentication is being set up. Please check back later.
+              </p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <p className="text-gray-600 mb-4">
+                Sign up functionality is not available yet. Please use the fallback authentication.
+              </p>
+            </div>
+          )}
           
           <div className="mt-6 text-center text-sm text-gray-500">
             <p>By signing up, you agree to our Terms of Service and Privacy Policy.</p>

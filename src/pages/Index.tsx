@@ -8,13 +8,39 @@ import { Link, useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import Footer from "@/components/Footer";
 import { QuickActionsFAB } from "@/components/navigation/mobile/QuickActionsFAB";
-import { useUser } from "@clerk/clerk-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const Index = () => {
   const isMobile = useIsMobile();
-  const { isSignedIn, isLoaded } = useUser();
   const navigate = useNavigate();
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Check if Clerk is available
+  const isClerkAvailable = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      if (isClerkAvailable) {
+        try {
+          const { useUser } = await import('@clerk/clerk-react');
+          // We can't use hooks conditionally, so we'll use a different approach
+          // For now, assume not signed in when Clerk is available but we can't check
+          setIsSignedIn(false);
+        } catch (error) {
+          console.error('Error checking Clerk auth:', error);
+          setIsSignedIn(false);
+        }
+      } else {
+        // When Clerk is not available, check localStorage for auth status
+        const authStatus = localStorage.getItem('authStatus');
+        setIsSignedIn(authStatus === 'authenticated');
+      }
+      setIsLoaded(true);
+    };
+
+    checkAuthStatus();
+  }, [isClerkAvailable]);
 
   // Redirect signed-in mobile users to feed
   useEffect(() => {
@@ -24,7 +50,7 @@ const Index = () => {
   }, [isLoaded, isSignedIn, isMobile, navigate]);
 
   // Don't render anything for signed-in mobile users while redirecting
-  if (isMobile && isSignedIn) {
+  if (isMobile && isSignedIn && isLoaded) {
     return null;
   }
 

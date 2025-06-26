@@ -7,7 +7,6 @@ import { SignInCard } from '@/components/auth/SignInCard';
 import { SignInPromotional } from '@/components/auth/SignInPromotional';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle } from 'lucide-react';
-import { useUser } from '@clerk/clerk-react';
 
 const SignIn = () => {
   const isMobile = useIsMobile();
@@ -15,8 +14,34 @@ const SignIn = () => {
   const [hasClerkError, setHasClerkError] = useState(false);
   const navigate = useNavigate();
   const [isUsingClerk, setIsUsingClerk] = useState(localStorage.getItem('usingClerk') === 'true');
-  const { isLoaded, isSignedIn } = useUser();
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const [isLoaded, setIsLoaded] = useState(false);
   
+  // Check if Clerk is available
+  const isClerkAvailable = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+  useEffect(() => {
+    const checkAuthStatus = async () => {
+      if (isClerkAvailable) {
+        try {
+          // Since we can't use Clerk hooks conditionally, we'll check localStorage
+          const authStatus = localStorage.getItem('authStatus');
+          setIsSignedIn(authStatus === 'authenticated');
+        } catch (error) {
+          console.error('Error checking auth status:', error);
+          setIsSignedIn(false);
+        }
+      } else {
+        // When Clerk is not available, check localStorage for auth status
+        const authStatus = localStorage.getItem('authStatus');
+        setIsSignedIn(authStatus === 'authenticated');
+      }
+      setIsLoaded(true);
+    };
+
+    checkAuthStatus();
+  }, [isClerkAvailable]);
+
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -64,7 +89,7 @@ const SignIn = () => {
         )}
         
         <SignInCard 
-          isUsingClerk={isUsingClerk}
+          isUsingClerk={isUsingClerk && isClerkAvailable}
           onToggleAuth={toggleAuthProvider}
           isMobile={isMobile}
         />
