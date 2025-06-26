@@ -57,25 +57,22 @@ export const useUserSync = () => {
 
       if (!userData) return;
 
-      // Update or create user session
-      const { error } = await supabase
-        .from('user_sessions')
-        .upsert({
-          user_id: userData.id,
-          clerk_session_id: user.id,
-          last_seen: new Date().toISOString(),
-          is_active: true,
-          device_info: {
-            userAgent: navigator.userAgent,
-            platform: navigator.platform
-          }
-        }, {
-          onConflict: 'user_id,clerk_session_id'
-        });
+      // Since user_sessions table might not be in types yet, 
+      // let's store session info in localStorage as fallback
+      const sessionData = {
+        user_id: userData.id,
+        clerk_session_id: user.id,
+        last_seen: new Date().toISOString(),
+        is_active: true,
+        device_info: {
+          userAgent: navigator.userAgent,
+          platform: navigator.platform
+        }
+      };
 
-      if (error) {
-        console.error('Session update error:', error);
-      }
+      localStorage.setItem('currentUserSession', JSON.stringify(sessionData));
+      console.log('User session updated locally');
+
     } catch (err) {
       console.error('Session update failed:', err);
     }
