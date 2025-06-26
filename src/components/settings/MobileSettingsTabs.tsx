@@ -21,12 +21,12 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
   const [showTabs, setShowTabs] = useState(true);
 
   const tabs: MobileSettingsTab[] = [
-    { id: "basic-info", label: "Basic Info", shortLabel: "Basic", icon: User },
+    { id: "basic-info", label: "Profile Info", shortLabel: "Profile", icon: User },
     { id: "privacy-security", label: "Privacy", shortLabel: "Privacy", icon: Shield },
     { id: "notifications", label: "Notifications", shortLabel: "Alerts", icon: Bell },
     { id: "plush-preferences", label: "Preferences", shortLabel: "Prefs", icon: Palette },
-    { id: "social-media", label: "Social", shortLabel: "Social", icon: Link2 },
-    { id: "store-links", label: "Store", shortLabel: "Store", icon: Store },
+    { id: "social-media", label: "Social Media", shortLabel: "Social", icon: Link2 },
+    { id: "store-links", label: "Store Links", shortLabel: "Store", icon: Store },
     { id: "delivery-payment", label: "Delivery", shortLabel: "Delivery", icon: Truck },
   ];
 
@@ -64,29 +64,26 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
       </div>
       
-      {/* Mobile optimized tabs - improved grid layout */}
       <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
         <ScrollArea className="w-full">
-          <div className="grid grid-cols-2 gap-3 pb-2">
+          <div className="grid grid-cols-1 gap-2 pb-2">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
                 variant={activeTab === tab.id ? "default" : "ghost"}
-                size="sm"
-                className={`flex flex-col items-center justify-center h-20 py-3 px-3 text-xs min-w-0 transition-all duration-200 ${
+                className={`flex items-center justify-start h-12 px-4 text-sm transition-all duration-200 ${
                   activeTab === tab.id 
-                    ? "bg-softspot-500 text-white hover:bg-softspot-600 transform scale-[0.98]" 
-                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:scale-[1.02]"
+                    ? "bg-softspot-500 text-white hover:bg-softspot-600" 
+                    : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
                 }`}
                 onClick={() => {
                   onTabChange(tab.id);
                   setShowTabs(false);
                 }}
               >
-                <tab.icon className="h-6 w-6 mb-2 flex-shrink-0" />
-                <span className="text-xs leading-tight text-center break-words max-w-full">
-                  {tab.shortLabel || tab.label}
-                </span>
+                <tab.icon className="h-5 w-5 mr-3 flex-shrink-0" />
+                <span className="text-left truncate">{tab.label}</span>
+                <ChevronLeft className="h-4 w-4 ml-auto rotate-180 opacity-50" />
               </Button>
             ))}
           </div>

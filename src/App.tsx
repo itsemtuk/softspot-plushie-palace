@@ -15,13 +15,14 @@ import Index from "./pages/Index";
 import Feed from "./pages/Feed";
 import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
-import Marketplace from "./pages/Marketplace";
 import Users from "./pages/Users";
 import Settings from "./pages/Settings";
 import BrandPage from "./pages/BrandPage";
-import WishlistPage from "./pages/WishlistPage";
 import About from "./pages/About";
 import Notifications from "./pages/Notifications";
+import MobileMarketplace from "./pages/MobileMarketplace";
+import MobileWishlist from "./pages/MobileWishlist";
+import MobileMessages from "./pages/MobileMessages";
 
 const queryClient = new QueryClient();
 
@@ -48,11 +49,12 @@ function AppContent() {
       <Route path="/feed" element={<Feed />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/user/:username" element={<UserProfile />} />
-      <Route path="/marketplace" element={<Marketplace />} />
+      <Route path="/marketplace" element={<MobileMarketplace />} />
       <Route path="/users" element={<Users />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/brand/:brandId" element={<BrandPage />} />
-      <Route path="/wishlist" element={<WishlistPage />} />
+      <Route path="/wishlist" element={<MobileWishlist />} />
+      <Route path="/messages" element={<MobileMessages />} />
       <Route path="/about" element={<About />} />
       <Route path="/notifications" element={<Notifications />} />
     </Routes>

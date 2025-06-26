@@ -10,7 +10,7 @@ import { toast } from "@/components/ui/use-toast";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 
-export function TopNav() {
+export function MobileTopNav() {
   const isSignedIn = isAuthenticated();
   const location = useLocation();
   const navigate = useNavigate();

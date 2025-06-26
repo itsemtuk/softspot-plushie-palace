@@ -39,6 +39,47 @@ export type Database = {
         }
         Relationships: []
       }
+      feed_posts: {
+        Row: {
+          content: string
+          created_at: string | null
+          description: string | null
+          id: string
+          image: string | null
+          title: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          image?: string | null
+          title?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feed_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       followers: {
         Row: {
           created_at: string | null
@@ -137,6 +178,67 @@ export type Database = {
         }
         Relationships: []
       }
+      offers: {
+        Row: {
+          buyer_id: string
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          listing_id: string
+          message: string | null
+          offer_amount: number
+          seller_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_id: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          listing_id: string
+          message?: string | null
+          offer_amount: number
+          seller_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          listing_id?: string
+          message?: string | null
+          offer_amount?: number
+          seller_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offers_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plushies: {
         Row: {
           created_at: string
@@ -154,6 +256,7 @@ export type Database = {
       }
       posts: {
         Row: {
+          accepts_offers: boolean | null
           brand: string | null
           color: string | null
           condition: string | null
@@ -166,7 +269,10 @@ export type Database = {
           for_sale: boolean | null
           id: string
           image: string | null
+          listing_type: string | null
           material: string | null
+          min_offer_amount: number | null
+          offer_deadline: string | null
           price: number | null
           size: string | null
           species: string | null
@@ -174,6 +280,7 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
+          accepts_offers?: boolean | null
           brand?: string | null
           color?: string | null
           condition?: string | null
@@ -186,7 +293,10 @@ export type Database = {
           for_sale?: boolean | null
           id?: string
           image?: string | null
+          listing_type?: string | null
           material?: string | null
+          min_offer_amount?: number | null
+          offer_deadline?: string | null
           price?: number | null
           size?: string | null
           species?: string | null
@@ -194,6 +304,7 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
+          accepts_offers?: boolean | null
           brand?: string | null
           color?: string | null
           condition?: string | null
@@ -206,7 +317,10 @@ export type Database = {
           for_sale?: boolean | null
           id?: string
           image?: string | null
+          listing_type?: string | null
           material?: string | null
+          min_offer_amount?: number | null
+          offer_deadline?: string | null
           price?: number | null
           size?: string | null
           species?: string | null
@@ -392,6 +506,86 @@ export type Database = {
           },
         ]
       }
+      user_badges: {
+        Row: {
+          badge_description: string | null
+          badge_name: string
+          badge_type: string
+          earned_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_description?: string | null
+          badge_name: string
+          badge_type: string
+          earned_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_description?: string | null
+          badge_name?: string
+          badge_type?: string
+          earned_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_reviews: {
+        Row: {
+          created_at: string | null
+          id: string
+          rating: number
+          review_text: string | null
+          reviewed_user_id: string
+          reviewer_id: string
+          transaction_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          rating: number
+          review_text?: string | null
+          reviewed_user_id: string
+          reviewer_id: string
+          transaction_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          rating?: number
+          review_text?: string | null
+          reviewed_user_id?: string
+          reviewer_id?: string
+          transaction_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_reviews_reviewed_user_id_fkey"
+            columns: ["reviewed_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           avatar_url: string | null
@@ -433,6 +627,16 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_offer_with_notification: {
+        Args: {
+          p_listing_id: string
+          p_buyer_id: string
+          p_seller_id: string
+          p_offer_amount: number
+          p_message?: string
+        }
+        Returns: string
+      }
       create_user_safe: {
         Args: { user_data: Json }
         Returns: {
