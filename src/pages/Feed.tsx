@@ -1,11 +1,11 @@
+
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import { FeedHeader } from "@/components/feed/FeedHeader";
 import { FeedContent } from "@/components/feed/FeedContent";
 import { useCreatePost } from "@/hooks/use-create-post";
-import { getAllPosts } from "@/utils/posts/postFetch";
 import { PostCreationData, ExtendedPost } from "@/types/core";
-import { addPost } from "@/utils/posts/postManagement";
+import { supabase } from "@/integrations/supabase/client";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
@@ -23,11 +23,43 @@ export default function Feed() {
   const fetchAndSetPosts = useCallback(async () => {
     try {
       setIsLoading(true);
-      const fetchedPosts = await getAllPosts();
-      // Filter out marketplace items (posts with forSale = true)
-      const feedPosts = fetchedPosts.filter(post => !post.forSale);
-      console.log("Feed posts fetched (excluding marketplace):", feedPosts.length);
-      setPosts(feedPosts);
+      // Fetch only from feed_posts table for the main feed
+      const { data: feedPosts, error } = await supabase
+        .from('feed_posts')
+        .select(`
+          *,
+          users!feed_posts_user_id_fkey(username, avatar_url)
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error("Error fetching feed posts:", error);
+        setPosts([]);
+        return;
+      }
+
+      const formattedPosts: ExtendedPost[] = (feedPosts || []).map(post => ({
+        id: post.id,
+        userId: post.user_id,
+        user_id: post.user_id,
+        username: (post.users as any)?.username || 'User',
+        image: post.image || '',
+        title: post.title || '',
+        description: post.description || '',
+        content: post.content,
+        tags: [],
+        likes: 0,
+        comments: 0,
+        timestamp: post.created_at || '',
+        createdAt: post.created_at || '',
+        created_at: post.created_at || '',
+        updatedAt: post.updated_at || post.created_at || '',
+        location: '',
+        forSale: false
+      }));
+
+      console.log("Feed posts loaded:", formattedPosts.length);
+      setPosts(formattedPosts);
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
@@ -63,37 +95,56 @@ export default function Feed() {
     try {
       console.log("Creating new feed post:", postData);
       
-      const newPost: ExtendedPost = {
-        ...postData,
-        id: `post-${Date.now()}`,
-        userId: supabaseUserId,
-        user_id: supabaseUserId,
-        username: user.username || user.firstName || "User",
-        likes: 0,
-        comments: 0,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
-        created_at: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        forSale: false, // Ensure feed posts are not for sale
-      };
+      // Insert into feed_posts table for the main feed
+      const { data, error } = await supabase
+        .from('feed_posts')
+        .insert([{
+          user_id: supabaseUserId,
+          title: postData.title,
+          content: postData.content,
+          description: postData.description,
+          image: postData.image
+        }])
+        .select()
+        .single();
 
-      const result = await addPost(newPost);
-      if (result.success) {
-        setPosts(prevPosts => [newPost, ...prevPosts]);
-        setIsPostCreationOpen(false);
-        toast({
-          title: "Post created!",
-          description: "Your post has been added to the feed."
-        });
-      } else {
-        console.error("Failed to add post:", result.error);
+      if (error) {
+        console.error("Failed to add feed post:", error);
         toast({
           variant: "destructive",
           title: "Error",
-          description: result.error || "Failed to create post. Please try again."
+          description: "Failed to create post. Please try again."
         });
+        return;
       }
+
+      // Add to local state
+      const newPost: ExtendedPost = {
+        id: data.id,
+        userId: supabaseUserId,
+        user_id: supabaseUserId,
+        username: user.username || user.firstName || "User",
+        image: data.image || '',
+        title: data.title || '',
+        description: data.description || '',
+        content: data.content,
+        tags: [],
+        likes: 0,
+        comments: 0,
+        timestamp: data.created_at,
+        createdAt: data.created_at,
+        created_at: data.created_at,
+        updatedAt: data.updated_at || data.created_at,
+        location: '',
+        forSale: false
+      };
+
+      setPosts(prevPosts => [newPost, ...prevPosts]);
+      setIsPostCreationOpen(false);
+      toast({
+        title: "Post created!",
+        description: "Your post has been added to the feed."
+      });
     } catch (error) {
       console.error("Error creating post:", error);
       toast({

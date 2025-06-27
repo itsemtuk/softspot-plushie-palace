@@ -13,7 +13,7 @@ export function useFeedData() {
       setIsLoading(true);
       setError(false);
       
-      // Fetch from feed_posts table instead of posts table
+      // Fetch from feed_posts table for the main feed
       const { data: feedPosts, error: feedError } = await supabase
         .from('feed_posts')
         .select(`
@@ -45,8 +45,7 @@ export function useFeedData() {
         created_at: post.created_at || '',
         updatedAt: post.updated_at || post.created_at || '',
         location: '',
-        forSale: false,
-        sold: false
+        forSale: false // Feed posts are never for sale
       }));
 
       setPosts(formattedPosts);

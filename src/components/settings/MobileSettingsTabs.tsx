@@ -7,7 +7,7 @@ import { ChevronLeft, User, Shield, Bell, Palette, Store, Link2, Truck } from "l
 interface MobileSettingsTab {
   id: string;
   label: string;
-  shortLabel?: string;
+  shortLabel: string;
   icon: React.ElementType;
 }
 
@@ -21,13 +21,13 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
   const [showTabs, setShowTabs] = useState(true);
 
   const tabs: MobileSettingsTab[] = [
-    { id: "basic-info", label: "Profile Info", shortLabel: "Profile", icon: User },
-    { id: "privacy-security", label: "Privacy", shortLabel: "Privacy", icon: Shield },
-    { id: "notifications", label: "Notifications", shortLabel: "Alerts", icon: Bell },
-    { id: "plush-preferences", label: "Preferences", shortLabel: "Prefs", icon: Palette },
-    { id: "social-media", label: "Social Media", shortLabel: "Social", icon: Link2 },
-    { id: "store-links", label: "Store Links", shortLabel: "Store", icon: Store },
-    { id: "delivery-payment", label: "Delivery", shortLabel: "Delivery", icon: Truck },
+    { id: "basic-info", label: "Profile Information", shortLabel: "Profile", icon: User },
+    { id: "privacy-security", label: "Privacy & Security", shortLabel: "Privacy", icon: Shield },
+    { id: "notifications", label: "Notifications", shortLabel: "Notifications", icon: Bell },
+    { id: "plush-preferences", label: "Plushie Preferences", shortLabel: "Preferences", icon: Palette },
+    { id: "social-media", label: "Social Media Links", shortLabel: "Social", icon: Link2 },
+    { id: "store-links", label: "Store Links", shortLabel: "Stores", icon: Store },
+    { id: "delivery-payment", label: "Delivery & Payment", shortLabel: "Delivery", icon: Truck },
   ];
 
   const currentTab = tabs.find(tab => tab.id === activeTab);
@@ -44,10 +44,10 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
           >
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <div className="flex items-center gap-3 min-w-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
             {currentTab && <currentTab.icon className="h-5 w-5 text-softspot-600 flex-shrink-0" />}
             <h2 className="font-semibold text-lg text-gray-900 dark:text-gray-100 truncate">
-              {currentTab?.label}
+              {currentTab?.shortLabel}
             </h2>
           </div>
         </div>
@@ -64,14 +64,14 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
       </div>
       
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
         <ScrollArea className="w-full">
-          <div className="grid grid-cols-1 gap-2 pb-2">
+          <div className="p-4 space-y-2">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
                 variant={activeTab === tab.id ? "default" : "ghost"}
-                className={`flex items-center justify-start h-12 px-4 text-sm transition-all duration-200 ${
+                className={`w-full flex items-center justify-start h-12 px-4 text-sm transition-all duration-200 ${
                   activeTab === tab.id 
                     ? "bg-softspot-500 text-white hover:bg-softspot-600" 
                     : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -82,19 +82,16 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
                 }}
               >
                 <tab.icon className="h-5 w-5 mr-3 flex-shrink-0" />
-                <span className="text-left truncate">{tab.label}</span>
+                <div className="flex-1 text-left">
+                  <div className="font-medium">{tab.shortLabel}</div>
+                  <div className="text-xs opacity-75 truncate">{tab.label}</div>
+                </div>
                 <ChevronLeft className="h-4 w-4 ml-auto rotate-180 opacity-50" />
               </Button>
             ))}
           </div>
         </ScrollArea>
       </div>
-      
-      <ScrollArea className="h-[calc(100vh-200px)]">
-        <div className="p-4">
-          {children}
-        </div>
-      </ScrollArea>
     </div>
   );
 };

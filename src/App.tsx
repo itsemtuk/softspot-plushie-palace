@@ -23,10 +23,11 @@ import Notifications from "./pages/Notifications";
 import MobileMarketplace from "./pages/MobileMarketplace";
 import MobileWishlist from "./pages/MobileWishlist";
 import MobileMessages from "./pages/MobileMessages";
+import Marketplace from "./pages/Marketplace";
 
 const queryClient = new QueryClient();
 
-const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 function AppContent() {
   const { synced, error } = useUserSync();
@@ -58,27 +59,6 @@ function AppContent() {
 }
 
 function App() {
-  // If no Clerk key is provided, render without Clerk
-  if (!PUBLISHABLE_KEY) {
-    console.warn("No Clerk publishable key found. Running without authentication.");
-    
-    return (
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-          <TooltipProvider>
-            <NotificationsProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-            </NotificationsProvider>
-          </TooltipProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    );
-  }
-
   return (
     <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
       <QueryClientProvider client={queryClient}>

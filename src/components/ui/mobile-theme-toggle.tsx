@@ -12,8 +12,16 @@ export function MobileThemeToggle() {
     setMounted(true);
   }, []);
 
+  const toggleTheme = () => {
+    setTheme(theme === "light" ? "dark" : "light");
+  };
+
   if (!mounted) {
-    return <Button variant="ghost" size="icon" className="h-9 w-9" />;
+    return (
+      <Button variant="ghost" size="icon" className="h-9 w-9">
+        <Sun className="h-5 w-5" />
+      </Button>
+    );
   }
 
   return (
@@ -21,7 +29,7 @@ export function MobileThemeToggle() {
       variant="ghost"
       size="icon"
       className="h-9 w-9"
-      onClick={() => setTheme(theme === "light" ? "dark" : "light")}
+      onClick={toggleTheme}
     >
       {theme === "light" ? (
         <Moon className="h-5 w-5" />
