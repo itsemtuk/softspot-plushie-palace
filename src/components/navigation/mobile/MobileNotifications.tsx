@@ -6,17 +6,122 @@ import { Badge } from "@/components/ui/badge";
 import { useNavigate } from "react-router-dom";
 import { isAuthenticated } from "@/utils/auth/authState";
 import { toast } from "@/components/ui/use-toast";
-import { useNotifications } from "@/hooks/useNotifications";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@clerk/clerk-react";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
 
+interface Notification {
+  id: string;
+  type: 'follow' | 'offer' | 'like' | 'comment';
+  title: string;
+  message: string;
+  read: boolean;
+  created_at: string;
+  data?: any;
+}
+
 export function MobileNotifications() {
   const navigate = useNavigate();
-  const { notifications, unreadCount, markAsRead, markAllAsRead, loading } = useNotifications();
-  
+  const { user } = useUser();
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+
+  const getCurrentUserSupabaseId = async () => {
+    if (!user?.id) return null;
+    
+    const { data } = await supabase
+      .from('users')
+      .select('id')
+      .eq('clerk_id', user.id)
+      .maybeSingle();
+    
+    return data?.id || null;
+  };
+
+  const fetchNotifications = async () => {
+    if (!isAuthenticated() || !user) return;
+    
+    try {
+      setLoading(true);
+      const supabaseUserId = await getCurrentUserSupabaseId();
+      if (!supabaseUserId) return;
+
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', supabaseUserId)
+        .order('created_at', { ascending: false })
+        .limit(10);
+
+      if (error) {
+        console.error('Error fetching notifications:', error);
+        return;
+      }
+
+      const transformedNotifications: Notification[] = (data || []).map(notification => ({
+        id: notification.id,
+        type: notification.type as 'follow' | 'offer' | 'like' | 'comment',
+        title: notification.title,
+        message: notification.message,
+        read: notification.read,
+        created_at: notification.created_at,
+        data: notification.data
+      }));
+
+      setNotifications(transformedNotifications);
+      setUnreadCount(transformedNotifications.filter(n => !n.read).length);
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const markAsRead = async (notificationId: string) => {
+    try {
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('id', notificationId);
+
+      if (error) throw error;
+
+      setNotifications(prev => 
+        prev.map(notif => 
+          notif.id === notificationId ? { ...notif, read: true } : notif
+        )
+      );
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
+    }
+  };
+
+  const markAllAsRead = async () => {
+    try {
+      const supabaseUserId = await getCurrentUserSupabaseId();
+      if (!supabaseUserId) return;
+
+      const { error } = await supabase
+        .from('notifications')
+        .update({ read: true })
+        .eq('user_id', supabaseUserId)
+        .eq('read', false);
+
+      if (error) throw error;
+
+      setNotifications(prev => prev.map(notif => ({ ...notif, read: true })));
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Error marking all as read:', error);
+    }
+  };
+
   const handleClick = () => {
     if (!isAuthenticated()) {
       toast({
@@ -33,6 +138,12 @@ export function MobileNotifications() {
   const handleNotificationClick = (notificationId: string) => {
     markAsRead(notificationId);
   };
+
+  useEffect(() => {
+    if (user && isAuthenticated()) {
+      fetchNotifications();
+    }
+  }, [user]);
   
   if (!isAuthenticated()) {
     return (
@@ -93,7 +204,7 @@ export function MobileNotifications() {
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-softspot-500 mx-auto"></div>
             </div>
           ) : notifications.length > 0 ? (
-            notifications.slice(0, 10).map((notification) => (
+            notifications.map((notification) => (
               <div
                 key={notification.id}
                 className={`p-3 border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${

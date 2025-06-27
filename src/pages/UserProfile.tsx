@@ -170,84 +170,82 @@ const UserProfilePage = () => {
   }
 
   return (
-    <MainLayout noPadding>
-      <div className="flex-grow">
-        <div className="container mx-auto px-4 py-8 max-w-6xl">
-          <UserProfileHeader
-            username={userData.username || userData.first_name || 'User'}
-            isOwnProfile={false}
-            profileData={profileData}
-            userId={userData.id}
-          />
+    <MainLayout includeFooter={true}>
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <UserProfileHeader
+          username={userData.username || userData.first_name || 'User'}
+          isOwnProfile={false}
+          profileData={profileData}
+          userId={userData.id}
+        />
 
-          <Tabs defaultValue="posts" className="w-full">
-            <TabsList className="bg-white shadow-sm mb-6 rounded-full w-full flex justify-center p-1">
-              <TabsTrigger value="posts" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
-                Posts ({userPosts.length})
-              </TabsTrigger>
-              <TabsTrigger value="about" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
-                About
-              </TabsTrigger>
-            </TabsList>
+        <Tabs defaultValue="posts" className="w-full">
+          <TabsList className="bg-white shadow-sm mb-6 rounded-full w-full flex justify-center p-1">
+            <TabsTrigger value="posts" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
+              Posts ({userPosts.length})
+            </TabsTrigger>
+            <TabsTrigger value="about" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
+              About
+            </TabsTrigger>
+          </TabsList>
 
-            <TabsContent value="posts">
-              <Card className="overflow-hidden bg-transparent shadow-none">
-                {userPosts.length > 0 || true ? (
-                  <ProfilePostsGrid
-                    posts={userPosts}
-                    onPostClick={handlePostClick}
-                    isOwnProfile={false}
-                    showCreateButton={false}
-                    onPostCreated={handlePostCreated}
-                  />
+          <TabsContent value="posts">
+            <Card className="overflow-hidden bg-transparent shadow-none">
+              {userPosts.length > 0 || true ? (
+                <ProfilePostsGrid
+                  posts={userPosts}
+                  onPostClick={handlePostClick}
+                  isOwnProfile={false}
+                  showCreateButton={false}
+                  onPostCreated={handlePostCreated}
+                />
+              ) : (
+                <div className="text-center py-16">
+                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">No Posts Yet</h3>
+                  <p className="text-gray-500 dark:text-gray-400 mt-2">
+                    This user hasn't shared any posts yet.
+                  </p>
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="about">
+            <Card className="shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                About {userData.username || userData.first_name}
+              </h3>
+              <div className="space-y-4">
+                {profileData?.bio ? (
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Bio</h4>
+                    <p className="text-gray-600 dark:text-gray-400 mt-1">{profileData.bio}</p>
+                  </div>
                 ) : (
-                  <div className="text-center py-16">
-                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">No Posts Yet</h3>
-                    <p className="text-gray-500 dark:text-gray-400 mt-2">
-                      This user hasn't shared any posts yet.
-                    </p>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    This user hasn't added a bio yet.
+                  </p>
+                )}
+                
+                {profileData?.interests && profileData.interests.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Favorite Brands</h4>
+                    <div className="flex flex-wrap gap-2 mt-2">
+                      {profileData.interests.map((interest: string, index: number) => (
+                        <Badge key={index} variant="secondary">{interest}</Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="about">
-              <Card className="shadow-sm p-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                  About {userData.username || userData.first_name}
-                </h3>
-                <div className="space-y-4">
-                  {profileData?.bio ? (
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Bio</h4>
-                      <p className="text-gray-600 dark:text-gray-400 mt-1">{profileData.bio}</p>
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 dark:text-gray-400">
-                      This user hasn't added a bio yet.
-                    </p>
-                  )}
-                  
-                  {profileData?.interests && profileData.interests.length > 0 && (
-                    <div>
-                      <h4 className="font-medium text-gray-900 dark:text-white">Favorite Brands</h4>
-                      <div className="flex flex-wrap gap-2 mt-2">
-                        {profileData.interests.map((interest: string, index: number) => (
-                          <Badge key={index} variant="secondary">{interest}</Badge>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Member Since</h4>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">2024</p>
-                  </div>
+                
+                <div>
+                  <h4 className="font-medium text-gray-900 dark:text-white">Member Since</h4>
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">2024</p>
                 </div>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
+              </div>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </MainLayout>
   );
