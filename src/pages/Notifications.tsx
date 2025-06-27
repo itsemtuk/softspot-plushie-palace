@@ -53,7 +53,18 @@ export default function Notifications() {
         return;
       }
 
-      setNotifications(data || []);
+      // Transform the data to match our interface
+      const transformedNotifications: Notification[] = (data || []).map(notification => ({
+        id: notification.id,
+        type: notification.type as 'follow' | 'offer' | 'like' | 'comment',
+        title: notification.title,
+        message: notification.message,
+        read: notification.read,
+        created_at: notification.created_at,
+        data: notification.data
+      }));
+
+      setNotifications(transformedNotifications);
     } catch (error) {
       console.error('Error fetching notifications:', error);
     } finally {

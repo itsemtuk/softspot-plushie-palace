@@ -24,6 +24,7 @@ import MobileMarketplace from "./pages/MobileMarketplace";
 import MobileWishlist from "./pages/MobileWishlist";
 import MobileMessages from "./pages/MobileMessages";
 import Marketplace from "./pages/Marketplace";
+import SearchPage from "./pages/SearchPage";
 
 const queryClient = new QueryClient();
 
@@ -46,7 +47,7 @@ function AppContent() {
       <Route path="/feed" element={<Feed />} />
       <Route path="/profile" element={<Profile />} />
       <Route path="/user/:username" element={<UserProfile />} />
-      <Route path="/marketplace" element={<MobileMarketplace />} />
+      <Route path="/marketplace" element={<Marketplace />} />
       <Route path="/users" element={<Users />} />
       <Route path="/settings" element={<Settings />} />
       <Route path="/brand/:brandId" element={<BrandPage />} />
@@ -54,6 +55,7 @@ function AppContent() {
       <Route path="/messages" element={<MobileMessages />} />
       <Route path="/about" element={<About />} />
       <Route path="/notifications" element={<Notifications />} />
+      <Route path="/search" element={<SearchPage />} />
     </Routes>
   );
 }

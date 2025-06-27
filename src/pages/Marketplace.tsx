@@ -3,8 +3,6 @@ import MainLayout from "@/components/layout/MainLayout";
 import { MarketplaceHeader } from "@/components/marketplace/MarketplaceHeader";
 import { FilterPanel } from "@/components/marketplace/FilterPanel";
 import { MobileFilterDrawer } from "@/components/marketplace/MobileFilterDrawer";
-import { QuickSellBanner } from "@/components/marketplace/QuickSellBanner";
-import { TrendingCarousel } from "@/components/marketplace/TrendingCarousel";
 import { MarketplaceControls } from "@/components/marketplace/MarketplaceControls";
 import { ProductGrid } from "@/components/marketplace/ProductGrid";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -140,15 +138,20 @@ const Marketplace = () => {
   return (
     <MainLayout>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Header with search and CTA */}
         <MarketplaceHeader 
           searchQuery={searchQuery}
           onSearchChange={handleSearchChange}
         />
         
+        {/* Hero Section */}
         <MarketplaceHero />
+        
+        {/* Navigation */}
         <MarketplaceNavigation onFilterToggle={toggleFilterDrawer} />
         
         <div className="max-w-7xl mx-auto px-4 py-6">
+          {/* Controls */}
           <MarketplaceControls
             searchQuery={searchQuery}
             onSearchChange={handleSearchChange}
