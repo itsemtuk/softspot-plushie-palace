@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { withRetry } from '../retry';
 
@@ -18,14 +19,14 @@ export const supabase = (() => {
         detectSessionInUrl: false, // Disable to prevent conflicts with Clerk
         flowType: 'implicit',
         storage: {
-          getItem: (key: string) => {
+          getItem: (key: string): string | null => {
             // Use a prefixed key to avoid conflicts with Clerk
             return localStorage.getItem(`supabase_${key}`);
           },
-          setItem: (key: string, value: string) => {
+          setItem: (key: string, value: string): void => {
             localStorage.setItem(`supabase_${key}`, value);
           },
-          removeItem: (key: string) => {
+          removeItem: (key: string): void => {
             localStorage.removeItem(`supabase_${key}`);
           },
         }
