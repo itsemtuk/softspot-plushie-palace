@@ -100,6 +100,6 @@ export const fetchUserDataByClerkId = async (clerkId: string) => {
     return { data, error: null };
   } catch (error) {
     console.error("Error fetching user data by Clerk ID:", error);
-    return { data: null, error: error as string };
+    return { data: null, error: error instanceof Error ? error.message : String(error) };
   }
 };
