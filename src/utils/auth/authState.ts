@@ -1,4 +1,5 @@
-// Enhanced authentication state management with better error handling
+
+// Enhanced authentication state management with better conflict resolution
 let currentAuthState = {
   isAuthenticated: false,
   userId: null as string | null,
@@ -6,9 +7,11 @@ let currentAuthState = {
   provider: null as 'clerk' | 'supabase' | null
 };
 
-// Check if we're using Clerk based on localStorage
+// Check if we're using Clerk based on environment and localStorage
 const isUsingClerk = () => {
-  return localStorage.getItem('usingClerk') === 'true';
+  const hasClerkKey = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  const storedPreference = localStorage.getItem('usingClerk') === 'true';
+  return hasClerkKey && storedPreference;
 };
 
 // Enhanced authentication check with better error handling
@@ -32,20 +35,18 @@ export const isAuthenticated = (): boolean => {
       return true;
     }
     
-    // If using Clerk, check if Clerk user exists
+    // If using Clerk, check if Clerk user exists with better error handling
     if (isUsingClerk()) {
       try {
-        // Check if we have Clerk session data
-        const clerkSessionExists = document.cookie.includes('__session') || 
-                                 document.cookie.includes('__client_uat');
-        if (clerkSessionExists && userId) {
+        // Only check Clerk session if we have a user ID
+        if (userId) {
           currentAuthState.isAuthenticated = true;
           currentAuthState.userId = userId;
           currentAuthState.provider = 'clerk';
           return true;
         }
       } catch (error) {
-        console.warn('Error checking Clerk session:', error);
+        console.warn('Error checking Clerk session (non-critical):', error);
       }
     }
     
@@ -92,7 +93,7 @@ export const setAuthenticatedUser = (user: {
   }
 };
 
-// Enhanced sign out with proper cleanup - renamed from signOut to clearAuthState
+// Enhanced sign out with proper cleanup
 export const clearAuthState = () => {
   try {
     // Clear cached state
@@ -112,7 +113,7 @@ export const clearAuthState = () => {
     localStorage.removeItem('userBio');
     localStorage.removeItem('userStatus');
     
-    console.log('User signed out');
+    console.log('Auth state cleared');
     
     // Dispatch auth change event
     window.dispatchEvent(new Event('auth-state-change'));

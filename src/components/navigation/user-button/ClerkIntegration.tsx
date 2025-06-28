@@ -19,22 +19,20 @@ export const ClerkButtonComponent = () => {
     clerkValue = useClerk();
     clerkSyncValue = useClerkSync();
     
-    // Debug Clerk status on load
+    // Debug Clerk status on load with reduced logging
     useEffect(() => {
-      console.log("ClerkButtonComponent mounted: ", {
-        isLoaded: userValue?.isLoaded,
-        isSignedIn: userValue?.isSignedIn,
-        user: userValue?.user?.id
-      });
-      
-      // Mark that we're using Clerk for authentication
-      localStorage.setItem('usingClerk', 'true');
-    }, []);
+      if (userValue?.isLoaded) {
+        console.log("Clerk authentication loaded successfully");
+        
+        // Mark that we're using Clerk for authentication
+        localStorage.setItem('usingClerk', 'true');
+      }
+    }, [userValue?.isLoaded]);
     
     // Handle user authentication state
     useEffect(() => {
       if (userValue?.user && userValue.isSignedIn) {
-        console.log("Clerk user signed in:", userValue.user);
+        console.log("User authenticated with Clerk");
         
         // Update centralized auth state
         setAuthenticatedUser({
@@ -52,10 +50,12 @@ export const ClerkButtonComponent = () => {
         // Store profile data for synchronization
         localStorage.setItem('userBio', userValue.user.unsafeMetadata?.bio as string || '');
         
-        // Sync status from localStorage to Clerk if it exists
+        // Sync status with reduced conflict potential
         const currentStatus = getUserStatus();
         if (currentStatus && userValue.user.unsafeMetadata?.status !== currentStatus) {
-          clerkSyncValue?.updateUserStatus(currentStatus);
+          clerkSyncValue?.updateUserStatus(currentStatus).catch(err => {
+            console.warn('Status sync failed (non-critical):', err);
+          });
         }
         
         // Or sync status from Clerk to localStorage if it exists
@@ -68,8 +68,7 @@ export const ClerkButtonComponent = () => {
         window.dispatchEvent(new Event('clerk-auth-change'));
         
       } else if (userValue?.isLoaded && !userValue?.isSignedIn) {
-        // Handle sign-out or unauthenticated state
-        console.log("User not signed in with Clerk");
+        // Handle sign-out or unauthenticated state with reduced logging
         localStorage.removeItem('currentUserId');
         localStorage.removeItem('authStatus');
         localStorage.removeItem('currentUsername');
@@ -79,11 +78,11 @@ export const ClerkButtonComponent = () => {
         // Dispatch event to notify components of auth state change
         window.dispatchEvent(new Event('clerk-auth-change'));
       }
-    }, [userValue?.user, userValue?.isSignedIn, userValue?.isLoaded, toast, clerkSyncValue]);
+    }, [userValue?.user, userValue?.isSignedIn, userValue?.isLoaded, clerkSyncValue]);
     
   } catch (error) {
     // Silently handle the error when used outside ClerkProvider
-    console.warn("ClerkButtonComponent: Error accessing Clerk hooks outside ClerkProvider", error);
+    console.warn("Clerk integration not available:", error.message);
   }
   
   // This component doesn't render anything visible
