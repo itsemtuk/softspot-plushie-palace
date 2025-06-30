@@ -94,7 +94,7 @@ export const fetchUserDataByClerkId = async (clerkId: string) => {
       .single();
 
     if (error) {
-      return { data: null, error };
+      return { data: null, error: error.message };
     }
 
     return { data, error: null };
