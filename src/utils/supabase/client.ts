@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js';
 import { withRetry } from '../retry';
 
@@ -137,26 +138,31 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
   try {
     console.log('Testing Supabase connection...');
     
-    const timeoutPromise = new Promise<never>((_, reject) => {
+    const timeoutPromise = new Promise<Error>((_, reject) => {
       setTimeout(() => reject(new Error('Connection timeout')), timeoutMs);
     });
     
     const queryPromise = supabase.from('posts').select('count').limit(1);
     
-    const result = await Promise.race([queryPromise, timeoutPromise]);
-    
-    // Since Promise.race will return the first resolved/rejected promise,
-    // we know result is from queryPromise if we reach this point
-    const { data, error } = result as any;
-    
-    if (error) {
-      const handledError = handleSupabaseError(error);
+    try {
+      const result = await Promise.race([queryPromise, timeoutPromise]);
+      
+      // Type assertion since we know what type we expect
+      const { data, error } = result as { data: any; error: any };
+      
+      if (error) {
+        const handledError = handleSupabaseError(error);
+        console.warn('Supabase connection test failed:', handledError.message);
+        return false;
+      }
+      
+      console.log('Supabase connection test successful');
+      return true;
+    } catch (err: any) {
+      const handledError = handleSupabaseError(err);
       console.warn('Supabase connection test failed:', handledError.message);
       return false;
     }
-    
-    console.log('Supabase connection test successful');
-    return true;
   } catch (err: any) {
     const handledError = handleSupabaseError(err);
     console.warn('Supabase connection test failed:', handledError.message);

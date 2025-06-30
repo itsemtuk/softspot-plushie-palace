@@ -21,19 +21,14 @@ export const CreateButton = () => {
 
     if (isClerkConfigured) {
       try {
-        const { useUser } = require('@clerk/clerk-react');
-        const { user, isLoaded } = useUser();
-        
-        if (!isLoaded) {
-          toast({
-            title: "Loading...",
-            description: "Please wait while we load your account information.",
-          });
-          return;
+        // Check if Clerk is actually available in the window
+        const clerkInstance = (window as any).__clerk;
+        if (clerkInstance && clerkInstance.user) {
+          userAuthenticated = true;
+          userId = clerkInstance.user.id;
+        } else {
+          userAuthenticated = isAuthenticated();
         }
-        
-        userAuthenticated = !!user?.id;
-        userId = user?.id;
       } catch (error) {
         console.warn('Clerk not available, checking fallback auth');
         userAuthenticated = isAuthenticated();

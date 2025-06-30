@@ -12,14 +12,15 @@ export const UserMenu = () => {
   const authenticated = isAuthenticated();
   const isClerkConfigured = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
   
-  // Check Clerk auth status if available
+  // Check Clerk auth status if available and properly configured
   let isClerkSignedIn = false;
   if (isClerkConfigured) {
     try {
-      // Only import and use Clerk hooks if Clerk is properly configured
-      const { useUser } = require('@clerk/clerk-react');
-      const { isSignedIn } = useUser();
-      isClerkSignedIn = isSignedIn;
+      // Check if Clerk is actually available in the window
+      const clerkInstance = (window as any).__clerk;
+      if (clerkInstance && clerkInstance.user) {
+        isClerkSignedIn = true;
+      }
     } catch (error) {
       console.warn('Clerk not available:', error);
       isClerkSignedIn = false;
