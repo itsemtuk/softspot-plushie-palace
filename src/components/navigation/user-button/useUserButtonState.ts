@@ -50,88 +50,22 @@ export const useUserButtonState = () => {
     };
   }, []);
 
-  // Load Clerk components dynamically if configured
+  // Load Clerk components dynamically if configured and available
   useEffect(() => {
     if (isClerkConfigured) {
-      // Import Clerk components
-      Promise.all([
-        import('@clerk/clerk-react'),
-        import('@/hooks/useClerkSync')
-      ]).then(([clerk, clerkSync]) => {
-        // Setup necessary functions
-        const { useUser, useClerk } = clerk;
-        const { useClerkSync } = clerkSync;
-        
-        // Create a temporary component to get hooks values
-        const TempComponent = () => {
-          const userValue = useUser();
-          const clerkValue = useClerk();
-          const syncValue = useClerkSync();
-          
-          // Store values in refs or state
-          setUser(userValue.user);
-          setSignOut(() => clerkValue.signOut);
-          setUpdateClerkProfile(() => syncValue.updateClerkProfile);
-          
-          return null;
-        };
-        
-        // Mark as loaded so the TempComponent can be rendered
+      // Check if we're actually in a Clerk context
+      const clerkInstance = (window as any).__clerk;
+      if (clerkInstance) {
         setIsClerkLoaded(true);
-        
-        // Cleanup function
-        return () => {
-          setIsClerkLoaded(false);
-        };
-      }).catch(error => {
-        console.error("Failed to load Clerk components:", error);
-      });
-    }
-  }, []);
-  
-  // This effect runs after Clerk is loaded and handles user status
-  useEffect(() => {
-    if (!user) return;
-    
-    // Get status from local storage first
-    const localStatus = getUserStatus();
-    setUserStatusState(localStatus);
-    
-    // Sync with Clerk metadata if different and if Clerk is available
-    if (isClerkConfigured && user && updateClerkProfile) {
-      const clerkStatus = user.unsafeMetadata?.status as string;
-      if (clerkStatus && clerkStatus !== localStatus) {
-        setUserStatus(clerkStatus as "online" | "offline" | "away" | "busy");
-      }
-      
-      // Update status to online when component mounts
-      if (!clerkStatus || clerkStatus !== localStatus) {
-        updateClerkProfile({
-          status: localStatus
+        setSignOut(() => async () => {
+          await clerkInstance.signOut();
         });
+      } else {
+        console.warn("Clerk is configured but not available in this context");
+        setIsClerkLoaded(false);
       }
     }
-
-    // Set status to offline when window is closed or navigated away
-    const handleBeforeUnload = () => {
-      setUserStatus("offline");
-      // Synchronously update clerk without waiting for promise
-      if (isClerkConfigured && user && updateClerkProfile) {
-        try {
-          updateClerkProfile({
-            status: "offline"
-          });
-        } catch (error) {
-          console.error("Failed to update status on unload", error);
-        }
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [user, updateClerkProfile]);
+  }, [isClerkConfigured]);
 
   const handleChangeStatus = async (newStatus: "online" | "offline" | "away" | "busy") => {
     setUserStatusState(newStatus);

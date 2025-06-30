@@ -1,12 +1,10 @@
 
-import { useClerk } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
 import { clearAuthState } from "@/utils/auth/authState";
 import { supabase } from "@/utils/supabase/client";
 
 export const useSignOut = () => {
-  const { signOut: clerkSignOut } = useClerk();
   const navigate = useNavigate();
 
   const handleSignOut = async () => {
@@ -16,9 +14,18 @@ export const useSignOut = () => {
       
       // Sign out from the appropriate provider
       if (isUsingClerk) {
-        // Call Clerk signOut if available
-        await clerkSignOut();
-        console.log("Signed out from Clerk");
+        // Only try to use Clerk if we're actually inside a ClerkProvider
+        try {
+          const { useClerk } = await import('@clerk/clerk-react');
+          // Check if we're in a Clerk context before using the hook
+          const clerkInstance = (window as any).__clerk;
+          if (clerkInstance) {
+            await clerkInstance.signOut();
+            console.log("Signed out from Clerk");
+          }
+        } catch (error) {
+          console.warn('Clerk signout failed, continuing with local cleanup:', error);
+        }
       } else if (authProvider === 'supabase') {
         // Sign out from Supabase
         const { error } = await supabase.auth.signOut();
