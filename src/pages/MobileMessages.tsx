@@ -1,6 +1,6 @@
 
 import { useState } from "react";
-import { ArrowLeft, Search, MoreVertical } from "lucide-react";
+import { ArrowLeft, Search, MoreVertical, Send } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -40,13 +40,14 @@ export default function MobileMessages() {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null);
+  const [messageText, setMessageText] = useState("");
 
   if (selectedConversation) {
     const conversation = mockConversations.find(c => c.id === selectedConversation);
     
     return (
       <MainLayout>
-        <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 pt-16">
           {/* Chat Header */}
           <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3">
             <Button
@@ -94,14 +95,16 @@ export default function MobileMessages() {
           </ScrollArea>
 
           {/* Message Input */}
-          <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+          <div className="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 pb-safe">
             <div className="flex items-center gap-2">
               <Input
                 placeholder="Type a message..."
+                value={messageText}
+                onChange={(e) => setMessageText(e.target.value)}
                 className="flex-1"
               />
               <Button size="sm" className="bg-softspot-500 hover:bg-softspot-600">
-                Send
+                <Send className="h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -112,7 +115,7 @@ export default function MobileMessages() {
 
   return (
     <MainLayout>
-      <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="flex flex-col h-screen bg-gray-50 dark:bg-gray-900 pt-16">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
           <div className="flex items-center gap-3 mb-4">

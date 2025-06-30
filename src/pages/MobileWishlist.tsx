@@ -1,12 +1,13 @@
 
 import { useState, useEffect } from "react";
-import { Heart, Search, Grid3X3, List, Plus } from "lucide-react";
+import { Heart, Search, Grid3X3, List, Plus, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import MainLayout from "@/components/layout/MainLayout";
+import { useNavigate } from "react-router-dom";
 
 interface WishlistItem {
   id: string;
@@ -42,6 +43,7 @@ const mockWishlistItems: WishlistItem[] = [
 ];
 
 export default function MobileWishlist() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [wishlistItems, setWishlistItems] = useState<WishlistItem[]>([]);
@@ -72,7 +74,7 @@ export default function MobileWishlist() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="flex items-center justify-center min-h-screen">
+        <div className="flex items-center justify-center min-h-screen pt-16">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500"></div>
         </div>
       </MainLayout>
@@ -81,14 +83,24 @@ export default function MobileWishlist() {
 
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-16 z-40">
           <div className="flex items-center justify-between mb-4">
-            <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Heart className="h-6 w-6 text-softspot-500" />
-              My Wishlist
-            </h1>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate(-1)}
+                className="h-10 w-10"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              <h1 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Heart className="h-6 w-6 text-softspot-500" />
+                My Wishlist
+              </h1>
+            </div>
             <Button size="sm" className="bg-softspot-500 hover:bg-softspot-600">
               <Plus className="h-4 w-4 mr-2" />
               Add Item
@@ -123,7 +135,7 @@ export default function MobileWishlist() {
         </div>
 
         {/* Content */}
-        <ScrollArea className="h-[calc(100vh-200px)]">
+        <ScrollArea className="h-[calc(100vh-240px)]">
           {filteredItems.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4">
               <Heart className="h-16 w-16 text-gray-300 dark:text-gray-600 mb-4" />

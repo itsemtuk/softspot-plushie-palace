@@ -34,8 +34,8 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
 
   if (!showTabs) {
     return (
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3 sticky top-0 z-10">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3 sticky top-16 z-10">
           <Button
             variant="ghost"
             size="sm"
@@ -59,8 +59,8 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-0 z-10">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+      <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-16 z-10">
         <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Settings</h1>
       </div>
       

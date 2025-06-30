@@ -1,82 +1,69 @@
-
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ClerkProvider } from '@clerk/clerk-react';
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/ui/theme-provider";
-import { ClerkProvider } from "@clerk/clerk-react";
-import { NotificationsProvider } from "@/contexts/NotificationsContext";
-import { useUserSync } from "@/hooks/useUserSync";
-import { useEffect } from "react";
-
-// Pages
 import Index from "./pages/Index";
 import Feed from "./pages/Feed";
-import Profile from "./pages/Profile";
 import UserProfile from "./pages/UserProfile";
-import Users from "./pages/Users";
+import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
-import BrandPage from "./pages/BrandPage";
-import About from "./pages/About";
-import Notifications from "./pages/Notifications";
-import MobileMarketplace from "./pages/MobileMarketplace";
-import MobileWishlist from "./pages/MobileWishlist";
+import SignIn from "./pages/SignIn";
 import MobileMessages from "./pages/MobileMessages";
+import MobileWishlist from "./pages/MobileWishlist";
+import MobileMarketplace from "./pages/MobileMarketplace";
 import Marketplace from "./pages/Marketplace";
-import SearchPage from "./pages/SearchPage";
+import SellItem from "./pages/SellItem";
+import About from "./pages/About";
+import Users from "./pages/Users";
+import { ClerkButtonComponent } from "@/components/navigation/user-button/ClerkIntegration";
+import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-const queryClient = new QueryClient();
+// Import your publishable key
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
-const PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
+if (!PUBLISHABLE_KEY) {
+  console.warn("Missing Clerk Publishable Key - authentication features may not work");
+}
 
 function AppContent() {
-  const { synced, error } = useUserSync();
-
-  useEffect(() => {
-    if (error) {
-      console.warn('User sync error:', error);
-    } else if (synced) {
-      console.log('User successfully synced to backend');
-    }
-  }, [synced, error]);
-
+  const isMobile = useIsMobile();
+  
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/feed" element={<Feed />} />
-      <Route path="/profile" element={<Profile />} />
-      <Route path="/user/:username" element={<UserProfile />} />
-      <Route path="/marketplace" element={<Marketplace />} />
-      <Route path="/users" element={<Users />} />
-      <Route path="/settings" element={<Settings />} />
-      <Route path="/brand/:brandId" element={<BrandPage />} />
-      <Route path="/wishlist" element={<MobileWishlist />} />
-      <Route path="/messages" element={<MobileMessages />} />
-      <Route path="/about" element={<About />} />
-      <Route path="/notifications" element={<Notifications />} />
-      <Route path="/search" element={<SearchPage />} />
-    </Routes>
+    <div className="App">
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/feed" element={<Feed />} />
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/user/:username" element={<UserProfile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/sign-in" element={<SignIn />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/users" element={<Users />} />
+        <Route path="/messages" element={<MobileMessages />} />
+        <Route path="/wishlist" element={<MobileWishlist />} />
+        <Route path="/marketplace" element={isMobile ? <MobileMarketplace /> : <Marketplace />} />
+        <Route path="/marketplace/sell" element={<SellItem />} />
+        <Route path="/sell" element={<SellItem />} />
+      </Routes>
+      <Toaster />
+      <ClerkButtonComponent />
+    </div>
   );
 }
 
 function App() {
   return (
-    <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-          <TooltipProvider>
-            <NotificationsProvider>
-              <Toaster />
-              <Sonner />
-              <BrowserRouter>
-                <AppContent />
-              </BrowserRouter>
-            </NotificationsProvider>
-          </TooltipProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
+    <EnhancedErrorBoundary>
+      <Router>
+        {PUBLISHABLE_KEY ? (
+          <ClerkProvider publishableKey={PUBLISHABLE_KEY}>
+            <AppContent />
+          </ClerkProvider>
+        ) : (
+          <AppContent />
+        )}
+      </Router>
+    </EnhancedErrorBoundary>
   );
 }
 

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, UserPlus, MessageSquare, MoreHorizontal } from "lucide-react";
@@ -184,6 +185,15 @@ const UserProfilePage = () => {
             <TabsTrigger value="posts" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
               Posts ({userPosts.length})
             </TabsTrigger>
+            <TabsTrigger value="market" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
+              Market
+            </TabsTrigger>
+            <TabsTrigger value="reviews" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
+              Reviews
+            </TabsTrigger>
+            <TabsTrigger value="badges" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
+              Badges
+            </TabsTrigger>
             <TabsTrigger value="about" className="flex items-center data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none">
               About
             </TabsTrigger>
@@ -207,6 +217,39 @@ const UserProfilePage = () => {
                   </p>
                 </div>
               )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="market">
+            <Card className="shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Marketplace Items
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                Items for sale by {userData.username || userData.first_name}
+              </p>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="reviews">
+            <Card className="shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Reviews & Ratings
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                No reviews yet
+              </p>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="badges">
+            <Card className="shadow-sm p-6">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                Achievement Badges
+              </h3>
+              <p className="text-gray-500 dark:text-gray-400">
+                No badges earned yet
+              </p>
             </Card>
           </TabsContent>
 

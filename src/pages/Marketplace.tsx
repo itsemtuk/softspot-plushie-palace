@@ -13,6 +13,9 @@ import { MarketplaceHero } from "@/components/marketplace/MarketplaceHero";
 import { MarketplaceNavigation } from "@/components/marketplace/MarketplaceNavigation";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Heart } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Marketplace = () => {
   const isMobile = useIsMobile();
@@ -149,6 +152,18 @@ const Marketplace = () => {
         
         {/* Navigation */}
         <MarketplaceNavigation onFilterToggle={toggleFilterDrawer} />
+        
+        {/* Mobile Wishlist Link */}
+        {isMobile && (
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4">
+            <Link to="/wishlist">
+              <Button variant="outline" className="w-full">
+                <Heart className="h-4 w-4 mr-2" />
+                View My Wishlist
+              </Button>
+            </Link>
+          </div>
+        )}
         
         <div className="max-w-7xl mx-auto px-4 py-6">
           {/* Controls */}
