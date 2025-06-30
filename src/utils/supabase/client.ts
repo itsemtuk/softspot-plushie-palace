@@ -138,7 +138,7 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
   try {
     console.log('Testing Supabase connection...');
     
-    const timeoutPromise = new Promise<Error>((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Connection timeout')), timeoutMs);
     });
     
@@ -147,15 +147,21 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
     try {
       const result = await Promise.race([queryPromise, timeoutPromise]);
       
-      // Type assertion since we know what type we expect
-      const { data, error } = result as { data: any; error: any };
-      
-      if (error) {
-        const handledError = handleSupabaseError(error);
-        console.warn('Supabase connection test failed:', handledError.message);
-        return false;
+      // Type guard to check if result has data and error properties
+      if (result && typeof result === 'object' && 'data' in result && 'error' in result) {
+        const { data, error } = result;
+        
+        if (error) {
+          const handledError = handleSupabaseError(error);
+          console.warn('Supabase connection test failed:', handledError.message);
+          return false;
+        }
+        
+        console.log('Supabase connection test successful');
+        return true;
       }
       
+      // If we can't determine the structure, assume success
       console.log('Supabase connection test successful');
       return true;
     } catch (err: any) {
