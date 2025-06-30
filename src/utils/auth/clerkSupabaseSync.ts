@@ -98,9 +98,9 @@ export const fetchUserDataByClerkId = async (clerkId: string) => {
     }
 
     return { data, error: null };
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fetching user data by Clerk ID:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
     return { data: null, error: errorMessage };
   }
 };
