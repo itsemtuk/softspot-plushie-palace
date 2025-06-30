@@ -94,12 +94,13 @@ export const fetchUserDataByClerkId = async (clerkId: string) => {
       .single();
 
     if (error) {
-      return { data: null, error: error.message };
+      return { data: null, error: error.message || "Unknown error occurred" };
     }
 
     return { data, error: null };
   } catch (error) {
     console.error("Error fetching user data by Clerk ID:", error);
-    return { data: null, error: error instanceof Error ? error.message : String(error) };
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    return { data: null, error: errorMessage };
   }
 };

@@ -1,6 +1,5 @@
 
 import React from "react";
-import { useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { UserButton } from "./UserButton";
@@ -10,10 +9,26 @@ import { MessageSquare } from "lucide-react";
 import { isAuthenticated } from "@/utils/auth/authState";
 
 export const UserMenu = () => {
-  const { isSignedIn } = useUser();
   const authenticated = isAuthenticated();
+  const isClerkConfigured = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+  
+  // Check Clerk auth status if available
+  let isClerkSignedIn = false;
+  if (isClerkConfigured) {
+    try {
+      // Only import and use Clerk hooks if Clerk is properly configured
+      const { useUser } = require('@clerk/clerk-react');
+      const { isSignedIn } = useUser();
+      isClerkSignedIn = isSignedIn;
+    } catch (error) {
+      console.warn('Clerk not available:', error);
+      isClerkSignedIn = false;
+    }
+  }
 
-  if (!isSignedIn && !authenticated) {
+  const isUserAuthenticated = isClerkSignedIn || authenticated;
+
+  if (!isUserAuthenticated) {
     return (
       <div className="flex items-center space-x-2">
         <Link to="/sign-in">

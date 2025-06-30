@@ -3,27 +3,46 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { useCreatePost } from "@/hooks/use-create-post";
-import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "@/components/ui/use-toast";
+import { isAuthenticated } from "@/utils/auth/authState";
 
 export const CreateButton = () => {
-  const { user, isLoaded } = useUser();
   const navigate = useNavigate();
   const { setIsPostCreationOpen } = useCreatePost();
+  const isClerkConfigured = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
   const handleCreatePost = () => {
     console.log("CreateButton: handleCreatePost called");
     
-    if (!isLoaded) {
-      toast({
-        title: "Loading...",
-        description: "Please wait while we load your account information.",
-      });
-      return;
+    // Check authentication status
+    let userAuthenticated = false;
+    let userId = null;
+
+    if (isClerkConfigured) {
+      try {
+        const { useUser } = require('@clerk/clerk-react');
+        const { user, isLoaded } = useUser();
+        
+        if (!isLoaded) {
+          toast({
+            title: "Loading...",
+            description: "Please wait while we load your account information.",
+          });
+          return;
+        }
+        
+        userAuthenticated = !!user?.id;
+        userId = user?.id;
+      } catch (error) {
+        console.warn('Clerk not available, checking fallback auth');
+        userAuthenticated = isAuthenticated();
+      }
+    } else {
+      userAuthenticated = isAuthenticated();
     }
 
-    if (!user?.id) {
+    if (!userAuthenticated) {
       console.log("User not authenticated, redirecting to sign in");
       toast({
         title: "Authentication Required",

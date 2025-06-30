@@ -43,8 +43,8 @@ export const UserButton = () => {
 
   return (
     <div className="relative">
-      {/* Hidden component to access Clerk hooks */}
-      {isClerkLoaded && <ClerkButtonComponent />}
+      {/* Only render ClerkButtonComponent when Clerk is configured and loaded */}
+      {isClerkConfigured && isClerkLoaded && <ClerkButtonComponent />}
       
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
