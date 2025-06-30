@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { withRetry } from '../retry';
 
@@ -146,21 +145,14 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
     
     const result = await Promise.race([queryPromise, timeoutPromise]);
     
-    // Check if result is an Error (from timeout) or a valid response
-    if (result instanceof Error) {
-      const handledError = handleSupabaseError(result);
+    // Since Promise.race will return the first resolved/rejected promise,
+    // we know result is from queryPromise if we reach this point
+    const { data, error } = result as any;
+    
+    if (error) {
+      const handledError = handleSupabaseError(error);
       console.warn('Supabase connection test failed:', handledError.message);
       return false;
-    }
-    
-    // Handle PostgrestSingleResponse type
-    if ('data' in result && 'error' in result) {
-      const { data, error } = result;
-      if (error) {
-        const handledError = handleSupabaseError(error);
-        console.warn('Supabase connection test failed:', handledError.message);
-        return false;
-      }
     }
     
     console.log('Supabase connection test successful');
