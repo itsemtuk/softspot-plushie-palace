@@ -1,4 +1,3 @@
-
 import { createClient } from '@supabase/supabase-js';
 import { withRetry } from '../retry';
 
@@ -138,7 +137,7 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
   try {
     console.log('Testing Supabase connection...');
     
-    const timeoutPromise = new Promise<never>((_, reject) => {
+    const timeoutPromise: Promise<never> = new Promise((_, reject) => {
       setTimeout(() => reject(new Error('Connection timeout')), timeoutMs);
     });
     
