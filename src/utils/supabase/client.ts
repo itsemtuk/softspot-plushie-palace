@@ -138,18 +138,29 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
   try {
     console.log('Testing Supabase connection...');
     
-    const timeoutPromise = new Promise<Error>((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Connection timeout')), timeoutMs);
     });
     
     const queryPromise = supabase.from('posts').select('count').limit(1);
     
-    const { data, error } = await Promise.race([queryPromise, timeoutPromise]);
+    const result = await Promise.race([queryPromise, timeoutPromise]);
     
-    if (error) {
-      const handledError = handleSupabaseError(error);
+    // Check if result is an Error (from timeout) or a valid response
+    if (result instanceof Error) {
+      const handledError = handleSupabaseError(result);
       console.warn('Supabase connection test failed:', handledError.message);
       return false;
+    }
+    
+    // Handle PostgrestSingleResponse type
+    if ('data' in result && 'error' in result) {
+      const { data, error } = result;
+      if (error) {
+        const handledError = handleSupabaseError(error);
+        console.warn('Supabase connection test failed:', handledError.message);
+        return false;
+      }
     }
     
     console.log('Supabase connection test successful');
