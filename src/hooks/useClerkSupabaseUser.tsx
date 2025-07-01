@@ -1,9 +1,8 @@
 
 import { useState, useEffect } from 'react';
-import { useUser } from '@clerk/clerk-react';
 import { supabase } from '@/integrations/supabase/client';
 
-export const useClerkSupabaseUser = (clerkUser: ReturnType<typeof useUser>['user']) => {
+export const useClerkSupabaseUser = (clerkUser: any) => {
   const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

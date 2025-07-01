@@ -138,7 +138,7 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
   try {
     console.log('Testing Supabase connection...');
     
-    const timeoutPromise = new Promise<void>((_, reject) => {
+    const timeoutPromise = new Promise<never>((_, reject) => {
       setTimeout(() => reject(new Error('Connection timeout')), timeoutMs);
     });
     

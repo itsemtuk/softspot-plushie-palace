@@ -1,10 +1,8 @@
 
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { toast } from "@/components/ui/use-toast";
-import { waitForAuth, safeCheckAuth } from "@/utils/auth/authHelpers";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle } from "lucide-react";
 
@@ -16,7 +14,29 @@ interface SellItemAuthGuardProps {
 export const SellItemAuthGuard = ({ children, onAuthReady }: SellItemAuthGuardProps) => {
   const navigate = useNavigate();
   const [isAuthChecking, setIsAuthChecking] = useState(true);
-  const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
+  const [clerkUser, setClerkUser] = useState<any>(null);
+  const [isClerkLoaded, setIsClerkLoaded] = useState(false);
+  
+  // Check if Clerk is available and get user
+  useEffect(() => {
+    const checkClerkAuth = () => {
+      try {
+        const clerkInstance = (window as any).__clerk;
+        if (clerkInstance) {
+          setClerkUser(clerkInstance.user);
+          setIsClerkLoaded(true);
+        } else {
+          setIsClerkLoaded(true);
+        }
+      } catch (error) {
+        console.error('Error checking Clerk auth:', error);
+        setIsClerkLoaded(true);
+      }
+    };
+
+    checkClerkAuth();
+  }, []);
+
   const { supabaseUserId, isLoading: isUserSyncLoading, error: syncError } = useClerkSupabaseUser(clerkUser);
 
   useEffect(() => {

@@ -18,14 +18,19 @@ export const useUserSync = () => {
     }
 
     try {
-      // Dynamic import of Clerk hooks only when needed
-      const { useUser } = await import('@clerk/clerk-react');
-      
-      // Since we can't use hooks conditionally, we'll handle this differently
-      // For now, just mark as synced when Clerk is not available
-      setSynced(true);
-      setError(null);
-      return true;
+      // Check if we're in a Clerk context before trying to use hooks
+      const clerkInstance = (window as any).__clerk;
+      if (clerkInstance && clerkInstance.user) {
+        // User is available, mark as synced
+        setSynced(true);
+        setError(null);
+        return true;
+      } else {
+        // No user available, mark as synced anyway
+        setSynced(true);
+        setError(null);
+        return true;
+      }
     } catch (err: any) {
       console.error('User sync error:', err);
       setError(err.message || 'Failed to sync user');

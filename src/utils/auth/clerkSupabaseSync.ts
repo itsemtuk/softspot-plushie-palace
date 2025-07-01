@@ -49,7 +49,6 @@ export const syncClerkUserToSupabase = async (clerkUser: ClerkUser): Promise<boo
     return true;
   } catch (error) {
     console.error("Failed to sync user to Supabase:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
     return false;
   }
 };
@@ -101,7 +100,7 @@ export const fetchUserDataByClerkId = async (clerkId: string): Promise<{ data: a
     return { data, error: null };
   } catch (error) {
     console.error("Error fetching user data by Clerk ID:", error);
-    const errorMessage = error instanceof Error ? error.message : String(error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
     return { data: null, error: errorMessage };
   }
 };
