@@ -6,15 +6,14 @@ import { SimpleConnectionStatus } from "@/components/ui/simple-connection-status
 import { SellItemAuthGuard } from "@/components/marketplace/sell/SellItemAuthGuard";
 import { SellItemFormWrapper } from "@/components/marketplace/sell/SellItemFormWrapper";
 import { SellItemAuthLoading, SellItemFormLoading } from "@/components/marketplace/sell/SellItemLoadingStates";
-import { useUser } from "@clerk/clerk-react";
-import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 
 const SellItemPageFixed = () => {
   const [isAuthReady, setIsAuthReady] = useState(false);
   const [isFormReady, setIsFormReady] = useState(false);
-  
-  const { user: clerkUser, isLoaded: isClerkLoaded } = useUser();
-  const { supabaseUserId, isLoading: isUserSyncLoading } = useClerkSupabaseUser(clerkUser);
+  const [clerkUser, setClerkUser] = useState<any>(null);
+  const [isClerkLoaded, setIsClerkLoaded] = useState(false);
+  const [supabaseUserId, setSupabaseUserId] = useState<string | null>(null);
+  const [isUserSyncLoading, setIsUserSyncLoading] = useState(true);
 
   const handleAuthReady = () => {
     setIsAuthReady(true);

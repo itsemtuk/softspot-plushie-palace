@@ -12,6 +12,16 @@ type ClerkUser = {
 };
 
 /**
+ * Helper function to handle unknown errors
+ */
+const handleError = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+};
+
+/**
  * Syncs Clerk user data to Supabase users table
  */
 export const syncClerkUserToSupabase = async (clerkUser: ClerkUser): Promise<boolean> => {
@@ -48,7 +58,7 @@ export const syncClerkUserToSupabase = async (clerkUser: ClerkUser): Promise<boo
     console.log("Successfully synced Clerk user to Supabase:", clerkUser.id);
     return true;
   } catch (error) {
-    console.error("Failed to sync user to Supabase:", error);
+    console.error("Failed to sync user to Supabase:", handleError(error));
     return false;
   }
 };
@@ -73,7 +83,7 @@ export const getSupabaseUserIdFromClerk = async (clerkId: string): Promise<strin
 
     return data?.id || null;
   } catch (error) {
-    console.error("Failed to get Supabase user ID:", error);
+    console.error("Failed to get Supabase user ID:", handleError(error));
     return null;
   }
 };
@@ -100,7 +110,6 @@ export const fetchUserDataByClerkId = async (clerkId: string): Promise<{ data: a
     return { data, error: null };
   } catch (error) {
     console.error("Error fetching user data by Clerk ID:", error);
-    const errorMessage = error instanceof Error ? error.message : "Unknown error occurred";
-    return { data: null, error: errorMessage };
+    return { data: null, error: handleError(error) };
   }
 };
