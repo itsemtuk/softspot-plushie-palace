@@ -51,6 +51,9 @@ export const supabase = (() => {
   return supabaseInstance;
 })();
 
+// Helper function to get the singleton Supabase instance
+export const getSupabase = () => supabase;
+
 // Check if Supabase is configured
 export const isSupabaseConfigured = () => {
   if (!supabaseUrl || !supabaseKey) {
