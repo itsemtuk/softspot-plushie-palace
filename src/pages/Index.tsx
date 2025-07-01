@@ -9,6 +9,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import Footer from "@/components/Footer";
 import { QuickActionsFAB } from "@/components/navigation/mobile/QuickActionsFAB";
 import { useEffect, useState } from "react";
+import { isAuthenticated } from "@/utils/auth/authState";
 
 const Index = () => {
   const isMobile = useIsMobile();
@@ -23,23 +24,41 @@ const Index = () => {
     const checkAuthStatus = async () => {
       if (isClerkAvailable) {
         try {
-          const { useUser } = await import('@clerk/clerk-react');
-          // We can't use hooks conditionally, so we'll use a different approach
-          // For now, assume not signed in when Clerk is available but we can't check
-          setIsSignedIn(false);
+          // Check if we're in a Clerk context
+          const clerkInstance = (window as any).__clerk;
+          if (clerkInstance && clerkInstance.user) {
+            setIsSignedIn(true);
+          } else {
+            // Fall back to centralized auth state
+            setIsSignedIn(isAuthenticated());
+          }
         } catch (error) {
-          console.error('Error checking Clerk auth:', error);
-          setIsSignedIn(false);
+          console.error('Error checking Clerk auth, using fallback:', error);
+          setIsSignedIn(isAuthenticated());
         }
       } else {
         // When Clerk is not available, check localStorage for auth status
-        const authStatus = localStorage.getItem('authStatus');
-        setIsSignedIn(authStatus === 'authenticated');
+        setIsSignedIn(isAuthenticated());
       }
       setIsLoaded(true);
     };
 
     checkAuthStatus();
+    
+    // Listen for auth state changes
+    const handleAuthChange = () => {
+      checkAuthStatus();
+    };
+    
+    window.addEventListener('storage', handleAuthChange);
+    window.addEventListener('clerk-auth-change', handleAuthChange);
+    window.addEventListener('auth-state-change', handleAuthChange);
+    
+    return () => {
+      window.removeEventListener('storage', handleAuthChange);
+      window.removeEventListener('clerk-auth-change', handleAuthChange);
+      window.removeEventListener('auth-state-change', handleAuthChange);
+    };
   }, [isClerkAvailable]);
 
   // Redirect signed-in mobile users to feed
