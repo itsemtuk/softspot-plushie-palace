@@ -18,7 +18,10 @@ const handleError = (error: unknown): string => {
   if (error instanceof Error) {
     return error.message;
   }
-  return String(error);
+  if (typeof error === 'string') {
+    return error;
+  }
+  return 'An unknown error occurred';
 };
 
 /**
@@ -58,7 +61,8 @@ export const syncClerkUserToSupabase = async (clerkUser: ClerkUser): Promise<boo
     console.log("Successfully synced Clerk user to Supabase:", clerkUser.id);
     return true;
   } catch (error) {
-    console.error("Failed to sync user to Supabase:", handleError(error));
+    const errorMessage = handleError(error);
+    console.error("Failed to sync user to Supabase:", errorMessage);
     return false;
   }
 };
@@ -83,7 +87,8 @@ export const getSupabaseUserIdFromClerk = async (clerkId: string): Promise<strin
 
     return data?.id || null;
   } catch (error) {
-    console.error("Failed to get Supabase user ID:", handleError(error));
+    const errorMessage = handleError(error);
+    console.error("Failed to get Supabase user ID:", errorMessage);
     return null;
   }
 };
@@ -109,7 +114,8 @@ export const fetchUserDataByClerkId = async (clerkId: string): Promise<{ data: a
 
     return { data, error: null };
   } catch (error) {
+    const errorMessage = handleError(error);
     console.error("Error fetching user data by Clerk ID:", error);
-    return { data: null, error: handleError(error) };
+    return { data: null, error: errorMessage };
   }
 };

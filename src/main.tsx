@@ -8,8 +8,10 @@ import "./index.css";
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 // Only import and use Clerk if the key is available
-if (CLERK_PUBLISHABLE_KEY) {
-  import('@clerk/clerk-react').then(({ ClerkProvider }) => {
+const renderWithClerk = async () => {
+  try {
+    const { ClerkProvider } = await import('@clerk/clerk-react');
+    
     ReactDOM.createRoot(document.getElementById("root")!).render(
       <React.StrictMode>
         <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
@@ -17,19 +19,23 @@ if (CLERK_PUBLISHABLE_KEY) {
         </ClerkProvider>
       </React.StrictMode>
     );
-  }).catch(() => {
-    // Fallback if Clerk fails to load
-    ReactDOM.createRoot(document.getElementById("root")!).render(
-      <React.StrictMode>
-        <App />
-      </React.StrictMode>
-    );
-  });
-} else {
-  // Render without Clerk if no key is provided
+  } catch (error) {
+    console.warn('Failed to load Clerk, rendering without authentication:', error);
+    renderWithoutClerk();
+  }
+};
+
+const renderWithoutClerk = () => {
   ReactDOM.createRoot(document.getElementById("root")!).render(
     <React.StrictMode>
       <App />
     </React.StrictMode>
   );
+};
+
+if (CLERK_PUBLISHABLE_KEY) {
+  renderWithClerk();
+} else {
+  console.warn('No Clerk publishable key found, rendering without authentication');
+  renderWithoutClerk();
 }
