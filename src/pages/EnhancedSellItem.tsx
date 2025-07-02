@@ -197,10 +197,43 @@ export default function EnhancedSellItem() {
 
       console.log("Listing created successfully:", result);
 
-      toast({
-        title: "Listing created!",
-        description: "Your item has been successfully listed on the marketplace."
-      });
+      // Ask if user wants to share to feed
+      const shareToFeed = window.confirm("Listing created successfully! Would you like to share this to your feed as well?");
+      
+      if (shareToFeed) {
+        try {
+          const { error: feedError } = await supabase
+            .from('feed_posts')
+            .insert([{
+              user_id: supabaseUserId,
+              title: data.title,
+              content: data.description,
+              description: data.description,
+              image: uploadedImageUrls[0] || null
+            }]);
+
+          if (feedError) {
+            console.error("Failed to share to feed:", feedError);
+            toast({
+              variant: "destructive",
+              title: "Listing created but failed to share to feed",
+              description: "Your item is listed but couldn't be shared to the feed."
+            });
+          } else {
+            toast({
+              title: "Success!",
+              description: "Your item has been listed and shared to the feed."
+            });
+          }
+        } catch (error) {
+          console.error("Error sharing to feed:", error);
+        }
+      } else {
+        toast({
+          title: "Listing created!",
+          description: "Your item has been successfully listed on the marketplace."
+        });
+      }
 
       // Reset form and navigate
       form.reset();
