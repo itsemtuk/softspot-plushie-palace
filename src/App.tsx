@@ -18,6 +18,7 @@ import Marketplace from "./pages/Marketplace";
 import SellItem from "./pages/SellItem";
 import About from "./pages/About";
 import Users from "./pages/Users";
+import BrandPage from "./pages/BrandPage";
 import { ClerkUserSync } from "@/components/auth/ClerkUserSync";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -46,6 +47,7 @@ function App() {
             <Route path="/messages" element={<MobileMessages />} />
             <Route path="/wishlist" element={<MobileWishlist />} />
             <Route path="/marketplace" element={isMobile ? <MobileMarketplace /> : <Marketplace />} />
+            <Route path="/marketplace/brands/:brandId" element={<BrandPage />} />
             <Route path="/marketplace/sell" element={<SellItem />} />
             <Route path="/sell" element={<SellItem />} />
           </Routes>
