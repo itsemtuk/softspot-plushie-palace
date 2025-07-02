@@ -94,6 +94,8 @@ export default function Feed() {
 
     try {
       console.log("Creating new feed post:", postData);
+      console.log("User:", user);
+      console.log("Supabase User ID:", supabaseUserId);
       
       // Insert into feed_posts table for the main feed
       const { data, error } = await supabase
@@ -110,6 +112,7 @@ export default function Feed() {
 
       if (error) {
         console.error("Failed to add feed post:", error);
+        console.error("Error details:", JSON.stringify(error, null, 2));
         toast({
           variant: "destructive",
           title: "Error",
@@ -117,6 +120,8 @@ export default function Feed() {
         });
         return;
       }
+
+      console.log("Feed post created successfully:", data);
 
       // Add to local state
       const newPost: ExtendedPost = {

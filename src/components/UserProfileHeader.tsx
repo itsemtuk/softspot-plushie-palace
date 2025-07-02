@@ -116,7 +116,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
   return (
     <Card className="mb-8 overflow-hidden">
-      <div className="bg-gradient-to-r from-softspot-100 to-purple-100 dark:from-softspot-900 dark:to-purple-900 px-6 py-8">
+      <div className="bg-gradient-to-r from-primary/10 to-accent/20 dark:from-primary/20 dark:to-accent/30 px-6 py-8">
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
           {/* Profile Picture */}
           <div className="flex-shrink-0">
@@ -135,14 +135,14 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                       const fallbackDiv = createSafeElement(
                         'div',
                         getInitials(displayName),
-                        'w-full h-full bg-softspot-500 flex items-center justify-center text-white text-xl font-semibold'
+                        'w-full h-full bg-primary flex items-center justify-center text-primary-foreground text-xl font-semibold'
                       );
                       safeReplaceElement(parent, fallbackDiv);
                     }
                   }}
                 />
               ) : (
-                <div className="w-full h-full bg-softspot-500 flex items-center justify-center text-white text-xl font-semibold">
+                <div className="w-full h-full bg-primary flex items-center justify-center text-primary-foreground text-xl font-semibold">
                   {getInitials(displayName)}
                 </div>
               )}
