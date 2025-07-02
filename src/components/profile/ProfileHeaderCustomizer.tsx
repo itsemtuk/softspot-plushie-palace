@@ -121,17 +121,21 @@ export const ProfileHeaderCustomizer: React.FC<ProfileHeaderCustomizerProps> = (
 
     setIsSaving(true);
     try {
-      const clerkToken = await getToken();
-      if (!clerkToken) {
-        throw new Error("Authentication required");
+      // Use the regular supabase client with user ID lookup
+      const { data: userData } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', user.id)
+        .single();
+
+      if (!userData) {
+        throw new Error("User not found");
       }
 
-      const authSupabase = createAuthenticatedSupabaseClient(clerkToken);
-      
-      const { error } = await authSupabase
+      const { error } = await supabase
         .from('profiles')
         .upsert({
-          user_uuid: userId,
+          user_uuid: userData.id,
           ...customization,
           updated_at: new Date().toISOString()
         });
