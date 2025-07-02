@@ -5,9 +5,9 @@ import { FeedHeader } from "@/components/feed/FeedHeader";
 import { FeedContent } from "@/components/feed/FeedContent";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { PostCreationData, ExtendedPost } from "@/types/core";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
 import { ImageFirstPostCreation } from "@/components/post/ImageFirstPostCreation";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { toast } from "@/hooks/use-toast";
 
@@ -18,6 +18,7 @@ export default function Feed() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { isPostCreationOpen, setIsPostCreationOpen } = useCreatePost();
   const { user } = useUser();
+  const { getToken } = useAuth();
   const { supabaseUserId } = useClerkSupabaseUser(user);
 
   const fetchAndSetPosts = useCallback(async () => {
@@ -97,8 +98,24 @@ export default function Feed() {
       console.log("User:", user);
       console.log("Supabase User ID:", supabaseUserId);
       
+      // Get Clerk JWT token
+      const clerkToken = await getToken({ template: "supabase" });
+      console.log("Clerk token obtained:", !!clerkToken);
+      
+      if (!clerkToken) {
+        toast({
+          variant: "destructive",
+          title: "Authentication error",
+          description: "Unable to get authentication token."
+        });
+        return;
+      }
+      
+      // Create authenticated Supabase client
+      const authSupabase = createAuthenticatedSupabaseClient(clerkToken);
+      
       // Insert into feed_posts table for the main feed
-      const { data, error } = await supabase
+      const { data, error } = await authSupabase
         .from('feed_posts')
         .insert([{
           user_id: supabaseUserId,

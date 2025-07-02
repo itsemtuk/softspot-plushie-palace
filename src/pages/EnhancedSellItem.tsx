@@ -17,8 +17,8 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { AuthGuard } from "@/utils/security/authGuard";
 import { ValidationSchemas } from "@/utils/security/inputValidation";
-import { supabase } from "@/integrations/supabase/client";
-import { useUser } from "@clerk/clerk-react";
+import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { toast } from "@/hooks/use-toast";
 
@@ -63,6 +63,7 @@ const STEPS = [
 export default function EnhancedSellItem() {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { getToken } = useAuth();
   const { supabaseUserId } = useClerkSupabaseUser(user);
   const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState<File[]>([]);
@@ -144,6 +145,22 @@ export default function EnhancedSellItem() {
     try {
       console.log("Starting submission with data:", data);
       
+      // Get Clerk JWT token
+      const clerkToken = await getToken({ template: "supabase" });
+      console.log("Clerk token obtained:", !!clerkToken);
+      
+      if (!clerkToken) {
+        toast({
+          variant: "destructive",
+          title: "Authentication error",
+          description: "Unable to get authentication token."
+        });
+        return;
+      }
+      
+      // Create authenticated Supabase client
+      const authSupabase = createAuthenticatedSupabaseClient(clerkToken);
+      
       // Upload images first
       const uploadedImageUrls = images.length > 0 ? await uploadImages() : [];
       
@@ -179,7 +196,7 @@ export default function EnhancedSellItem() {
 
       console.log("Inserting listing data:", listingData);
 
-      const { data: result, error } = await supabase
+      const { data: result, error } = await authSupabase
         .from('marketplace_listings')
         .insert([listingData])
         .select()
@@ -202,7 +219,7 @@ export default function EnhancedSellItem() {
       
       if (shareToFeed) {
         try {
-          const { error: feedError } = await supabase
+          const { error: feedError } = await authSupabase
             .from('feed_posts')
             .insert([{
               user_id: supabaseUserId,
