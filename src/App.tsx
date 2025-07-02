@@ -19,6 +19,8 @@ import SellItem from "./pages/SellItem";
 import About from "./pages/About";
 import Users from "./pages/Users";
 import BrandPage from "./pages/BrandPage";
+import EnhancedSellItem from "./pages/EnhancedSellItem";
+import EnhancedMessages from "./pages/EnhancedMessages";
 import { ClerkUserSync } from "@/components/auth/ClerkUserSync";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -44,12 +46,14 @@ function App() {
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/about" element={<About />} />
             <Route path="/users" element={<Users />} />
-            <Route path="/messages" element={<MobileMessages />} />
+            <Route path="/messages" element={<EnhancedMessages />} />
+            <Route path="/messages-old" element={<MobileMessages />} />
             <Route path="/wishlist" element={<MobileWishlist />} />
             <Route path="/marketplace" element={isMobile ? <MobileMarketplace /> : <Marketplace />} />
             <Route path="/marketplace/brands/:brandId" element={<BrandPage />} />
             <Route path="/marketplace/sell" element={<SellItem />} />
-            <Route path="/sell" element={<SellItem />} />
+            <Route path="/marketplace/sell-enhanced" element={<EnhancedSellItem />} />
+            <Route path="/sell" element={<EnhancedSellItem />} />
           </Routes>
           <Toaster />
           <ClerkUserSync />

@@ -39,6 +39,27 @@ export type Database = {
         }
         Relationships: []
       }
+      conversations: {
+        Row: {
+          created_at: string | null
+          id: string
+          last_message_at: string | null
+          participants: string[]
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          participants: string[]
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          last_message_at?: string | null
+          participants?: string[]
+        }
+        Relationships: []
+      }
       feed_posts: {
         Row: {
           content: string
@@ -131,6 +152,109 @@ export type Database = {
         }
         Relationships: []
       }
+      listing_bids: {
+        Row: {
+          bid_amount: number
+          bidder_id: string
+          created_at: string | null
+          id: string
+          listing_id: string
+        }
+        Insert: {
+          bid_amount: number
+          bidder_id: string
+          created_at?: string | null
+          id?: string
+          listing_id: string
+        }
+        Update: {
+          bid_amount?: number
+          bidder_id?: string
+          created_at?: string | null
+          id?: string
+          listing_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_bids_bidder_id_fkey"
+            columns: ["bidder_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_bids_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      listing_offers: {
+        Row: {
+          buyer_id: string
+          counter_offer_amount: number | null
+          created_at: string | null
+          expires_at: string | null
+          id: string
+          listing_id: string
+          message: string | null
+          offer_amount: number | null
+          seller_id: string
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_id: string
+          counter_offer_amount?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          listing_id: string
+          message?: string | null
+          offer_amount?: number | null
+          seller_id: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_id?: string
+          counter_offer_amount?: number | null
+          created_at?: string | null
+          expires_at?: string | null
+          id?: string
+          listing_id?: string
+          message?: string | null
+          offer_amount?: number | null
+          seller_id?: string
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "listing_offers_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_offers_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_offers_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       marketplace: {
         Row: {
           created_at: string | null
@@ -163,20 +287,164 @@ export type Database = {
           },
         ]
       }
-      messages: {
+      marketplace_listings: {
         Row: {
-          created_at: string
-          id: number
+          allows_offers: boolean | null
+          allows_trades: boolean | null
+          auction_end_time: string | null
+          bid_increment: number | null
+          brand: string | null
+          condition: string | null
+          created_at: string | null
+          current_bid: number | null
+          description: string | null
+          id: string
+          image_urls: string[] | null
+          listing_type: string
+          minimum_offer: number | null
+          preferred_trade_brands: string[] | null
+          price: number | null
+          status: string | null
+          title: string
+          trade_preferences: string | null
+          updated_at: string | null
+          user_id: string
         }
         Insert: {
-          created_at?: string
-          id?: number
+          allows_offers?: boolean | null
+          allows_trades?: boolean | null
+          auction_end_time?: string | null
+          bid_increment?: number | null
+          brand?: string | null
+          condition?: string | null
+          created_at?: string | null
+          current_bid?: number | null
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          listing_type?: string
+          minimum_offer?: number | null
+          preferred_trade_brands?: string[] | null
+          price?: number | null
+          status?: string | null
+          title: string
+          trade_preferences?: string | null
+          updated_at?: string | null
+          user_id: string
         }
         Update: {
-          created_at?: string
-          id?: number
+          allows_offers?: boolean | null
+          allows_trades?: boolean | null
+          auction_end_time?: string | null
+          bid_increment?: number | null
+          brand?: string | null
+          condition?: string | null
+          created_at?: string | null
+          current_bid?: number | null
+          description?: string | null
+          id?: string
+          image_urls?: string[] | null
+          listing_type?: string
+          minimum_offer?: number | null
+          preferred_trade_brands?: string[] | null
+          price?: number | null
+          status?: string | null
+          title?: string
+          trade_preferences?: string | null
+          updated_at?: string | null
+          user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "marketplace_listings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string | null
+          id: string
+          listing_offer_id: string | null
+          message_type: string | null
+          receiver_id: string
+          sender_id: string
+          shared_listing_id: string | null
+          trade_request_id: string | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          created_at?: string | null
+          id?: string
+          listing_offer_id?: string | null
+          message_type?: string | null
+          receiver_id: string
+          sender_id: string
+          shared_listing_id?: string | null
+          trade_request_id?: string | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string | null
+          id?: string
+          listing_offer_id?: string | null
+          message_type?: string | null
+          receiver_id?: string
+          sender_id?: string
+          shared_listing_id?: string | null
+          trade_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_listing_offer_id_fkey"
+            columns: ["listing_offer_id"]
+            isOneToOne: false
+            referencedRelation: "listing_offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_shared_listing_id_fkey"
+            columns: ["shared_listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_trade_request_id_fkey"
+            columns: ["trade_request_id"]
+            isOneToOne: false
+            referencedRelation: "trade_requests"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -505,44 +773,74 @@ export type Database = {
       }
       trade_requests: {
         Row: {
-          created_at: string
+          counter_offer_description: string | null
+          created_at: string | null
           id: string
-          listing_id: string
           message: string
+          offered_items_description: string | null
+          offered_listing_id: string | null
+          requested_items_description: string | null
+          requested_listing_id: string | null
           requester_id: string
-          seller_id: string
-          status: string
-          trade_offer: string
-          updated_at: string
+          status: string | null
+          target_user_id: string
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          counter_offer_description?: string | null
+          created_at?: string | null
           id?: string
-          listing_id: string
           message: string
+          offered_items_description?: string | null
+          offered_listing_id?: string | null
+          requested_items_description?: string | null
+          requested_listing_id?: string | null
           requester_id: string
-          seller_id: string
-          status?: string
-          trade_offer: string
-          updated_at?: string
+          status?: string | null
+          target_user_id: string
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          counter_offer_description?: string | null
+          created_at?: string | null
           id?: string
-          listing_id?: string
           message?: string
+          offered_items_description?: string | null
+          offered_listing_id?: string | null
+          requested_items_description?: string | null
+          requested_listing_id?: string | null
           requester_id?: string
-          seller_id?: string
-          status?: string
-          trade_offer?: string
-          updated_at?: string
+          status?: string | null
+          target_user_id?: string
+          updated_at?: string | null
         }
         Relationships: [
           {
-            foreignKeyName: "trade_requests_listing_id_fkey"
-            columns: ["listing_id"]
+            foreignKeyName: "trade_requests_offered_listing_id_fkey"
+            columns: ["offered_listing_id"]
             isOneToOne: false
-            referencedRelation: "posts"
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_requests_requested_listing_id_fkey"
+            columns: ["requested_listing_id"]
+            isOneToOne: false
+            referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_requests_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
         ]
