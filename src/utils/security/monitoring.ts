@@ -145,7 +145,7 @@ export const applySecurityHeaders = (): void => {
     if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
       const csp = document.createElement('meta');
       csp.httpEquiv = 'Content-Security-Policy';
-      csp.content = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co https://clerk.com https://*.clerk.accounts.dev; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:;";
+      csp.content = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; connect-src 'self' https://*.supabase.co wss://*.supabase.co https://clerk.com https://*.clerk.accounts.dev https://o268291.ingest.sentry.io; frame-src 'self' https://challenges.cloudflare.com; worker-src 'self' blob:;";
       document.head.appendChild(csp);
     }
     
