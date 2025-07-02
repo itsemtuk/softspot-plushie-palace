@@ -7,11 +7,10 @@ let currentAuthState = {
   provider: null as 'clerk' | 'supabase' | null
 };
 
-// Check if we're using Clerk based on environment and localStorage
+// Clerk is the primary authentication method
 const isUsingClerk = () => {
   const hasClerkKey = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-  const storedPreference = localStorage.getItem('usingClerk') === 'true';
-  return hasClerkKey && storedPreference;
+  return hasClerkKey; // Always use Clerk when available
 };
 
 // Enhanced authentication check with better error handling
@@ -163,7 +162,7 @@ const initializeAuthState = () => {
       isAuthenticated: true,
       userId,
       username: localStorage.getItem('currentUsername'),
-      provider: localStorage.getItem('authProvider') as 'clerk' | 'supabase' || (isUsingClerk() ? 'clerk' : 'supabase')
+      provider: localStorage.getItem('authProvider') as 'clerk' | 'supabase' || 'clerk'
     };
   }
 };

@@ -14,7 +14,6 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasClerkError, setHasClerkError] = useState(false);
   const navigate = useNavigate();
-  const [isUsingClerk, setIsUsingClerk] = useState(true); // Default to Clerk
   const [isSignedIn, setIsSignedIn] = useState(false);
   
   // Check if Clerk is available
@@ -52,16 +51,6 @@ const SignIn = () => {
       navigate('/feed', { replace: true });
     }
   }, [isLoading, isSignedIn, navigate]);
-
-  const toggleAuthProvider = (newValue: boolean) => {
-    try {
-      localStorage.setItem('usingClerk', newValue.toString());
-      setIsUsingClerk(newValue);
-      setHasClerkError(false);
-    } catch (error) {
-      console.error("Error switching auth provider:", error);
-    }
-  };
   
   if (isLoading) {
     return (
@@ -89,8 +78,6 @@ const SignIn = () => {
         )}
         
         <SignInCard 
-          isUsingClerk={isUsingClerk && isClerkAvailable}
-          onToggleAuth={toggleAuthProvider}
           isMobile={isMobile}
         />
         <SignInPromotional />

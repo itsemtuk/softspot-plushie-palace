@@ -3,18 +3,12 @@ import { FC } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ClerkSignInComponent } from './ClerkSignInComponent';
-import { SupabaseSignInButton } from './SupabaseSignInButton';
-import { AuthToggle } from './AuthToggle';
 
 interface SignInCardProps {
-  isUsingClerk: boolean;
-  onToggleAuth: (useClerk: boolean) => void;
   isMobile: boolean;
 }
 
 export const SignInCard: FC<SignInCardProps> = ({ 
-  isUsingClerk, 
-  onToggleAuth,
   isMobile 
 }) => {
   const cardStyles = isMobile ? "border-softspot-200 shadow-lg mx-4" : "border-softspot-200 shadow-lg";
@@ -35,11 +29,7 @@ export const SignInCard: FC<SignInCardProps> = ({
       </CardHeader>
       
       <CardContent>
-        {isUsingClerk ? (
-          <ClerkSignInComponent />
-        ) : (
-          <SupabaseSignInButton />
-        )}
+        <ClerkSignInComponent />
       </CardContent>
       
       <CardFooter className="flex flex-col items-center gap-4 border-t pt-6">
@@ -50,12 +40,6 @@ export const SignInCard: FC<SignInCardProps> = ({
         >
           Sign up for free
         </Link>
-        
-        {/* Toggle between auth providers */}
-        <AuthToggle 
-          isUsingClerk={isUsingClerk}
-          onToggle={onToggleAuth}
-        />
       </CardFooter>
     </Card>
   );
