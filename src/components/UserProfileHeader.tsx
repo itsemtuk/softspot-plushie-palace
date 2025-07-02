@@ -88,9 +88,11 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
   // Use Clerk user's image if this is own profile and no Supabase avatar
   const getProfileImage = () => {
-    if (isOwnProfile && clerkUser?.imageUrl && !userInfo.avatar_url) {
+    // Always prefer Clerk image for own profile if available
+    if (isOwnProfile && clerkUser?.imageUrl) {
       return clerkUser.imageUrl;
     }
+    // Otherwise use Supabase avatar_url
     return userInfo.avatar_url;
   };
 

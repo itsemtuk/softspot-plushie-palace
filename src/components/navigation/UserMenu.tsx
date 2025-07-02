@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { UserButton } from "./UserButton";
 import { NotificationsDropdown } from "./NotificationsDropdown";
-import { CreateButton } from "./CreateButton";
+import { CreateDropdown } from "./CreateDropdown";
 import { MessageSquare } from "lucide-react";
 import { isAuthenticated } from "@/utils/auth/authState";
 
@@ -56,7 +56,7 @@ export const UserMenu = () => {
       </Link>
       
       <NotificationsDropdown />
-      <CreateButton />
+      <CreateDropdown />
       <UserButton />
     </div>
   );
