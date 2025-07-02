@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { ArrowLeft, Upload, DollarSign, Clock, Handshake, Gavel } from "lucide-react";
+import { ArrowLeft, Upload, DollarSign, Clock, Handshake, Gavel, Check, Camera, Package, Tag, MapPin, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,10 +11,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { AuthGuard } from "@/utils/security/authGuard";
 import { ValidationSchemas } from "@/utils/security/inputValidation";
+import { supabase } from "@/integrations/supabase/client";
+import { useUser } from "@clerk/clerk-react";
+import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
+import { toast } from "@/components/ui/use-toast";
 
 const enhancedSellItemSchema = z.object({
   title: ValidationSchemas.postTitle,
@@ -29,8 +35,6 @@ const enhancedSellItemSchema = z.object({
   species: z.string().min(1, "Animal/character type is required"),
   material: z.string().min(1, "Material is required"),
   filling: z.string().min(1, "Filling type is required"),
-  feel: z.string().min(1, "Feel/texture is required"),
-  location: z.string().min(1, "Location is required"),
   
   // Enhanced selling options
   listingType: z.enum(['fixed_price', 'negotiable', 'auction', 'trade_only']),
@@ -49,30 +53,41 @@ const enhancedSellItemSchema = z.object({
 
 type EnhancedSellItemFormData = z.infer<typeof enhancedSellItemSchema>;
 
+const STEPS = [
+  { id: 1, title: "Photos", icon: Camera, description: "Add photos of your plushie" },
+  { id: 2, title: "Details", icon: Package, description: "Tell us about your item" },
+  { id: 3, title: "Pricing", icon: Tag, description: "Set your price and terms" },
+  { id: 4, title: "Review", icon: Sparkles, description: "Review and publish" }
+];
+
 export default function EnhancedSellItem() {
   const navigate = useNavigate();
+  const { user } = useUser();
+  const { supabaseUserId } = useClerkSupabaseUser(user);
+  const [currentStep, setCurrentStep] = useState(1);
   const [images, setImages] = useState<File[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string>("");
   
   const colorOptions = [
-    { name: 'White', value: 'white', hex: '#FFFFFF' },
-    { name: 'Cream', value: 'cream', hex: '#F5F5DC' },
-    { name: 'Beige', value: 'beige', hex: '#F5F5DC' },
-    { name: 'Brown', value: 'brown', hex: '#8B4513' },
-    { name: 'Light Brown', value: 'light-brown', hex: '#DEB887' },
-    { name: 'Dark Brown', value: 'dark-brown', hex: '#654321' },
-    { name: 'Black', value: 'black', hex: '#000000' },
-    { name: 'Gray', value: 'gray', hex: '#808080' },
-    { name: 'Pink', value: 'pink', hex: '#FFC0CB' },
-    { name: 'Purple', value: 'purple', hex: '#800080' },
-    { name: 'Blue', value: 'blue', hex: '#0000FF' },
-    { name: 'Light Blue', value: 'light-blue', hex: '#87CEEB' },
-    { name: 'Green', value: 'green', hex: '#008000' },
-    { name: 'Yellow', value: 'yellow', hex: '#FFFF00' },
-    { name: 'Orange', value: 'orange', hex: '#FFA500' },
-    { name: 'Red', value: 'red', hex: '#FF0000' },
-    { name: 'Rainbow', value: 'rainbow', hex: 'linear-gradient(45deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080)' },
-    { name: 'Multi-colored', value: 'multi', hex: '#FFB6C1' },
+    { name: 'White', value: 'white', hex: 'hsl(0, 0%, 100%)' },
+    { name: 'Cream', value: 'cream', hex: 'hsl(43, 13%, 90%)' },
+    { name: 'Beige', value: 'beige', hex: 'hsl(43, 13%, 90%)' },
+    { name: 'Brown', value: 'brown', hex: 'hsl(25, 75%, 47%)' },
+    { name: 'Light Brown', value: 'light-brown', hex: 'hsl(33, 43%, 67%)' },
+    { name: 'Dark Brown', value: 'dark-brown', hex: 'hsl(30, 67%, 25%)' },
+    { name: 'Black', value: 'black', hex: 'hsl(0, 0%, 0%)' },
+    { name: 'Gray', value: 'gray', hex: 'hsl(0, 0%, 50%)' },
+    { name: 'Pink', value: 'pink', hex: 'hsl(349, 100%, 88%)' },
+    { name: 'Purple', value: 'purple', hex: 'hsl(300, 100%, 25%)' },
+    { name: 'Blue', value: 'blue', hex: 'hsl(240, 100%, 50%)' },
+    { name: 'Light Blue', value: 'light-blue', hex: 'hsl(197, 71%, 73%)' },
+    { name: 'Green', value: 'green', hex: 'hsl(120, 100%, 25%)' },
+    { name: 'Yellow', value: 'yellow', hex: 'hsl(60, 100%, 50%)' },
+    { name: 'Orange', value: 'orange', hex: 'hsl(39, 100%, 50%)' },
+    { name: 'Red', value: 'red', hex: 'hsl(0, 100%, 50%)' },
+    { name: 'Multi-colored', value: 'multi', hex: 'hsl(349, 100%, 88%)' },
   ];
   
   const form = useForm<EnhancedSellItemFormData>({
@@ -88,526 +103,718 @@ export default function EnhancedSellItem() {
   const allowsOffers = form.watch('allowsOffers');
   const allowsTrades = form.watch('allowsTrades');
 
+  const uploadImages = async () => {
+    const uploadedUrls: string[] = [];
+    
+    for (const image of images) {
+      const fileExt = image.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      
+      const { data, error } = await supabase.storage
+        .from('uploads')
+        .upload(fileName, image);
+        
+      if (error) {
+        console.error('Upload error:', error);
+        throw new Error(`Failed to upload ${image.name}`);
+      }
+      
+      const { data: urlData } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(fileName);
+        
+      uploadedUrls.push(urlData.publicUrl);
+    }
+    
+    return uploadedUrls;
+  };
+
   const handleSubmit = async (data: EnhancedSellItemFormData) => {
-    console.log("Enhanced form submitted:", data);
-    // TODO: Submit to backend
+    if (!user || !supabaseUserId) {
+      toast({
+        variant: "destructive",
+        title: "Authentication required",
+        description: "Please sign in to create listings."
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    try {
+      console.log("Starting submission with data:", data);
+      
+      // Upload images first
+      const uploadedImageUrls = images.length > 0 ? await uploadImages() : [];
+      
+      // Prepare listing data for marketplace_listings table
+      const listingData: any = {
+        user_id: supabaseUserId,
+        title: data.title,
+        description: data.description,
+        brand: data.brand,
+        condition: data.condition,
+        listing_type: data.listingType,
+        image_urls: uploadedImageUrls,
+        allows_offers: data.allowsOffers,
+        allows_trades: data.allowsTrades,
+        minimum_offer: data.minimumOffer,
+        bid_increment: data.bidIncrement,
+        trade_preferences: data.tradePreferences,
+        preferred_trade_brands: data.preferredTradeBrands || [],
+        status: 'active'
+      };
+
+      // Add price for non-trade-only listings
+      if (data.listingType !== 'trade_only' && data.price) {
+        listingData.price = data.price;
+      }
+
+      // Add auction end time if it's an auction
+      if (data.listingType === 'auction' && data.auctionDuration) {
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + data.auctionDuration);
+        listingData.auction_end_time = endDate.toISOString();
+      }
+
+      console.log("Inserting listing data:", listingData);
+
+      const { data: result, error } = await supabase
+        .from('marketplace_listings')
+        .insert([listingData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Database error:", error);
+        toast({
+          variant: "destructive",
+          title: "Failed to create listing",
+          description: error.message || "Please try again."
+        });
+        return;
+      }
+
+      console.log("Listing created successfully:", result);
+
+      toast({
+        title: "Listing created!",
+        description: "Your item has been successfully listed on the marketplace."
+      });
+
+      // Reset form and navigate
+      form.reset();
+      setImages([]);
+      setImageUrls([]);
+      setCurrentStep(1);
+      navigate('/marketplace');
+
+    } catch (error) {
+      console.error("Error creating listing:", error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "An unexpected error occurred while creating your listing."
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
       const newImages = Array.from(e.target.files);
-      setImages(prev => [...prev, ...newImages].slice(0, 5));
+      const totalImages = images.length + newImages.length;
+      
+      if (totalImages > 5) {
+        toast({
+          variant: "destructive",
+          title: "Too many images",
+          description: "You can upload a maximum of 5 images."
+        });
+        return;
+      }
+      
+      setImages(prev => [...prev, ...newImages]);
+      
+      // Create preview URLs
+      newImages.forEach(image => {
+        const url = URL.createObjectURL(image);
+        setImageUrls(prev => [...prev, url]);
+      });
     }
   };
+
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index));
+    URL.revokeObjectURL(imageUrls[index]);
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const nextStep = () => {
+    if (currentStep < STEPS.length) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const prevStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const progress = (currentStep / STEPS.length) * 100;
 
   return (
     <AuthGuard requireAuth>
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
-          {/* Mobile-optimized Header */}
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 sticky top-16 z-40">
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => navigate(-1)}
-                className="h-9 w-9 lg:h-10 lg:w-10"
-              >
-                <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
-              </Button>
-              <div>
-                <h1 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
-                  Create Listing
-                </h1>
-                <p className="text-xs text-gray-500 dark:text-gray-400 lg:hidden">
-                  Fill in details to list your item
-                </p>
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 pt-16">
+          {/* Header with Progress */}
+          <div className="bg-background/80 backdrop-blur-lg border-b border-border/50 p-4 sticky top-16 z-40">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-center gap-3 mb-4">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => navigate(-1)}
+                  className="h-10 w-10"
+                >
+                  <ArrowLeft className="h-5 w-5" />
+                </Button>
+                <div className="flex-1">
+                  <h1 className="text-xl font-bold text-foreground">
+                    Create Your Listing
+                  </h1>
+                  <p className="text-sm text-muted-foreground">
+                    Step {currentStep} of {STEPS.length} - {STEPS[currentStep - 1]?.description}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Progress Bar */}
+              <div className="space-y-2">
+                <Progress value={progress} className="h-2" />
+                <div className="flex justify-between">
+                  {STEPS.map((step, index) => {
+                    const isActive = currentStep === step.id;
+                    const isCompleted = currentStep > step.id;
+                    const Icon = step.icon;
+                    
+                    return (
+                      <div key={step.id} className="flex flex-col items-center gap-1">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
+                          isCompleted 
+                            ? 'bg-primary text-primary-foreground' 
+                            : isActive 
+                              ? 'bg-primary/20 text-primary border-2 border-primary' 
+                              : 'bg-muted text-muted-foreground'
+                        }`}>
+                          {isCompleted ? (
+                            <Check className="h-4 w-4" />
+                          ) : (
+                            <Icon className="h-4 w-4" />
+                          )}
+                        </div>
+                        <span className={`text-xs font-medium ${
+                          isActive ? 'text-primary' : 'text-muted-foreground'
+                        }`}>
+                          {step.title}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
 
-          <div className="max-w-2xl mx-auto p-3 lg:p-4 space-y-4 lg:space-y-6 pb-20">
-            {/* Mobile-optimized Listing Type Selection */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg">How would you like to sell?</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <RadioGroup
-                  value={listingType}
-                  onValueChange={(value: any) => form.setValue('listingType', value)}
-                  className="grid grid-cols-1 lg:grid-cols-2 gap-3"
-                >
-                  <div className="flex items-center space-x-3 p-3 lg:p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <RadioGroupItem value="fixed_price" id="fixed_price" />
-                    <div className="flex items-center gap-2 flex-1">
-                      <DollarSign className="h-4 w-4 text-green-600 flex-shrink-0" />
-                      <Label htmlFor="fixed_price" className="cursor-pointer flex-1">
-                        <div className="font-medium text-sm lg:text-base">Fixed Price</div>
-                        <div className="text-xs lg:text-sm text-gray-500">Set a price and sell immediately</div>
-                      </Label>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 p-3 lg:p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <RadioGroupItem value="negotiable" id="negotiable" />
-                    <div className="flex items-center gap-2 flex-1">
-                      <Handshake className="h-4 w-4 text-blue-600 flex-shrink-0" />
-                      <Label htmlFor="negotiable" className="cursor-pointer flex-1">
-                        <div className="font-medium text-sm lg:text-base">Negotiable</div>
-                        <div className="text-xs lg:text-sm text-gray-500">Accept offers from buyers</div>
-                      </Label>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 p-3 lg:p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <RadioGroupItem value="auction" id="auction" />
-                    <div className="flex items-center gap-2 flex-1">
-                      <Gavel className="h-4 w-4 text-purple-600 flex-shrink-0" />
-                      <Label htmlFor="auction" className="cursor-pointer flex-1">
-                        <div className="font-medium text-sm lg:text-base">Auction</div>
-                        <div className="text-xs lg:text-sm text-gray-500">Let buyers bid on your item</div>
-                      </Label>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center space-x-3 p-3 lg:p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
-                    <RadioGroupItem value="trade_only" id="trade_only" />
-                    <div className="flex items-center gap-2 flex-1">
-                      <Handshake className="h-4 w-4 text-orange-600 flex-shrink-0" />
-                      <Label htmlFor="trade_only" className="cursor-pointer flex-1">
-                        <div className="font-medium text-sm lg:text-base">Trade Only</div>
-                        <div className="text-xs lg:text-sm text-gray-500">Only accept trades, no money</div>
-                      </Label>
-                    </div>
-                  </div>
-                </RadioGroup>
-              </CardContent>
-            </Card>
-
-            {/* Main Form */}
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 lg:space-y-6">
-              {/* Mobile-optimized Image Upload */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Photos</CardTitle>
-                  <p className="text-sm text-gray-500">Add up to 5 high-quality photos</p>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <input
-                      type="file"
-                      multiple
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <label
-                      htmlFor="image-upload"
-                      className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 lg:p-8 text-center hover:border-softspot-300 transition-colors cursor-pointer block"
-                    >
-                      <Upload className="h-8 w-8 lg:h-12 lg:w-12 text-gray-400 mx-auto mb-2 lg:mb-4" />
-                      <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
-                        Click to upload photos or drag and drop
-                      </p>
-                      <p className="text-xs lg:text-sm text-gray-500 mt-1 lg:mt-2">
-                        Add up to 5 photos ({images.length}/5)
-                      </p>
-                    </label>
-                    
-                    {images.length > 0 && (
-                      <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
-                        {images.map((image, index) => (
-                          <div key={index} className="relative">
-                            <img
-                              src={URL.createObjectURL(image)}
-                              alt={`Upload ${index + 1}`}
-                              className="w-full h-16 lg:h-20 object-cover rounded-lg"
-                            />
-                            <Button
-                              type="button"
-                              variant="destructive"
-                              size="sm"
-                              className="absolute -top-1 -right-1 lg:-top-2 lg:-right-2 h-5 w-5 lg:h-6 lg:w-6 p-0 rounded-full text-xs"
-                              onClick={() => setImages(prev => prev.filter((_, i) => i !== index))}
-                            >
-                              ×
-                            </Button>
-                          </div>
-                        ))}
+          <div className="max-w-4xl mx-auto p-4 space-y-6 pb-20">
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+              
+              {/* Step 1: Photos */}
+              {currentStep === 1 && (
+                <Card className="animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Camera className="h-6 w-6 text-primary" />
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Mobile-optimized Basic Info */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-lg">Item Details</CardTitle>
-                  <p className="text-sm text-gray-500">Tell buyers about your plushie</p>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <Label htmlFor="title" className="text-sm font-medium">Title *</Label>
-                    <Input
-                      id="title"
-                      placeholder="e.g., Jellycat Bashful Bunny - Medium"
-                      className="mt-1"
-                      {...form.register('title')}
-                    />
-                    {form.formState.errors.title && (
-                      <p className="text-sm text-red-600 mt-1">{form.formState.errors.title.message}</p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="description" className="text-sm font-medium">Description</Label>
-                    <Textarea
-                      id="description"
-                      placeholder="Describe your plushie's condition, history, and any special features..."
-                      className="mt-1 min-h-[80px]"
-                      {...form.register('description')}
-                    />
-                    {form.formState.errors.description && (
-                      <p className="text-sm text-red-600 mt-1">{form.formState.errors.description.message}</p>
-                    )}
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium">Brand</Label>
-                      <Select onValueChange={(value) => form.setValue('brand', value)}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select brand" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="jellycat">Jellycat</SelectItem>
-                          <SelectItem value="squishmallows">Squishmallows</SelectItem>
-                          <SelectItem value="build-a-bear">Build-A-Bear</SelectItem>
-                          <SelectItem value="sanrio">Sanrio</SelectItem>
-                          <SelectItem value="disney">Disney</SelectItem>
-                          <SelectItem value="pokemon">Pokemon</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium">Condition</Label>
-                      <Select onValueChange={(value: any) => form.setValue('condition', value)}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select condition" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="new">New with tags</SelectItem>
-                          <SelectItem value="like-new">Like new</SelectItem>
-                          <SelectItem value="good">Good</SelectItem>
-                          <SelectItem value="fair">Fair</SelectItem>
-                          <SelectItem value="poor">Poor</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium">Size</Label>
-                      <Select onValueChange={(value) => form.setValue('size', value)}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select size" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="mini">Mini (0-6 inches)</SelectItem>
-                          <SelectItem value="small">Small (7-12 inches)</SelectItem>
-                          <SelectItem value="medium">Medium (13-18 inches)</SelectItem>
-                          <SelectItem value="large">Large (19-24 inches)</SelectItem>
-                          <SelectItem value="xlarge">X-Large (25+ inches)</SelectItem>
-                          <SelectItem value="giant">Giant (36+ inches)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label className="text-sm font-medium">Animal/Character Type</Label>
-                      <Select onValueChange={(value) => form.setValue('species', value)}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="bear">Bear</SelectItem>
-                          <SelectItem value="bunny">Bunny/Rabbit</SelectItem>
-                          <SelectItem value="cat">Cat</SelectItem>
-                          <SelectItem value="dog">Dog</SelectItem>
-                          <SelectItem value="elephant">Elephant</SelectItem>
-                          <SelectItem value="unicorn">Unicorn</SelectItem>
-                          <SelectItem value="dragon">Dragon</SelectItem>
-                          <SelectItem value="panda">Panda</SelectItem>
-                          <SelectItem value="penguin">Penguin</SelectItem>
-                          <SelectItem value="lamb">Lamb</SelectItem>
-                          <SelectItem value="duck">Duck</SelectItem>
-                          <SelectItem value="fox">Fox</SelectItem>
-                          <SelectItem value="sloth">Sloth</SelectItem>
-                          <SelectItem value="octopus">Octopus</SelectItem>
-                          <SelectItem value="dinosaur">Dinosaur</SelectItem>
-                          <SelectItem value="pokemon">Pokemon</SelectItem>
-                          <SelectItem value="sanrio">Sanrio Character</SelectItem>
-                          <SelectItem value="disney">Disney Character</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Mobile-optimized Color Selection with Swatches */}
-                  <div>
-                    <Label className="text-sm font-medium mb-3 block">Color</Label>
-                    <div className="grid grid-cols-4 lg:grid-cols-6 gap-2 lg:gap-3">
-                      {colorOptions.map((color) => (
-                        <button
-                          key={color.value}
-                          type="button"
-                          onClick={() => {
-                            setSelectedColor(color.value);
-                            form.setValue('color', color.value);
-                          }}
-                          className={`flex flex-col items-center p-2 rounded-lg border-2 transition-all hover:scale-105 ${
-                            selectedColor === color.value 
-                              ? 'border-softspot-500 bg-softspot-50 dark:bg-softspot-900/20' 
-                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
-                          }`}
-                        >
-                          <div 
-                            className="w-6 h-6 lg:w-8 lg:h-8 rounded-full border-2 border-gray-300 mb-1"
-                            style={{ 
-                              background: color.value === 'rainbow' 
-                                ? color.hex 
-                                : color.hex,
-                              border: color.value === 'white' ? '2px solid #e5e7eb' : 'none'
-                            }}
-                          />
-                          <span className="text-xs text-center leading-tight">{color.name}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm font-medium">Material</Label>
-                      <Select onValueChange={(value) => form.setValue('material', value)}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue placeholder="Select material" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="polyester">Polyester</SelectItem>
-                          <SelectItem value="cotton">Cotton</SelectItem>
-                          <SelectItem value="velvet">Velvet</SelectItem>
-                          <SelectItem value="fleece">Fleece</SelectItem>
-                          <SelectItem value="minky">Minky</SelectItem>
-                          <SelectItem value="faux-fur">Faux Fur</SelectItem>
-                          <SelectItem value="chenille">Chenille</SelectItem>
-                          <SelectItem value="sherpa">Sherpa</SelectItem>
-                          <SelectItem value="bamboo">Bamboo</SelectItem>
-                          <SelectItem value="organic-cotton">Organic Cotton</SelectItem>
-                          <SelectItem value="mixed">Mixed Materials</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label>Filling</Label>
-                      <Select onValueChange={(value) => form.setValue('filling', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select filling" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="polyester-fiberfill">Polyester Fiberfill</SelectItem>
-                          <SelectItem value="memory-foam">Memory Foam</SelectItem>
-                          <SelectItem value="bean-pellets">Bean Pellets</SelectItem>
-                          <SelectItem value="plastic-pellets">Plastic Pellets</SelectItem>
-                          <SelectItem value="rice">Rice</SelectItem>
-                          <SelectItem value="lavender">Lavender</SelectItem>
-                          <SelectItem value="recycled-filling">Recycled Filling</SelectItem>
-                          <SelectItem value="mixed">Mixed Filling</SelectItem>
-                          <SelectItem value="other">Other</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Feel/Texture</Label>
-                      <Select onValueChange={(value) => form.setValue('feel', value)}>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select feel" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="super-soft">Super Soft</SelectItem>
-                          <SelectItem value="plush">Plush</SelectItem>
-                          <SelectItem value="fluffy">Fluffy</SelectItem>
-                          <SelectItem value="squishy">Squishy</SelectItem>
-                          <SelectItem value="firm">Firm</SelectItem>
-                          <SelectItem value="cuddly">Cuddly</SelectItem>
-                          <SelectItem value="fuzzy">Fuzzy</SelectItem>
-                          <SelectItem value="smooth">Smooth</SelectItem>
-                          <SelectItem value="textured">Textured</SelectItem>
-                          <SelectItem value="stretchy">Stretchy</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div>
-                      <Label>Your Location</Label>
-                      <Input
-                        placeholder="e.g., New York, NY"
-                        {...form.register('location')}
-                      />
-                      {form.formState.errors.location && (
-                        <p className="text-sm text-red-600 mt-1">{form.formState.errors.location.message}</p>
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Pricing & Options */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Pricing & Options</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {(listingType === 'fixed_price' || listingType === 'negotiable') && (
-                    <div>
-                      <Label htmlFor="price">Price *</Label>
-                      <div className="relative">
-                        <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <Input
-                          id="price"
-                          type="number"
-                          placeholder="0.00"
-                          className="pl-10"
-                          {...form.register('price', { valueAsNumber: true })}
-                        />
+                      <div>
+                        <CardTitle className="text-xl">Add Your Photos</CardTitle>
+                        <p className="text-muted-foreground">Upload up to 5 high-quality photos of your plushie</p>
                       </div>
                     </div>
-                  )}
-
-                  {listingType === 'auction' && (
+                  </CardHeader>
+                  <CardContent className="p-6">
                     <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="price">Starting Bid *</Label>
-                        <div className="relative">
-                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="price"
-                            type="number"
-                            placeholder="0.00"
-                            className="pl-10"
-                            {...form.register('price', { valueAsNumber: true })}
-                          />
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        id="image-upload"
+                      />
+                      
+                      <label
+                        htmlFor="image-upload"
+                        className="border-2 border-dashed border-primary/30 rounded-xl p-8 text-center hover:border-primary/50 transition-colors cursor-pointer block bg-gradient-to-br from-primary/5 to-transparent"
+                      >
+                        <Upload className="h-12 w-12 text-primary/60 mx-auto mb-4" />
+                        <h3 className="text-lg font-semibold text-foreground mb-2">
+                          Click to upload photos
+                        </h3>
+                        <p className="text-muted-foreground mb-2">
+                          or drag and drop your images here
+                        </p>
+                        <Badge variant="secondary">
+                          {images.length}/5 photos
+                        </Badge>
+                      </label>
+                      
+                      {images.length > 0 && (
+                        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                          {images.map((image, index) => (
+                            <div key={index} className="relative group">
+                              <img
+                                src={URL.createObjectURL(image)}
+                                alt={`Upload ${index + 1}`}
+                                className="w-full h-24 object-cover rounded-lg"
+                              />
+                              <Button
+                                type="button"
+                                variant="destructive"
+                                size="sm"
+                                className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                                onClick={() => removeImage(index)}
+                              >
+                                ×
+                              </Button>
+                            </div>
+                          ))}
                         </div>
+                      )}
+                      
+                      <div className="flex justify-end pt-4">
+                        <Button
+                          type="button"
+                          onClick={nextStep}
+                          disabled={images.length === 0}
+                          className="bg-primary hover:bg-primary/90"
+                        >
+                          Continue to Details
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 2: Details */}
+              {currentStep === 2 && (
+                <Card className="animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-accent/10 to-secondary/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center">
+                        <Package className="h-6 w-6 text-accent-foreground" />
                       </div>
                       <div>
-                        <Label htmlFor="bidIncrement">Bid Increment</Label>
-                        <div className="relative">
-                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="bidIncrement"
-                            type="number"
-                            placeholder="1.00"
-                            className="pl-10"
-                            {...form.register('bidIncrement', { valueAsNumber: true })}
-                          />
-                        </div>
+                        <CardTitle className="text-xl">Item Details</CardTitle>
+                        <p className="text-muted-foreground">Tell us about your plushie</p>
                       </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="md:col-span-2">
+                        <Label htmlFor="title" className="text-base font-semibold">Title *</Label>
+                        <Input
+                          id="title"
+                          placeholder="e.g., Jellycat Bashful Bunny - Medium Size"
+                          className="mt-2"
+                          {...form.register('title')}
+                        />
+                        {form.formState.errors.title && (
+                          <p className="text-sm text-destructive mt-1">{form.formState.errors.title.message}</p>
+                        )}
+                      </div>
+
+                      <div className="md:col-span-2">
+                        <Label htmlFor="description" className="text-base font-semibold">Description *</Label>
+                        <Textarea
+                          id="description"
+                          placeholder="Describe your plushie's condition, history, and any special features..."
+                          className="mt-2 min-h-[100px]"
+                          {...form.register('description')}
+                        />
+                        {form.formState.errors.description && (
+                          <p className="text-sm text-destructive mt-1">{form.formState.errors.description.message}</p>
+                        )}
+                      </div>
+
                       <div>
-                        <Label htmlFor="auctionDuration">Auction Duration (days)</Label>
-                        <Select onValueChange={(value) => form.setValue('auctionDuration', parseInt(value))}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select duration" />
+                        <Label className="text-base font-semibold">Brand *</Label>
+                        <Select onValueChange={(value) => form.setValue('brand', value)}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select brand" />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="1">1 day</SelectItem>
-                            <SelectItem value="3">3 days</SelectItem>
-                            <SelectItem value="5">5 days</SelectItem>
-                            <SelectItem value="7">7 days</SelectItem>
-                            <SelectItem value="14">14 days</SelectItem>
-                            <SelectItem value="30">30 days</SelectItem>
+                            <SelectItem value="jellycat">Jellycat</SelectItem>
+                            <SelectItem value="squishmallows">Squishmallows</SelectItem>
+                            <SelectItem value="build-a-bear">Build-A-Bear</SelectItem>
+                            <SelectItem value="sanrio">Sanrio</SelectItem>
+                            <SelectItem value="disney">Disney</SelectItem>
+                            <SelectItem value="pokemon">Pokemon</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-base font-semibold">Condition *</Label>
+                        <Select onValueChange={(value: any) => form.setValue('condition', value)}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select condition" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="new">New with tags</SelectItem>
+                            <SelectItem value="like-new">Like new</SelectItem>
+                            <SelectItem value="good">Good</SelectItem>
+                            <SelectItem value="fair">Fair</SelectItem>
+                            <SelectItem value="poor">Poor</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-base font-semibold">Size *</Label>
+                        <Select onValueChange={(value) => form.setValue('size', value)}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select size" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="mini">Mini (0-6 inches)</SelectItem>
+                            <SelectItem value="small">Small (7-12 inches)</SelectItem>
+                            <SelectItem value="medium">Medium (13-18 inches)</SelectItem>
+                            <SelectItem value="large">Large (19-24 inches)</SelectItem>
+                            <SelectItem value="xlarge">X-Large (25+ inches)</SelectItem>
+                            <SelectItem value="giant">Giant (36+ inches)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-base font-semibold">Animal/Character *</Label>
+                        <Select onValueChange={(value) => form.setValue('species', value)}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="bear">Bear</SelectItem>
+                            <SelectItem value="bunny">Bunny/Rabbit</SelectItem>
+                            <SelectItem value="cat">Cat</SelectItem>
+                            <SelectItem value="dog">Dog</SelectItem>
+                            <SelectItem value="elephant">Elephant</SelectItem>
+                            <SelectItem value="unicorn">Unicorn</SelectItem>
+                            <SelectItem value="dragon">Dragon</SelectItem>
+                            <SelectItem value="panda">Panda</SelectItem>
+                            <SelectItem value="penguin">Penguin</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-base font-semibold">Color *</Label>
+                        <div className="mt-2 grid grid-cols-4 gap-2">
+                          {colorOptions.map((color) => (
+                            <button
+                              key={color.value}
+                              type="button"
+                              onClick={() => {
+                                setSelectedColor(color.value);
+                                form.setValue('color', color.value);
+                              }}
+                              className={`p-2 rounded-lg border-2 transition-all hover:scale-105 ${
+                                selectedColor === color.value 
+                                  ? 'border-primary shadow-lg' 
+                                  : 'border-border hover:border-primary/50'
+                              }`}
+                            >
+                              <div 
+                                className="w-6 h-6 rounded-full mx-auto mb-1"
+                                style={{ backgroundColor: color.hex }}
+                              />
+                              <span className="text-xs font-medium">{color.name}</span>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-base font-semibold">Material *</Label>
+                        <Select onValueChange={(value) => form.setValue('material', value)}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select material" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="plush">Soft Plush</SelectItem>
+                            <SelectItem value="cotton">Cotton</SelectItem>
+                            <SelectItem value="polyester">Polyester</SelectItem>
+                            <SelectItem value="velvet">Velvet</SelectItem>
+                            <SelectItem value="fleece">Fleece</SelectItem>
+                            <SelectItem value="minky">Minky</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-base font-semibold">Filling *</Label>
+                        <Select onValueChange={(value) => form.setValue('filling', value)}>
+                          <SelectTrigger className="mt-2">
+                            <SelectValue placeholder="Select filling" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="polyester-fiber">Polyester Fiberfill</SelectItem>
+                            <SelectItem value="memory-foam">Memory Foam</SelectItem>
+                            <SelectItem value="plastic-pellets">Plastic Pellets</SelectItem>
+                            <SelectItem value="bean-bag">Bean Bag Filling</SelectItem>
+                            <SelectItem value="cotton">Cotton</SelectItem>
+                            <SelectItem value="other">Other</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
-                  )}
-
-                  {listingType === 'trade_only' && (
-                    <div>
-                      <Label htmlFor="tradePreferences">What are you looking for?</Label>
-                      <Textarea
-                        id="tradePreferences"
-                        placeholder="Describe what items you'd like to trade for..."
-                        {...form.register('tradePreferences')}
-                      />
-                    </div>
-                  )}
-
-                  {/* Additional Options */}
-                  <div className="space-y-3 pt-4 border-t">
-                    <h4 className="font-medium">Additional Options</h4>
                     
+                    <div className="flex justify-between pt-6">
+                      <Button type="button" variant="outline" onClick={prevStep}>
+                        Back to Photos
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={nextStep}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        Continue to Pricing
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Step 3: Pricing */}
+              {currentStep === 3 && (
+                <Card className="animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-secondary/10 to-primary/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center">
+                        <Tag className="h-6 w-6 text-secondary-foreground" />
+                      </div>
+                      <div>
+                        <CardTitle className="text-xl">Pricing & Terms</CardTitle>
+                        <p className="text-muted-foreground">Set your price and selling preferences</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    {/* Listing Type Selection */}
+                    <div>
+                      <Label className="text-base font-semibold mb-4 block">How would you like to sell?</Label>
+                      <RadioGroup
+                        value={listingType}
+                        onValueChange={(value: any) => form.setValue('listingType', value)}
+                        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                      >
+                        <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-accent/5 transition-colors">
+                          <RadioGroupItem value="fixed_price" id="fixed_price" />
+                          <div className="flex items-center gap-3 flex-1">
+                            <DollarSign className="h-5 w-5 text-green-600" />
+                            <Label htmlFor="fixed_price" className="cursor-pointer flex-1">
+                              <div className="font-semibold">Fixed Price</div>
+                              <div className="text-sm text-muted-foreground">Set a price and sell immediately</div>
+                            </Label>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-accent/5 transition-colors">
+                          <RadioGroupItem value="negotiable" id="negotiable" />
+                          <div className="flex items-center gap-3 flex-1">
+                            <Handshake className="h-5 w-5 text-blue-600" />
+                            <Label htmlFor="negotiable" className="cursor-pointer flex-1">
+                              <div className="font-semibold">Negotiable</div>
+                              <div className="text-sm text-muted-foreground">Accept offers from buyers</div>
+                            </Label>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-accent/5 transition-colors">
+                          <RadioGroupItem value="auction" id="auction" />
+                          <div className="flex items-center gap-3 flex-1">
+                            <Gavel className="h-5 w-5 text-purple-600" />
+                            <Label htmlFor="auction" className="cursor-pointer flex-1">
+                              <div className="font-semibold">Auction</div>
+                              <div className="text-sm text-muted-foreground">Let buyers bid on your item</div>
+                            </Label>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3 p-4 border rounded-lg hover:bg-accent/5 transition-colors">
+                          <RadioGroupItem value="trade_only" id="trade_only" />
+                          <div className="flex items-center gap-3 flex-1">
+                            <Handshake className="h-5 w-5 text-orange-600" />
+                            <Label htmlFor="trade_only" className="cursor-pointer flex-1">
+                              <div className="font-semibold">Trade Only</div>
+                              <div className="text-sm text-muted-foreground">Only accept trades, no money</div>
+                            </Label>
+                          </div>
+                        </div>
+                      </RadioGroup>
+                    </div>
+
+                    {/* Price Input */}
                     {listingType !== 'trade_only' && (
-                      <div className="flex items-center space-x-2">
-                        <Checkbox
-                          id="allowsTrades"
-                          checked={allowsTrades}
-                          onCheckedChange={(checked) => form.setValue('allowsTrades', !!checked)}
-                        />
-                        <Label htmlFor="allowsTrades">Accept trade offers</Label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="price" className="text-base font-semibold">
+                            {listingType === 'auction' ? 'Starting Price ($)' : 'Price ($)'} *
+                          </Label>
+                          <Input
+                            id="price"
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            placeholder="0.00"
+                            className="mt-2"
+                            {...form.register('price', { valueAsNumber: true })}
+                          />
+                        </div>
+                        
+                        {listingType === 'auction' && (
+                          <div>
+                            <Label htmlFor="auctionDuration" className="text-base font-semibold">Auction Duration (days)</Label>
+                            <Input
+                              id="auctionDuration"
+                              type="number"
+                              min="1"
+                              max="30"
+                              placeholder="7"
+                              className="mt-2"
+                              {...form.register('auctionDuration', { valueAsNumber: true })}
+                            />
+                          </div>
+                        )}
                       </div>
                     )}
 
-                    {(listingType === 'fixed_price' || listingType === 'auction') && (
-                      <div className="flex items-center space-x-2">
+                    {/* Additional Options */}
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-3">
                         <Checkbox
                           id="allowsOffers"
                           checked={allowsOffers}
-                          onCheckedChange={(checked) => form.setValue('allowsOffers', !!checked)}
+                          onCheckedChange={(checked: boolean) => form.setValue('allowsOffers', checked)}
                         />
-                        <Label htmlFor="allowsOffers">Accept money offers</Label>
+                        <Label htmlFor="allowsOffers" className="text-base">Accept offers</Label>
+                      </div>
+                      
+                      <div className="flex items-center space-x-3">
+                        <Checkbox
+                          id="allowsTrades"
+                          checked={allowsTrades}
+                          onCheckedChange={(checked: boolean) => form.setValue('allowsTrades', checked)}
+                        />
+                        <Label htmlFor="allowsTrades" className="text-base">Accept trades</Label>
+                      </div>
+                    </div>
+
+                    {allowsTrades && (
+                      <div>
+                        <Label htmlFor="tradePreferences" className="text-base font-semibold">Trade Preferences</Label>
+                        <Textarea
+                          id="tradePreferences"
+                          placeholder="What are you looking for in a trade?"
+                          className="mt-2"
+                          {...form.register('tradePreferences')}
+                        />
                       </div>
                     )}
+                    
+                    <div className="flex justify-between pt-6">
+                      <Button type="button" variant="outline" onClick={prevStep}>
+                        Back to Details
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={nextStep}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        Review Listing
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
-                    {allowsOffers && (
+              {/* Step 4: Review */}
+              {currentStep === 4 && (
+                <Card className="animate-fade-in">
+                  <CardHeader className="bg-gradient-to-r from-primary/10 to-accent/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center">
+                        <Sparkles className="h-6 w-6 text-primary" />
+                      </div>
                       <div>
-                        <Label htmlFor="minimumOffer">Minimum Offer</Label>
-                        <div className="relative">
-                          <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                          <Input
-                            id="minimumOffer"
-                            type="number"
-                            placeholder="0.00"
-                            className="pl-10"
-                            {...form.register('minimumOffer', { valueAsNumber: true })}
-                          />
+                        <CardTitle className="text-xl">Review Your Listing</CardTitle>
+                        <p className="text-muted-foreground">Make sure everything looks perfect</p>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-6 space-y-6">
+                    {/* Preview */}
+                    <div className="border rounded-lg p-4 bg-accent/5">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                          {images.length > 0 && (
+                            <img
+                              src={URL.createObjectURL(images[0])}
+                              alt="Main preview"
+                              className="w-full h-48 object-cover rounded-lg"
+                            />
+                          )}
+                        </div>
+                        <div className="space-y-3">
+                          <h3 className="text-xl font-bold">{form.watch('title')}</h3>
+                          <p className="text-muted-foreground">{form.watch('description')}</p>
+                          <div className="space-y-2">
+                            <Badge variant="outline">{form.watch('brand')}</Badge>
+                            <Badge variant="outline">{form.watch('condition')}</Badge>
+                            <Badge variant="outline">{form.watch('size')}</Badge>
+                          </div>
+                          {listingType !== 'trade_only' && form.watch('price') && (
+                            <div className="text-2xl font-bold text-primary">
+                              ${form.watch('price')}
+                            </div>
+                          )}
                         </div>
                       </div>
-                    )}
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Submit */}
-              <div className="flex gap-4">
-                <Button type="button" variant="outline" onClick={() => navigate(-1)} className="flex-1">
-                  Cancel
-                </Button>
-                <Button type="submit" className="flex-1 bg-softspot-500 hover:bg-softspot-600">
-                  Create Listing
-                </Button>
-              </div>
+                    </div>
+                    
+                    <div className="flex justify-between pt-6">
+                      <Button type="button" variant="outline" onClick={prevStep}>
+                        Back to Pricing
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="bg-primary hover:bg-primary/90"
+                      >
+                        {isSubmitting ? "Creating Listing..." : "Publish Listing"}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </form>
           </div>
         </div>
