@@ -9,8 +9,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ImageUploader } from "./ImageUploader";
 import { ImageEditor } from "./ImageEditor";
+import { AdvancedImageEditor } from "./AdvancedImageEditor";
 import { PostCreationData } from "@/types/core";
-import { Camera, Edit3, Type, X, Plus, ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { Camera, Edit3, Type, X, Plus, ArrowLeft, ArrowRight, Check, Crop, Edit } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -62,6 +63,8 @@ export const ImageFirstPostCreation = ({
   const [currentTags, setCurrentTags] = useState<string[]>([]);
   const [tagInput, setTagInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [useAdvancedEditor, setUseAdvancedEditor] = useState(false);
 
   const form = useForm<z.infer<typeof postSchema>>({
     resolver: zodResolver(postSchema),
@@ -303,14 +306,40 @@ export const ImageFirstPostCreation = ({
               {/* Preview */}
               <div className="space-y-2">
                 <Label className="text-base font-semibold">Preview</Label>
-                <div className="aspect-square w-full max-w-xs mx-auto">
-                  <img
-                    src={imageUrl}
-                    alt="Preview"
-                    className="w-full h-full object-cover rounded-lg"
-                    style={{ filter: selectedFilter }}
-                  />
-                </div>
+                 <div className="aspect-square w-full max-w-xs mx-auto">
+                   <img
+                     src={imageUrl}
+                     alt="Preview"
+                     className="w-full h-full object-cover rounded-lg"
+                     style={{ filter: selectedFilter }}
+                   />
+                 </div>
+                 
+                 {/* Advanced Editing Options */}
+                 <div className="grid grid-cols-2 gap-2 mt-4">
+                   <Button
+                     variant="outline"
+                     onClick={() => {
+                       setUseAdvancedEditor(false);
+                       setIsEditing(true);
+                     }}
+                     className="w-full"
+                   >
+                     <Edit className="h-4 w-4 mr-2" />
+                     Basic Edit
+                   </Button>
+                   <Button
+                     variant="outline"
+                     onClick={() => {
+                       setUseAdvancedEditor(true);
+                       setIsEditing(true);
+                     }}
+                     className="w-full"
+                   >
+                     <Crop className="h-4 w-4 mr-2" />
+                     Advanced
+                   </Button>
+                 </div>
               </div>
 
               <div className="flex justify-between mt-6">
@@ -443,6 +472,36 @@ export const ImageFirstPostCreation = ({
             </div>
           )}
         </div>
+        
+        {/* Image Editors */}
+        {isEditing && imageUrl && (
+          <>
+            {useAdvancedEditor ? (
+              <AdvancedImageEditor
+                image={imageUrl}
+                onSave={(editedImage) => {
+                  setImageUrl(editedImage);
+                  setIsEditing(false);
+                  setUseAdvancedEditor(false);
+                }}
+                onCancel={() => {
+                  setIsEditing(false);
+                  setUseAdvancedEditor(false);
+                }}
+              />
+            ) : (
+              <ImageEditor
+                imageUrl={imageUrl}
+                onSave={(options) => {
+                  // Convert ImageEditorOptions to image URL
+                  // For now, just use the original URL
+                  setIsEditing(false);
+                }}
+                onCancel={() => setIsEditing(false)}
+              />
+            )}
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
