@@ -23,6 +23,15 @@ const enhancedSellItemSchema = z.object({
   condition: ValidationSchemas.condition,
   price: ValidationSchemas.price.optional(),
   
+  // Item details
+  size: z.string().min(1, "Size is required"),
+  color: z.string().min(1, "Color is required"),
+  species: z.string().min(1, "Animal/character type is required"),
+  material: z.string().min(1, "Material is required"),
+  filling: z.string().min(1, "Filling type is required"),
+  feel: z.string().min(1, "Feel/texture is required"),
+  location: z.string().min(1, "Location is required"),
+  
   // Enhanced selling options
   listingType: z.enum(['fixed_price', 'negotiable', 'auction', 'trade_only']),
   allowsOffers: z.boolean().default(false),
@@ -43,6 +52,28 @@ type EnhancedSellItemFormData = z.infer<typeof enhancedSellItemSchema>;
 export default function EnhancedSellItem() {
   const navigate = useNavigate();
   const [images, setImages] = useState<File[]>([]);
+  const [selectedColor, setSelectedColor] = useState<string>("");
+  
+  const colorOptions = [
+    { name: 'White', value: 'white', hex: '#FFFFFF' },
+    { name: 'Cream', value: 'cream', hex: '#F5F5DC' },
+    { name: 'Beige', value: 'beige', hex: '#F5F5DC' },
+    { name: 'Brown', value: 'brown', hex: '#8B4513' },
+    { name: 'Light Brown', value: 'light-brown', hex: '#DEB887' },
+    { name: 'Dark Brown', value: 'dark-brown', hex: '#654321' },
+    { name: 'Black', value: 'black', hex: '#000000' },
+    { name: 'Gray', value: 'gray', hex: '#808080' },
+    { name: 'Pink', value: 'pink', hex: '#FFC0CB' },
+    { name: 'Purple', value: 'purple', hex: '#800080' },
+    { name: 'Blue', value: 'blue', hex: '#0000FF' },
+    { name: 'Light Blue', value: 'light-blue', hex: '#87CEEB' },
+    { name: 'Green', value: 'green', hex: '#008000' },
+    { name: 'Yellow', value: 'yellow', hex: '#FFFF00' },
+    { name: 'Orange', value: 'orange', hex: '#FFA500' },
+    { name: 'Red', value: 'red', hex: '#FF0000' },
+    { name: 'Rainbow', value: 'rainbow', hex: 'linear-gradient(45deg, #ff0000, #ff8000, #ffff00, #80ff00, #00ff00, #00ff80, #00ffff, #0080ff, #0000ff, #8000ff, #ff00ff, #ff0080)' },
+    { name: 'Multi-colored', value: 'multi', hex: '#FFB6C1' },
+  ];
   
   const form = useForm<EnhancedSellItemFormData>({
     resolver: zodResolver(enhancedSellItemSchema),
@@ -268,6 +299,167 @@ export default function EnhancedSellItem() {
                           <SelectItem value="poor">Poor</SelectItem>
                         </SelectContent>
                       </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Size</Label>
+                      <Select onValueChange={(value) => form.setValue('size', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select size" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="mini">Mini (0-6 inches)</SelectItem>
+                          <SelectItem value="small">Small (7-12 inches)</SelectItem>
+                          <SelectItem value="medium">Medium (13-18 inches)</SelectItem>
+                          <SelectItem value="large">Large (19-24 inches)</SelectItem>
+                          <SelectItem value="xlarge">X-Large (25+ inches)</SelectItem>
+                          <SelectItem value="giant">Giant (36+ inches)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Animal/Character Type</Label>
+                      <Select onValueChange={(value) => form.setValue('species', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="bear">Bear</SelectItem>
+                          <SelectItem value="bunny">Bunny/Rabbit</SelectItem>
+                          <SelectItem value="cat">Cat</SelectItem>
+                          <SelectItem value="dog">Dog</SelectItem>
+                          <SelectItem value="elephant">Elephant</SelectItem>
+                          <SelectItem value="unicorn">Unicorn</SelectItem>
+                          <SelectItem value="dragon">Dragon</SelectItem>
+                          <SelectItem value="panda">Panda</SelectItem>
+                          <SelectItem value="penguin">Penguin</SelectItem>
+                          <SelectItem value="lamb">Lamb</SelectItem>
+                          <SelectItem value="duck">Duck</SelectItem>
+                          <SelectItem value="fox">Fox</SelectItem>
+                          <SelectItem value="sloth">Sloth</SelectItem>
+                          <SelectItem value="octopus">Octopus</SelectItem>
+                          <SelectItem value="dinosaur">Dinosaur</SelectItem>
+                          <SelectItem value="pokemon">Pokemon</SelectItem>
+                          <SelectItem value="sanrio">Sanrio Character</SelectItem>
+                          <SelectItem value="disney">Disney Character</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Color Selection with Swatches */}
+                  <div>
+                    <Label className="mb-3 block">Color</Label>
+                    <div className="grid grid-cols-6 gap-3">
+                      {colorOptions.map((color) => (
+                        <button
+                          key={color.value}
+                          type="button"
+                          onClick={() => {
+                            setSelectedColor(color.value);
+                            form.setValue('color', color.value);
+                          }}
+                          className={`flex flex-col items-center p-2 rounded-lg border-2 transition-all hover:scale-105 ${
+                            selectedColor === color.value 
+                              ? 'border-softspot-500 bg-softspot-50 dark:bg-softspot-900/20' 
+                              : 'border-gray-200 dark:border-gray-700 hover:border-gray-300'
+                          }`}
+                        >
+                          <div 
+                            className="w-8 h-8 rounded-full border-2 border-gray-300 mb-1"
+                            style={{ 
+                              background: color.value === 'rainbow' 
+                                ? color.hex 
+                                : color.hex,
+                              border: color.value === 'white' ? '2px solid #e5e7eb' : 'none'
+                            }}
+                          />
+                          <span className="text-xs text-center leading-tight">{color.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Material</Label>
+                      <Select onValueChange={(value) => form.setValue('material', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select material" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="polyester">Polyester</SelectItem>
+                          <SelectItem value="cotton">Cotton</SelectItem>
+                          <SelectItem value="velvet">Velvet</SelectItem>
+                          <SelectItem value="fleece">Fleece</SelectItem>
+                          <SelectItem value="minky">Minky</SelectItem>
+                          <SelectItem value="faux-fur">Faux Fur</SelectItem>
+                          <SelectItem value="chenille">Chenille</SelectItem>
+                          <SelectItem value="sherpa">Sherpa</SelectItem>
+                          <SelectItem value="bamboo">Bamboo</SelectItem>
+                          <SelectItem value="organic-cotton">Organic Cotton</SelectItem>
+                          <SelectItem value="mixed">Mixed Materials</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Filling</Label>
+                      <Select onValueChange={(value) => form.setValue('filling', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select filling" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="polyester-fiberfill">Polyester Fiberfill</SelectItem>
+                          <SelectItem value="memory-foam">Memory Foam</SelectItem>
+                          <SelectItem value="bean-pellets">Bean Pellets</SelectItem>
+                          <SelectItem value="plastic-pellets">Plastic Pellets</SelectItem>
+                          <SelectItem value="rice">Rice</SelectItem>
+                          <SelectItem value="lavender">Lavender</SelectItem>
+                          <SelectItem value="recycled-filling">Recycled Filling</SelectItem>
+                          <SelectItem value="mixed">Mixed Filling</SelectItem>
+                          <SelectItem value="other">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label>Feel/Texture</Label>
+                      <Select onValueChange={(value) => form.setValue('feel', value)}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select feel" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="super-soft">Super Soft</SelectItem>
+                          <SelectItem value="plush">Plush</SelectItem>
+                          <SelectItem value="fluffy">Fluffy</SelectItem>
+                          <SelectItem value="squishy">Squishy</SelectItem>
+                          <SelectItem value="firm">Firm</SelectItem>
+                          <SelectItem value="cuddly">Cuddly</SelectItem>
+                          <SelectItem value="fuzzy">Fuzzy</SelectItem>
+                          <SelectItem value="smooth">Smooth</SelectItem>
+                          <SelectItem value="textured">Textured</SelectItem>
+                          <SelectItem value="stretchy">Stretchy</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div>
+                      <Label>Your Location</Label>
+                      <Input
+                        placeholder="e.g., New York, NY"
+                        {...form.register('location')}
+                      />
+                      {form.formState.errors.location && (
+                        <p className="text-sm text-red-600 mt-1">{form.formState.errors.location.message}</p>
+                      )}
                     </div>
                   </div>
                 </CardContent>
