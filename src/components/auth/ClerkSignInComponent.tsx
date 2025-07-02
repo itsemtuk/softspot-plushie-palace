@@ -5,9 +5,9 @@ export const ClerkSignInComponent = () => {
   return (
     <div className="w-full">
       <ClerkSignIn 
-        path="/sign-in"
+        routing="virtual"
         signUpUrl="/sign-up"
-        fallbackRedirectUrl="/feed"
+        forceRedirectUrl="/feed"
         appearance={{
           elements: {
             rootBox: "mx-auto w-full",

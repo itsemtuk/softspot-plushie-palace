@@ -2,43 +2,54 @@
 import { createClient } from '@supabase/supabase-js';
 import { withRetry } from '../retry';
 
+// Singleton pattern to prevent multiple GoTrueClient instances
+let supabaseInstance: ReturnType<typeof createClient> | null = null;
+
 // Initialize Supabase client with the provided credentials
 const supabaseUrl = 'https://evsamjzmqzbynwkuszsm.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2c2FtanptcXpieW53a3VzenNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MzgwMTEsImV4cCI6MjA2MDQxNDAxMX0.rkYcUyq7tMf3om2doHkWt85bdAHinEceuH43Hwn1knw';
 
 // Create Supabase client as a singleton
-export const supabase = createClient(supabaseUrl, supabaseKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: false, // Disable to prevent conflicts with Clerk
-    flowType: 'implicit',
-    storage: {
-      getItem: (key: string): string | null => {
-        // Use a prefixed key to avoid conflicts with Clerk
-        return localStorage.getItem(`supabase_${key}`);
-      },
-      setItem: (key: string, value: string): void => {
-        localStorage.setItem(`supabase_${key}`, value);
-      },
-      removeItem: (key: string): void => {
-        localStorage.removeItem(`supabase_${key}`);
-      },
-    }
-  },
-  global: {
-    headers: {
-      'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    }
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 2,
+export const supabase = (() => {
+  if (supabaseInstance) {
+    return supabaseInstance;
+  }
+  
+  supabaseInstance = createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      detectSessionInUrl: false, // Disable to prevent conflicts with Clerk
+      flowType: 'implicit',
+      storage: {
+        getItem: (key: string): string | null => {
+          // Use a prefixed key to avoid conflicts with Clerk
+          return localStorage.getItem(`supabase_${key}`);
+        },
+        setItem: (key: string, value: string): void => {
+          localStorage.setItem(`supabase_${key}`, value);
+        },
+        removeItem: (key: string): void => {
+          localStorage.removeItem(`supabase_${key}`);
+        },
+      }
     },
-  },
-});
+    global: {
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+      }
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 2,
+      },
+    },
+  });
+  
+  return supabaseInstance;
+})();
 
 // Helper function to get the singleton Supabase instance
 export const getSupabase = () => supabase;
