@@ -21,7 +21,7 @@ export const ProfileTabs = ({ children, defaultValue = "posts" }: ProfileTabsPro
         <TabsTrigger 
           value="posts" 
           className={cn(
-            "data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none",
+            "data-[state=active]:bg-accent rounded-full data-[state=active]:shadow-none",
             isMobile ? "text-xs py-2 px-2" : "text-sm"
           )}
         >
@@ -30,7 +30,7 @@ export const ProfileTabs = ({ children, defaultValue = "posts" }: ProfileTabsPro
         <TabsTrigger 
           value="marketplace" 
           className={cn(
-            "data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none",
+            "data-[state=active]:bg-accent rounded-full data-[state=active]:shadow-none",
             isMobile ? "text-xs py-2 px-2" : "text-sm"
           )}
         >
@@ -39,7 +39,7 @@ export const ProfileTabs = ({ children, defaultValue = "posts" }: ProfileTabsPro
         <TabsTrigger 
           value="about" 
           className={cn(
-            "data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none",
+            "data-[state=active]:bg-accent rounded-full data-[state=active]:shadow-none",
             isMobile ? "text-xs py-2 px-2" : "text-sm"
           )}
         >
@@ -48,7 +48,7 @@ export const ProfileTabs = ({ children, defaultValue = "posts" }: ProfileTabsPro
         <TabsTrigger 
           value="badges" 
           className={cn(
-            "data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none",
+            "data-[state=active]:bg-accent rounded-full data-[state=active]:shadow-none",
             isMobile ? "text-xs py-2 px-2" : "text-sm"
           )}
         >
@@ -57,7 +57,7 @@ export const ProfileTabs = ({ children, defaultValue = "posts" }: ProfileTabsPro
         <TabsTrigger 
           value="reviews" 
           className={cn(
-            "data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none",
+            "data-[state=active]:bg-accent rounded-full data-[state=active]:shadow-none",
             isMobile ? "text-xs py-2 px-2" : "text-sm"
           )}
         >

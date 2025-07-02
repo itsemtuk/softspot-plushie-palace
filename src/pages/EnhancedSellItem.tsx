@@ -20,7 +20,7 @@ import { ValidationSchemas } from "@/utils/security/inputValidation";
 import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 const enhancedSellItemSchema = z.object({
   title: ValidationSchemas.postTitle,

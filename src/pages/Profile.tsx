@@ -11,7 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { addPost } from "@/utils/posts/postManagement";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import MarketplaceReviews from "@/components/profile/MarketplaceReviews";
 import { ProfileBadges } from "@/components/profile/ProfileBadges";
@@ -230,7 +230,7 @@ const Profile = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -299,11 +299,11 @@ const Profile = () => {
                     <h4 className="font-medium text-gray-900 dark:text-white">Stats</h4>
                     <div className="grid grid-cols-2 gap-4 mt-2">
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-softspot-500">{userPosts.length}</div>
+                        <div className="text-2xl font-bold text-primary">{userPosts.length}</div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">Posts</div>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-softspot-500">{marketplacePosts.length}</div>
+                        <div className="text-2xl font-bold text-primary">{marketplacePosts.length}</div>
                         <div className="text-sm text-gray-600 dark:text-gray-400">Marketplace Items</div>
                       </div>
                     </div>

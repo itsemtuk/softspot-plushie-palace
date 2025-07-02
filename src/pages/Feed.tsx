@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ImageFirstPostCreation } from "@/components/post/ImageFirstPostCreation";
 import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 
 export default function Feed() {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
