@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -8,6 +7,7 @@ import { Calendar, Users, Edit } from 'lucide-react';
 import { ProfileActionButton } from '@/components/profile/ProfileActionButton';
 import { supabase } from '@/integrations/supabase/client';
 import { useFollowUser } from '@/hooks/useFollowUser';
+import { useUser } from '@clerk/clerk-react';
 
 interface UserProfileData {
   bio: string;
@@ -29,6 +29,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
   userId 
 }) => {
   const navigate = useNavigate();
+  const { user: clerkUser } = useUser();
   const [userInfo, setUserInfo] = useState<{
     avatar_url?: string;
     first_name?: string;
@@ -85,6 +86,14 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     fetchUserData();
   }, [userId, followerCount]);
 
+  // Use Clerk user's image if this is own profile and no Supabase avatar
+  const getProfileImage = () => {
+    if (isOwnProfile && clerkUser?.imageUrl && !userInfo.avatar_url) {
+      return clerkUser.imageUrl;
+    }
+    return userInfo.avatar_url;
+  };
+
   const displayName = userInfo.first_name 
     ? `${userInfo.first_name} ${userInfo.last_name || ''}`.trim()
     : username;
@@ -98,6 +107,8 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     return name.slice(0, 2).toUpperCase();
   };
 
+  const profileImage = getProfileImage();
+
   return (
     <Card className="mb-8 overflow-hidden">
       <div className="bg-gradient-to-r from-softspot-100 to-purple-100 dark:from-softspot-900 dark:to-purple-900 px-6 py-8">
@@ -105,9 +116,9 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
           {/* Profile Picture */}
           <div className="flex-shrink-0">
             <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
-              {userInfo.avatar_url ? (
+              {profileImage ? (
                 <img
-                  src={userInfo.avatar_url}
+                  src={profileImage}
                   alt={username}
                   className="w-full h-full object-cover"
                   onError={(e) => {

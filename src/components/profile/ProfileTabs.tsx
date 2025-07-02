@@ -16,7 +16,7 @@ export const ProfileTabs = ({ children, defaultValue = "posts" }: ProfileTabsPro
     <Tabs defaultValue={defaultValue} className="w-full">
       <TabsList className={cn(
         "bg-white shadow-sm rounded-full w-full flex justify-center p-1",
-        isMobile ? "grid grid-cols-3 h-auto" : "inline-flex"
+        isMobile ? "grid grid-cols-5 h-auto" : "inline-flex"
       )}>
         <TabsTrigger 
           value="posts" 
@@ -44,6 +44,24 @@ export const ProfileTabs = ({ children, defaultValue = "posts" }: ProfileTabsPro
           )}
         >
           About
+        </TabsTrigger>
+        <TabsTrigger 
+          value="badges" 
+          className={cn(
+            "data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none",
+            isMobile ? "text-xs py-2 px-2" : "text-sm"
+          )}
+        >
+          Badges
+        </TabsTrigger>
+        <TabsTrigger 
+          value="reviews" 
+          className={cn(
+            "data-[state=active]:bg-softspot-100 rounded-full data-[state=active]:shadow-none",
+            isMobile ? "text-xs py-2 px-2" : "text-sm"
+          )}
+        >
+          Reviews
         </TabsTrigger>
       </TabsList>
       {children}
