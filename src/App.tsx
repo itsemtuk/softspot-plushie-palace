@@ -9,6 +9,8 @@ import SignIn from "./pages/SignIn";
 import Onboarding from "./pages/Onboarding";
 import SignUp from "./pages/SignUp";
 import Settings from "./pages/Settings";
+import SearchPage from "./pages/SearchPage";
+import NotificationsPage from "./pages/Notifications";
 import MobileMessages from "./pages/MobileMessages";
 import MobileWishlist from "./pages/MobileWishlist";
 import MobileMarketplace from "./pages/MobileMarketplace";
@@ -33,6 +35,9 @@ function App() {
             <Route path="/profile" element={<Profile />} />
             <Route path="/user/:username" element={<UserProfile />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/search" element={<SearchPage />} />
+            <Route path="/discover" element={<SearchPage />} />
+            <Route path="/notifications" element={<NotificationsPage />} />
             <Route path="/sign-in" element={<SignIn />} />
             <Route path="/sign-up" element={<SignUp />} />
             <Route path="/onboarding" element={<Onboarding />} />

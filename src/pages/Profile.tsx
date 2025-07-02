@@ -1,4 +1,5 @@
 
+import MainLayout from "@/components/layout/MainLayout";
 import { ProfileLayout } from "@/components/profile/ProfileLayout";
 import { TabsContent } from "@/components/ui/tabs";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
@@ -235,146 +236,148 @@ const Profile = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <UserProfileHeader
-        username={userData?.username || userData?.first_name || user?.username || 'User'}
-        isOwnProfile={true}
-        profileData={profileData}
-        userId={userData?.id}
-      />
+    <MainLayout>
+      <div className="container mx-auto px-4 py-8 max-w-6xl">
+        <UserProfileHeader
+          username={userData?.username || userData?.first_name || user?.username || 'User'}
+          isOwnProfile={true}
+          profileData={profileData}
+          userId={userData?.id}
+        />
 
-      <ProfileLayout>
-        <TabsContent value="posts" className="mt-6">
-          <ProfilePostsGrid
-            posts={userPosts}
-            onPostClick={handlePostClick}
-            isOwnProfile={true}
-            showCreateButton={true}
-            onPostCreated={handleRegularPostCreated}
-          />
-        </TabsContent>
-        
-        <TabsContent value="marketplace" className="mt-6">
-          <ProfilePostsGrid
-            posts={marketplacePosts}
-            onPostClick={handlePostClick}
-            isOwnProfile={true}
-            showCreateButton={false}
-            onPostCreated={handleMarketplacePostCreated}
-          />
-        </TabsContent>
-        
-        <TabsContent value="about" className="mt-6">
-          <Card>
-            <CardContent className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                About You
-              </h3>
-              <div className="space-y-4">
-                {profileData?.bio ? (
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Bio</h4>
-                    <p className="text-gray-600 dark:text-gray-400 mt-1">{profileData.bio}</p>
-                  </div>
-                ) : (
-                  <p className="text-gray-500 dark:text-gray-400">
-                    Add a bio in your profile settings to tell others about yourself.
-                  </p>
-                )}
-                
-                {profileData?.interests && profileData.interests.length > 0 && (
-                  <div>
-                    <h4 className="font-medium text-gray-900 dark:text-white">Favorite Brands</h4>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {profileData.interests.map((interest: string, index: number) => (
-                        <Badge key={index} variant="secondary">{interest}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div>
-                  <h4 className="font-medium text-gray-900 dark:text-white">Stats</h4>
-                  <div className="grid grid-cols-2 gap-4 mt-2">
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-softspot-500">{userPosts.length}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Posts</div>
-                    </div>
-                    <div className="text-center">
-                      <div className="text-2xl font-bold text-softspot-500">{marketplacePosts.length}</div>
-                      <div className="text-sm text-gray-600 dark:text-gray-400">Marketplace Items</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="badges" className="mt-6">
-          <ProfileBadges badges={userBadges} />
-        </TabsContent>
-
-        <TabsContent value="reviews" className="mt-6">
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  Marketplace Reviews
+        <ProfileLayout>
+          <TabsContent value="posts" className="mt-6">
+            <ProfilePostsGrid
+              posts={userPosts}
+              onPostClick={handlePostClick}
+              isOwnProfile={true}
+              showCreateButton={true}
+              onPostCreated={handleRegularPostCreated}
+            />
+          </TabsContent>
+          
+          <TabsContent value="marketplace" className="mt-6">
+            <ProfilePostsGrid
+              posts={marketplacePosts}
+              onPostClick={handlePostClick}
+              isOwnProfile={true}
+              showCreateButton={false}
+              onPostCreated={handleMarketplacePostCreated}
+            />
+          </TabsContent>
+          
+          <TabsContent value="about" className="mt-6">
+            <Card>
+              <CardContent className="p-6">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
+                  About You
                 </h3>
-                <div className="flex items-center gap-2">
-                  <div className="flex items-center">
-                    <Star className="h-4 w-4 text-yellow-400 fill-current" />
-                    <span className="text-sm font-medium ml-1">4.8</span>
-                  </div>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    ({mockReviews.length} reviews)
-                  </span>
-                </div>
-              </div>
-              
-              <div className="space-y-4">
-                {mockReviews.map((review) => (
-                  <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0">
-                    <div className="flex items-start justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
-                          <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{review.reviewer}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">{review.date}</p>
-                        </div>
-                      </div>
-                      <div className="flex items-center">
-                        {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
-                          />
+                <div className="space-y-4">
+                  {profileData?.bio ? (
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Bio</h4>
+                      <p className="text-gray-600 dark:text-gray-400 mt-1">{profileData.bio}</p>
+                    </div>
+                  ) : (
+                    <p className="text-gray-500 dark:text-gray-400">
+                      Add a bio in your profile settings to tell others about yourself.
+                    </p>
+                  )}
+                  
+                  {profileData?.interests && profileData.interests.length > 0 && (
+                    <div>
+                      <h4 className="font-medium text-gray-900 dark:text-white">Favorite Brands</h4>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {profileData.interests.map((interest: string, index: number) => (
+                          <Badge key={index} variant="secondary">{interest}</Badge>
                         ))}
                       </div>
                     </div>
-                    <p className="text-gray-700 dark:text-gray-300 mb-1">{review.comment}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">Item: {review.item}</p>
+                  )}
+                  
+                  <div>
+                    <h4 className="font-medium text-gray-900 dark:text-white">Stats</h4>
+                    <div className="grid grid-cols-2 gap-4 mt-2">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-softspot-500">{userPosts.length}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Posts</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-softspot-500">{marketplacePosts.length}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">Marketplace Items</div>
+                      </div>
+                    </div>
                   </div>
-                ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="badges" className="mt-6">
+            <ProfileBadges badges={userBadges} />
+          </TabsContent>
+
+          <TabsContent value="reviews" className="mt-6">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Marketplace Reviews
+                  </h3>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center">
+                      <Star className="h-4 w-4 text-yellow-400 fill-current" />
+                      <span className="text-sm font-medium ml-1">4.8</span>
+                    </div>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      ({mockReviews.length} reviews)
+                    </span>
+                  </div>
+                </div>
                 
-                {mockReviews.length === 0 && (
-                  <div className="text-center py-8">
-                    <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-3" />
-                    <h4 className="font-medium text-gray-900 dark:text-white mb-2">No reviews yet</h4>
-                    <p className="text-gray-500 dark:text-gray-400">
-                      Start selling items to receive reviews from buyers.
-                    </p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </ProfileLayout>
-    </div>
+                <div className="space-y-4">
+                  {mockReviews.map((review) => (
+                    <div key={review.id} className="border-b border-gray-200 dark:border-gray-700 pb-4 last:border-b-0">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <div className="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+                            <User className="h-4 w-4 text-gray-600 dark:text-gray-400" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-gray-900 dark:text-white">{review.reviewer}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{review.date}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center">
+                          {[...Array(5)].map((_, i) => (
+                            <Star 
+                              key={i} 
+                              className={`h-4 w-4 ${i < review.rating ? 'text-yellow-400 fill-current' : 'text-gray-300'}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 mb-1">{review.comment}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Item: {review.item}</p>
+                    </div>
+                  ))}
+                  
+                  {mockReviews.length === 0 && (
+                    <div className="text-center py-8">
+                      <MessageSquare className="h-12 w-12 text-gray-400 mx-auto mb-3" />
+                      <h4 className="font-medium text-gray-900 dark:text-white mb-2">No reviews yet</h4>
+                      <p className="text-gray-500 dark:text-gray-400">
+                        Start selling items to receive reviews from buyers.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </ProfileLayout>
+      </div>
+    </MainLayout>
   );
 };
 

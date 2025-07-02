@@ -216,7 +216,7 @@ export const syncClerkUserToSupabase = async (clerkUser: any) => {
         })
         .eq('clerk_id', clerkUser.id)
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.warn('User update failed:', error);
@@ -239,7 +239,7 @@ export const syncClerkUserToSupabase = async (clerkUser: any) => {
           updated_at: new Date().toISOString(),
         })
         .select()
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.warn('User creation failed, but continuing:', error);
