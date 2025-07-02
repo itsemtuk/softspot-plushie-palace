@@ -96,29 +96,28 @@ export default function Feed() {
     try {
       console.log("Creating new feed post:", postData);
       console.log("User:", user);
-      console.log("Supabase User ID:", supabaseUserId);
       
-      // Get Clerk JWT token
-      const clerkToken = await getToken();
-      console.log("Clerk token obtained:", !!clerkToken);
-      
-      if (!clerkToken) {
+      // Look up the user in Supabase using Clerk ID
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id, username')
+        .eq('clerk_id', user.id)
+        .single();
+
+      if (userError || !userData) {
         toast({
           variant: "destructive",
-          title: "Authentication error",
-          description: "Unable to get authentication token."
+          title: "User not found",
+          description: "Please try refreshing the page."
         });
         return;
       }
       
-      // Create authenticated Supabase client
-      const authSupabase = createAuthenticatedSupabaseClient(clerkToken);
-      
-      // Insert into feed_posts table for the main feed
-      const { data, error } = await authSupabase
+      // Insert into feed_posts table using regular Supabase client
+      const { data, error } = await supabase
         .from('feed_posts')
         .insert([{
-          user_id: supabaseUserId,
+          user_id: userData.id,
           title: postData.title,
           content: postData.content,
           description: postData.description,
@@ -143,9 +142,9 @@ export default function Feed() {
       // Add to local state
       const newPost: ExtendedPost = {
         id: data.id,
-        userId: supabaseUserId,
-        user_id: supabaseUserId,
-        username: user.username || user.firstName || "User",
+        userId: userData.id,
+        user_id: userData.id,
+        username: userData.username || user.username || user.firstName || "User",
         image: data.image || '',
         title: data.title || '',
         description: data.description || '',

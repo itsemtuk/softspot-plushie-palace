@@ -145,28 +145,28 @@ export default function EnhancedSellItem() {
     try {
       console.log("Starting submission with data:", data);
       
-      // Get Clerk JWT token
-      const clerkToken = await getToken();
-      console.log("Clerk token obtained:", !!clerkToken);
-      
-      if (!clerkToken) {
+      // Look up the user in Supabase using Clerk ID
+      const { data: userData, error: userError } = await supabase
+        .from('users')
+        .select('id, username')
+        .eq('clerk_id', user.id)
+        .single();
+
+      if (userError || !userData) {
         toast({
           variant: "destructive",
-          title: "Authentication error",
-          description: "Unable to get authentication token."
+          title: "User not found",
+          description: "Please try refreshing the page."
         });
         return;
       }
-      
-      // Create authenticated Supabase client
-      const authSupabase = createAuthenticatedSupabaseClient(clerkToken);
       
       // Upload images first
       const uploadedImageUrls = images.length > 0 ? await uploadImages() : [];
       
       // Prepare listing data for marketplace_listings table
       const listingData: any = {
-        user_id: supabaseUserId,
+        user_id: userData.id,
         title: data.title,
         description: data.description,
         brand: data.brand,
@@ -196,7 +196,7 @@ export default function EnhancedSellItem() {
 
       console.log("Inserting listing data:", listingData);
 
-      const { data: result, error } = await authSupabase
+      const { data: result, error } = await supabase
         .from('marketplace_listings')
         .insert([listingData])
         .select()
@@ -219,10 +219,10 @@ export default function EnhancedSellItem() {
       
       if (shareToFeed) {
         try {
-          const { error: feedError } = await authSupabase
+          const { error: feedError } = await supabase
             .from('feed_posts')
             .insert([{
-              user_id: supabaseUserId,
+              user_id: userData.id,
               title: data.title,
               content: data.description,
               description: data.description,
