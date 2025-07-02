@@ -13,6 +13,7 @@ import { useUser } from "@clerk/clerk-react";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import MainLayout from "@/components/layout/MainLayout";
 import { MobileSettingsTabs } from "@/components/settings/MobileSettingsTabs";
+import { MobileProfileSettings } from "@/components/settings/MobileProfileSettings";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 const Settings = () => {
@@ -57,14 +58,17 @@ const Settings = () => {
   }
   
   if (isMobile) {
+    if (activeTab === "profile") {
+      return (
+        <EnhancedErrorBoundary>
+          <MobileProfileSettings />
+        </EnhancedErrorBoundary>
+      );
+    }
+    
     return (
       <EnhancedErrorBoundary>
         <MobileSettingsTabs activeTab={activeTab} onTabChange={setActiveTab}>
-          {activeTab === "profile" && (
-            <EnhancedErrorBoundary>
-              <ProfileSettings />
-            </EnhancedErrorBoundary>
-          )}
           {activeTab === "account" && (
             <EnhancedErrorBoundary>
               <AccountSettings />

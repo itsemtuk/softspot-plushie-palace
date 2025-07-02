@@ -1,7 +1,8 @@
 
 import { useState, useEffect } from "react";
-import { Search, Filter, Grid3X3, List } from "lucide-react";
+import { Search, Filter, Grid3X3, List, Plus, TrendingUp, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -48,6 +49,7 @@ const mockPlushies: MarketplacePlushie[] = [
 ];
 
 export default function MobileMarketplace() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("all");
   const [activeBrand, setActiveBrand] = useState("");
@@ -86,6 +88,50 @@ export default function MobileMarketplace() {
   return (
     <MainLayout>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+        {/* Hero Header */}
+        <div className="bg-gradient-to-br from-softspot-500 to-softspot-600 text-white p-6 pt-20">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold mb-2">Marketplace</h1>
+            <p className="text-softspot-100 text-sm">
+              Discover amazing plushies from collectors worldwide
+            </p>
+          </div>
+          
+          {/* Quick Stats */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="text-center">
+              <div className="text-xl font-bold">1.2k+</div>
+              <div className="text-xs text-softspot-100">Items</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold">500+</div>
+              <div className="text-xs text-softspot-100">Sellers</div>
+            </div>
+            <div className="text-center">
+              <div className="text-xl font-bold">98%</div>
+              <div className="text-xs text-softspot-100">Happy</div>
+            </div>
+          </div>
+
+          {/* CTA Buttons */}
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              onClick={() => navigate("/sell")}
+              className="bg-white text-softspot-600 hover:bg-gray-100 font-semibold py-3"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Sell Items
+            </Button>
+            <Button
+              variant="outline"
+              className="border-white text-white hover:bg-white/10 font-semibold py-3"
+            >
+              <TrendingUp className="h-4 w-4 mr-2" />
+              Trending
+            </Button>
+          </div>
+        </div>
+
         {/* Search Header */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-16 z-40">
           <div className="flex items-center gap-2 mb-3">
@@ -138,7 +184,7 @@ export default function MobileMarketplace() {
         />
 
         {/* Results */}
-        <ScrollArea className="h-[calc(100vh-280px)]">
+        <ScrollArea className="h-[calc(100vh-400px)]">
           {filteredPlushies.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 px-4">
               <div className="text-6xl mb-4">🧸</div>
@@ -225,6 +271,17 @@ export default function MobileMarketplace() {
             </div>
           )}
         </ScrollArea>
+
+        {/* Floating Sell Button */}
+        <div className="fixed bottom-20 right-4 z-50">
+          <Button
+            onClick={() => navigate("/sell")}
+            className="h-14 w-14 rounded-full bg-softspot-500 hover:bg-softspot-600 text-white shadow-lg animate-pulse"
+            size="icon"
+          >
+            <Plus className="h-6 w-6" />
+          </Button>
+        </div>
       </div>
     </MainLayout>
   );
