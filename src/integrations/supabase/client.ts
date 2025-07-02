@@ -29,7 +29,8 @@ export const createAuthenticatedSupabaseClient = (clerkToken: string) => {
     },
     global: {
       headers: {
-        'Authorization': `Bearer ${clerkToken}`
+        'Authorization': `Bearer ${clerkToken}`,
+        'apikey': SUPABASE_PUBLISHABLE_KEY
       }
     }
   });

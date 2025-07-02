@@ -657,6 +657,11 @@ export type Database = {
           favorite_brands: string[] | null
           favorite_types: string[] | null
           full_name: string | null
+          header_background_color: string | null
+          header_background_image: string | null
+          header_gradient_end: string | null
+          header_gradient_start: string | null
+          header_text_color: string | null
           hide_from_search: boolean | null
           id: number | null
           instagram: string | null
@@ -689,6 +694,11 @@ export type Database = {
           favorite_brands?: string[] | null
           favorite_types?: string[] | null
           full_name?: string | null
+          header_background_color?: string | null
+          header_background_image?: string | null
+          header_gradient_end?: string | null
+          header_gradient_start?: string | null
+          header_text_color?: string | null
           hide_from_search?: boolean | null
           id?: number | null
           instagram?: string | null
@@ -721,6 +731,11 @@ export type Database = {
           favorite_brands?: string[] | null
           favorite_types?: string[] | null
           full_name?: string | null
+          header_background_color?: string | null
+          header_background_image?: string | null
+          header_gradient_end?: string | null
+          header_gradient_start?: string | null
+          header_text_color?: string | null
           hide_from_search?: boolean | null
           id?: number | null
           instagram?: string | null

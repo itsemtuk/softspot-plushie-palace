@@ -5,6 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Users, Edit } from 'lucide-react';
 import { ProfileActionButton } from '@/components/profile/ProfileActionButton';
+import { ProfileHeaderCustomizer } from '@/components/profile/ProfileHeaderCustomizer';
 import { supabase } from '@/integrations/supabase/client';
 import { useFollowUser } from '@/hooks/useFollowUser';
 import { useUser } from '@clerk/clerk-react';
@@ -42,6 +43,13 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     followersCount: 0,
     followingCount: 0
   });
+  const [headerCustomization, setHeaderCustomization] = useState<any>({
+    header_background_color: '#ffffff',
+    header_gradient_start: '',
+    header_gradient_end: '',
+    header_background_image: '',
+    header_text_color: '#000000'
+  });
 
   const { followerCount } = useFollowUser(userId);
 
@@ -60,6 +68,23 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
         if (userInfoData) {
           setUserInfo(userInfoData);
+        }
+
+        // Fetch header customization
+        const { data: customizationData } = await supabase
+          .from('profiles')
+          .select('header_background_color, header_gradient_start, header_gradient_end, header_background_image, header_text_color')
+          .eq('user_uuid', userId)
+          .maybeSingle();
+
+        if (customizationData) {
+          setHeaderCustomization({
+            header_background_color: customizationData.header_background_color || '#ffffff',
+            header_gradient_start: customizationData.header_gradient_start || '',
+            header_gradient_end: customizationData.header_gradient_end || '',
+            header_background_image: customizationData.header_background_image || '',
+            header_text_color: customizationData.header_text_color || '#000000'
+          });
         }
 
         // Fetch posts count
@@ -114,10 +139,50 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
 
   const profileImage = getProfileImage();
 
+  // Generate background style based on customization
+  const getBackgroundStyle = () => {
+    const style: React.CSSProperties = {};
+    
+    if (headerCustomization.header_background_image) {
+      style.backgroundImage = `url(${headerCustomization.header_background_image})`;
+      style.backgroundSize = 'cover';
+      style.backgroundPosition = 'center';
+    } else if (headerCustomization.header_gradient_start && headerCustomization.header_gradient_end) {
+      style.background = `linear-gradient(135deg, ${headerCustomization.header_gradient_start}, ${headerCustomization.header_gradient_end})`;
+    } else if (headerCustomization.header_background_color) {
+      style.backgroundColor = headerCustomization.header_background_color;
+    } else {
+      // Default gradient
+      style.background = 'linear-gradient(to right, hsl(var(--primary) / 0.1), hsl(var(--accent) / 0.2))';
+    }
+    
+    style.color = headerCustomization.header_text_color || '#000000';
+    
+    return style;
+  };
+
   return (
     <Card className="mb-8 overflow-hidden">
-      <div className="bg-gradient-to-r from-primary/10 to-accent/20 dark:from-primary/20 dark:to-accent/30 px-6 py-8">
-        <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+      <div 
+        className="px-6 py-8 relative overflow-hidden"
+        style={getBackgroundStyle()}
+      >
+        {/* Overlay for background images */}
+        {headerCustomization.header_background_image && (
+          <div className="absolute inset-0 bg-black/20" />
+        )}
+        
+        {/* Customize button for own profile */}
+        {isOwnProfile && userId && (
+          <div className="absolute top-4 right-4 z-10">
+            <ProfileHeaderCustomizer
+              userId={userId}
+              onCustomizationChange={setHeaderCustomization}
+              currentCustomization={headerCustomization}
+            />
+          </div>
+        )}
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-6 relative z-10">
           {/* Profile Picture */}
           <div className="flex-shrink-0">
             <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
@@ -153,20 +218,32 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
           <div className="flex-grow min-w-0">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+                <h1 
+                  className="text-2xl font-bold mb-1"
+                  style={{ color: headerCustomization.header_text_color }}
+                >
                   {displayName}
                 </h1>
-                <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">
+                <p 
+                  className="text-sm mb-2 opacity-80"
+                  style={{ color: headerCustomization.header_text_color }}
+                >
                   @{username}
                 </p>
                 
                 {profileData?.bio && (
-                  <p className="text-gray-700 dark:text-gray-300 mb-3 max-w-md">
+                  <p 
+                    className="mb-3 max-w-md opacity-90"
+                    style={{ color: headerCustomization.header_text_color }}
+                  >
                     {profileData.bio}
                   </p>
                 )}
 
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <div 
+                  className="flex flex-wrap items-center gap-4 text-sm opacity-80"
+                  style={{ color: headerCustomization.header_text_color }}
+                >
                   <div className="flex items-center gap-1">
                     <Calendar className="w-4 h-4" />
                     <span>Joined 2024</span>
