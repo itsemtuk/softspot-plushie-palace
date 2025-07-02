@@ -97,6 +97,20 @@ export default function Feed() {
       console.log("Creating new feed post:", postData);
       console.log("User:", user);
       
+      // Get Clerk token for authenticated Supabase client
+      const token = await getToken({ template: "supabase" });
+      if (!token) {
+        toast({
+          variant: "destructive",
+          title: "Authentication error",
+          description: "Could not get authentication token."
+        });
+        return;
+      }
+      
+      // Create authenticated Supabase client
+      const authenticatedSupabase = createAuthenticatedSupabaseClient(token);
+      
       // Look up the user in Supabase using Clerk ID
       const { data: userData, error: userError } = await supabase
         .from('users')
@@ -113,8 +127,8 @@ export default function Feed() {
         return;
       }
       
-      // Insert into feed_posts table using regular Supabase client
-      const { data, error } = await supabase
+      // Insert into feed_posts table using authenticated Supabase client
+      const { data, error } = await authenticatedSupabase
         .from('feed_posts')
         .insert([{
           user_id: userData.id,
