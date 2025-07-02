@@ -115,7 +115,7 @@ export const fetchUserDataByClerkId = async (clerkId: string): Promise<{ data: a
     return { data, error: null };
   } catch (error) {
     const errorMessage = handleError(error);
-    console.error("Error fetching user data by Clerk ID:", error);
+    console.error("Error fetching user data by Clerk ID:", errorMessage);
     return { data: null, error: errorMessage };
   }
 };

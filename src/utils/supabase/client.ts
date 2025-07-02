@@ -67,7 +67,7 @@ export const isSupabaseConfigured = () => {
 export const handleSupabaseError = (error: any) => {
   console.error('Supabase error:', error);
   
-  if (error.message && (
+  if (error?.message && (
     error.message.includes('NetworkError') || 
     error.message.includes('Failed to fetch') ||
     error.message.includes('CORS') ||
@@ -83,7 +83,7 @@ export const handleSupabaseError = (error: any) => {
     };
   }
   
-  if (error.message && (
+  if (error?.message && (
     error.message.includes('timeout') ||
     error.message.includes('aborted')
   )) {
@@ -98,7 +98,7 @@ export const handleSupabaseError = (error: any) => {
   return {
     isCORSError: false,
     isNetworkError: false,
-    message: error.message || 'An unknown error occurred'
+    message: error?.message || 'An unknown error occurred'
   };
 };
 
