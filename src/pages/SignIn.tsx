@@ -14,7 +14,7 @@ const SignIn = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hasClerkError, setHasClerkError] = useState(false);
   const navigate = useNavigate();
-  const [isUsingClerk, setIsUsingClerk] = useState(localStorage.getItem('usingClerk') === 'true');
+  const [isUsingClerk, setIsUsingClerk] = useState(true); // Default to Clerk
   const [isSignedIn, setIsSignedIn] = useState(false);
   
   // Check if Clerk is available

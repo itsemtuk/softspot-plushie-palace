@@ -5,8 +5,10 @@ import Index from "./pages/Index";
 import Feed from "./pages/Feed";
 import UserProfile from "./pages/UserProfile";
 import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
 import SignIn from "./pages/SignIn";
+import Onboarding from "./pages/Onboarding";
+import SignUp from "./pages/SignUp";
+import Settings from "./pages/Settings";
 import MobileMessages from "./pages/MobileMessages";
 import MobileWishlist from "./pages/MobileWishlist";
 import MobileMarketplace from "./pages/MobileMarketplace";
@@ -14,7 +16,7 @@ import Marketplace from "./pages/Marketplace";
 import SellItem from "./pages/SellItem";
 import About from "./pages/About";
 import Users from "./pages/Users";
-import { ClerkButtonComponent } from "@/components/navigation/user-button/ClerkIntegration";
+import { ClerkUserSync } from "@/components/auth/ClerkUserSync";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -32,6 +34,8 @@ function App() {
             <Route path="/user/:username" element={<UserProfile />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/sign-in" element={<SignIn />} />
+            <Route path="/sign-up" element={<SignUp />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/about" element={<About />} />
             <Route path="/users" element={<Users />} />
             <Route path="/messages" element={<MobileMessages />} />
@@ -41,7 +45,7 @@ function App() {
             <Route path="/sell" element={<SellItem />} />
           </Routes>
           <Toaster />
-          <ClerkButtonComponent />
+          <ClerkUserSync />
         </div>
       </Router>
     </EnhancedErrorBoundary>
