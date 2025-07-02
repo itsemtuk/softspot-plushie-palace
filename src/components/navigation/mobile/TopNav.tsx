@@ -36,7 +36,7 @@ export function TopNav() {
   };
   
   return (
-    <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-softspot-100 dark:border-gray-700">
+    <div className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-softspot-100 dark:border-gray-700 supports-[backdrop-filter]:bg-white/60 supports-[backdrop-filter]:dark:bg-gray-800/60">
       <div className="flex items-center justify-between px-4 h-16">
         <div className="flex items-center">
           <button onClick={handleLogoClick} className="flex items-center">

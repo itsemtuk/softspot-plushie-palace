@@ -1,37 +1,44 @@
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Plus, Camera, DollarSign, Search, MessageCircle } from "lucide-react";
 import { QuickListForm } from "@/components/marketplace/QuickListForm";
 import { cn } from "@/lib/utils";
+import { useCreatePost } from "@/hooks/use-create-post";
 
 export function QuickActionsFAB() {
   const [isExpanded, setIsExpanded] = useState(false);
   const [showQuickList, setShowQuickList] = useState(false);
+  const navigate = useNavigate();
+  const { setIsPostCreationOpen } = useCreatePost();
 
   const actions = [
     {
       icon: Camera,
       label: "Post",
-      action: () => console.log("Create post"),
+      action: () => {
+        setIsPostCreationOpen(true);
+        navigate("/feed");
+      },
       color: "bg-blue-500 hover:bg-blue-600"
     },
     {
       icon: DollarSign,
       label: "Sell",
-      action: () => setShowQuickList(true),
+      action: () => navigate("/sell"),
       color: "bg-green-500 hover:bg-green-600"
     },
     {
       icon: Search,
       label: "Search",
-      action: () => console.log("Quick search"),
+      action: () => navigate("/search"),
       color: "bg-purple-500 hover:bg-purple-600"
     },
     {
       icon: MessageCircle,
       label: "Chat",
-      action: () => console.log("Quick chat"),
+      action: () => navigate("/messages"),
       color: "bg-orange-500 hover:bg-orange-600"
     }
   ];

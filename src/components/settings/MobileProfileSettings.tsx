@@ -146,7 +146,7 @@ export function MobileProfileSettings() {
       <MainLayout>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
           {/* Header */}
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3 sticky top-16 z-10">
+          <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3 sticky top-16 z-10 supports-[backdrop-filter]:bg-white/80 supports-[backdrop-filter]:dark:bg-gray-800/80">
             <Button
               variant="ghost"
               size="sm"
@@ -181,7 +181,7 @@ export function MobileProfileSettings() {
                 {activeTab === "notifications" && <NotificationsTab form={form} />}
                 
                 {/* Save Button */}
-                <div className="sticky bottom-4 bg-white dark:bg-gray-800 p-4 -mx-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="sticky bottom-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-4 -mx-4 border-t border-gray-200 dark:border-gray-700 supports-[backdrop-filter]:bg-white/80 supports-[backdrop-filter]:dark:bg-gray-800/80">
                   <Button 
                     type="submit" 
                     className="w-full bg-softspot-500 text-white hover:bg-softspot-600" 
@@ -214,7 +214,7 @@ export function MobileProfileSettings() {
     <MainLayout>
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
         {/* Header */}
-        <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-16 z-10">
+        <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 p-4 sticky top-16 z-10 supports-[backdrop-filter]:bg-white/80 supports-[backdrop-filter]:dark:bg-gray-800/80">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Profile Settings</h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
             Customize your profile and preferences
