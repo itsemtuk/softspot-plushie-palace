@@ -9,14 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { toast } from "@/components/ui/use-toast";
 import { PostCreationData } from "@/types/core";
+import { ValidationSchemas, validateAndSanitizeFormData, postCreationLimiter } from "@/utils/security/inputValidation";
+import { useSecurityMonitoring } from "@/utils/security/monitoring";
+import { useUser } from "@clerk/clerk-react";
 
 const postCreationSchema = z.object({
-  title: z.string().min(3, {
-    message: "Title must be at least 3 characters.",
-  }),
-  description: z.string().min(10, {
-    message: "Description must be at least 10 characters.",
-  }),
+  title: ValidationSchemas.postTitle,
+  description: ValidationSchemas.postContent,
 });
 
 interface PostCreationFormProps {
@@ -26,6 +25,8 @@ interface PostCreationFormProps {
 
 export const PostCreationForm = ({ onPostCreated, onClose }: PostCreationFormProps) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { user } = useUser();
+  const { logInputValidationFailure, logRateLimitExceeded } = useSecurityMonitoring();
   
   const form = useForm<z.infer<typeof postCreationSchema>>({
     resolver: zodResolver(postCreationSchema),
@@ -36,8 +37,21 @@ export const PostCreationForm = ({ onPostCreated, onClose }: PostCreationFormPro
   });
 
   const onSubmit = async (values: z.infer<typeof postCreationSchema>) => {
+    // Check rate limiting
+    if (!postCreationLimiter.isAllowed(user?.id || 'anonymous')) {
+      logRateLimitExceeded('post-creation', user?.id);
+      toast({
+        variant: "destructive",
+        title: "Rate limit exceeded",
+        description: `Please wait before creating another post. You can create ${postCreationLimiter.getRemainingAttempts(user?.id || 'anonymous')} more posts.`,
+      });
+      return;
+    }
+
     setIsSubmitting(true);
     try {
+      // Since form validation already passed, we can use the values directly
+      // Additional sanitization is handled by the form schema
       const postData: PostCreationData = {
         title: values.title,
         description: values.description,
@@ -53,6 +67,7 @@ export const PostCreationForm = ({ onPostCreated, onClose }: PostCreationFormPro
       });
       onClose();
     } catch (error) {
+      console.error('Post creation error:', error);
       toast({
         variant: "destructive",
         title: "Uh oh! Something went wrong.",

@@ -14,17 +14,20 @@ if (!CLERK_PUBLISHABLE_KEY) {
 // Import Clerk directly for stable integration
 import { ClerkProvider } from '@clerk/clerk-react';
 import { ThemeProvider } from "@/components/ui/theme-provider";
+import { SecurityProvider } from "@/components/security/SecurityProvider";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-      <ClerkProvider 
-        publishableKey={CLERK_PUBLISHABLE_KEY}
-        signInFallbackRedirectUrl="/feed"
-        signUpFallbackRedirectUrl="/onboarding"
-      >
-        <App />
-      </ClerkProvider>
-    </ThemeProvider>
+    <SecurityProvider>
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <ClerkProvider 
+          publishableKey={CLERK_PUBLISHABLE_KEY}
+          signInFallbackRedirectUrl="/feed"
+          signUpFallbackRedirectUrl="/onboarding"
+        >
+          <App />
+        </ClerkProvider>
+      </ThemeProvider>
+    </SecurityProvider>
   </React.StrictMode>
 );
