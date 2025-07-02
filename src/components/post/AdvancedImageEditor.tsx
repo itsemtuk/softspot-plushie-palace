@@ -92,16 +92,28 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
   }, []);
 
   const applyFilters = useCallback(() => {
-    if (!cropperRef.current) return;
+    if (!cropperRef.current) {
+      console.warn('Cropper ref is null');
+      return;
+    }
     
-    const canvas = cropperRef.current.getCanvas();
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-        addToHistory(dataUrl);
+    try {
+      const canvas = cropperRef.current.getCanvas();
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          addToHistory(dataUrl);
+        }
       }
+    } catch (error) {
+      console.error('Error applying filters:', error);
+      toast({
+        variant: "destructive",
+        title: "Filter Error",
+        description: "Could not apply filters to image"
+      });
     }
   }, [brightness, contrast, saturation, addToHistory]);
 
@@ -110,24 +122,33 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
       toast({
         variant: "destructive",
         title: "Error",
-        description: "No image to save"
+        description: "No image editor available"
       });
       return;
     }
 
-    const canvas = cropperRef.current.getCanvas();
-    if (canvas) {
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Apply all filters before saving
-        ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-        onSave(dataUrl);
-        toast({
-          title: "Image saved!",
-          description: "Your edited image has been saved."
-        });
+    try {
+      const canvas = cropperRef.current.getCanvas();
+      if (canvas) {
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          // Apply all filters before saving
+          ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+          onSave(dataUrl);
+          toast({
+            title: "Image saved!",
+            description: "Your edited image has been saved."
+          });
+        }
       }
+    } catch (error) {
+      console.error('Error saving image:', error);
+      toast({
+        variant: "destructive",
+        title: "Save Error",
+        description: "Could not save the edited image"
+      });
     }
   }, [brightness, contrast, saturation, onSave]);
 
@@ -139,8 +160,12 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
     setContrast(100);
     setSaturation(100);
     setHistoryIndex(0);
-    if (cropperRef.current) {
-      cropperRef.current.reset();
+    try {
+      if (cropperRef.current) {
+        cropperRef.current.reset();
+      }
+    } catch (error) {
+      console.warn('Could not reset cropper:', error);
     }
   }, []);
 
@@ -182,26 +207,32 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
         {/* Main Editor Area */}
         <div className="flex-1 flex items-center justify-center p-4 bg-muted/20">
           <div className="w-full h-full max-w-4xl max-h-[70vh] relative">
-            <Cropper
-              ref={cropperRef}
-              src={currentImage}
-              className="w-full h-full"
-              stencilProps={{
-                aspectRatio: aspectRatio,
-                grid: true,
-                movable: true,
-                resizable: true,
-                lines: true
-              }}
-              backgroundWrapperProps={{
-                scaleImage: false,
-                moveImage: true
-              }}
-              imageRestriction={"stencil" as any}
-              style={{
-                filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
-              }}
-            />
+            {currentImage ? (
+              <Cropper
+                ref={cropperRef}
+                src={currentImage}
+                className="w-full h-full"
+                stencilProps={{
+                  aspectRatio: aspectRatio,
+                  grid: true,
+                  movable: true,
+                  resizable: true,
+                  lines: true
+                }}
+                backgroundWrapperProps={{
+                  scaleImage: false,
+                  moveImage: true
+                }}
+                imageRestriction={"stencil" as any}
+                style={{
+                  filter: `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
+                }}
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                No image to edit
+              </div>
+            )}
           </div>
         </div>
 
