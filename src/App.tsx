@@ -21,6 +21,7 @@ import Users from "./pages/Users";
 import BrandPage from "./pages/BrandPage";
 import EnhancedSellItem from "./pages/EnhancedSellItem";
 import EnhancedMessages from "./pages/EnhancedMessages";
+import WaitlistPage from "./pages/WaitlistPage";
 import { ClerkUserSync } from "@/components/auth/ClerkUserSync";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -46,6 +47,7 @@ function App() {
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/about" element={<About />} />
             <Route path="/users" element={<Users />} />
+            <Route path="/waitlist" element={<WaitlistPage />} />
             <Route path="/messages" element={<EnhancedMessages />} />
             <Route path="/messages-old" element={<MobileMessages />} />
             <Route path="/wishlist" element={<MobileWishlist />} />
