@@ -38,9 +38,6 @@ export const supabase = (() => {
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
         }
       },
-      db: {
-        schema: 'public',
-      },
       realtime: {
         params: {
           eventsPerSecond: 2,

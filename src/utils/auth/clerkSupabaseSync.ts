@@ -85,7 +85,7 @@ export const getSupabaseUserIdFromClerk = async (clerkId: string): Promise<strin
       return null;
     }
 
-    return data?.id || null;
+    return (data as any)?.id || null;
   } catch (error) {
     const errorMessage = handleError(error);
     console.error("Failed to get Supabase user ID:", errorMessage);
@@ -109,7 +109,7 @@ export const fetchUserDataByClerkId = async (clerkId: string): Promise<{ data: a
       .single();
 
     if (error) {
-      const errorMsg = error.message || "Unknown error occurred";
+      const errorMsg = (error as any)?.message || "Unknown error occurred";
       return { data: null, error: errorMsg };
     }
 
