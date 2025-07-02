@@ -193,228 +193,232 @@ export const ProfileHeaderCustomizer: React.FC<ProfileHeaderCustomizerProps> = (
           Customize Header
         </Button>
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-3xl w-[95vw] max-h-[90vh] overflow-hidden flex flex-col">
+        <DialogHeader className="flex-shrink-0">
           <DialogTitle>Customize Profile Header</DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="background" className="mt-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="background">Background</TabsTrigger>
-            <TabsTrigger value="gradients">Gradients</TabsTrigger>
-            <TabsTrigger value="image">Image</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="background" className="space-y-4">
-            <div>
-              <Label className="text-base font-semibold">Solid Colors</Label>
-              <div className="grid grid-cols-8 gap-2 mt-2">
-                {predefinedColors.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => handleColorSelect(color)}
-                    className={`w-8 h-8 rounded-lg border-2 transition-all hover:scale-110 ${
-                      customization.header_background_color === color 
-                        ? 'border-primary shadow-lg' 
-                        : 'border-border'
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
-              </div>
-            </div>
+        <div className="flex-1 overflow-y-auto">
+          <Tabs defaultValue="background" className="mt-4">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="background">Background</TabsTrigger>
+              <TabsTrigger value="gradients">Gradients</TabsTrigger>
+              <TabsTrigger value="image">Image</TabsTrigger>
+            </TabsList>
             
-            <div>
-              <Label htmlFor="custom-bg-color" className="text-base font-semibold">Custom Color</Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="custom-bg-color"
-                  type="color"
-                  value={customization.header_background_color}
-                  onChange={(e) => handleColorSelect(e.target.value)}
-                  className="w-16 h-10"
-                />
-                <Input
-                  type="text"
-                  value={customization.header_background_color}
-                  onChange={(e) => handleColorSelect(e.target.value)}
-                  placeholder="#ffffff"
-                  className="flex-1"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label htmlFor="text-color" className="text-base font-semibold">Text Color</Label>
-              <div className="flex gap-2 mt-2">
-                <Input
-                  id="text-color"
-                  type="color"
-                  value={customization.header_text_color}
-                  onChange={(e) => setCustomization(prev => ({ ...prev, header_text_color: e.target.value }))}
-                  className="w-16 h-10"
-                />
-                <Input
-                  type="text"
-                  value={customization.header_text_color}
-                  onChange={(e) => setCustomization(prev => ({ ...prev, header_text_color: e.target.value }))}
-                  placeholder="#000000"
-                  className="flex-1"
-                />
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="gradients" className="space-y-4">
-            <div>
-              <Label className="text-base font-semibold">Preset Gradients</Label>
-              <div className="grid grid-cols-2 gap-3 mt-2">
-                {predefinedGradients.map((gradient) => (
-                  <button
-                    key={gradient.name}
-                    type="button"
-                    onClick={() => handleGradientSelect(gradient)}
-                    className={`h-16 rounded-lg border-2 transition-all hover:scale-105 ${
-                      customization.header_gradient_start === gradient.start && 
-                      customization.header_gradient_end === gradient.end
-                        ? 'border-primary shadow-lg' 
-                        : 'border-border'
-                    }`}
-                    style={{
-                      background: `linear-gradient(135deg, ${gradient.start}, ${gradient.end})`
-                    }}
-                  >
-                    <span className="text-white font-medium text-sm drop-shadow-md">
-                      {gradient.name}
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
+            <TabsContent value="background" className="space-y-4 mt-4">
               <div>
-                <Label htmlFor="gradient-start">Gradient Start</Label>
-                <Input
-                  id="gradient-start"
-                  type="color"
-                  value={customization.header_gradient_start || '#667eea'}
-                  onChange={(e) => setCustomization(prev => ({
-                    ...prev,
-                    header_gradient_start: e.target.value,
-                    header_background_color: ''
-                  }))}
-                />
-              </div>
-              <div>
-                <Label htmlFor="gradient-end">Gradient End</Label>
-                <Input
-                  id="gradient-end"
-                  type="color"
-                  value={customization.header_gradient_end || '#764ba2'}
-                  onChange={(e) => setCustomization(prev => ({
-                    ...prev,
-                    header_gradient_end: e.target.value,
-                    header_background_color: ''
-                  }))}
-                />
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="image" className="space-y-4">
-            <div>
-              <Label className="text-base font-semibold">Background Image</Label>
-              <div className="mt-2">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label
-                  htmlFor="image-upload"
-                  className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer block"
-                >
-                  <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
-                  <p className="text-sm font-medium">
-                    {isUploading ? "Uploading..." : "Click to upload image"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Max file size: 5MB
-                  </p>
-                </label>
+                <Label className="text-base font-semibold">Solid Colors</Label>
+                <div className="grid grid-cols-8 gap-2 mt-2">
+                  {predefinedColors.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      onClick={() => handleColorSelect(color)}
+                      className={`w-8 h-8 rounded-lg border-2 transition-all hover:scale-110 ${
+                        customization.header_background_color === color 
+                          ? 'border-primary shadow-lg' 
+                          : 'border-border'
+                      }`}
+                      style={{ backgroundColor: color }}
+                    />
+                  ))}
+                </div>
               </div>
               
-              {customization.header_background_image && (
-                <div className="mt-4">
-                  <img
-                    src={customization.header_background_image}
-                    alt="Header background preview"
-                    className="w-full h-32 object-cover rounded-lg border"
+              <div>
+                <Label htmlFor="custom-bg-color" className="text-base font-semibold">Custom Color</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="custom-bg-color"
+                    type="color"
+                    value={customization.header_background_color}
+                    onChange={(e) => handleColorSelect(e.target.value)}
+                    className="w-16 h-10"
                   />
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setCustomization(prev => ({ ...prev, header_background_image: '' }))}
-                    className="mt-2"
-                  >
-                    Remove Image
-                  </Button>
+                  <Input
+                    type="text"
+                    value={customization.header_background_color}
+                    onChange={(e) => handleColorSelect(e.target.value)}
+                    placeholder="#ffffff"
+                    className="flex-1"
+                  />
                 </div>
-              )}
-            </div>
-          </TabsContent>
-        </Tabs>
+              </div>
+              
+              <div>
+                <Label htmlFor="text-color" className="text-base font-semibold">Text Color</Label>
+                <div className="flex gap-2 mt-2">
+                  <Input
+                    id="text-color"
+                    type="color"
+                    value={customization.header_text_color}
+                    onChange={(e) => setCustomization(prev => ({ ...prev, header_text_color: e.target.value }))}
+                    className="w-16 h-10"
+                  />
+                  <Input
+                    type="text"
+                    value={customization.header_text_color}
+                    onChange={(e) => setCustomization(prev => ({ ...prev, header_text_color: e.target.value }))}
+                    placeholder="#000000"
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="gradients" className="space-y-4 mt-4">
+              <div>
+                <Label className="text-base font-semibold">Preset Gradients</Label>
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  {predefinedGradients.map((gradient) => (
+                    <button
+                      key={gradient.name}
+                      type="button"
+                      onClick={() => handleGradientSelect(gradient)}
+                      className={`h-16 rounded-lg border-2 transition-all hover:scale-105 ${
+                        customization.header_gradient_start === gradient.start && 
+                        customization.header_gradient_end === gradient.end
+                          ? 'border-primary shadow-lg' 
+                          : 'border-border'
+                      }`}
+                      style={{
+                        background: `linear-gradient(135deg, ${gradient.start}, ${gradient.end})`
+                      }}
+                    >
+                      <span className="text-white font-medium text-sm drop-shadow-md">
+                        {gradient.name}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="gradient-start">Gradient Start</Label>
+                  <Input
+                    id="gradient-start"
+                    type="color"
+                    value={customization.header_gradient_start || '#667eea'}
+                    onChange={(e) => setCustomization(prev => ({
+                      ...prev,
+                      header_gradient_start: e.target.value,
+                      header_background_color: ''
+                    }))}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="gradient-end">Gradient End</Label>
+                  <Input
+                    id="gradient-end"
+                    type="color"
+                    value={customization.header_gradient_end || '#764ba2'}
+                    onChange={(e) => setCustomization(prev => ({
+                      ...prev,
+                      header_gradient_end: e.target.value,
+                      header_background_color: ''
+                    }))}
+                  />
+                </div>
+              </div>
+            </TabsContent>
+            
+            <TabsContent value="image" className="space-y-4 mt-4">
+              <div>
+                <Label className="text-base font-semibold">Background Image</Label>
+                <div className="mt-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                    id="image-upload"
+                  />
+                  <label
+                    htmlFor="image-upload"
+                    className="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer block"
+                  >
+                    <Upload className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+                    <p className="text-sm font-medium">
+                      {isUploading ? "Uploading..." : "Click to upload image"}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      Max file size: 5MB
+                    </p>
+                  </label>
+                </div>
+                
+                {customization.header_background_image && (
+                  <div className="mt-4">
+                    <img
+                      src={customization.header_background_image}
+                      alt="Header background preview"
+                      className="w-full h-32 object-cover rounded-lg border"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setCustomization(prev => ({ ...prev, header_background_image: '' }))}
+                      className="mt-2"
+                    >
+                      Remove Image
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+        </div>
         
-        {/* Preview */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-sm">Preview</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div 
-              className="h-24 rounded-lg flex items-center justify-center relative overflow-hidden"
-              style={{
-                backgroundColor: customization.header_background_color || undefined,
-                backgroundImage: customization.header_gradient_start && customization.header_gradient_end 
-                  ? `linear-gradient(135deg, ${customization.header_gradient_start}, ${customization.header_gradient_end})`
-                  : customization.header_background_image
-                    ? `url(${customization.header_background_image})`
-                    : undefined,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                color: customization.header_text_color
-              }}
+        {/* Preview and Actions - Fixed at bottom */}
+        <div className="flex-shrink-0 border-t bg-background p-4 space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Preview</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div 
+                className="h-20 rounded-lg flex items-center justify-center relative overflow-hidden"
+                style={{
+                  backgroundColor: customization.header_background_color || undefined,
+                  backgroundImage: customization.header_gradient_start && customization.header_gradient_end 
+                    ? `linear-gradient(135deg, ${customization.header_gradient_start}, ${customization.header_gradient_end})`
+                    : customization.header_background_image
+                      ? `url(${customization.header_background_image})`
+                      : undefined,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  color: customization.header_text_color
+                }}
+              >
+                {customization.header_background_image && (
+                  <div className="absolute inset-0 bg-black/20" />
+                )}
+                <span className="relative font-semibold">Sample Header Text</span>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <div className="flex justify-between">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleReset}
+              className="gap-2"
             >
-              {customization.header_background_image && (
-                <div className="absolute inset-0 bg-black/20" />
-              )}
-              <span className="relative font-semibold">Sample Header Text</span>
-            </div>
-          </CardContent>
-        </Card>
-        
-        <div className="flex justify-between pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleReset}
-            className="gap-2"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Reset
-          </Button>
-          <Button 
-            onClick={handleSave} 
-            disabled={isSaving}
-            className="gap-2"
-          >
-            {isSaving ? "Saving..." : "Save Changes"}
-          </Button>
+              <RotateCcw className="h-4 w-4" />
+              Reset
+            </Button>
+            <Button 
+              onClick={handleSave} 
+              disabled={isSaving}
+              className="gap-2"
+            >
+              {isSaving ? "Saving..." : "Save Changes"}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
