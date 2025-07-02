@@ -104,75 +104,80 @@ export default function EnhancedSellItem() {
     <AuthGuard requireAuth>
       <MainLayout>
         <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
-          {/* Header */}
-          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-16 z-40">
+          {/* Mobile-optimized Header */}
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-3 sticky top-16 z-40">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => navigate(-1)}
-                className="h-10 w-10"
+                className="h-9 w-9 lg:h-10 lg:w-10"
               >
-                <ArrowLeft className="h-5 w-5" />
+                <ArrowLeft className="h-4 w-4 lg:h-5 lg:w-5" />
               </Button>
-              <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                Create Listing
-              </h1>
+              <div>
+                <h1 className="text-lg lg:text-xl font-bold text-gray-900 dark:text-white">
+                  Create Listing
+                </h1>
+                <p className="text-xs text-gray-500 dark:text-gray-400 lg:hidden">
+                  Fill in details to list your item
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="max-w-2xl mx-auto p-4 space-y-6">
-            {/* Listing Type Selection */}
+          <div className="max-w-2xl mx-auto p-3 lg:p-4 space-y-4 lg:space-y-6 pb-20">
+            {/* Mobile-optimized Listing Type Selection */}
             <Card>
-              <CardHeader>
-                <CardTitle>How would you like to sell?</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg">How would you like to sell?</CardTitle>
               </CardHeader>
               <CardContent>
                 <RadioGroup
                   value={listingType}
                   onValueChange={(value: any) => form.setValue('listingType', value)}
-                  className="grid grid-cols-2 gap-4"
+                  className="grid grid-cols-1 lg:grid-cols-2 gap-3"
                 >
-                  <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <div className="flex items-center space-x-3 p-3 lg:p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                     <RadioGroupItem value="fixed_price" id="fixed_price" />
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="h-4 w-4 text-green-600" />
-                      <Label htmlFor="fixed_price" className="cursor-pointer">
-                        <div className="font-medium">Fixed Price</div>
-                        <div className="text-sm text-gray-500">Set a price and sell immediately</div>
+                    <div className="flex items-center gap-2 flex-1">
+                      <DollarSign className="h-4 w-4 text-green-600 flex-shrink-0" />
+                      <Label htmlFor="fixed_price" className="cursor-pointer flex-1">
+                        <div className="font-medium text-sm lg:text-base">Fixed Price</div>
+                        <div className="text-xs lg:text-sm text-gray-500">Set a price and sell immediately</div>
                       </Label>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <div className="flex items-center space-x-3 p-3 lg:p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                     <RadioGroupItem value="negotiable" id="negotiable" />
-                    <div className="flex items-center gap-2">
-                      <Handshake className="h-4 w-4 text-blue-600" />
-                      <Label htmlFor="negotiable" className="cursor-pointer">
-                        <div className="font-medium">Negotiable</div>
-                        <div className="text-sm text-gray-500">Accept offers from buyers</div>
+                    <div className="flex items-center gap-2 flex-1">
+                      <Handshake className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                      <Label htmlFor="negotiable" className="cursor-pointer flex-1">
+                        <div className="font-medium text-sm lg:text-base">Negotiable</div>
+                        <div className="text-xs lg:text-sm text-gray-500">Accept offers from buyers</div>
                       </Label>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <div className="flex items-center space-x-3 p-3 lg:p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                     <RadioGroupItem value="auction" id="auction" />
-                    <div className="flex items-center gap-2">
-                      <Gavel className="h-4 w-4 text-purple-600" />
-                      <Label htmlFor="auction" className="cursor-pointer">
-                        <div className="font-medium">Auction</div>
-                        <div className="text-sm text-gray-500">Let buyers bid on your item</div>
+                    <div className="flex items-center gap-2 flex-1">
+                      <Gavel className="h-4 w-4 text-purple-600 flex-shrink-0" />
+                      <Label htmlFor="auction" className="cursor-pointer flex-1">
+                        <div className="font-medium text-sm lg:text-base">Auction</div>
+                        <div className="text-xs lg:text-sm text-gray-500">Let buyers bid on your item</div>
                       </Label>
                     </div>
                   </div>
                   
-                  <div className="flex items-center space-x-2 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <div className="flex items-center space-x-3 p-3 lg:p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                     <RadioGroupItem value="trade_only" id="trade_only" />
-                    <div className="flex items-center gap-2">
-                      <Handshake className="h-4 w-4 text-orange-600" />
-                      <Label htmlFor="trade_only" className="cursor-pointer">
-                        <div className="font-medium">Trade Only</div>
-                        <div className="text-sm text-gray-500">Only accept trades, no money</div>
+                    <div className="flex items-center gap-2 flex-1">
+                      <Handshake className="h-4 w-4 text-orange-600 flex-shrink-0" />
+                      <Label htmlFor="trade_only" className="cursor-pointer flex-1">
+                        <div className="font-medium text-sm lg:text-base">Trade Only</div>
+                        <div className="text-xs lg:text-sm text-gray-500">Only accept trades, no money</div>
                       </Label>
                     </div>
                   </div>
@@ -181,14 +186,15 @@ export default function EnhancedSellItem() {
             </Card>
 
             {/* Main Form */}
-            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-              {/* Image Upload */}
+            <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4 lg:space-y-6">
+              {/* Mobile-optimized Image Upload */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Photos</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Photos</CardTitle>
+                  <p className="text-sm text-gray-500">Add up to 5 high-quality photos</p>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  <div className="space-y-3">
                     <input
                       type="file"
                       multiple
@@ -199,31 +205,31 @@ export default function EnhancedSellItem() {
                     />
                     <label
                       htmlFor="image-upload"
-                      className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-8 text-center hover:border-softspot-300 transition-colors cursor-pointer block"
+                      className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 lg:p-8 text-center hover:border-softspot-300 transition-colors cursor-pointer block"
                     >
-                      <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 dark:text-gray-400">
+                      <Upload className="h-8 w-8 lg:h-12 lg:w-12 text-gray-400 mx-auto mb-2 lg:mb-4" />
+                      <p className="text-gray-600 dark:text-gray-400 text-sm lg:text-base">
                         Click to upload photos or drag and drop
                       </p>
-                      <p className="text-sm text-gray-500 mt-2">
+                      <p className="text-xs lg:text-sm text-gray-500 mt-1 lg:mt-2">
                         Add up to 5 photos ({images.length}/5)
                       </p>
                     </label>
                     
                     {images.length > 0 && (
-                      <div className="grid grid-cols-5 gap-2">
+                      <div className="grid grid-cols-3 lg:grid-cols-5 gap-2">
                         {images.map((image, index) => (
                           <div key={index} className="relative">
                             <img
                               src={URL.createObjectURL(image)}
                               alt={`Upload ${index + 1}`}
-                              className="w-full h-20 object-cover rounded-lg"
+                              className="w-full h-16 lg:h-20 object-cover rounded-lg"
                             />
                             <Button
                               type="button"
                               variant="destructive"
                               size="sm"
-                              className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full"
+                              className="absolute -top-1 -right-1 lg:-top-2 lg:-right-2 h-5 w-5 lg:h-6 lg:w-6 p-0 rounded-full text-xs"
                               onClick={() => setImages(prev => prev.filter((_, i) => i !== index))}
                             >
                               ×
@@ -236,17 +242,19 @@ export default function EnhancedSellItem() {
                 </CardContent>
               </Card>
 
-              {/* Basic Info */}
+              {/* Mobile-optimized Basic Info */}
               <Card>
-                <CardHeader>
-                  <CardTitle>Item Details</CardTitle>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-lg">Item Details</CardTitle>
+                  <p className="text-sm text-gray-500">Tell buyers about your plushie</p>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <Label htmlFor="title">Title *</Label>
+                    <Label htmlFor="title" className="text-sm font-medium">Title *</Label>
                     <Input
                       id="title"
                       placeholder="e.g., Jellycat Bashful Bunny - Medium"
+                      className="mt-1"
                       {...form.register('title')}
                     />
                     {form.formState.errors.title && (
@@ -255,10 +263,11 @@ export default function EnhancedSellItem() {
                   </div>
 
                   <div>
-                    <Label htmlFor="description">Description</Label>
+                    <Label htmlFor="description" className="text-sm font-medium">Description</Label>
                     <Textarea
                       id="description"
                       placeholder="Describe your plushie's condition, history, and any special features..."
+                      className="mt-1 min-h-[80px]"
                       {...form.register('description')}
                     />
                     {form.formState.errors.description && (
@@ -266,11 +275,11 @@ export default function EnhancedSellItem() {
                     )}
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
-                      <Label>Brand</Label>
+                      <Label className="text-sm font-medium">Brand</Label>
                       <Select onValueChange={(value) => form.setValue('brand', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select brand" />
                         </SelectTrigger>
                         <SelectContent>
@@ -286,9 +295,9 @@ export default function EnhancedSellItem() {
                     </div>
 
                     <div>
-                      <Label>Condition</Label>
+                      <Label className="text-sm font-medium">Condition</Label>
                       <Select onValueChange={(value: any) => form.setValue('condition', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select condition" />
                         </SelectTrigger>
                         <SelectContent>
@@ -302,11 +311,11 @@ export default function EnhancedSellItem() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
-                      <Label>Size</Label>
+                      <Label className="text-sm font-medium">Size</Label>
                       <Select onValueChange={(value) => form.setValue('size', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select size" />
                         </SelectTrigger>
                         <SelectContent>
@@ -321,9 +330,9 @@ export default function EnhancedSellItem() {
                     </div>
 
                     <div>
-                      <Label>Animal/Character Type</Label>
+                      <Label className="text-sm font-medium">Animal/Character Type</Label>
                       <Select onValueChange={(value) => form.setValue('species', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select type" />
                         </SelectTrigger>
                         <SelectContent>
@@ -351,10 +360,10 @@ export default function EnhancedSellItem() {
                     </div>
                   </div>
 
-                  {/* Color Selection with Swatches */}
+                  {/* Mobile-optimized Color Selection with Swatches */}
                   <div>
-                    <Label className="mb-3 block">Color</Label>
-                    <div className="grid grid-cols-6 gap-3">
+                    <Label className="text-sm font-medium mb-3 block">Color</Label>
+                    <div className="grid grid-cols-4 lg:grid-cols-6 gap-2 lg:gap-3">
                       {colorOptions.map((color) => (
                         <button
                           key={color.value}
@@ -370,7 +379,7 @@ export default function EnhancedSellItem() {
                           }`}
                         >
                           <div 
-                            className="w-8 h-8 rounded-full border-2 border-gray-300 mb-1"
+                            className="w-6 h-6 lg:w-8 lg:h-8 rounded-full border-2 border-gray-300 mb-1"
                             style={{ 
                               background: color.value === 'rainbow' 
                                 ? color.hex 
@@ -384,11 +393,11 @@ export default function EnhancedSellItem() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
-                      <Label>Material</Label>
+                      <Label className="text-sm font-medium">Material</Label>
                       <Select onValueChange={(value) => form.setValue('material', value)}>
-                        <SelectTrigger>
+                        <SelectTrigger className="mt-1">
                           <SelectValue placeholder="Select material" />
                         </SelectTrigger>
                         <SelectContent>
