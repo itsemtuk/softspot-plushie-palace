@@ -83,9 +83,9 @@ const Index = () => {
         
         {/* Mobile sign-in CTA for non-authenticated users */}
         {isMobile && !isSignedIn && (
-          <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-softspot-100 dark:border-gray-700 py-4 px-6 flex justify-center z-40 pb-safe transition-colors duration-200">
+          <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 py-4 px-6 flex justify-center z-40 pb-safe transition-colors duration-200">
             <Link to="/sign-in" className="w-full">
-              <Button className="w-full bg-softspot-400 hover:bg-softspot-500 text-white">
+              <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Sign in to explore SoftSpot
               </Button>
             </Link>
