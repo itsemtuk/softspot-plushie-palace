@@ -1,5 +1,5 @@
-
 import React from 'react';
+import { createSafeElement, safeReplaceElement, sanitizeDisplayName } from '@/utils/security/domSanitizer';
 
 interface BrandLogoProps {
   brandName: string;
@@ -70,12 +70,19 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ brandName, className = "w-
           const target = e.target as HTMLImageElement;
           target.onerror = null; // Prevent infinite loop
           
-          // Replace with initials in a colored circle
+          // Safely replace with initials without innerHTML
           const parent = target.parentNode as HTMLElement;
           if (parent) {
             const brandColor = generateBrandColor(brandName);
             parent.className = `${className} ${brandColor} flex items-center justify-center`;
-            parent.innerHTML = `<span class="text-xs font-bold">${getInitials(brandName)}</span>`;
+            
+            // Safely create initials element
+            const initialsElement = createSafeElement(
+              'span',
+              getInitials(sanitizeDisplayName(brandName)),
+              'text-xs font-bold'
+            );
+            safeReplaceElement(parent, initialsElement);
           }
         }}
       />

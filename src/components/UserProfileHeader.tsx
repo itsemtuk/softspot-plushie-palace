@@ -8,6 +8,7 @@ import { ProfileActionButton } from '@/components/profile/ProfileActionButton';
 import { supabase } from '@/integrations/supabase/client';
 import { useFollowUser } from '@/hooks/useFollowUser';
 import { useUser } from '@clerk/clerk-react';
+import { createSafeElement, safeReplaceElement, sanitizeDisplayName } from '@/utils/security/domSanitizer';
 
 interface UserProfileData {
   bio: string;
@@ -96,9 +97,11 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
     return userInfo.avatar_url;
   };
 
-  const displayName = userInfo.first_name 
-    ? `${userInfo.first_name} ${userInfo.last_name || ''}`.trim()
-    : username;
+  const displayName = sanitizeDisplayName(
+    userInfo.first_name 
+      ? `${userInfo.first_name} ${userInfo.last_name || ''}`.trim()
+      : username
+  );
 
   const handleEditProfile = () => {
     navigate('/settings');
@@ -128,7 +131,13 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
                     target.style.display = 'none';
                     const parent = target.parentElement;
                     if (parent) {
-                      parent.innerHTML = `<div class="w-full h-full bg-softspot-500 flex items-center justify-center text-white text-xl font-semibold">${getInitials(displayName)}</div>`;
+                      // Safely create fallback element without innerHTML
+                      const fallbackDiv = createSafeElement(
+                        'div',
+                        getInitials(displayName),
+                        'w-full h-full bg-softspot-500 flex items-center justify-center text-white text-xl font-semibold'
+                      );
+                      safeReplaceElement(parent, fallbackDiv);
                     }
                   }}
                 />
