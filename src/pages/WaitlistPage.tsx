@@ -4,11 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/components/ui/use-toast";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Heart, Shield, Users, Mail, Check, Star, ArrowRight } from "lucide-react";
 
 const WaitlistPage = () => {
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const { isLoaded, signUp } = useSignUp();
@@ -21,7 +20,6 @@ const WaitlistPage = () => {
       setIsSubmitting(true);
       
       // Add to waitlist (this would connect to your database in production)
-      // For now, we'll simulate adding to waitlist and then attempt to pre-register with Clerk
       await new Promise(resolve => setTimeout(resolve, 800)); // Simulate API call
       
       // Pre-register email with Clerk (optional)
@@ -49,253 +47,151 @@ const WaitlistPage = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-pink-100 via-white to-purple-50 p-4">
-      {/* Animated decorative elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-10 left-10 w-32 h-32 bg-pink-200 rounded-full opacity-50 blur-2xl animate-pulse"></div>
-        <div className="absolute bottom-10 right-20 w-40 h-40 bg-purple-200 rounded-full opacity-40 blur-3xl animate-pulse" style={{animationDelay: "1s"}}></div>
-        <div className="absolute top-1/3 right-1/4 w-24 h-24 bg-blue-100 rounded-full opacity-60 blur-xl animate-pulse" style={{animationDelay: "2s"}}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-36 h-36 bg-yellow-100 rounded-full opacity-30 blur-2xl animate-pulse" style={{animationDelay: "1.5s"}}></div>
+    <div className="min-h-screen bg-gradient-to-br from-softspot-50 via-background to-softspot-100 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-softspot-200/30 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-softspot-300/20 rounded-full blur-3xl animate-bounce-slow"></div>
+        <div className="absolute top-1/3 left-1/4 w-32 h-32 bg-softspot-400/20 rounded-full blur-2xl animate-pulse"></div>
       </div>
-      
-      {/* Main content */}
-      <div className="relative z-10 max-w-lg w-full bg-white bg-opacity-80 backdrop-blur-lg rounded-2xl shadow-xl p-8 border border-gray-100">
-        <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold text-gray-800 mb-2 tracking-tight">SoftSpot</h1>
-          <p className="text-xl text-gray-600">The social marketplace for plushie lovers</p>
+
+      <div className="relative z-10 container mx-auto px-4 py-16 flex flex-col items-center justify-center min-h-screen">
+        {/* Hero Section */}
+        <div className="text-center mb-12 max-w-4xl">
+          <div className="inline-flex items-center gap-2 bg-softspot-100 px-4 py-2 rounded-full text-softspot-700 text-sm font-medium mb-6">
+            <Star className="w-4 h-4" />
+            Coming Soon
+          </div>
           
-          <div className="mt-4 flex items-center justify-center">
-            <span className="bg-softspot-500 text-white text-xs px-3 py-1 rounded-full">Coming Soon</span>
+          <h1 className="text-6xl md:text-7xl font-bold bg-gradient-to-br from-softspot-600 to-softspot-800 bg-clip-text text-transparent mb-6 tracking-tight">
+            SoftSpot
+          </h1>
+          
+          <p className="text-xl md:text-2xl text-muted-foreground mb-4 max-w-2xl mx-auto leading-relaxed">
+            The social marketplace where plushie lovers connect, trade, and discover their next cuddle companion
+          </p>
+          
+          <div className="flex flex-wrap justify-center gap-6 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <Heart className="w-4 h-4 text-softspot-500" />
+              <span>Build your collection</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Users className="w-4 h-4 text-softspot-500" />
+              <span>Connect with collectors</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <Shield className="w-4 h-4 text-softspot-500" />
+              <span>Secure marketplace</span>
+            </div>
           </div>
         </div>
-        
-        {!isSubmitted ? (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <Input 
-                id="name" 
-                value={name} 
-                onChange={(e) => setName(e.target.value)} 
-                placeholder="Your name" 
-                required
-                className="backdrop-blur-lg bg-white/50"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
-                placeholder="your@email.com" 
-                required
-                className="backdrop-blur-lg bg-white/50"
-              />
-            </div>
-            
-            <Button 
-              className="w-full bg-softspot-500 hover:bg-softspot-600 text-white font-medium py-2 px-4 rounded-lg"
-              type="submit"
-              disabled={isSubmitting}
-            >
-              {isSubmitting ? "Joining..." : "Join Waitlist"}
-            </Button>
-            
-            <p className="text-sm text-center text-gray-500 mt-6">
-              Be the first to know when we launch! Join our exclusive waitlist for early access.
-            </p>
-          </form>
-        ) : (
-          <div className="text-center py-6">
-            <div className="mb-4 text-green-500">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">You're on the list!</h2>
-            <p className="text-gray-600 mb-6">
-              Thanks for your interest! We'll notify you at <span className="font-medium">{email}</span> when we're ready to launch.
-            </p>
-            <Button 
-              variant="outline"
-              onClick={() => {
-                setIsSubmitted(false);
-                setEmail("");
-                setName("");
-              }}
-            >
-              Join with another email
-            </Button>
+
+        {/* Waitlist Form */}
+        <div className="w-full max-w-md mx-auto">
+          <div className="bg-card/80 backdrop-blur-lg rounded-2xl shadow-2xl border border-border/50 p-8">
+            {!isSubmitted ? (
+              <>
+                <div className="text-center mb-6">
+                  <h2 className="text-2xl font-semibold mb-2">Join the Waitlist</h2>
+                  <p className="text-muted-foreground">Be among the first to experience SoftSpot when we launch</p>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium">Email address</Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                      <Input 
+                        id="email" 
+                        type="email" 
+                        value={email} 
+                        onChange={(e) => setEmail(e.target.value)} 
+                        placeholder="your@email.com" 
+                        required
+                        className="pl-10 h-12 bg-background/50 border-border/50 focus:border-softspot-500 focus:ring-softspot-500/20"
+                      />
+                    </div>
+                  </div>
+                  
+                  <Button 
+                    className="w-full h-12 bg-softspot-500 hover:bg-softspot-600 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all group"
+                    type="submit"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Joining waitlist...
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        Join Waitlist
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
+                    )}
+                  </Button>
+                  
+                  <p className="text-xs text-center text-muted-foreground">
+                    We'll only send you important updates about our launch. No spam, ever.
+                  </p>
+                </form>
+              </>
+            ) : (
+              <div className="text-center py-6">
+                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Check className="w-8 h-8 text-green-600" />
+                </div>
+                <h2 className="text-2xl font-semibold mb-4">You're on the list!</h2>
+                <p className="text-muted-foreground mb-6">
+                  Thanks for joining! We'll notify you at <span className="font-medium text-foreground">{email}</span> when SoftSpot is ready to launch.
+                </p>
+                <Button 
+                  variant="outline"
+                  onClick={() => {
+                    setIsSubmitted(false);
+                    setEmail("");
+                  }}
+                  className="border-softspot-200 hover:bg-softspot-50"
+                >
+                  Join with another email
+                </Button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-      
-      {/* Features preview with tabs */}
-      <div className="relative z-10 mt-12 max-w-4xl w-full">
-        <Tabs defaultValue="marketplace" className="w-full">
-          <TabsList className="grid grid-cols-3 mb-6">
-            <TabsTrigger value="marketplace">Marketplace</TabsTrigger>
-            <TabsTrigger value="community">Community</TabsTrigger>
-            <TabsTrigger value="payments">Secure Payments</TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="marketplace" className="bg-white bg-opacity-80 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold text-xl mb-3">Global Plushie Marketplace</h3>
-                <p className="text-gray-600">
-                  Buy, sell, and trade plushies with collectors from around the world. Our secure marketplace handles 
-                  payments with multiple methods including cards, PayPal, Apple Pay, and Google Pay.
-                </p>
-                <ul className="mt-4 space-y-2">
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Secure transactions with buyer protection
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    International shipping options
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Multiple payment methods
-                  </li>
-                </ul>
-              </div>
-              <div className="flex items-center justify-center">
-                <div className="relative h-48 w-48">
-                  <div className="absolute inset-0 bg-softspot-100 rounded-full blur-xl opacity-50"></div>
-                  <div className="relative z-10 h-full w-full flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-softspot-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="community" className="bg-white bg-opacity-80 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold text-xl mb-3">Connect with Fellow Collectors</h3>
-                <p className="text-gray-600">
-                  Share your collection, discover new favorites, and connect with plushie enthusiasts 
-                  around the world through our social community features.
-                </p>
-                <ul className="mt-4 space-y-2">
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Create a profile and showcase your collection
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Engage with posts and comments
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Follow collectors with similar interests
-                  </li>
-                </ul>
-              </div>
-              <div className="flex items-center justify-center">
-                <div className="relative h-48 w-48">
-                  <div className="absolute inset-0 bg-softspot-100 rounded-full blur-xl opacity-50"></div>
-                  <div className="relative z-10 h-full w-full flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-softspot-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="payments" className="bg-white bg-opacity-80 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h3 className="font-semibold text-xl mb-3">Secure Payment Options</h3>
-                <p className="text-gray-600">
-                  Your transactions are always secure with our multiple payment options and industry-standard encryption.
-                  Choose from various payment methods to buy and sell with confidence.
-                </p>
-                <ul className="mt-4 space-y-2">
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Credit/Debit Cards (SSL encrypted)
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    PayPal, Apple Pay, Google Pay
-                  </li>
-                  <li className="flex items-center">
-                    <svg className="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Two-factor authentication (2FA)
-                  </li>
-                </ul>
-              </div>
-              <div className="flex items-center justify-center">
-                <div className="relative h-48 w-48">
-                  <div className="absolute inset-0 bg-softspot-100 rounded-full blur-xl opacity-50"></div>
-                  <div className="relative z-10 h-full w-full flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-softspot-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
-      </div>
-      
-      {/* Newsletter signup (alternative if they're not ready to join waitlist) */}
-      <div className="relative z-10 mt-12 max-w-lg w-full bg-white bg-opacity-80 backdrop-blur-sm p-6 rounded-xl shadow-sm border border-gray-100">
-        <div className="text-center mb-4">
-          <h2 className="text-xl font-semibold">Stay Updated</h2>
-          <p className="text-gray-600 text-sm">Get the latest news about our launch and features</p>
         </div>
-        
-        <div className="flex gap-2">
-          <Input 
-            placeholder="Enter your email" 
-            type="email"
-            className="backdrop-blur-lg bg-white/50"
-          />
-          <Button>Subscribe</Button>
+
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-3 gap-6 mt-16 max-w-4xl w-full">
+          <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-border/50 hover:border-softspot-200 transition-colors">
+            <div className="w-12 h-12 bg-softspot-100 rounded-lg flex items-center justify-center mb-4">
+              <Heart className="w-6 h-6 text-softspot-600" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">Social Community</h3>
+            <p className="text-muted-foreground text-sm">Connect with fellow collectors, share your finds, and discover new favorites together.</p>
+          </div>
+          
+          <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-border/50 hover:border-softspot-200 transition-colors">
+            <div className="w-12 h-12 bg-softspot-100 rounded-lg flex items-center justify-center mb-4">
+              <Shield className="w-6 h-6 text-softspot-600" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">Secure Trading</h3>
+            <p className="text-muted-foreground text-sm">Buy, sell, and trade with confidence using our secure payment system and buyer protection.</p>
+          </div>
+          
+          <div className="bg-card/50 backdrop-blur-sm rounded-xl p-6 border border-border/50 hover:border-softspot-200 transition-colors">
+            <div className="w-12 h-12 bg-softspot-100 rounded-lg flex items-center justify-center mb-4">
+              <Users className="w-6 h-6 text-softspot-600" />
+            </div>
+            <h3 className="font-semibold text-lg mb-2">Global Marketplace</h3>
+            <p className="text-muted-foreground text-sm">Access a worldwide community of plushie enthusiasts and rare collectibles.</p>
+          </div>
         </div>
-        
-        <div className="mt-4 flex flex-wrap justify-center gap-4">
-          <a href="#" className="text-sm text-gray-500 hover:text-softspot-500 transition-colors">Privacy Policy</a>
-          <a href="#" className="text-sm text-gray-500 hover:text-softspot-500 transition-colors">Terms of Service</a>
-          <a href="#" className="text-sm text-gray-500 hover:text-softspot-500 transition-colors">Contact Us</a>
+
+        {/* Footer */}
+        <div className="mt-16 text-center text-xs text-muted-foreground">
+          <p>© {new Date().getFullYear()} SoftSpot. All rights reserved.</p>
         </div>
-      </div>
-      
-      {/* Footer */}
-      <div className="mt-12 text-center text-gray-500 text-xs">
-        <p>© {new Date().getFullYear()} SoftSpot. All rights reserved.</p>
       </div>
     </div>
   );
