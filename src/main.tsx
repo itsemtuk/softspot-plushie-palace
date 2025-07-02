@@ -4,12 +4,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Check if Clerk publishable key is available
-const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
-if (!CLERK_PUBLISHABLE_KEY) {
-  throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY environment variable. Please add it to your environment configuration.");
-}
+// Clerk publishable key - hardcoded as requested
+const CLERK_PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
 
 // Import Clerk directly for stable integration
 import { ClerkProvider } from '@clerk/clerk-react';
