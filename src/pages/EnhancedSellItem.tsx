@@ -146,7 +146,7 @@ export default function EnhancedSellItem() {
       console.log("Starting submission with data:", data);
       
       // Get Clerk JWT token
-      const clerkToken = await getToken();
+      const clerkToken = await getToken({ template: "supabase" });
       console.log("Clerk token obtained:", !!clerkToken);
       
       if (!clerkToken) {

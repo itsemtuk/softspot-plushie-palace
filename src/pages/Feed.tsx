@@ -99,7 +99,7 @@ export default function Feed() {
       console.log("Supabase User ID:", supabaseUserId);
       
       // Get Clerk JWT token
-      const clerkToken = await getToken();
+      const clerkToken = await getToken({ template: "supabase" });
       console.log("Clerk token obtained:", !!clerkToken);
       
       if (!clerkToken) {
