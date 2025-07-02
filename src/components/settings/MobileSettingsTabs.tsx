@@ -21,13 +21,9 @@ export const MobileSettingsTabs = ({ activeTab, onTabChange, children }: MobileS
   const [showTabs, setShowTabs] = useState(true);
 
   const tabs: MobileSettingsTab[] = [
-    { id: "basic-info", label: "Profile Information", shortLabel: "Profile", icon: User },
-    { id: "privacy-security", label: "Privacy & Security", shortLabel: "Privacy", icon: Shield },
-    { id: "notifications", label: "Notifications", shortLabel: "Notifications", icon: Bell },
-    { id: "plush-preferences", label: "Plushie Preferences", shortLabel: "Preferences", icon: Palette },
-    { id: "social-media", label: "Social Media Links", shortLabel: "Social", icon: Link2 },
-    { id: "store-links", label: "Store Links", shortLabel: "Stores", icon: Store },
-    { id: "delivery-payment", label: "Delivery & Payment", shortLabel: "Delivery", icon: Truck },
+    { id: "profile", label: "Profile Information", shortLabel: "Profile", icon: User },
+    { id: "account", label: "Account", shortLabel: "Account", icon: Shield },
+    { id: "appearance", label: "Appearance", shortLabel: "Appearance", icon: Palette },
   ];
 
   const currentTab = tabs.find(tab => tab.id === activeTab);

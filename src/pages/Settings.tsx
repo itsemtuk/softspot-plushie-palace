@@ -12,6 +12,8 @@ import { DarkModeSettings } from "@/components/settings/DarkModeSettings";
 import { useUser } from "@clerk/clerk-react";
 import { EnhancedErrorBoundary } from "@/components/ui/enhanced-error-boundary";
 import MainLayout from "@/components/layout/MainLayout";
+import { MobileSettingsTabs } from "@/components/settings/MobileSettingsTabs";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Settings = () => {
   const [activeTab, setActiveTab] = useState("profile");
@@ -19,6 +21,7 @@ const Settings = () => {
   const { status } = useStatus();
   const { user, isLoaded } = useUser();
   const [isLoading, setIsLoading] = useState(true);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isLoaded) {
@@ -53,6 +56,30 @@ const Settings = () => {
     );
   }
   
+  if (isMobile) {
+    return (
+      <EnhancedErrorBoundary>
+        <MobileSettingsTabs activeTab={activeTab} onTabChange={setActiveTab}>
+          {activeTab === "profile" && (
+            <EnhancedErrorBoundary>
+              <ProfileSettings />
+            </EnhancedErrorBoundary>
+          )}
+          {activeTab === "account" && (
+            <EnhancedErrorBoundary>
+              <AccountSettings />
+            </EnhancedErrorBoundary>
+          )}
+          {activeTab === "appearance" && (
+            <EnhancedErrorBoundary>
+              <DarkModeSettings />
+            </EnhancedErrorBoundary>
+          )}
+        </MobileSettingsTabs>
+      </EnhancedErrorBoundary>
+    );
+  }
+
   return (
     <EnhancedErrorBoundary>
       <MainLayout>
