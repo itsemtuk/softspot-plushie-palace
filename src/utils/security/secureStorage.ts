@@ -2,23 +2,85 @@
  * Secure storage utilities with encryption for sensitive data
  */
 
-// Simple encryption/decryption for localStorage (not for production secrets)
-class SimpleEncryption {
-  private static readonly key = 'softspot-app-key';
+// Improved encryption for localStorage with proper key derivation
+class SecureEncryption {
+  private static readonly salt = 'softspot-security-salt-v2';
   
-  static encrypt(text: string): string {
+  private static async deriveKey(password: string): Promise<CryptoKey> {
+    const encoder = new TextEncoder();
+    const keyMaterial = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(password),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    );
+    
+    return crypto.subtle.deriveKey(
+      {
+        name: 'PBKDF2',
+        salt: encoder.encode(this.salt),
+        iterations: 100000,
+        hash: 'SHA-256'
+      },
+      keyMaterial,
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+  }
+  
+  static async encrypt(text: string): Promise<string> {
     try {
-      return btoa(unescape(encodeURIComponent(text)));
+      if (!crypto.subtle) {
+        // Fallback to Base64 for environments without crypto.subtle
+        return btoa(unescape(encodeURIComponent(text)));
+      }
+      
+      const encoder = new TextEncoder();
+      const data = encoder.encode(text);
+      const key = await this.deriveKey(this.salt);
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      
+      const encrypted = await crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        data
+      );
+      
+      const result = new Uint8Array(iv.length + encrypted.byteLength);
+      result.set(iv);
+      result.set(new Uint8Array(encrypted), iv.length);
+      
+      return btoa(String.fromCharCode(...result));
     } catch {
-      return text; // Fallback to plain text if encoding fails
+      // Fallback to Base64 if encryption fails
+      return btoa(unescape(encodeURIComponent(text)));
     }
   }
   
-  static decrypt(encodedText: string): string {
+  static async decrypt(encryptedText: string): Promise<string> {
     try {
-      return decodeURIComponent(escape(atob(encodedText)));
+      if (!crypto.subtle) {
+        // Fallback from Base64
+        return decodeURIComponent(escape(atob(encryptedText)));
+      }
+      
+      const data = new Uint8Array(atob(encryptedText).split('').map(c => c.charCodeAt(0)));
+      const iv = data.slice(0, 12);
+      const encrypted = data.slice(12);
+      
+      const key = await this.deriveKey(this.salt);
+      const decrypted = await crypto.subtle.decrypt(
+        { name: 'AES-GCM', iv },
+        key,
+        encrypted
+      );
+      
+      return new TextDecoder().decode(decrypted);
     } catch {
-      return encodedText; // Fallback to original if decoding fails
+      // Fallback from Base64
+      return decodeURIComponent(escape(atob(encryptedText)));
     }
   }
 }
@@ -42,10 +104,11 @@ export class SecureStorage {
     'draft-posts'
   ];
   
-  static setItem(key: string, value: string): void {
+  static async setItem(key: string, value: string): Promise<void> {
     try {
       if (this.sensitiveKeys.includes(key)) {
-        localStorage.setItem(key, SimpleEncryption.encrypt(value));
+        const encrypted = await SecureEncryption.encrypt(value);
+        localStorage.setItem(key, encrypted);
       } else {
         localStorage.setItem(key, value);
       }
@@ -54,13 +117,13 @@ export class SecureStorage {
     }
   }
   
-  static getItem(key: string): string | null {
+  static async getItem(key: string): Promise<string | null> {
     try {
       const value = localStorage.getItem(key);
       if (!value) return null;
       
       if (this.sensitiveKeys.includes(key)) {
-        return SimpleEncryption.decrypt(value);
+        return await SecureEncryption.decrypt(value);
       }
       return value;
     } catch (error) {
@@ -110,19 +173,19 @@ export class SecureStorage {
 export class SessionManager {
   private static readonly SESSION_TIMEOUT = 24 * 60 * 60 * 1000; // 24 hours
   
-  static setSession(data: any): void {
+  static async setSession(data: any): Promise<void> {
     const sessionData = {
       ...data,
       timestamp: Date.now(),
       expiresAt: Date.now() + this.SESSION_TIMEOUT
     };
     
-    SecureStorage.setItem('user-session', JSON.stringify(sessionData));
+    await SecureStorage.setItem('user-session', JSON.stringify(sessionData));
   }
   
-  static getSession(): any | null {
+  static async getSession(): Promise<any | null> {
     try {
-      const sessionString = SecureStorage.getItem('user-session');
+      const sessionString = await SecureStorage.getItem('user-session');
       if (!sessionString) return null;
       
       const sessionData = JSON.parse(sessionString);
@@ -145,10 +208,10 @@ export class SessionManager {
     SecureStorage.removeItem('user-session');
   }
   
-  static refreshSession(): void {
-    const session = this.getSession();
+  static async refreshSession(): Promise<void> {
+    const session = await this.getSession();
     if (session) {
-      this.setSession(session);
+      await this.setSession(session);
     }
   }
 }

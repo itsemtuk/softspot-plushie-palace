@@ -130,24 +130,43 @@ export const useSecurityMonitoring = () => {
  * Content Security Policy helper
  */
 export const applySecurityHeaders = (): void => {
-  // This would typically be done server-side, but we can add some client-side protections
-  
-  // Prevent clickjacking
-  if (window.self !== window.top) {
-    window.top.location = window.self.location;
-  }
-  
-  // Add security meta tags if they don't exist
-  const addMetaTag = (name: string, content: string) => {
-    if (!document.querySelector(`meta[name="${name}"]`)) {
-      const meta = document.createElement('meta');
-      meta.name = name;
-      meta.content = content;
-      document.head.appendChild(meta);
+  try {
+    // Add security meta tags if they don't exist
+    const addMetaTag = (name: string, content: string) => {
+      if (!document.querySelector(`meta[name="${name}"]`)) {
+        const meta = document.createElement('meta');
+        meta.name = name;
+        meta.content = content;
+        document.head.appendChild(meta);
+      }
+    };
+    
+    // Add Content Security Policy
+    if (!document.querySelector('meta[http-equiv="Content-Security-Policy"]')) {
+      const csp = document.createElement('meta');
+      csp.httpEquiv = 'Content-Security-Policy';
+      csp.content = "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://clerk.com https://*.clerk.accounts.dev https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; connect-src 'self' https://*.supabase.co https://clerk.com https://*.clerk.accounts.dev; frame-src 'self' https://challenges.cloudflare.com;";
+      document.head.appendChild(csp);
     }
-  };
-  
-  addMetaTag('referrer', 'strict-origin-when-cross-origin');
-  addMetaTag('X-Content-Type-Options', 'nosniff');
-  addMetaTag('X-Frame-Options', 'DENY');
+    
+    addMetaTag('referrer', 'strict-origin-when-cross-origin');
+    addMetaTag('X-Content-Type-Options', 'nosniff');
+    
+    // Safe frame protection - only protect if we're not in an iframe legitimately
+    if (window.self !== window.top) {
+      try {
+        // Check if parent is accessible (same origin)
+        if (window.parent.location.hostname !== window.location.hostname) {
+          document.body.style.display = 'none';
+          console.warn('Potential clickjacking attempt detected');
+        }
+      } catch (e) {
+        // Cross-origin iframe detected - this is likely malicious
+        document.body.style.display = 'none';
+        console.warn('Cross-origin iframe detected - potential security risk');
+      }
+    }
+  } catch (error) {
+    console.warn('Failed to apply security headers:', error);
+  }
 };
