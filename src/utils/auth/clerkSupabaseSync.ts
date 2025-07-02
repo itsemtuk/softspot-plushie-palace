@@ -34,7 +34,7 @@ export const syncClerkUserToSupabase = async (clerkUser: ClerkUser): Promise<boo
   }
 
   try {
-    // Prepare user data from Clerk
+    // Prepare user data from Clerk with null checks
     const userData = {
       clerk_id: clerkUser.id,
       username: clerkUser.username || clerkUser.firstName || 'User',

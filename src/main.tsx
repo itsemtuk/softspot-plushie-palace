@@ -11,6 +11,10 @@ const renderWithClerk = async () => {
   try {
     const { ClerkProvider } = await import('@clerk/clerk-react');
     
+    if (!CLERK_PUBLISHABLE_KEY) {
+      throw new Error("Missing VITE_CLERK_PUBLISHABLE_KEY");
+    }
+    
     ReactDOM.createRoot(document.getElementById("root")!).render(
       <React.StrictMode>
         <ClerkProvider 
