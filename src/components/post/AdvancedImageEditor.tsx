@@ -99,14 +99,20 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
     
     try {
       const canvas = cropperRef.current.getCanvas();
-      if (canvas) {
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-          addToHistory(dataUrl);
-        }
+      if (!canvas) {
+        console.warn('Canvas is null');
+        return;
       }
+      
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.warn('Canvas context is null');
+        return;
+      }
+      
+      ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+      addToHistory(dataUrl);
     } catch (error) {
       console.error('Error applying filters:', error);
       toast({
