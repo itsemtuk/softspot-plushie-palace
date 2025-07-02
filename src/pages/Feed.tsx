@@ -6,7 +6,7 @@ import { FeedContent } from "@/components/feed/FeedContent";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { PostCreationData, ExtendedPost } from "@/types/core";
 import { supabase } from "@/integrations/supabase/client";
-import PostCreationFlow from "@/components/post/PostCreationFlow";
+import { EnhancedPostCreation } from "@/components/post/EnhancedPostCreation";
 import { useUser } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { toast } from "@/components/ui/use-toast";
@@ -189,8 +189,8 @@ export default function Feed() {
         />
       </div>
 
-      {/* Post Creation Flow */}
-      <PostCreationFlow
+      {/* Enhanced Post Creation */}
+      <EnhancedPostCreation
         isOpen={isPostCreationOpen}
         onClose={() => setIsPostCreationOpen(false)}
         onPostCreated={handleCreatePost}

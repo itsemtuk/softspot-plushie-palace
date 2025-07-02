@@ -56,7 +56,7 @@ export const PostCreationForm = ({ onPostCreated, onClose }: PostCreationFormPro
         title: values.title,
         description: values.description,
         content: values.description,
-        image: "",
+        image: "", // This will be set by the parent component
         tags: [],
       };
       
