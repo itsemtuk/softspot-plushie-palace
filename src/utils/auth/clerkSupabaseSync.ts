@@ -109,7 +109,8 @@ export const fetchUserDataByClerkId = async (clerkId: string): Promise<{ data: a
       .single();
 
     if (error) {
-      return { data: null, error: error.message || "Unknown error occurred" };
+      const errorMsg = error.message || "Unknown error occurred";
+      return { data: null, error: errorMsg };
     }
 
     return { data, error: null };

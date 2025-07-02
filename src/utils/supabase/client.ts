@@ -64,16 +64,19 @@ export const isSupabaseConfigured = () => {
 };
 
 // Enhanced error handling for common Supabase issues
-export const handleSupabaseError = (error: any) => {
+export const handleSupabaseError = (error: unknown) => {
   console.error('Supabase error:', error);
   
-  if (error?.message && (
-    error.message.includes('NetworkError') || 
-    error.message.includes('Failed to fetch') ||
-    error.message.includes('CORS') ||
-    error.message.includes('net::ERR_FAILED') ||
-    error.message.includes('ERR_BLOCKED_BY_RESPONSE') ||
-    error.code === 'PGRST301'
+  // Type guard for error objects
+  const errorObj = error as { message?: string; code?: string } | null;
+  
+  if (errorObj?.message && (
+    errorObj.message.includes('NetworkError') || 
+    errorObj.message.includes('Failed to fetch') ||
+    errorObj.message.includes('CORS') ||
+    errorObj.message.includes('net::ERR_FAILED') ||
+    errorObj.message.includes('ERR_BLOCKED_BY_RESPONSE') ||
+    errorObj.code === 'PGRST301'
   )) {
     console.warn('Network/CORS issue detected. Falling back to local storage.');
     return {
@@ -83,9 +86,9 @@ export const handleSupabaseError = (error: any) => {
     };
   }
   
-  if (error?.message && (
-    error.message.includes('timeout') ||
-    error.message.includes('aborted')
+  if (errorObj?.message && (
+    errorObj.message.includes('timeout') ||
+    errorObj.message.includes('aborted')
   )) {
     console.warn('Timeout error detected. Falling back to local storage.');
     return {
@@ -98,7 +101,7 @@ export const handleSupabaseError = (error: any) => {
   return {
     isCORSError: false,
     isNetworkError: false,
-    message: error?.message || 'An unknown error occurred'
+    message: errorObj?.message || 'An unknown error occurred'
   };
 };
 
@@ -125,7 +128,7 @@ export const safeQueryWithRetry = async <T>(
 ): Promise<{data: T | null, error: any}> => {
   try {
     return await queryFn();
-  } catch (error: any) {
+  } catch (error: unknown) {
     const handledError = handleSupabaseError(error);
     console.warn('Query failed, using fallback:', handledError.message);
     
@@ -167,12 +170,12 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
       // If we can't determine the structure, assume success
       console.log('Supabase connection test successful');
       return true;
-    } catch (err: any) {
+    } catch (err: unknown) {
       const handledError = handleSupabaseError(err);
       console.warn('Supabase connection test failed:', handledError.message);
       return false;
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     const handledError = handleSupabaseError(err);
     console.warn('Supabase connection test failed:', handledError.message);
     return false;
@@ -246,7 +249,7 @@ export const syncClerkUserToSupabase = async (clerkUser: any) => {
       console.log('User creation successful:', data);
       return { data, error: null };
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.warn('User sync error:', err);
     return { data: null, error: err };
   }
