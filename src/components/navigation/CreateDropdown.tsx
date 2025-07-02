@@ -33,7 +33,11 @@ export const CreateDropdown = () => {
     }
 
     setIsDropdownOpen(false);
-    setIsPostCreationOpen(true);
+    navigate('/feed');
+    // Delay the post creation to ensure navigation completes
+    setTimeout(() => {
+      setIsPostCreationOpen(true);
+    }, 100);
   };
 
   const handleSellItem = () => {

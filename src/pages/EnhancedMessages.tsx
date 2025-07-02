@@ -8,6 +8,9 @@ import { Badge } from '@/components/ui/badge';
 import MainLayout from '@/components/layout/MainLayout';
 import { TradeRequestCard } from '@/components/messaging/TradeRequestCard';
 import { EnhancedMessageInput, MessageBubble } from '@/components/messaging/EnhancedMessageComponents';
+import { NewMessageDialog } from '@/components/messaging/NewMessageDialog';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MessengerInterfaceMobile } from '@/components/messaging/MessengerInterfaceMobile';
 
 interface Conversation {
   id: string;
@@ -137,6 +140,7 @@ const mockTradeRequests = [
 ];
 
 export default function EnhancedMessages() {
+  const isMobile = useIsMobile();
   const [selectedConversation, setSelectedConversation] = useState<string>('1');
   const [newMessage, setNewMessage] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -150,7 +154,17 @@ export default function EnhancedMessages() {
     }
   };
 
+  const handleStartConversation = (userId: string, message: string) => {
+    console.log('Starting conversation with user:', userId, 'Message:', message);
+    setShowNewMessageDialog(false);
+  };
+
   const selectedConv = mockConversations.find(c => c.id === selectedConversation);
+
+  // Use mobile interface if on mobile
+  if (isMobile) {
+    return <MessengerInterfaceMobile />;
+  }
 
   return (
     <MainLayout noPadding>
@@ -374,6 +388,13 @@ export default function EnhancedMessages() {
             </div>
           )}
         </div>
+
+        {/* New Message Dialog */}
+        <NewMessageDialog
+          isOpen={showNewMessageDialog}
+          onClose={() => setShowNewMessageDialog(false)}
+          onStartConversation={handleStartConversation}
+        />
       </div>
     </MainLayout>
   );
