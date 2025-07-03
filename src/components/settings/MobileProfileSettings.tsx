@@ -130,7 +130,7 @@ export function MobileProfileSettings() {
   if (!isSynced) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16 flex items-center justify-center">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
           <div className="flex items-center gap-3">
             <Spinner size="lg" />
             <p className="text-gray-700 dark:text-gray-300">Loading profile data...</p>
@@ -144,7 +144,7 @@ export function MobileProfileSettings() {
   if (!showTabs) {
     return (
       <MainLayout>
-        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
           {/* Header */}
           <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 p-4 flex items-center gap-3 sticky top-16 z-40 supports-[backdrop-filter]:bg-white/80 supports-[backdrop-filter]:dark:bg-gray-800/80">
             <Button
@@ -212,7 +212,7 @@ export function MobileProfileSettings() {
   // Show tabs list
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Header */}
         <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 p-4 sticky top-16 z-40 supports-[backdrop-filter]:bg-white/80 supports-[backdrop-filter]:dark:bg-gray-800/80">
           <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">Profile Settings</h1>

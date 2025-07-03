@@ -18,8 +18,10 @@ export function QuickActionsFAB() {
       icon: Camera,
       label: "Post",
       action: () => {
-        setIsPostCreationOpen(true);
         navigate("/feed");
+        setTimeout(() => {
+          setIsPostCreationOpen(true);
+        }, 100);
       },
       color: "bg-blue-500 hover:bg-blue-600"
     },
@@ -86,10 +88,6 @@ export function QuickActionsFAB() {
         </Button>
       </div>
 
-      <QuickListForm 
-        isOpen={showQuickList} 
-        onClose={() => setShowQuickList(false)} 
-      />
     </>
   );
 }

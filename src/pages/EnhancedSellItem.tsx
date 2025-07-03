@@ -318,7 +318,7 @@ export default function EnhancedSellItem() {
   return (
     <AuthGuard requireAuth>
       <MainLayout>
-        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5 pt-16">
+        <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
           {/* Header with Progress */}
           <div className="bg-background/80 backdrop-blur-lg border-b border-border/50 p-4 sticky top-16 z-40">
             <div className="max-w-4xl mx-auto">
