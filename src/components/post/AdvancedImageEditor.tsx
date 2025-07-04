@@ -314,6 +314,7 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
                       max={200}
                       step={1}
                       className="w-full"
+                      defaultValue={[100]}
                     />
                   </div>
                   
@@ -328,6 +329,7 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
                       max={200}
                       step={1}
                       className="w-full"
+                      defaultValue={[100]}
                     />
                   </div>
                   
@@ -342,6 +344,7 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
                       max={200}
                       step={1}
                       className="w-full"
+                      defaultValue={[100]}
                     />
                   </div>
                   
@@ -381,6 +384,7 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
                       max={3}
                       step={0.1}
                       className="w-full"
+                      defaultValue={[1]}
                     />
                   </div>
                 </CardContent>

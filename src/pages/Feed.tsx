@@ -127,6 +127,14 @@ export default function Feed() {
         return;
       }
       
+      // Upload image to storage if present
+      let imageUrl = postData.image;
+      if (postData.image && postData.image.startsWith('data:')) {
+        const { uploadImage } = await import('@/utils/storage/imageStorage');
+        const { imageUrl: uploadedUrl } = await uploadImage(postData.image, `feed-${Date.now()}`);
+        imageUrl = uploadedUrl;
+      }
+
       // Insert into feed_posts table using authenticated Supabase client
       const { data, error } = await authenticatedSupabase
         .from('feed_posts')
@@ -135,7 +143,7 @@ export default function Feed() {
           title: postData.title,
           content: postData.content,
           description: postData.description,
-          image: postData.image
+          image: imageUrl
         }])
         .select()
         .single();
@@ -159,7 +167,7 @@ export default function Feed() {
         userId: userData.id,
         user_id: userData.id,
         username: userData.username || user.username || user.firstName || "User",
-        image: data.image || '',
+        image: imageUrl || '',
         title: data.title || '',
         description: data.description || '',
         content: data.content,

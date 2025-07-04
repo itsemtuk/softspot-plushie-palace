@@ -38,8 +38,12 @@ interface Conversation {
   }[];
 }
 
-export const DirectMessaging = () => {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+interface DirectMessagingProps {
+  initialConversations?: Conversation[];
+}
+
+export const DirectMessaging = ({ initialConversations = [] }: DirectMessagingProps) => {
+  const [conversations, setConversations] = useState<Conversation[]>(initialConversations);
   const [activeConversation, setActiveConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -47,45 +51,46 @@ export const DirectMessaging = () => {
   const [groupName, setGroupName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState<string[]>([]);
 
-  // Mock data for conversations
+  // Use initial conversations or mock data if none provided
   useEffect(() => {
-    const mockConversations: Conversation[] = [
-      {
-        id: "1",
-        name: "JellycatFan",
-        avatar: "/assets/avatars/PLUSH_Cat.PNG",
-        lastMessage: "Do you have any more photos?",
-        timestamp: "10:30 AM",
-        unread: 2,
-        status: "online"
-      },
-      {
-        id: "2",
-        name: "SquishCollector",
-        avatar: "/assets/avatars/PLUSH_Panda.PNG",
-        lastMessage: "I'll consider your offer",
-        timestamp: "Yesterday",
-        unread: 0,
-        status: "away"
-      },
-      {
-        id: "3",
-        name: "PlushieEnthusiasts",
-        avatar: "/assets/avatars/PLUSH_Bear.PNG",
-        lastMessage: "TeddyBearOwner: New listing alert!",
-        timestamp: "2 days ago",
-        unread: 5,
-        isGroup: true,
-        participants: [
-          { id: "1", name: "JellycatFan", avatar: "/assets/avatars/PLUSH_Cat.PNG" },
-          { id: "2", name: "SquishCollector", avatar: "/assets/avatars/PLUSH_Panda.PNG" },
-          { id: "3", name: "TeddyBearOwner", avatar: "/assets/avatars/PLUSH_Bunny.PNG" }
-        ]
-      }
-    ];
-
-    setConversations(mockConversations);
-  }, []);
+    if (initialConversations.length === 0) {
+      const mockConversations: Conversation[] = [
+        {
+          id: "1",
+          name: "JellycatFan",
+          avatar: "/assets/avatars/PLUSH_Cat.PNG",
+          lastMessage: "Do you have any more photos?",
+          timestamp: "10:30 AM",
+          unread: 2,
+          status: "online"
+        },
+        {
+          id: "2",
+          name: "SquishCollector",
+          avatar: "/assets/avatars/PLUSH_Panda.PNG",
+          lastMessage: "I'll consider your offer",
+          timestamp: "Yesterday",
+          unread: 0,
+          status: "away"
+        },
+        {
+          id: "3",
+          name: "PlushieEnthusiasts",
+          avatar: "/assets/avatars/PLUSH_Bear.PNG",
+          lastMessage: "TeddyBearOwner: New listing alert!",
+          timestamp: "2 days ago",
+          unread: 5,
+          isGroup: true,
+          participants: [
+            { id: "1", name: "JellycatFan", avatar: "/assets/avatars/PLUSH_Cat.PNG" },
+            { id: "2", name: "SquishCollector", avatar: "/assets/avatars/PLUSH_Panda.PNG" },
+            { id: "3", name: "TeddyBearOwner", avatar: "/assets/avatars/PLUSH_Bunny.PNG" }
+          ]
+        }
+      ];
+      setConversations(mockConversations);
+    }
+  }, [initialConversations]);
 
   // Mock messages for the active conversation
   useEffect(() => {

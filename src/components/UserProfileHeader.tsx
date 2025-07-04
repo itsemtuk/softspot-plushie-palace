@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { UserProfilePhoto } from "@/components/user/UserProfilePhoto";
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Users, Edit } from 'lucide-react';
@@ -185,33 +186,12 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
         <div className="flex flex-col md:flex-row items-start md:items-center gap-6 relative z-10">
           {/* Profile Picture */}
           <div className="flex-shrink-0">
-            <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-white dark:border-gray-800 shadow-lg">
-              {profileImage ? (
-                <img
-                  src={profileImage}
-                  alt={username}
-                  className="w-full h-full object-cover"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      // Safely create fallback element without innerHTML
-                      const fallbackDiv = createSafeElement(
-                        'div',
-                        getInitials(displayName),
-                        'w-full h-full bg-primary flex items-center justify-center text-primary-foreground text-xl font-semibold'
-                      );
-                      safeReplaceElement(parent, fallbackDiv);
-                    }
-                  }}
-                />
-              ) : (
-                <div className="w-full h-full bg-primary flex items-center justify-center text-primary-foreground text-xl font-semibold">
-                  {getInitials(displayName)}
-                </div>
-              )}
-            </div>
+            <UserProfilePhoto 
+              avatarUrl={profileImage}
+              username={username}
+              firstName={username}
+              size="xl"
+            />
           </div>
 
           {/* Profile Info */}

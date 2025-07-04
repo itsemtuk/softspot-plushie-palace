@@ -18,10 +18,10 @@ export const uploadImage = async (dataUrl: string, imageId: string): Promise<{ i
     // Generate a unique file path
     const filePath = `posts/${imageId}/image.jpg`;
     
-    // Upload to Supabase Storage
+    // Upload to Supabase Storage - use 'uploads' bucket which exists
     const { error: uploadError } = await supabase!
       .storage
-      .from('images')
+      .from('uploads')
       .upload(filePath, blob, {
         contentType: 'image/jpeg',
         upsert: true
@@ -32,7 +32,7 @@ export const uploadImage = async (dataUrl: string, imageId: string): Promise<{ i
     // Get the public URL
     const { data } = supabase!
       .storage
-      .from('images')
+      .from('uploads')
       .getPublicUrl(filePath);
       
     return { imageUrl: data.publicUrl };
@@ -56,7 +56,7 @@ export const deleteImage = async (imageId: string): Promise<{ success: boolean, 
     
     const { error } = await supabase!
       .storage
-      .from('images')
+      .from('uploads')
       .remove([filePath]);
       
     if (error) throw error;
