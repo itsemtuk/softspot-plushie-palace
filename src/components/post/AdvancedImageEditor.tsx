@@ -88,31 +88,50 @@ export const AdvancedImageEditor: React.FC<AdvancedImageEditorProps> = ({
   const handleZoomChange = useCallback((value: number[]) => {
     const newZoom = value[0];
     setZoom(newZoom);
-    // Note: Zoom would be handled via transform styles
+    // Note: Zoom state is stored but would need custom implementation
+    // as react-advanced-cropper doesn't expose a zoom method
   }, []);
 
   const applyFilters = useCallback(() => {
     if (!cropperRef.current) {
-      console.warn('Cropper ref is null');
+      toast({
+        variant: "destructive",
+        title: "Editor Error",
+        description: "Image editor not available"
+      });
       return;
     }
     
     try {
       const canvas = cropperRef.current.getCanvas();
       if (!canvas) {
-        console.warn('Canvas is null');
+        toast({
+          variant: "destructive",
+          title: "Canvas Error", 
+          description: "Could not get image canvas"
+        });
         return;
       }
       
       const ctx = canvas.getContext('2d');
       if (!ctx) {
-        console.warn('Canvas context is null');
+        toast({
+          variant: "destructive",
+          title: "Context Error",
+          description: "Could not get canvas context"
+        });
         return;
       }
       
+      // Apply filters and create new image
       ctx.filter = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
       const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
       addToHistory(dataUrl);
+      
+      toast({
+        title: "Filters applied!",
+        description: "Your image filters have been applied."
+      });
     } catch (error) {
       console.error('Error applying filters:', error);
       toast({
