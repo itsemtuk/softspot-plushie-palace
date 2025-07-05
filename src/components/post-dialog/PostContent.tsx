@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2 } from "lucide-react";
+import { Heart, MessageCircle, Share2, MoreHorizontal, Edit, Trash2, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +9,7 @@ import { ExtendedPost, Comment } from "@/types/core";
 import { useUser } from "@clerk/clerk-react";
 import { usePostActions } from "@/hooks/usePostActions";
 import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
+import { EditMarketplaceItem } from "@/components/marketplace/EditMarketplaceItem";
 
 interface PostContentProps {
   post: ExtendedPost;
@@ -22,6 +23,7 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingMarketplace, setIsEditingMarketplace] = useState(false);
   const { user } = useUser();
   const { handleEditPost, handleDeletePost } = usePostActions();
   const { addOfflinePost } = useOfflinePostOperations();
@@ -89,7 +91,11 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
   };
 
   const editPost = () => {
-    setIsEditing(true);
+    if (post.forSale) {
+      setIsEditingMarketplace(true);
+    } else {
+      setIsEditing(true);
+    }
   };
 
   const deletePost = async () => {
@@ -98,12 +104,48 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
     onClose();
   };
 
+  const handleMarketplaceUpdate = (updatedPost: ExtendedPost) => {
+    onPostEdited(updatedPost);
+    setIsEditingMarketplace(false);
+  };
+
   return (
     <div className="space-y-4">
       {/* Post Content */}
       <div className="space-y-2">
-        <h3 className="text-lg font-semibold">{post.title}</h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-lg font-semibold">{post.title}</h3>
+          {post.forSale && (
+            <Badge variant="secondary" className="bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+              <DollarSign className="h-3 w-3 mr-1" />
+              For Sale
+            </Badge>
+          )}
+        </div>
         <p>{post.content}</p>
+        {post.description && post.description !== post.content && (
+          <p className="text-gray-600 dark:text-gray-400">{post.description}</p>
+        )}
+        
+        {/* Marketplace details */}
+        {post.forSale && (
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 space-y-2">
+            {post.price && (
+              <div className="text-xl font-bold text-green-600 dark:text-green-400">
+                ${post.price}
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              {post.brand && <div><span className="font-medium">Brand:</span> {post.brand}</div>}
+              {post.condition && <div><span className="font-medium">Condition:</span> {post.condition}</div>}
+              {post.size && <div><span className="font-medium">Size:</span> {post.size}</div>}
+              {post.color && <div><span className="font-medium">Color:</span> {post.color}</div>}
+              {post.species && <div><span className="font-medium">Type:</span> {post.species}</div>}
+              {post.material && <div><span className="font-medium">Material:</span> {post.material}</div>}
+            </div>
+          </div>
+        )}
+        
         {post.tags && post.tags.length > 0 && (
           <div className="flex items-center space-x-2">
             {post.tags.map((tag) => (
@@ -157,6 +199,16 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
           </div>
         ))}
       </div>
+
+      {/* Edit Marketplace Item Dialog */}
+      {isEditingMarketplace && (
+        <EditMarketplaceItem
+          post={post}
+          isOpen={isEditingMarketplace}
+          onClose={() => setIsEditingMarketplace(false)}
+          onUpdate={handleMarketplaceUpdate}
+        />
+      )}
     </div>
   );
 };

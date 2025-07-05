@@ -23,6 +23,7 @@ const UserProfilePage = () => {
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
+  const [marketplacePosts, setMarketplacePosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
@@ -83,7 +84,13 @@ const UserProfilePage = () => {
               tags: [],
               sold: false
             }));
-            setUserPosts(formattedPosts);
+            
+            // Separate regular posts from marketplace items
+            const regularPosts = formattedPosts.filter(post => !post.forSale);
+            const marketplaceItems = formattedPosts.filter(post => post.forSale);
+            
+            setUserPosts(regularPosts);
+            setMarketplacePosts(marketplaceItems);
           }
         }
       } catch (error) {
@@ -221,28 +228,38 @@ const UserProfilePage = () => {
           </TabsContent>
 
           <TabsContent value="market">
-            <div className="space-y-4">
-              <div className="flex justify-between items-center">
+            <Card className="overflow-hidden bg-transparent shadow-none">
+              <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
                   Marketplace Items
                 </h3>
-                <span className="text-sm text-gray-500">0 items for sale</span>
+                <span className="text-sm text-gray-500">{marketplacePosts.length} items for sale</span>
               </div>
               
-              <div className="text-center py-12">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
+              {marketplacePosts.length > 0 ? (
+                <ProfilePostsGrid
+                  posts={marketplacePosts}
+                  onPostClick={handlePostClick}
+                  isOwnProfile={false}
+                  showCreateButton={false}
+                  onPostCreated={handlePostCreated}
+                />
+              ) : (
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                  </div>
+                  <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                    No items for sale
+                  </h4>
+                  <p className="text-gray-500 dark:text-gray-400">
+                    {userData.username || userData.first_name} hasn't listed any items for sale yet.
+                  </p>
                 </div>
-                <h4 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  No items for sale
-                </h4>
-                <p className="text-gray-500 dark:text-gray-400">
-                  {userData.username || userData.first_name} hasn't listed any items for sale yet.
-                </p>
-              </div>
-            </div>
+              )}
+            </Card>
           </TabsContent>
 
           <TabsContent value="reviews">
