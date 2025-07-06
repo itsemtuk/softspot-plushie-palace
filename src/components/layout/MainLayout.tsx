@@ -23,7 +23,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({
       {/* Always show appropriate navigation */}
       {isMobile ? <MobileNav /> : <Navbar />}
       
-      <main className={`flex-grow ${noPadding ? '' : 'container mx-auto px-4 py-8'} ${!isMobile ? 'pt-20' : 'pt-16'}`}>
+      <main className={`flex-grow ${noPadding ? '' : 'container mx-auto px-4 py-8'} ${noPadding ? '' : (!isMobile ? 'pt-20' : 'pt-16')}`}>
         {children}
       </main>
 
