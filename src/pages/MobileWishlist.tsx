@@ -20,27 +20,7 @@ interface WishlistItem {
   dateAdded: string;
 }
 
-const mockWishlistItems: WishlistItem[] = [
-  {
-    id: "1",
-    title: "Jellycat Bashful Bunny - Large",
-    brand: "Jellycat",
-    image: "/placeholder.svg",
-    price: 45,
-    priority: 'high',
-    notes: "Birthday gift for myself",
-    dateAdded: "2024-01-15"
-  },
-  {
-    id: "2",
-    title: "Squishmallow Axolotl - 16 inch",
-    brand: "Squishmallows",
-    image: "/placeholder.svg",
-    price: 35,
-    priority: 'medium',
-    dateAdded: "2024-01-10"
-  }
-];
+const mockWishlistItems: WishlistItem[] = [];
 
 export default function MobileWishlist() {
   const navigate = useNavigate();
@@ -50,11 +30,9 @@ export default function MobileWishlist() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate loading data
-    setTimeout(() => {
-      setWishlistItems(mockWishlistItems);
-      setLoading(false);
-    }, 1000);
+    // Load wishlist items from database
+    setWishlistItems([]);
+    setLoading(false);
   }, []);
 
   const filteredItems = wishlistItems.filter(item =>
@@ -73,8 +51,8 @@ export default function MobileWishlist() {
 
   if (loading) {
     return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-screen pt-16">
+      <MainLayout noPadding={true}>
+        <div className="flex items-center justify-center min-h-screen">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-softspot-500"></div>
         </div>
       </MainLayout>
@@ -82,8 +60,8 @@ export default function MobileWishlist() {
   }
 
   return (
-    <MainLayout>
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-16">
+    <MainLayout noPadding={true}>
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
         {/* Header */}
         <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sticky top-16 z-40">
           <div className="flex items-center justify-between mb-4">
