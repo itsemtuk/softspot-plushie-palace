@@ -24,41 +24,9 @@ interface Message {
   timestamp: string;
 }
 
-const mockConversations: Conversation[] = [
-  {
-    id: '1',
-    name: 'Emma Johnson',
-    avatar: '',
-    lastMessage: 'Is the Jellycat bunny still available?',
-    timestamp: '2m ago',
-    unread: 2,
-    online: true
-  },
-  {
-    id: '2',
-    name: 'PlushieCollector23',
-    avatar: '',
-    lastMessage: 'Thanks for the quick shipping!',
-    timestamp: '1h ago',
-    unread: 0,
-    online: false
-  }
-];
+const mockConversations: Conversation[] = [];
 
-const mockMessages: Message[] = [
-  {
-    id: '1',
-    text: 'Hi! I\'m interested in your Jellycat bunny listing',
-    sender: 'them',
-    timestamp: '10:30 AM'
-  },
-  {
-    id: '2',
-    text: 'Hello! Yes, it\'s still available. Would you like to see more photos?',
-    sender: 'me',
-    timestamp: '10:32 AM'
-  }
-];
+const mockMessages: Message[] = [];
 
 export default function Messages() {
   const [selectedConversation, setSelectedConversation] = useState<string>('1');
@@ -120,51 +88,67 @@ export default function Messages() {
 
           {/* Conversations List */}
           <ScrollArea className="flex-1">
-            <div className="p-2">
-              {mockConversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => setSelectedConversation(conversation.id)}
-                  className={`p-3 rounded-lg cursor-pointer transition-all duration-200 mb-1 ${
-                    selectedConversation === conversation.id
-                      ? 'bg-softspot-100 dark:bg-softspot-900 border-l-4 border-softspot-500'
-                      : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className="relative">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={conversation.avatar} />
-                        <AvatarFallback className="bg-softspot-500 text-white">
-                          {conversation.name.slice(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      {conversation.online && (
-                        <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+            {mockConversations.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 px-4">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                  <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                </div>
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                  No conversations yet
+                </h2>
+                <p className="text-gray-600 dark:text-gray-400 text-center">
+                  You can only message people who follow you. Start by building your network!
+                </p>
+              </div>
+            ) : (
+              <div className="p-2">
+                {mockConversations.map((conversation) => (
+                  <div
+                    key={conversation.id}
+                    onClick={() => setSelectedConversation(conversation.id)}
+                    className={`p-3 rounded-lg cursor-pointer transition-all duration-200 mb-1 ${
+                      selectedConversation === conversation.id
+                        ? 'bg-softspot-100 dark:bg-softspot-900 border-l-4 border-softspot-500'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="relative">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={conversation.avatar} />
+                          <AvatarFallback className="bg-softspot-500 text-white">
+                            {conversation.name.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {conversation.online && (
+                          <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full"></div>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-medium text-gray-900 dark:text-white truncate">
+                            {conversation.name}
+                          </h3>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">
+                            {conversation.timestamp}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
+                          {conversation.lastMessage}
+                        </p>
+                      </div>
+                      {conversation.unread > 0 && (
+                        <div className="bg-softspot-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
+                          {conversation.unread}
+                        </div>
                       )}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <h3 className="font-medium text-gray-900 dark:text-white truncate">
-                          {conversation.name}
-                        </h3>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {conversation.timestamp}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
-                        {conversation.lastMessage}
-                      </p>
-                    </div>
-                    {conversation.unread > 0 && (
-                      <div className="bg-softspot-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium">
-                        {conversation.unread}
-                      </div>
-                    )}
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </ScrollArea>
         </div>
 
@@ -208,35 +192,51 @@ export default function Messages() {
 
               {/* Messages */}
               <ScrollArea className="flex-1 p-4 bg-gray-50 dark:bg-gray-900">
-                <div className="space-y-4">
-                  {mockMessages.map((message) => (
-                    <div
-                      key={message.id}
-                      className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`flex items-end space-x-2 max-w-xs lg:max-w-md ${
-                        message.sender === 'me' ? 'flex-row-reverse space-x-reverse' : ''
-                      }`}>
-                        {message.sender === 'them' && (
-                          <Avatar className="h-6 w-6">
-                            <AvatarFallback className="bg-gray-400 text-xs">
-                              {selectedConv.name.slice(0, 1)}
-                            </AvatarFallback>
-                          </Avatar>
-                        )}
-                        <div
-                          className={`px-4 py-2 rounded-2xl shadow-sm ${
-                            message.sender === 'me'
-                              ? 'bg-softspot-500 text-white rounded-br-sm'
-                              : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-bl-sm'
-                          }`}
-                        >
-                          <p className="text-sm">{message.text}</p>
+                {mockMessages.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-20 px-4">
+                    <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
+                      <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                      </svg>
+                    </div>
+                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+                      No messages yet
+                    </h2>
+                    <p className="text-gray-600 dark:text-gray-400 text-center">
+                      Start a conversation by sending a message!
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {mockMessages.map((message) => (
+                      <div
+                        key={message.id}
+                        className={`flex ${message.sender === 'me' ? 'justify-end' : 'justify-start'}`}
+                      >
+                        <div className={`flex items-end space-x-2 max-w-xs lg:max-w-md ${
+                          message.sender === 'me' ? 'flex-row-reverse space-x-reverse' : ''
+                        }`}>
+                          {message.sender === 'them' && (
+                            <Avatar className="h-6 w-6">
+                              <AvatarFallback className="bg-gray-400 text-xs">
+                                {selectedConv.name.slice(0, 1)}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
+                          <div
+                            className={`px-4 py-2 rounded-2xl shadow-sm ${
+                              message.sender === 'me'
+                                ? 'bg-softspot-500 text-white rounded-br-sm'
+                                : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-600 rounded-bl-sm'
+                            }`}
+                          >
+                            <p className="text-sm">{message.text}</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </ScrollArea>
 
               {/* Message Input */}

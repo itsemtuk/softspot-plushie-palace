@@ -10,6 +10,7 @@ import { useUser } from "@clerk/clerk-react";
 import { usePostActions } from "@/hooks/usePostActions";
 import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
 import { EditMarketplaceItem } from "@/components/marketplace/EditMarketplaceItem";
+import { PostMenu } from "./PostMenu";
 
 interface PostContentProps {
   post: ExtendedPost;
@@ -171,16 +172,9 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
           </Button>
         </div>
 
-        {/* Edit and Delete Buttons */}
+        {/* Edit and Delete Menu */}
         {user?.id === post.userId && (
-          <div className="flex items-center space-x-2">
-            <Button variant="ghost" size="icon" onClick={editPost}>
-              <Edit className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" onClick={deletePost}>
-              <Trash2 className="h-5 w-5" />
-            </Button>
-          </div>
+          <PostMenu onEdit={editPost} onDelete={deletePost} />
         )}
       </div>
 
