@@ -6,6 +6,9 @@ import { ExtendedPost } from "@/types/core";
 import { Card, CardContent } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
+import { PostMenu } from "@/components/post-dialog/PostMenu";
+import { useUser } from "@clerk/clerk-react";
+import { usePostActions } from "@/hooks/usePostActions";
 
 interface PostCardProps {
   post: ExtendedPost;
@@ -14,6 +17,8 @@ interface PostCardProps {
 
 export const PostCard = ({ post, onPostClick }: PostCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
+  const { user } = useUser();
+  const { handleEditPost, handleDeletePost } = usePostActions();
 
   const handleClick = (e: React.MouseEvent) => {
     // Don't trigger if clicking on interactive elements
@@ -47,6 +52,14 @@ export const PostCard = ({ post, onPostClick }: PostCardProps) => {
     // Add share functionality here
   };
 
+  const handleEdit = () => {
+    handleEditPost(post);
+  };
+
+  const handleDelete = async () => {
+    await handleDeletePost(post.id);
+  };
+
   return (
     <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow" onClick={handleClick}>
       {post.image && (
@@ -65,9 +78,9 @@ export const PostCard = ({ post, onPostClick }: PostCardProps) => {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium">{post.username}</span>
-          <Button variant="ghost" size="sm" onClick={(e) => e.stopPropagation()}>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+          {user?.id === post.userId && (
+            <PostMenu onEdit={handleEdit} onDelete={handleDelete} />
+          )}
         </div>
         
         {post.title && <h3 className="font-semibold mb-2 line-clamp-2">{post.title}</h3>}

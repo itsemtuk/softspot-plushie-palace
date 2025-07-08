@@ -10,6 +10,8 @@ import { ImageFirstPostCreation } from "@/components/post/ImageFirstPostCreation
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { toast } from "@/hooks/use-toast";
+import { PostDialog } from "@/components/PostDialog";
+import { usePostDialog } from "@/hooks/use-post-dialog";
 
 export default function Feed() {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
@@ -20,6 +22,7 @@ export default function Feed() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { supabaseUserId } = useClerkSupabaseUser(user);
+  const { dialogState, closePostDialog } = usePostDialog();
 
   const fetchAndSetPosts = useCallback(async () => {
     try {
@@ -237,6 +240,13 @@ export default function Feed() {
         isOpen={isPostCreationOpen}
         onClose={() => setIsPostCreationOpen(false)}
         onPostCreated={handleCreatePost}
+      />
+
+      {/* Post Dialog */}
+      <PostDialog
+        post={dialogState.post}
+        isOpen={dialogState.isOpen}
+        onClose={closePostDialog}
       />
     </MainLayout>
   );
