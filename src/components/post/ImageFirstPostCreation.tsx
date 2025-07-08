@@ -127,7 +127,7 @@ export const ImageFirstPostCreation = ({
   };
 
   const onSubmit = async (values: z.infer<typeof postSchema>) => {
-    if (!imageUrl) {
+    if (!selectedFile) {
       toast({
         variant: "destructive",
         title: "Image required",
@@ -138,11 +138,18 @@ export const ImageFirstPostCreation = ({
 
     setIsSubmitting(true);
     try {
+      // Convert file to data URL for upload
+      const reader = new FileReader();
+      const fileDataUrl = await new Promise<string>((resolve) => {
+        reader.onload = (e) => resolve(e.target?.result as string);
+        reader.readAsDataURL(selectedFile);
+      });
+
       const postData: PostCreationData = {
         title: values.title,
         description: values.description,
         content: values.description,
-        image: imageUrl,
+        image: fileDataUrl, // Use the actual file data, not blob URL
         tags: currentTags,
       };
 

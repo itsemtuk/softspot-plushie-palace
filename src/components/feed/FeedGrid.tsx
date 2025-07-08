@@ -43,9 +43,7 @@ export const FeedGrid = ({ posts, onPostClick, onCreatePostClick, layout = "grid
     <>
       <div className={gridClass}>
         {visiblePosts.map((post) => (
-          <div key={post.id} className="relative cursor-pointer hover:opacity-95 transition-opacity" onClick={() => onPostClick(post)}>
-            <PostCard post={post} />
-          </div>
+          <PostCard key={post.id} post={post} onPostClick={onPostClick} />
         ))}
       </div>
       {hasMorePosts && (
