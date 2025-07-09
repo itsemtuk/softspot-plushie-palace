@@ -1,6 +1,5 @@
 
 import { useState, useCallback, useEffect } from "react";
-import { usePostDialog } from "@/hooks/use-post-dialog";
 import { Spinner } from "@/components/ui/spinner";
 import { ExtendedPost } from "@/types/core";
 import { FeedGrid } from "./FeedGrid";
@@ -13,20 +12,16 @@ interface FeedContentProps {
   isError: boolean;
   isOnline: boolean;
   onRefresh: () => void;
+  onPostClick: (post: ExtendedPost) => void;
 }
 
-export const FeedContent = ({ initialPosts, isLoading, isError, isOnline, onRefresh }: FeedContentProps) => {
-  const { openPostDialog } = usePostDialog();
+export const FeedContent = ({ initialPosts, isLoading, isError, isOnline, onRefresh, onPostClick }: FeedContentProps) => {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
 
   // Update posts when initialPosts change
   useEffect(() => {
     setPosts(initialPosts);
   }, [initialPosts]);
-
-  const handlePostClick = useCallback((post: ExtendedPost) => {
-    openPostDialog(post);
-  }, [openPostDialog]);
 
   if (isLoading) {
     return (
@@ -53,7 +48,7 @@ export const FeedContent = ({ initialPosts, isLoading, isError, isOnline, onRefr
       {posts.length === 0 ? (
         <div className="text-gray-500 text-center py-12">No posts available.</div>
       ) : (
-        <FeedGrid posts={posts} onPostClick={handlePostClick} />
+        <FeedGrid posts={posts} onPostClick={onPostClick} />
       )}
     </div>
   );

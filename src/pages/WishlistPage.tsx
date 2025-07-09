@@ -24,7 +24,7 @@ const mockWishlistItems: WishlistItem[] = [
     id: "1",
     title: "Jellycat Bashful Bunny",
     price: 25.99,
-    image: "/placeholder-plushie.jpg",
+    image: "",
     seller: "PlushieStore",
     available: true
   },
@@ -32,7 +32,7 @@ const mockWishlistItems: WishlistItem[] = [
     id: "2", 
     title: "Squishmallow Avocado",
     price: 15.50,
-    image: "/placeholder-plushie.jpg",
+    image: "",
     seller: "CuddleCorner",
     available: true
   }

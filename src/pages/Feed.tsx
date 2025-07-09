@@ -22,7 +22,7 @@ export default function Feed() {
   const { user } = useUser();
   const { getToken } = useAuth();
   const { supabaseUserId } = useClerkSupabaseUser(user);
-  const { dialogState, closePostDialog } = usePostDialog();
+  const { dialogState, openPostDialog, closePostDialog } = usePostDialog();
 
   const fetchAndSetPosts = useCallback(async () => {
     try {
@@ -232,6 +232,7 @@ export default function Feed() {
           isError={false}
           isOnline={true}
           onRefresh={handleRefresh}
+          onPostClick={openPostDialog}
         />
       </div>
 

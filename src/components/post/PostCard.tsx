@@ -69,7 +69,7 @@ export const PostCard = ({ post, onPostClick }: PostCardProps) => {
             alt={post.title || post.content}
             className="object-cover w-full h-full"
             onError={(e) => {
-              (e.target as HTMLImageElement).src = '/placeholder-plushie.jpg';
+              (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         </AspectRatio>

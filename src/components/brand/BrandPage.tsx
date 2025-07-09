@@ -88,7 +88,7 @@ export const BrandPageWrapper = () => {
             title: post.title || 'Untitled Item',
             name: post.title || 'Untitled Item',
             price: post.price || 0,
-            image: post.image || '/placeholder-plushie.jpg',
+            image: post.image || '',
             brand: post.brand || brand.name,
             condition: post.condition || 'used',
             description: post.description || '',
