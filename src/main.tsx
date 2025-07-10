@@ -4,8 +4,10 @@ import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
 
-// Clerk publishable key - hardcoded as requested
-const CLERK_PUBLISHABLE_KEY = "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ";
+import { getSecurityConfig } from "@/config/security";
+
+// Clerk publishable key - using secure configuration
+const { clerkPublishableKey } = getSecurityConfig();
 
 // Import Clerk directly for stable integration
 import { ClerkProvider } from '@clerk/clerk-react';
@@ -17,7 +19,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
     <SecurityProvider>
       <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
         <ClerkProvider 
-          publishableKey={CLERK_PUBLISHABLE_KEY}
+          publishableKey={clerkPublishableKey}
           signInFallbackRedirectUrl="/feed"
           signUpFallbackRedirectUrl="/onboarding"
         >

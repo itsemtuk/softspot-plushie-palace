@@ -12,6 +12,9 @@ import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { toast } from "@/hooks/use-toast";
 import { PostDialog } from "@/components/PostDialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
+import { validateAndSanitizeFormData, ValidationSchemas, postCreationLimiter } from "@/utils/security/inputValidation";
+import { useCSRFProtection } from "@/utils/security/csrfProtection";
+import { z } from "zod";
 
 export default function Feed() {
   const [posts, setPosts] = useState<ExtendedPost[]>([]);
@@ -86,6 +89,8 @@ export default function Feed() {
     );
   }, [posts, searchQuery]);
 
+  const { generateCSRFToken, consumeCSRFToken } = useCSRFProtection();
+
   const handleCreatePost = useCallback(async (postData: PostCreationData) => {
     if (!user || !supabaseUserId) {
       toast({
@@ -96,8 +101,38 @@ export default function Feed() {
       return;
     }
 
+    // Rate limiting check
+    if (!postCreationLimiter.isAllowed(user.id)) {
+      toast({
+        variant: "destructive",
+        title: "Rate limit exceeded",
+        description: "Please wait before creating another post."
+      });
+      return;
+    }
+
+    // Input validation and sanitization
+    const validationSchema = z.object({
+      title: ValidationSchemas.postTitle.optional(),
+      content: ValidationSchemas.postContent,
+      description: ValidationSchemas.bio.optional(),
+      image: ValidationSchemas.imageUrl.optional()
+    });
+
+    const validationResult = validateAndSanitizeFormData(postData, validationSchema);
+    if (!validationResult.success) {
+      toast({
+        variant: "destructive",
+        title: "Invalid input",
+        description: (validationResult as { success: false; errors: string[] }).errors.join(', ')
+      });
+      return;
+    }
+
+    const sanitizedData = validationResult.data;
+
     try {
-      console.log("Creating new feed post:", postData);
+      console.log("Creating new feed post:", sanitizedData);
       console.log("User:", user);
       
       // Get Clerk token for authenticated Supabase client

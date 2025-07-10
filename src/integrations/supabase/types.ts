@@ -1008,6 +1008,10 @@ export type Database = {
           avatar_url: string
         }[]
       }
+      log_security_event: {
+        Args: { event_type: string; user_id: string; details?: Json }
+        Returns: undefined
+      }
       set_current_user_id: {
         Args: { user_id_param: string }
         Returns: undefined

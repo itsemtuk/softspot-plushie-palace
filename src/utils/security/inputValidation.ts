@@ -54,9 +54,15 @@ export const ValidationSchemas = {
 export const sanitizeTextInput = (input: string): string => {
   return input
     .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') // Remove script tags
+    .replace(/<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi, '') // Remove iframe tags
+    .replace(/<object\b[^<]*(?:(?!<\/object>)<[^<]*)*<\/object>/gi, '') // Remove object tags
+    .replace(/<embed\b[^<]*(?:(?!<\/embed>)<[^<]*)*<\/embed>/gi, '') // Remove embed tags
     .replace(/<[^>]*>/g, '') // Remove all HTML tags
     .replace(/javascript:/gi, '') // Remove javascript: protocol
     .replace(/data:/gi, '') // Remove data: protocol
+    .replace(/vbscript:/gi, '') // Remove vbscript: protocol
+    .replace(/on\w+\s*=/gi, '') // Remove event handlers
+    .replace(/expression\s*\(/gi, '') // Remove CSS expressions
     .trim();
 };
 
