@@ -102,7 +102,7 @@ const Settings = () => {
           </div>
           
           <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-            <TabsList className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 w-full grid grid-cols-3">
+            <TabsList className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 w-full grid grid-cols-2 lg:grid-cols-3 gap-1">
               <TabsTrigger value="profile" className="text-gray-900 dark:text-gray-100 data-[state=active]:bg-softspot-100 dark:data-[state=active]:bg-softspot-900/20 text-sm">
                 Profile Information
               </TabsTrigger>

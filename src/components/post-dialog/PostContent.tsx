@@ -30,28 +30,8 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
   const { addOfflinePost } = useOfflinePostOperations();
 
   useEffect(() => {
-    // Mock comments for demonstration
-    const mockComments: Comment[] = [
-      {
-        id: "comment-1",
-        postId: post.id,
-        userId: "user-1",
-        username: "JohnDoe",
-        content: "Great post!",
-        likes: 5,
-        timestamp: new Date().toISOString(),
-      },
-      {
-        id: "comment-2",
-        postId: post.id,
-        userId: "user-2",
-        username: "JaneSmith",
-        content: "I agree!",
-        likes: 2,
-        timestamp: new Date().toISOString(),
-      },
-    ];
-    setComments(mockComments);
+    // Remove mock comments to clean up UI
+    setComments([]);
   }, [post.id]);
 
   const handleCommentSubmit = (commentText: string) => {
@@ -112,6 +92,20 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
 
   return (
     <div className="space-y-4">
+      {/* Post Image */}
+      {post.image && (
+        <div className="w-full">
+          <img 
+            src={post.image} 
+            alt={post.title || post.content} 
+            className="w-full h-auto max-h-96 object-cover rounded-lg"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        </div>
+      )}
+      
       {/* Post Content */}
       <div className="space-y-2">
         <div className="flex items-center gap-2">

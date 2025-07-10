@@ -16,7 +16,7 @@ interface ProfileSettingsTabsProps {
 export const ProfileSettingsTabs = ({ tabs, activeTab, onTabChange }: ProfileSettingsTabsProps) => {
   return (
     <div className="border-b border-gray-200 mb-6">
-      <div className="flex space-x-6 overflow-x-auto hide-scrollbar">
+      <div className="flex flex-wrap gap-x-6 gap-y-2 overflow-x-auto hide-scrollbar min-h-[3rem]">
         {tabs.map((tab) => (
           <button
             key={tab.id}
