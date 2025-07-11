@@ -60,15 +60,25 @@ const UserProfilePage = () => {
             });
           }
 
-          // Fetch user posts
-          const { data: posts } = await supabase
-            .from('posts')
-            .select('*')
-            .eq('user_id', user.id)
-            .order('created_at', { ascending: false });
+          // Fetch user posts from both posts and feed_posts tables
+          const [postsResponse, feedPostsResponse] = await Promise.all([
+            supabase
+              .from('posts')
+              .select('*')
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: false }),
+            supabase
+              .from('feed_posts')
+              .select('*')
+              .eq('user_id', user.id)
+              .order('created_at', { ascending: false })
+          ]);
 
-          if (posts) {
-            const formattedPosts: ExtendedPost[] = posts.map(post => ({
+          const allPosts: ExtendedPost[] = [];
+
+          // Add posts from posts table
+          if (postsResponse.data) {
+            const formattedPosts: ExtendedPost[] = postsResponse.data.map(post => ({
               ...post,
               userId: post.user_id,
               user_id: post.user_id,
@@ -84,14 +94,39 @@ const UserProfilePage = () => {
               tags: [],
               sold: false
             }));
-            
-            // Separate regular posts from marketplace items
-            const regularPosts = formattedPosts.filter(post => !post.forSale);
-            const marketplaceItems = formattedPosts.filter(post => post.forSale);
-            
-            setUserPosts(regularPosts);
-            setMarketplacePosts(marketplaceItems);
+            allPosts.push(...formattedPosts);
           }
+
+          // Add posts from feed_posts table
+          if (feedPostsResponse.data) {
+            const formattedFeedPosts: ExtendedPost[] = feedPostsResponse.data.map(post => ({
+              ...post,
+              userId: post.user_id,
+              user_id: post.user_id,
+              username: user.username || user.first_name || 'User',
+              likes: 0,
+              comments: 0,
+              timestamp: post.created_at,
+              createdAt: post.created_at,
+              created_at: post.created_at,
+              updatedAt: post.updated_at || post.created_at,
+              location: '',
+              forSale: false, // feed posts are never for sale
+              tags: [],
+              sold: false
+            }));
+            allPosts.push(...formattedFeedPosts);
+          }
+
+          // Sort all posts by creation date
+          allPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+          
+          // Separate regular posts from marketplace items
+          const regularPosts = allPosts.filter(post => !post.forSale);
+          const marketplaceItems = allPosts.filter(post => post.forSale);
+          
+          setUserPosts(regularPosts);
+          setMarketplacePosts(marketplaceItems);
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
