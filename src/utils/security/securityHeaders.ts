@@ -11,7 +11,7 @@ export const applySecurityHeaders = () => {
     "font-src 'self' https://fonts.gstatic.com",
     "img-src 'self' data: blob: https: http:",
     "media-src 'self' data: blob:",
-    "connect-src 'self' https://evsaupqzqbynwkuszssm.supabase.co https://clerk.com https://*.clerk.accounts.dev wss://evsaupqzqbynwkuszssm.supabase.co",
+    "connect-src 'self' https://evsamjzmqzbynwkuszsm.supabase.co https://clerk.com https://*.clerk.accounts.dev wss://evsamjzmqzbynwkuszsm.supabase.co",
     "frame-src 'self' https://challenges.cloudflare.com https://*.clerk.accounts.dev",
     "object-src 'none'",
     "base-uri 'self'",
