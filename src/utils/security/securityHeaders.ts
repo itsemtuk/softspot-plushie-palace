@@ -20,14 +20,16 @@ export const applySecurityHeaders = () => {
     "upgrade-insecure-requests"
   ].join('; ');
 
-  // Apply CSP via meta tag
+  // Apply CSP via meta tag - always remove existing ones first to ensure fresh application
   const existingCSP = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
-  if (!existingCSP) {
-    const meta = document.createElement('meta');
-    meta.httpEquiv = 'Content-Security-Policy';
-    meta.content = csp;
-    document.head.appendChild(meta);
+  if (existingCSP) {
+    existingCSP.remove();
   }
+  
+  const meta = document.createElement('meta');
+  meta.httpEquiv = 'Content-Security-Policy';
+  meta.content = csp;
+  document.head.appendChild(meta);
 
   // Additional security headers via meta tags where possible
   const securityMetas = [

@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { applySecurityHeaders } from '@/utils/security/monitoring';
+import { applySecurityHeaders } from '@/utils/security/securityHeaders';
 
 /**
  * Security initialization component - sets up security configurations
