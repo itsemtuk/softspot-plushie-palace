@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { PostCommentForm } from "./PostCommentForm";
 import { ExtendedPost, Comment } from "@/types/core";
+import { PostComment } from "@/utils/comments/commentService";
 import { useUser } from "@clerk/clerk-react";
 import { usePostActions } from "@/hooks/usePostActions";
 import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
@@ -14,14 +15,32 @@ import { PostMenu } from "./PostMenu";
 
 interface PostContentProps {
   post: ExtendedPost;
+  comments: PostComment[];
+  isLoadingComments: boolean;
   onClose: () => void;
   onPostEdited: (editedPost: ExtendedPost) => void;
   onPostDeleted: (postId: string) => void;
+  onCommentSubmit: (comment: Omit<Comment, 'id' | 'likes' | 'timestamp' | 'isLiked'>) => Promise<void>;
+  onCommentLike: (commentId: string) => Promise<void>;
+  onCommentUnlike: (commentId: string) => Promise<void>;
+  onEditComment: (commentId: string, content: string) => Promise<void>;
+  onDeleteComment: (commentId: string) => Promise<void>;
 }
 
-export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: PostContentProps) => {
+export const PostContent = ({ 
+  post, 
+  comments, 
+  isLoadingComments, 
+  onClose, 
+  onPostEdited, 
+  onPostDeleted,
+  onCommentSubmit,
+  onCommentLike,
+  onCommentUnlike,
+  onEditComment,
+  onDeleteComment 
+}: PostContentProps) => {
   const [comment, setComment] = useState("");
-  const [comments, setComments] = useState<Comment[]>([]);
   const [isLiked, setIsLiked] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingMarketplace, setIsEditingMarketplace] = useState(false);
@@ -29,12 +48,7 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
   const { handleEditPost, handleDeletePost } = usePostActions();
   const { addOfflinePost } = useOfflinePostOperations();
 
-  useEffect(() => {
-    // Remove mock comments to clean up UI
-    setComments([]);
-  }, [post.id]);
-
-  const handleCommentSubmit = (commentText: string) => {
+  const handleCommentSubmit = async (commentText: string) => {
     if (commentText.trim() === "") return;
 
     if (!user) {
@@ -42,17 +56,17 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
       return;
     }
 
-    const newComment: Comment = {
-      id: `comment-${Date.now()}`,
-      postId: post.id,
-      userId: user.id,
-      username: user.username || "Anonymous",
-      content: commentText,
-      likes: 0,
-      timestamp: new Date().toISOString(),
-    };
-
-    setComments((prevComments) => [...prevComments, newComment]);
+    try {
+      await onCommentSubmit({
+        postId: post.id,
+        userId: user.id,
+        username: user.username || "Anonymous",
+        content: commentText
+      });
+      setComment(""); // Clear the comment input
+    } catch (error) {
+      console.error("Error submitting comment:", error);
+    }
   };
 
   const toggleLike = () => {
@@ -177,15 +191,42 @@ export const PostContent = ({ post, onClose, onPostEdited, onPostDeleted }: Post
 
       {/* Comments List */}
       <div>
-        {comments.map((comment) => (
-          <div key={comment.id} className="py-2 border-b">
-            <div className="flex items-center justify-between">
-              <div className="font-semibold">{comment.username}</div>
-              <div className="text-sm text-gray-500">{comment.timestamp}</div>
+        {isLoadingComments ? (
+          <div className="text-center py-4">Loading comments...</div>
+        ) : comments.length > 0 ? (
+          comments.map((comment) => (
+            <div key={comment.id} className="py-3 border-b border-gray-100">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  {comment.users?.avatar_url ? (
+                    <img 
+                      src={comment.users.avatar_url} 
+                      alt={comment.users.username || 'User'} 
+                      className="w-8 h-8 rounded-full"
+                    />
+                  ) : (
+                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">
+                      {(comment.users?.username || comment.users?.first_name || 'U')[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-medium text-sm">
+                      {comment.users?.username || `${comment.users?.first_name || ''} ${comment.users?.last_name || ''}`.trim() || 'Anonymous'}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {new Date(comment.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                </div>
+              </div>
             </div>
-            <p className="text-gray-700">{comment.content}</p>
-          </div>
-        ))}
+          ))
+        ) : (
+          <div className="text-center py-4 text-gray-500">No comments yet</div>
+        )}
       </div>
 
       {/* Edit Marketplace Item Dialog */}

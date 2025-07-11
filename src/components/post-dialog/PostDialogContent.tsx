@@ -2,9 +2,12 @@
 import { useState, useCallback } from "react";
 import { PostContent } from "./PostContent";
 import { ExtendedPost, Comment } from "@/types/core";
+import { PostComment } from "@/utils/comments/commentService";
 
 interface PostDialogContentProps {
   post: ExtendedPost;
+  comments: PostComment[];
+  isLoadingComments: boolean;
   onPostUpdate: (updatedPost: ExtendedPost) => void;
   onPostDelete: (postId: string) => void;
   onCommentSubmit: (comment: Omit<Comment, 'id' | 'likes' | 'timestamp' | 'isLiked'>) => Promise<void>;
@@ -16,6 +19,8 @@ interface PostDialogContentProps {
 
 export const PostDialogContent = ({
   post,
+  comments,
+  isLoadingComments,
   onPostUpdate,
   onPostDelete,
   onCommentSubmit,
@@ -35,9 +40,16 @@ export const PostDialogContent = ({
   return (
     <PostContent
       post={post}
+      comments={comments}
+      isLoadingComments={isLoadingComments}
       onClose={() => {}}
       onPostEdited={handlePostEdited}
       onPostDeleted={handlePostDeleted}
+      onCommentSubmit={onCommentSubmit}
+      onCommentLike={onCommentLike}
+      onCommentUnlike={onCommentUnlike}
+      onEditComment={onEditComment}
+      onDeleteComment={onDeleteComment}
     />
   );
 };
