@@ -6,6 +6,7 @@ import { ExtendedPost } from "@/types/core";
 import { useCreatePost } from "@/hooks/use-create-post";
 import PostCreationFlow from "@/components/post/PostCreationFlow";
 import { PostCreationData } from "@/types/core";
+import { PostCard } from "@/components/post/PostCard";
 
 interface ProfilePostsGridProps {
   posts: ExtendedPost[];
@@ -50,25 +51,11 @@ export const ProfilePostsGrid: React.FC<ProfilePostsGridProps> = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {posts.map((post) => (
-          <div
+          <PostCard
             key={post.id}
-            onClick={() => onPostClick(post)}
-            className="aspect-square bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden cursor-pointer hover:opacity-75 transition-opacity"
-          >
-            {post.image ? (
-              <img
-                src={post.image}
-                alt={post.title || post.content}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900">
-                <span className="text-sm text-gray-600 dark:text-gray-300 text-center p-4">
-                  {post.title || post.content?.substring(0, 50) + "..."}
-                </span>
-              </div>
-            )}
-          </div>
+            post={post}
+            onPostClick={onPostClick}
+          />
         ))}
       </div>
 

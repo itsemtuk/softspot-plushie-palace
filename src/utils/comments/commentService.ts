@@ -1,6 +1,5 @@
 import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
 import { Comment } from "@/types/core";
-import { useAuth } from "@clerk/clerk-react";
 
 export interface PostComment {
   id: string;

@@ -6,8 +6,8 @@ import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { useState, useEffect } from "react";
 import { ExtendedPost, PostCreationData } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
-import { useUser } from "@clerk/clerk-react";
-import { supabase } from "@/integrations/supabase/client";
+import { useUser, useAuth } from "@clerk/clerk-react";
+import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { addPost } from "@/utils/posts/postManagement";
@@ -20,6 +20,7 @@ import { Star, User, Heart, MessageSquare } from "lucide-react";
 const Profile = () => {
   console.log("Profile page: Rendering");
   const { user } = useUser();
+  const { getToken } = useAuth();
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [marketplacePosts, setMarketplacePosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -75,8 +76,12 @@ const Profile = () => {
       
       setIsLoading(true);
       try {
+        // Get authenticated Clerk token for Supabase
+        const token = await getToken({ template: "supabase" });
+        const authenticatedSupabase = token ? createAuthenticatedSupabaseClient(token) : supabase;
+
         // Fetch user data from Supabase
-        const { data: supabaseUser } = await supabase
+        const { data: supabaseUser } = await authenticatedSupabase
           .from('users')
           .select('*')
           .eq('clerk_id', user.id)
@@ -86,7 +91,7 @@ const Profile = () => {
           setUserData(supabaseUser);
 
           // Fetch profile data
-          const { data: profile } = await supabase
+          const { data: profile } = await authenticatedSupabase
             .from('profiles')
             .select('*')
             .eq('user_uuid', supabaseUser.id)
@@ -101,7 +106,7 @@ const Profile = () => {
           }
 
           // Fetch user posts
-          const { data: posts } = await supabase
+          const { data: posts } = await authenticatedSupabase
             .from('posts')
             .select('*')
             .eq('user_id', supabaseUser.id)
@@ -141,7 +146,7 @@ const Profile = () => {
     };
 
     fetchUserData();
-  }, [user?.id]);
+  }, [user?.id, getToken]);
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);

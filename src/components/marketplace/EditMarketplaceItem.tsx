@@ -6,8 +6,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedPost } from "@/types/core";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@clerk/clerk-react";
 
 interface EditMarketplaceItemProps {
   post: ExtendedPost;
@@ -17,6 +18,7 @@ interface EditMarketplaceItemProps {
 }
 
 export const EditMarketplaceItem = ({ post, isOpen, onClose, onUpdate }: EditMarketplaceItemProps) => {
+  const { getToken } = useAuth();
   const [formData, setFormData] = useState({
     title: post.title || '',
     description: post.description || '',
@@ -87,6 +89,14 @@ export const EditMarketplaceItem = ({ post, isOpen, onClose, onUpdate }: EditMar
     setIsLoading(true);
 
     try {
+      // Get authenticated Clerk token for Supabase
+      const token = await getToken({ template: "supabase" });
+      if (!token) {
+        throw new Error("Failed to get authentication token");
+      }
+
+      const authenticatedSupabase = createAuthenticatedSupabaseClient(token);
+
       const updateData = {
         title: formData.title,
         description: formData.description,
@@ -101,7 +111,7 @@ export const EditMarketplaceItem = ({ post, isOpen, onClose, onUpdate }: EditMar
         updated_at: new Date().toISOString()
       };
 
-      const { error } = await supabase
+      const { error } = await authenticatedSupabase
         .from('posts')
         .update(updateData)
         .eq('id', post.id);
