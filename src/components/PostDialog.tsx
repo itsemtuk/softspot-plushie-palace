@@ -1,6 +1,6 @@
 
 import { useState, useEffect, useRef } from "react";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Heart, MessageCircle, Share2, MoreHorizontal } from "lucide-react";
 import { ExtendedPost, Comment } from "@/types/core";
@@ -203,6 +203,7 @@ export const PostDialog = ({ post, isOpen, onClose, children }: PostDialogProps)
         {children}
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogTitle className="sr-only">Post Details</DialogTitle>
         <PostDialogContent 
           post={post} 
           comments={comments}

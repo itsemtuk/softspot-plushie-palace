@@ -1,9 +1,9 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
 interface FormData {
@@ -24,6 +24,7 @@ interface FormData {
 
 export const useSellItemForm = () => {
   const { user } = useUser();
+  const { getToken } = useAuth();
   const { supabaseUserId } = useClerkSupabaseUser(user);
   const [formData, setFormData] = useState<FormData>({
     title: "",
@@ -84,6 +85,15 @@ export const useSellItemForm = () => {
     setIsSubmitting(true);
 
     try {
+      // Get authenticated Clerk token for Supabase
+      const token = await getToken({ template: "supabase" });
+      if (!token) {
+        throw new Error("Failed to get authentication token");
+      }
+
+      // Create authenticated Supabase client
+      const authenticatedSupabase = createAuthenticatedSupabaseClient(token);
+
       const postData = {
         id: `marketplace-${Date.now()}`,
         user_id: supabaseUserId,
@@ -105,9 +115,9 @@ export const useSellItemForm = () => {
         created_at: new Date().toISOString()
       };
 
-      console.log('Submitting marketplace item:', postData);
+      console.log('Inserting listing data:', postData);
 
-      const { data: result, error } = await supabase
+      const { data: result, error } = await authenticatedSupabase
         .from('posts')
         .insert([postData])
         .select()
