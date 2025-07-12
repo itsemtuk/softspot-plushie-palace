@@ -164,6 +164,15 @@ export default function EnhancedSellItem() {
       // Upload images first
       const uploadedImageUrls = images.length > 0 ? await uploadImages() : [];
       
+      // Get authenticated Clerk token for Supabase
+      const token = await getToken({ template: "supabase" });
+      if (!token) {
+        throw new Error("Failed to get authentication token");
+      }
+
+      // Create authenticated Supabase client
+      const authenticatedSupabase = createAuthenticatedSupabaseClient(token);
+      
       // Prepare listing data for marketplace_listings table
       const listingData: any = {
         user_id: userData.id,
@@ -196,7 +205,7 @@ export default function EnhancedSellItem() {
 
       console.log("Inserting listing data:", listingData);
 
-      const { data: result, error } = await supabase
+      const { data: result, error } = await authenticatedSupabase
         .from('marketplace_listings')
         .insert([listingData])
         .select()
