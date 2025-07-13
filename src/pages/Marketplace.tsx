@@ -56,14 +56,14 @@ const Marketplace = () => {
       try {
         setIsLoading(true);
         
-        // Fetch posts that are marked for sale
-        const { data: posts, error } = await supabase
-          .from('posts')
+        // Fetch from marketplace_listings table
+        const { data: listings, error } = await supabase
+          .from('marketplace_listings')
           .select(`
             *,
             users!inner(username, first_name, avatar_url)
           `)
-          .eq('for_sale', true)
+          .eq('status', 'active')
           .order('created_at', { ascending: false });
 
         if (error) {
@@ -72,31 +72,31 @@ const Marketplace = () => {
           return;
         }
 
-        if (posts && posts.length > 0) {
-          const formattedItems: MarketplacePlushie[] = posts.map(post => ({
-            id: post.id,
-            title: post.title || 'Untitled Item',
-            name: post.title || 'Untitled Item',
-            price: post.price || 0,
-            image: post.image || '',
-            brand: post.brand || 'Unknown',
-            condition: post.condition || 'used',
-            description: post.description || '',
-            tags: post.brand ? [post.brand.toLowerCase()] : [],
+        if (listings && listings.length > 0) {
+          const formattedItems: MarketplacePlushie[] = listings.map(listing => ({
+            id: listing.id,
+            title: listing.title || 'Untitled Item',
+            name: listing.title || 'Untitled Item',
+            price: listing.price || 0,
+            image: listing.image_urls?.[0] || '',
+            brand: listing.brand || 'Unknown',
+            condition: listing.condition || 'used',
+            description: listing.description || '',
+            tags: listing.brand ? [listing.brand.toLowerCase()] : [],
             likes: 0,
             comments: 0,
             forSale: true,
-            userId: post.user_id,
-            username: post.users?.username || post.users?.first_name || 'User',
-            timestamp: post.created_at,
+            userId: listing.user_id,
+            username: listing.users?.username || listing.users?.first_name || 'User',
+            timestamp: listing.created_at,
             location: 'Online',
-            material: post.material,
-            filling: post.filling,
-            species: post.species,
-            deliveryMethod: post.delivery_method,
-            deliveryCost: post.delivery_cost,
-            size: post.size,
-            color: post.color
+            material: 'N/A',
+            filling: 'N/A', 
+            species: 'N/A',
+            deliveryMethod: 'N/A',
+            deliveryCost: 0,
+            size: 'N/A',
+            color: 'N/A'
           }));
           
           setMarketplaceItems(formattedItems);
