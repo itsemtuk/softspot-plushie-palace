@@ -105,7 +105,8 @@ export const PostContent = ({
   };
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col h-full">
+      <div className="flex-1 space-y-4 overflow-y-auto">
       {/* Post Image */}
       {post.image && (
         <div className="w-full">
@@ -186,47 +187,50 @@ export const PostContent = ({
         )}
       </div>
 
-      {/* Comment Form */}
-      <PostCommentForm onSubmit={handleCommentSubmit} />
-
-      {/* Comments List */}
-      <div>
-        {isLoadingComments ? (
-          <div className="text-center py-4">Loading comments...</div>
-        ) : comments.length > 0 ? (
-          comments.map((comment) => (
-            <div key={comment.id} className="py-3 border-b border-gray-100">
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  {comment.users?.avatar_url ? (
-                    <img 
-                      src={comment.users.avatar_url} 
-                      alt={comment.users.username || 'User'} 
-                      className="w-8 h-8 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">
-                      {(comment.users?.username || comment.users?.first_name || 'U')[0].toUpperCase()}
-                    </div>
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-medium text-sm">
-                      {comment.users?.username || `${comment.users?.first_name || ''} ${comment.users?.last_name || ''}`.trim() || 'Anonymous'}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {new Date(comment.created_at).toLocaleDateString()}
-                    </span>
+        {/* Comments List */}
+        <div className="space-y-3">
+          {isLoadingComments ? (
+            <div className="text-center py-4">Loading comments...</div>
+          ) : comments.length > 0 ? (
+            comments.map((comment) => (
+              <div key={comment.id} className="py-3 border-b border-gray-100">
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    {comment.users?.avatar_url ? (
+                      <img 
+                        src={comment.users.avatar_url} 
+                        alt={comment.users.username || 'User'} 
+                        className="w-8 h-8 rounded-full"
+                      />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-xs font-medium">
+                        {(comment.users?.username || comment.users?.first_name || 'U')[0].toUpperCase()}
+                      </div>
+                    )}
                   </div>
-                  <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-medium text-sm">
+                        {comment.users?.username || `${comment.users?.first_name || ''} ${comment.users?.last_name || ''}`.trim() || 'Anonymous'}
+                      </span>
+                      <span className="text-xs text-gray-500">
+                        {new Date(comment.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <p className="text-sm text-gray-700 mt-1">{comment.content}</p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <div className="text-center py-4 text-gray-500">No comments yet</div>
-        )}
+            ))
+          ) : (
+            <div className="text-center py-4 text-gray-500">No comments yet</div>
+          )}
+        </div>
+      </div>
+
+      {/* Comment Form - Fixed at bottom */}
+      <div className="border-t pt-4 mt-4 bg-background">
+        <PostCommentForm onSubmit={handleCommentSubmit} />
       </div>
 
       {/* Edit Marketplace Item Dialog */}

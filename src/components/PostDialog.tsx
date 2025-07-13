@@ -202,7 +202,8 @@ export const PostDialog = ({ post, isOpen, onClose, children }: PostDialogProps)
       <DialogTrigger asChild>
         {children}
       </DialogTrigger>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
+        <div className="overflow-y-auto flex-1 px-1">
         <DialogTitle className="sr-only">Post Details</DialogTitle>
         <PostDialogContent 
           post={post} 
@@ -216,6 +217,7 @@ export const PostDialog = ({ post, isOpen, onClose, children }: PostDialogProps)
           onEditComment={handleEditComment}
           onDeleteComment={handleDeleteComment}
         />
+        </div>
       </DialogContent>
     </Dialog>
   );
