@@ -1,10 +1,12 @@
 
 import { ExtendedPost } from "@/types/core";
 import { supabase } from "@/integrations/supabase/client";
+import { createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
 
-export const addPost = async (postData: ExtendedPost): Promise<{ success: boolean; data?: any; error?: string }> => {
+export const addPost = async (postData: ExtendedPost, token?: string): Promise<{ success: boolean; data?: any; error?: string }> => {
   try {
-    const { data, error } = await supabase
+    const client = token ? createAuthenticatedSupabaseClient(token) : supabase;
+    const { data, error } = await client
       .from('posts')
       .insert([postData])
       .select();
@@ -21,9 +23,10 @@ export const addPost = async (postData: ExtendedPost): Promise<{ success: boolea
   }
 };
 
-export const updatePost = async (postId: string, postData: Partial<ExtendedPost>): Promise<{ success: boolean; data?: any; error?: string }> => {
+export const updatePost = async (postId: string, postData: Partial<ExtendedPost>, token?: string): Promise<{ success: boolean; data?: any; error?: string }> => {
   try {
-    const { data, error } = await supabase
+    const client = token ? createAuthenticatedSupabaseClient(token) : supabase;
+    const { data, error } = await client
       .from('posts')
       .update(postData)
       .eq('id', postId)
@@ -41,7 +44,7 @@ export const updatePost = async (postId: string, postData: Partial<ExtendedPost>
   }
 };
 
-export const deletePost = async (postId: string, userId?: string): Promise<{ success: boolean; error?: string }> => {
+export const deletePost = async (postId: string, userId?: string, token?: string): Promise<{ success: boolean; error?: string }> => {
   try {
     // Validate postId
     if (!postId) {
@@ -49,8 +52,10 @@ export const deletePost = async (postId: string, userId?: string): Promise<{ suc
       return { success: false, error: "Invalid post ID" };
     }
 
+    const client = token ? createAuthenticatedSupabaseClient(token) : supabase;
+    
     // Construct the delete query
-    let query = supabase.from('posts').delete().eq('id', postId);
+    let query = client.from('posts').delete().eq('id', postId);
 
     // If userId is provided, further restrict deletion to posts owned by the user
     if (userId) {

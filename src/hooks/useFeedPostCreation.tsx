@@ -2,54 +2,58 @@
 import { useCallback } from "react";
 import { ExtendedPost, PostCreationData } from "@/types/core";
 import { toast } from "@/components/ui/use-toast";
-import { savePost } from "@/utils/postStorage";
+import { addPost } from "@/utils/posts/postManagement";
 import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
-import { getCurrentUserId } from "@/utils/storage/localStorageUtils";
+import { useUser, useAuth } from "@clerk/clerk-react";
 
 export const useFeedPostCreation = (setPosts: React.Dispatch<React.SetStateAction<ExtendedPost[]>>) => {
   const { addOfflinePost } = useOfflinePostOperations();
+  const { user } = useUser();
+  const { getToken } = useAuth();
 
   const handlePostCreated = useCallback(async (data: PostCreationData) => {
     try {
-      const userId = getCurrentUserId();
-      
-      if (!userId) {
-        toast({
-          variant: "destructive",
-          title: "Authentication Required",
-          description: "Please sign in to create posts.",
-        });
-        return Promise.reject(new Error("Authentication required"));
+      if (!user?.id) {
+        throw new Error("User not authenticated");
       }
-
+      
       const newPost: ExtendedPost = {
-        ...data,
-        id: `post-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-        userId: userId,
-        user_id: userId,
-        username: 'You',
+        id: crypto.randomUUID(),
+        userId: user.id,
+        user_id: user.id,
+        username: user.username || user.firstName || "Current User",
+        content: data.description,
+        image: data.image,
+        title: data.title,
+        description: data.description,
+        tags: data.tags,
+        likes: 0,
+        comments: 0,
         timestamp: new Date().toISOString(),
         createdAt: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-        likes: 0,
-        comments: 0,
-        content: data.description,
-        forSale: false
+        forSale: false,
       };
 
-      toast({
-        title: "Post created!",
-        description: "Your post has been added to the feed.",
-        duration: 3000,
-      });
+      // Get Clerk token for authenticated request
+      const token = await getToken({ template: "supabase" });
+      
+      // Save to Supabase
+      const result = await addPost(newPost, token || undefined);
+      
+      if (result.success) {
+        toast({
+          title: "Post created!",
+          description: "Your post has been added to the feed.",
+          duration: 3000,
+        });
 
-      setPosts(prevPosts => [newPost, ...prevPosts]);
-
-      await Promise.all([
-        savePost(newPost),
-        addOfflinePost(newPost)
-      ]);
+        setPosts(prevPosts => [newPost, ...prevPosts]);
+        await addOfflinePost(newPost);
+      } else {
+        throw new Error(result.error || "Failed to create post");
+      }
 
       return Promise.resolve();
     } catch (error) {
@@ -61,7 +65,7 @@ export const useFeedPostCreation = (setPosts: React.Dispatch<React.SetStateActio
       });
       return Promise.reject(error);
     }
-  }, [setPosts, addOfflinePost]);
+  }, [addOfflinePost, setPosts, user, getToken]);
 
   return { handlePostCreated };
 };

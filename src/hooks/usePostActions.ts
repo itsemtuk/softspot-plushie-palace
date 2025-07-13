@@ -5,10 +5,12 @@ import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { ExtendedPost } from "@/types/core";
 import { deletePost, updatePost } from "@/utils/posts/postManagement";
+import { useAuth } from "@clerk/clerk-react";
 
 export const usePostActions = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useUser();
+  const { getToken } = useAuth();
   const navigate = useNavigate();
 
   const handleEditPost = useCallback(
@@ -52,7 +54,8 @@ export const usePostActions = () => {
       setIsLoading(true);
 
       try {
-        const result = await deletePost(postId, user.id);
+        const token = await getToken({ template: "supabase" });
+        const result = await deletePost(postId, user.id, token || undefined);
 
         if (result.success) {
           toast({
@@ -73,7 +76,7 @@ export const usePostActions = () => {
         setIsLoading(false);
       }
     },
-    [user?.id]
+    [user?.id, getToken]
   );
 
   const handleUpdatePost = useCallback(
@@ -99,7 +102,8 @@ export const usePostActions = () => {
       setIsLoading(true);
 
       try {
-        const result = await updatePost(postId, updatedPostData);
+        const token = await getToken({ template: "supabase" });
+        const result = await updatePost(postId, updatedPostData, token || undefined);
 
         if (result.success) {
           toast({
@@ -120,7 +124,7 @@ export const usePostActions = () => {
         setIsLoading(false);
       }
     },
-    [user?.id]
+    [user?.id, getToken]
   );
 
   return {
