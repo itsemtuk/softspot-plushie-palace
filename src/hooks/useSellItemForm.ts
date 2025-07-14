@@ -94,32 +94,24 @@ export const useSellItemForm = () => {
       // Create authenticated Supabase client
       const authenticatedSupabase = createAuthenticatedSupabaseClient(token);
 
-      const postData = {
-        id: `marketplace-${Date.now()}`,
+      const listingData = {
         user_id: supabaseUserId,
         title: data.title,
         description: data.description,
-        content: data.description || data.title,
-        image: imageUrl || null,
+        image_urls: imageUrl ? [imageUrl] : [],
         price: parseFloat(data.price),
         brand: data.brand,
         condition: data.condition,
-        material: data.material || null,
-        filling: data.filling || null,
-        species: data.species || null,
-        delivery_method: data.deliveryMethod || null,
-        delivery_cost: data.deliveryCost ? parseFloat(data.deliveryCost) : null,
-        size: data.size || null,
-        color: data.color || null,
-        for_sale: true, // Ensure this is set to true for marketplace items
+        listing_type: 'fixed_price',
+        status: 'active',
         created_at: new Date().toISOString()
       };
 
-      console.log('Inserting listing data:', postData);
+      console.log('Inserting listing data:', listingData);
 
       const { data: result, error } = await authenticatedSupabase
-        .from('posts')
-        .insert([postData])
+        .from('marketplace_listings')
+        .insert([listingData])
         .select()
         .single();
 
