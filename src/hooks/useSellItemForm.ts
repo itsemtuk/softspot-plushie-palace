@@ -73,6 +73,10 @@ export const useSellItemForm = () => {
       return;
     }
 
+    console.log('Current user:', user);
+    console.log('Supabase user ID:', supabaseUserId);
+    console.log('Clerk user ID:', user.id);
+
     if (!data.title || !data.price || !data.condition || !data.brand) {
       toast({
         variant: "destructive",
