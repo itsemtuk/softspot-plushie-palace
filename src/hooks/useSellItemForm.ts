@@ -109,6 +109,10 @@ export const useSellItemForm = () => {
       // Create authenticated Supabase client
       const authenticatedSupabase = createAuthenticatedSupabaseClient(token);
 
+      console.log('About to create listing with user_id:', supabaseUserId);
+      console.log('Type of supabaseUserId:', typeof supabaseUserId);
+      console.log('Is supabaseUserId a UUID?', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(supabaseUserId || ''));
+      
       const listingData = {
         user_id: supabaseUserId,
         title: data.title,
