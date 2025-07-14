@@ -100,21 +100,13 @@ export const useSellItemForm = () => {
     setIsSubmitting(true);
 
     try {
-      // Get authenticated Clerk token for Supabase
-      const token = await getToken({ template: "supabase" });
-      if (!token) {
-        throw new Error("Failed to get authentication token");
-      }
-
-      // Create authenticated Supabase client
-      const authenticatedSupabase = createAuthenticatedSupabaseClient(token);
-
       console.log('About to create listing with user_id:', supabaseUserId);
       console.log('Type of supabaseUserId:', typeof supabaseUserId);
       console.log('Is supabaseUserId a UUID?', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(supabaseUserId || ''));
       
+      // Use regular supabase client instead of authenticated one to avoid Clerk ID override
       const listingData = {
-        user_id: supabaseUserId,
+        user_id: supabaseUserId, // This should be the UUID from Supabase
         title: data.title,
         description: data.description,
         image_urls: imageUrl ? [imageUrl] : [],
@@ -122,13 +114,12 @@ export const useSellItemForm = () => {
         brand: data.brand,
         condition: data.condition,
         listing_type: 'fixed_price',
-        status: 'active',
-        created_at: new Date().toISOString()
+        status: 'active'
       };
 
       console.log('Inserting listing data:', listingData);
 
-      const { data: result, error } = await authenticatedSupabase
+      const { data: result, error } = await supabase
         .from('marketplace_listings')
         .insert([listingData])
         .select()
