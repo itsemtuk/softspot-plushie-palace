@@ -76,6 +76,17 @@ export const useSellItemForm = () => {
     console.log('Current user:', user);
     console.log('Supabase user ID:', supabaseUserId);
     console.log('Clerk user ID:', user.id);
+    
+    // Additional validation to ensure we have the correct UUID
+    if (supabaseUserId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(supabaseUserId)) {
+      console.error('Invalid Supabase user ID format:', supabaseUserId);
+      toast({
+        variant: "destructive",
+        title: "Authentication error",
+        description: "Invalid user ID format. Please try signing out and back in."
+      });
+      return;
+    }
 
     if (!data.title || !data.price || !data.condition || !data.brand) {
       toast({
