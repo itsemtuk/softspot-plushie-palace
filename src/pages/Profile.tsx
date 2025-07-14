@@ -23,6 +23,7 @@ const Profile = () => {
   const { getToken } = useAuth();
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
   const [marketplacePosts, setMarketplacePosts] = useState<ExtendedPost[]>([]);
+  const [archivedPosts, setArchivedPosts] = useState<ExtendedPost[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [userData, setUserData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
@@ -127,15 +128,18 @@ const Profile = () => {
               location: '',
               forSale: post.for_sale || false,
               tags: [],
-              sold: false
+              sold: false,
+              archived: post.archived || false
             }));
             
-            // Separate regular posts from marketplace items
-            const regularPosts = formattedPosts.filter(post => !post.forSale);
-            const marketplaceItems = formattedPosts.filter(post => post.forSale);
+            // Separate regular posts, marketplace items, and archived posts
+            const regularPosts = formattedPosts.filter(post => !post.forSale && !post.archived);
+            const marketplaceItems = formattedPosts.filter(post => post.forSale && !post.archived);
+            const archived = formattedPosts.filter(post => post.archived);
             
             setUserPosts(regularPosts);
             setMarketplacePosts(marketplaceItems);
+            setArchivedPosts(archived);
           }
         }
       } catch (error) {
@@ -320,6 +324,20 @@ const Profile = () => {
 
           <TabsContent value="badges" className="mt-6">
             <ProfileBadges badges={userBadges} />
+          </TabsContent>
+
+          <TabsContent value="archived" className="mt-6">
+            <Card>
+              <CardContent className="p-4">
+                <h3 className="text-lg font-semibold mb-4">Archived Posts</h3>
+                <ProfilePostsGrid posts={archivedPosts} isLoading={isLoading} />
+                {archivedPosts.length === 0 && !isLoading && (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                    No archived posts yet.
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="reviews" className="mt-6">

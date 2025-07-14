@@ -18,7 +18,7 @@ interface PostCardProps {
 export const PostCard = ({ post, onPostClick }: PostCardProps) => {
   const [isLiked, setIsLiked] = useState(false);
   const { user } = useUser();
-  const { handleEditPost, handleDeletePost } = usePostActions();
+  const { handleEditPost, handleDeletePost, handleArchivePost } = usePostActions();
 
   const handleClick = (e: React.MouseEvent) => {
     // Don't trigger if clicking on interactive elements
@@ -60,6 +60,15 @@ export const PostCard = ({ post, onPostClick }: PostCardProps) => {
     await handleDeletePost(post.id);
   };
 
+  // Archive handler
+  const handleArchive = async () => {
+    if (handleArchivePost) {
+      await handleArchivePost(post.id);
+    }
+  };
+
+
+  // Only show the PostMenu if the logged-in user is the post owner
   return (
     <Card className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow" onClick={handleClick}>
       {post.image && (
@@ -79,7 +88,7 @@ export const PostCard = ({ post, onPostClick }: PostCardProps) => {
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium">{post.username}</span>
           {user?.id === post.userId && (
-            <PostMenu onEdit={handleEdit} onDelete={handleDelete} />
+            <PostMenu onEdit={handleEdit} onDelete={handleDelete} onArchive={handleArchive} />
           )}
         </div>
         

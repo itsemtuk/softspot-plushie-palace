@@ -68,7 +68,18 @@ export const useSellItemForm = () => {
       toast({
         variant: "destructive",
         title: "Authentication required",
-        description: "Please sign in to sell items."
+        description: "Please sign in to sell items.",
+      });
+      return;
+    }
+
+    // Validate Supabase user ID is a proper UUID
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(supabaseUserId)) {
+      console.error('Invalid Supabase user ID format:', supabaseUserId);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "User authentication failed (invalid user ID format). Please try logging out and back in.",
       });
       return;
     }
@@ -77,15 +88,6 @@ export const useSellItemForm = () => {
     console.log('Supabase user ID:', supabaseUserId);
     console.log('Clerk user ID:', user.id);
     
-    // Additional validation to ensure we have the correct UUID
-    if (supabaseUserId && !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(supabaseUserId)) {
-      console.error('Invalid Supabase user ID format:', supabaseUserId);
-      toast({
-        variant: "destructive",
-        title: "Authentication error",
-        description: "Invalid user ID format. Please try signing out and back in."
-      });
-      return;
     }
 
     if (!data.title || !data.price || !data.condition || !data.brand) {

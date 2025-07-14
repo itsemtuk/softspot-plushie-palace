@@ -44,6 +44,30 @@ export const updatePost = async (postId: string, postData: Partial<ExtendedPost>
   }
 };
 
+export const archivePost = async (postId: string, userId?: string, token?: string): Promise<{ success: boolean; error?: string }> => {
+  try {
+    if (!postId) {
+      console.error("Invalid postId provided for archiving.");
+      return { success: false, error: "Invalid post ID" };
+    }
+    const client = token ? createAuthenticatedSupabaseClient(token) : supabase;
+    // Only allow archiving by owner
+    let query = client.from('posts').update({ archived: true }).eq('id', postId);
+    if (userId) {
+      query = query.eq('user_id', userId);
+    }
+    const { error } = await query;
+    if (error) {
+      console.error("Supabase archive post error:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true };
+  } catch (err) {
+    console.error("Unexpected error archiving post:", err);
+    return { success: false, error: "Failed to archive post" };
+  }
+};
+
 export const deletePost = async (postId: string, userId?: string, token?: string): Promise<{ success: boolean; error?: string }> => {
   try {
     // Validate postId

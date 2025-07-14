@@ -4,7 +4,7 @@ import { toast } from "@/components/ui/use-toast";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { ExtendedPost } from "@/types/core";
-import { deletePost, updatePost } from "@/utils/posts/postManagement";
+import { deletePost, updatePost, archivePost } from "@/utils/posts/postManagement";
 import { useAuth } from "@clerk/clerk-react";
 
 export const usePostActions = () => {
@@ -127,10 +127,55 @@ export const usePostActions = () => {
     [user?.id, getToken]
   );
 
+  const handleArchivePost = useCallback(
+    async (postId: string) => {
+      if (!postId) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Invalid post ID",
+        });
+        return;
+      }
+      if (!user?.id) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please sign in to archive posts.",
+        });
+        return;
+      }
+      setIsLoading(true);
+      try {
+        const token = await getToken({ template: "supabase" });
+        const result = await archivePost(postId, user.id, token || undefined);
+        if (result.success) {
+          toast({
+            title: "Post archived",
+            description: "Your post has been archived.",
+          });
+        } else {
+          throw new Error(result.error || "Failed to archive post");
+        }
+      } catch (error) {
+        console.error("Error archiving post:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to archive the post. Please try again.",
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [user?.id, getToken]
+  );
+
   return {
     isLoading,
     handleEditPost,
     handleDeletePost,
     handleUpdatePost,
+    handleArchivePost,
   };
 };

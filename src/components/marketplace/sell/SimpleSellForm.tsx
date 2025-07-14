@@ -49,11 +49,21 @@ export const SimpleSellForm = () => {
   });
 
   const onSubmit = async (data: SellFormData) => {
+    // Validate Supabase user ID is a proper UUID
     if (!supabaseUserId) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "User authentication required. Please try refreshing the page.",
+      });
+      return;
+    }
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(supabaseUserId)) {
+      console.error('Invalid Supabase user ID format:', supabaseUserId);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "User authentication failed (invalid user ID format). Please try logging out and back in.",
       });
       return;
     }

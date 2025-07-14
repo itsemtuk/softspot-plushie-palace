@@ -71,6 +71,7 @@ export interface ExtendedPost {
   size?: string;
   sold?: boolean; // Add sold property for badges
   color?: string; // Add color property
+  archived?: boolean; // Add archived property for archive feature
 }
 
 export type PostCreationData = Omit<ExtendedPost, 'id' | 'userId' | 'username' | 'likes' | 'comments' | 'timestamp' | 'createdAt' | 'updatedAt' | 'user_id' | 'created_at'>;
