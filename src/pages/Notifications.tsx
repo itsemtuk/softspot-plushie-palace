@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import MainLayout from "@/components/layout/MainLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "@/components/ui/use-toast";
 

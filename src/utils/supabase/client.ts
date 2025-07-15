@@ -182,6 +182,22 @@ export const testSupabaseConnection = async (timeoutMs: number = 2000): Promise<
   }
 };
 
+// Factory for authenticated Supabase client (for SSR or user sessions)
+export function createAuthenticatedSupabaseClient(accessToken: string) {
+  return createClient(supabaseUrl, supabaseKey, {
+    global: {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    },
+    auth: {
+      persistSession: false,
+      autoRefreshToken: false,
+      detectSessionInUrl: false,
+    },
+  });
+}
+
 // Safe user sync function that handles RLS properly with better error handling
 export const syncClerkUserToSupabase = async (clerkUser: any) => {
   if (!clerkUser) return { data: null, error: 'No user provided' };

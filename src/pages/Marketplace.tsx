@@ -12,7 +12,7 @@ import { MarketplacePlushie } from "@/types/marketplace";
 import { MarketplaceHero } from "@/components/marketplace/MarketplaceHero";
 import { MarketplaceNavigation } from "@/components/marketplace/MarketplaceNavigation";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Heart } from "lucide-react";
 import { Link } from "react-router-dom";

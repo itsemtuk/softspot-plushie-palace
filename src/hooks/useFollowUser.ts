@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { useUser } from '@clerk/clerk-react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 
 export const useFollowUser = (targetUserId?: string) => {

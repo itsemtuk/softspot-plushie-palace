@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '@clerk/clerk-react';
 import { toast } from '@/components/ui/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase } from '@/utils/supabase/client';
 import { SellItemHeader } from '@/components/marketplace/sell/SellItemHeader';
 import { SellItemImageSection } from '@/components/marketplace/sell/SellItemImageSection';
 import { SellItemBasicInfo } from '@/components/marketplace/sell/SellItemBasicInfo';

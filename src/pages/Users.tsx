@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import MainLayout from "@/components/layout/MainLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 import { useUser } from "@clerk/clerk-react";
 import { toast } from "@/components/ui/use-toast";
 import { useFollowUser } from "@/hooks/useFollowUser";

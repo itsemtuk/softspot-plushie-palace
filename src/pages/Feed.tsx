@@ -5,7 +5,7 @@ import { FeedHeader } from "@/components/feed/FeedHeader";
 import { FeedContent } from "@/components/feed/FeedContent";
 import { useCreatePost } from "@/hooks/use-create-post";
 import { PostCreationData, ExtendedPost } from "@/types/core";
-import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
+import { supabase, createAuthenticatedSupabaseClient } from "@/utils/supabase/client";
 import { ImageFirstPostCreation } from "@/components/post/ImageFirstPostCreation";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";

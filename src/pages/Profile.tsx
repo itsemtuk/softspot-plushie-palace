@@ -7,7 +7,7 @@ import { useState, useEffect } from "react";
 import { ExtendedPost, PostCreationData } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { useUser, useAuth } from "@clerk/clerk-react";
-import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
+import { supabase, createAuthenticatedSupabaseClient } from "@/utils/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { addPost } from "@/utils/posts/postManagement";

@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 import MainLayout from "@/components/layout/MainLayout";
 import { AuthGuard } from "@/utils/security/authGuard";
 import { ValidationSchemas } from "@/utils/security/inputValidation";
-import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
+import { supabase, createAuthenticatedSupabaseClient } from "@/utils/supabase/client";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
 import { toast } from "@/hooks/use-toast";

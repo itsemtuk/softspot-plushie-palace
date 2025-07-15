@@ -15,7 +15,7 @@ import { getPosts } from "@/utils/postStorage";
 import { toast } from "@/components/ui/use-toast";
 import { UserProfile } from "@/types/user";
 import { Spinner } from "@/components/ui/spinner";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/utils/supabase/client";
 import { PostCreationData } from "@/types/core";
 import { addPost } from "@/utils/posts/postManagement";
 
