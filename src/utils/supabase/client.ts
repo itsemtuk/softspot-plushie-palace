@@ -5,9 +5,12 @@ import { withRetry } from '../retry';
 // Singleton pattern to prevent multiple GoTrueClient instances
 let supabaseInstance: ReturnType<typeof createClient> | null = null;
 
-// Initialize Supabase client with the provided credentials
-const supabaseUrl = 'https://evsamjzmqzbynwkuszsm.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2c2FtanptcXpieW53a3VzenNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MzgwMTEsImV4cCI6MjA2MDQxNDAxMX0.rkYcUyq7tMf3om2doHkWt85bdAHinEceuH43Hwn1knw';
+// Initialize Supabase client with environment variables
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl) throw new Error('supabaseUrl is required.');
+if (!supabaseKey) throw new Error('supabaseKey is required.');
 
 // Create Supabase client as a singleton
 export const supabase = (() => {
