@@ -17,10 +17,24 @@ export const useFeedPostCreation = (setPosts: React.Dispatch<React.SetStateActio
         throw new Error("User not authenticated");
       }
       
+      // Fetch Supabase user UUID by Clerk user ID
+      const { data: supabaseUser, error: userFetchError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', user.id)
+        .maybeSingle();
+      if (userFetchError || !supabaseUser?.id) {
+        toast({
+          variant: "destructive",
+          title: "User mapping error",
+          description: "Could not find your Supabase user. Please try logging out and back in.",
+        });
+        return Promise.reject(new Error("Supabase user mapping failed"));
+      }
       const newPost: ExtendedPost = {
         id: crypto.randomUUID(),
-        userId: user.id,
-        user_id: user.id,
+        userId: supabaseUser.id,
+        user_id: supabaseUser.id,
         username: user.username || user.firstName || "Current User",
         content: data.description,
         image: data.image,

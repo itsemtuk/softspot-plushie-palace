@@ -33,10 +33,25 @@ export const useSellItemSubmission = () => {
       }
 
       // Prepare post data with proper validation
+      // Fetch Supabase user UUID by Clerk user ID
+      const { data: supabaseUser, error: userFetchError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('clerk_id', user.id)
+        .maybeSingle();
+      if (userFetchError || !supabaseUser?.id) {
+        toast({
+          variant: "destructive",
+          title: "User mapping error",
+          description: "Could not find your Supabase user. Please try logging out and back in.",
+        });
+        setIsSubmitting(false);
+        return;
+      }
       const postData: ExtendedPost = {
         id: `post-${Date.now()}`,
-        userId: user.id,
-        user_id: user.id,
+        userId: supabaseUser.id,
+        user_id: supabaseUser.id,
         username: user.username || user.firstName || "User",
         image: imageUrl || "",
         title: data.title.trim(),
