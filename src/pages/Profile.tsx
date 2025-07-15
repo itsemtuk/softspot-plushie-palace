@@ -330,7 +330,7 @@ const Profile = () => {
             <Card>
               <CardContent className="p-4">
                 <h3 className="text-lg font-semibold mb-4">Archived Posts</h3>
-                <ProfilePostsGrid posts={archivedPosts} isLoading={isLoading} />
+                <ProfilePostsGrid posts={archivedPosts} onPostClick={handlePostClick} isOwnProfile={true} />
                 {archivedPosts.length === 0 && !isLoading && (
                   <div className="text-center text-gray-500 dark:text-gray-400 py-8">
                     No archived posts yet.

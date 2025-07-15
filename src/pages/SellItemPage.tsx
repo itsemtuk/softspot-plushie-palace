@@ -82,12 +82,12 @@ const SellItemPage = () => {
           }
         });
 
-        if (!createdUser || createdUser.length === 0) {
+        if (!createdUser || (createdUser as any[]).length === 0) {
           throw new Error('Failed to create user');
         }
-        userId = createdUser[0].id;
+        userId = (createdUser as any[])[0].id;
       } else {
-        userId = userData.id;
+        userId = userData.id as string;
       }
 
       // For now, just store the first image file name as a placeholder

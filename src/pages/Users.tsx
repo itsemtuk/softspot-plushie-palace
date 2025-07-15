@@ -64,7 +64,14 @@ const Users = () => {
       
       // Filter out current user
       const filteredUsers = data?.filter(user => user.clerk_id !== currentUser?.id) || [];
-      setUsers(filteredUsers);
+      setUsers(filteredUsers.map(user => ({
+        id: user.id as string,
+        username: user.username as string,
+        first_name: user.first_name as string,
+        last_name: user.last_name as string,
+        email: user.email as string,
+        avatar_url: user.avatar_url as string,
+      })));
     } catch (error) {
       console.error('Error:', error);
     } finally {

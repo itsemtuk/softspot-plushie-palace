@@ -55,13 +55,13 @@ export default function Notifications() {
 
       // Transform the data to match our interface
       const transformedNotifications: Notification[] = (data || []).map(notification => ({
-        id: notification.id,
+        id: notification.id as string,
         type: notification.type as 'follow' | 'offer' | 'like' | 'comment',
-        title: notification.title,
-        message: notification.message,
-        read: notification.read,
-        created_at: notification.created_at,
-        data: notification.data
+        title: notification.title as string,
+        message: notification.message as string,
+        read: notification.read as boolean,
+        created_at: notification.created_at as string,
+        data: notification.data as any
       }));
 
       setNotifications(transformedNotifications);

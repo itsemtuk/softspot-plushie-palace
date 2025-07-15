@@ -52,7 +52,7 @@ export const archivePost = async (postId: string, userId?: string, token?: strin
     }
     const client = token ? createAuthenticatedSupabaseClient(token) : supabase;
     // Only allow archiving by owner
-    let query = client.from('posts').update({ archived: true }).eq('id', postId);
+    let query = client.from('posts').update({ content: "archived" }).eq('id', postId);
     if (userId) {
       query = query.eq('user_id', userId);
     }

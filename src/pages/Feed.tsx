@@ -46,21 +46,21 @@ export default function Feed() {
       }
 
       const formattedPosts: ExtendedPost[] = (feedPosts || []).map(post => ({
-        id: post.id,
-        userId: post.user_id,
-        user_id: post.user_id,
+        id: post.id as string,
+        userId: post.user_id as string,
+        user_id: post.user_id as string,
         username: (post.users as any)?.username || 'User',
-        image: post.image || '',
-        title: post.title || '',
-        description: post.description || '',
-        content: post.content,
+        image: (post.image as string) || '',
+        title: (post.title as string) || '',
+        description: (post.description as string) || '',
+        content: (post.content as string) || '',
         tags: [],
         likes: 0,
         comments: 0,
-        timestamp: post.created_at || '',
-        createdAt: post.created_at || '',
-        created_at: post.created_at || '',
-        updatedAt: post.updated_at || post.created_at || '',
+        timestamp: (post.created_at as string) || '',
+        createdAt: (post.created_at as string) || '',
+        created_at: (post.created_at as string) || '',
+        updatedAt: (post.updated_at as string) || (post.created_at as string) || '',
         location: '',
         forSale: false
       }));
@@ -201,10 +201,10 @@ export default function Feed() {
 
       // Add to local state
       const newPost: ExtendedPost = {
-        id: data.id,
-        userId: userData.id,
-        user_id: userData.id,
-        username: userData.username || user.username || user.firstName || "User",
+        id: data.id as string,
+        userId: userData.id as string,
+        user_id: userData.id as string,
+        username: (userData.username as string) || user.username || user.firstName || "User",
         image: imageUrl || '',
         title: data.title || '',
         description: data.description || '',

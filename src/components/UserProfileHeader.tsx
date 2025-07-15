@@ -68,7 +68,12 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
           .maybeSingle();
 
         if (userInfoData) {
-          setUserInfo(userInfoData);
+          setUserInfo({
+            avatar_url: userInfoData.avatar_url as string,
+            first_name: userInfoData.first_name as string,
+            last_name: userInfoData.last_name as string,
+            email: userInfoData.email as string,
+          });
         }
 
         // Fetch header customization
