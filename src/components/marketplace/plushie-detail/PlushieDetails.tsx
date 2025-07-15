@@ -1,6 +1,7 @@
 
 import { Package, Shirt, Box, PawPrint, Ruler, TruckIcon, GlobeIcon } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { Badge } from "@/components/ui/badge";
 import { MarketplacePlushie } from "@/types/marketplace";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -18,7 +19,23 @@ export function PlushieDetails({ plushie }: PlushieDetailsProps) {
       <DialogHeader>
         <DialogTitle className="text-2xl font-bold">{plushie.title}</DialogTitle>
         <div className="text-sm text-gray-500 flex items-center justify-between mt-2">
-          <span>Listed by @{plushie.username}</span>
+          {(() => {
+  const { user } = useUser();
+  const isCurrentUser = user && (user.username === plushie.username || user.id === plushie.user_id || user.id === plushie.userId);
+  if (plushie.username) {
+    return (
+      <Link
+        to={isCurrentUser ? "/profile" : `/user/${plushie.username}`}
+        onClick={e => e.stopPropagation()}
+        className="text-blue-600 hover:underline"
+      >
+        Listed by @{plushie.username}
+      </Link>
+    );
+  } else {
+    return <span>Listed by @Unknown</span>;
+  }
+})()}
           {plushie.condition && (
             <Badge variant="outline" className="bg-softspot-50 text-softspot-500">
               {plushie.condition}

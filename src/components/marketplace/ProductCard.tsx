@@ -1,5 +1,6 @@
 
 import React from "react";
+import { useUser } from "@clerk/clerk-react";
 import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onWishlistToggle,
   viewMode = "grid"
 }) => {
+  const { user } = useUser();
   const handleCardClick = (e: React.MouseEvent) => {
     // Prevent card click when clicking on wishlist button
     if ((e.target as HTMLElement).closest('button')) {

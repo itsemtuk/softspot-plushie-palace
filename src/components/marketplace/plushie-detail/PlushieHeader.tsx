@@ -1,5 +1,7 @@
 
 import React from "react";
+import { useUser } from "@clerk/clerk-react";
+import { Link } from "react-router-dom";
 import { DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -50,17 +52,24 @@ export const PlushieHeader = ({ plushie, formattedDate }: PlushieHeaderProps) =>
           <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${plushie.username || 'U'}`} />
           <AvatarFallback>{plushie.username?.charAt(0) || 'U'}</AvatarFallback>
         </Avatar>
-        {plushie.username ? (
-  <Link
-    to={`/profile/${plushie.username}`}
-    onClick={e => e.stopPropagation()}
-    className="text-sm text-blue-600 hover:underline"
-  >
-    {plushie.username}
-  </Link>
-) : (
-  <span className="text-sm text-gray-600">Anonymous</span>
-)}
+        {(() => {
+  const { user } = useUser();
+  const isCurrentUser = user && (user.username === plushie.username || user.id === plushie.user_id || user.id === plushie.userId);
+  if (plushie.username) {
+    return (
+      <Link
+        to={isCurrentUser ? "/profile" : `/user/${plushie.username}`}
+        onClick={e => e.stopPropagation()}
+        className="text-sm text-blue-600 hover:underline"
+      >
+        {plushie.username}
+      </Link>
+    );
+  } else {
+    return <span className="text-sm text-gray-600">Anonymous</span>;
+  }
+})()}
+
         <span className="text-xs text-gray-500">• {formattedDate}</span>
       </div>
     </>

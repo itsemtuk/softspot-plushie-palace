@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Navigate } from "react-router-dom";
+import { useUser } from "@clerk/clerk-react";
 import { ArrowLeft, UserPlus, MessageSquare, MoreHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -20,6 +21,13 @@ import { PostCreationData } from "@/types/core";
 import { addPost } from "@/utils/posts/postManagement";
 
 const UserProfilePage = () => {
+  const { user } = useUser();
+  const { username } = useParams<{ username: string }>();
+  // Redirect to /profile if this is the current logged-in user
+  if (user && (user.username === username || user.id === username)) {
+    return <Navigate to="/profile" replace />;
+  }
+
   const { username } = useParams<{ username: string }>();
   const navigate = useNavigate();
   const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);

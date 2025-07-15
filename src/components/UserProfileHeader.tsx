@@ -192,7 +192,7 @@ const UserProfileHeader: React.FC<UserProfileHeaderProps> = ({
           {/* Profile Picture */}
           <div className="flex-shrink-0">
             <UserProfilePhoto 
-              avatarUrl={profileImage}
+              avatarUrl={getProfileImage()}
               username={username}
               firstName={username}
               size="xl"
