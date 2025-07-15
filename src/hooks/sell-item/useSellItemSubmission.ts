@@ -11,7 +11,8 @@ export const useSellItemSubmission = () => {
   const navigate = useNavigate();
   const { user } = useUser();
 
-  const onSubmit = useCallback(async (data: SellItemFormData, imageUrl: string) => {
+  const onSubmit = useCallback(
+  async (data: SellItemFormData, imageFile?: File) => {
     if (!user?.id) {
       toast({
         variant: "destructive",
@@ -33,7 +34,6 @@ export const useSellItemSubmission = () => {
         throw new Error("Valid price is required");
       }
 
-      // Prepare post data with proper validation
       // Fetch Supabase user UUID by Clerk user ID
       const { data: supabaseUser, error: userFetchError } = await supabase
         .from('users')
@@ -49,47 +49,60 @@ export const useSellItemSubmission = () => {
         setIsSubmitting(false);
         return;
       }
-      const postData: ExtendedPost = {
-        id: `post-${Date.now()}`,
-        userId: supabaseUser.id,
+
+      // Upload image file if provided
+      let imageUrl = '';
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop();
+        const fileName = `sellitem-${user.id}-${Date.now()}.${fileExt}`;
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('uploads')
+          .upload(fileName, imageFile);
+        if (uploadError) {
+          throw new Error('Image upload failed: ' + uploadError.message);
+        }
+        // Get public URL
+        const { data: publicUrlData } = supabase.storage.from('uploads').getPublicUrl(fileName);
+        imageUrl = publicUrlData?.publicUrl || '';
+      }
+
+      // Prepare post data
+      const postData = {
+        content: `${data.title}\n\n${data.description}`,
         user_id: supabaseUser.id,
-        username: user.username || user.firstName || "User",
-        image: imageUrl || "",
-        title: data.title.trim(),
-        description: data.description?.trim() || "",
-        content: data.description?.trim() || "",
-        tags: Array.isArray(data.tags) ? data.tags : [],
-        likes: 0,
-        comments: 0,
-        timestamp: new Date().toISOString(),
-        createdAt: new Date().toISOString(),
+        title: data.title,
+        description: data.description,
+        image: imageUrl,
+        price: data.price,
+        brand: data.brand || null,
+        condition: data.condition,
+        material: data.material || null,
+        filling: data.filling || null,
+        species: data.species || null,
+        delivery_method: data.deliveryMethod,
+        delivery_cost: data.deliveryCost || null,
+        size: data.size || null,
+        color: data.color || null,
+        for_sale: true,
+        tags: [],
         created_at: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        location: data.location?.trim() || "",
-        forSale: true,
-        price: Number(data.price) || 0,
-        brand: data.brand || undefined,
-        condition: data.condition || 'new',
-        material: data.material || 'plush',
-        filling: data.filling || 'polyester',
-        species: data.species || 'bear',
-        deliveryMethod: data.deliveryMethod || 'shipping',
-        deliveryCost: data.deliveryCost ? Number(data.deliveryCost) : 0,
-        size: data.size || 'medium',
       };
 
-      // const result = await savePost(postData, user.id);
-      const result = { success: true }; // Mock success for now
-      
-      if (result.success) {
-        toast({
-          title: "Success!",
-          description: "Your item has been listed for sale.",
-        });
-        navigate('/');
-      } else {
-        throw new Error("Failed to create listing");
+      // Insert post into Supabase
+      const { data: result, error } = await supabase
+        .from('posts')
+        .insert([postData])
+        .select();
+
+      if (error) {
+        throw new Error(error.message || 'Failed to create listing');
       }
+
+      toast({
+        title: 'Item listed successfully!',
+        description: 'Your plushie has been added to the marketplace.',
+      });
+      navigate('/marketplace');
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({

@@ -1,5 +1,6 @@
 
 import { useState } from "react";
+import { useSellItemSubmission } from '@/hooks/sell-item/useSellItemSubmission';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -37,10 +38,9 @@ interface ImprovedSellItemFormProps {
 }
 
 export const ImprovedSellItemForm = ({ onSuccess }: ImprovedSellItemFormProps) => {
-  const [imageUrl, setImageUrl] = useState<string>("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const { user } = useUser();
-  const navigate = useNavigate();
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreviewUrl, setImagePreviewUrl] = useState<string>("");
+  const { isSubmitting, onSubmit } = useSellItemSubmission();
 
   const form = useForm<SellItemFormData>({
     resolver: zodResolver(sellItemSchema),
@@ -60,109 +60,26 @@ export const ImprovedSellItemForm = ({ onSuccess }: ImprovedSellItemFormProps) =
     },
   });
 
-  const handleImageUpload = (path: string) => {
-    const { data } = supabase.storage.from('uploads').getPublicUrl(path);
-    setImageUrl(data.publicUrl);
-    toast({
-      title: "Image uploaded successfully",
-      description: "Your image has been uploaded and is ready to use.",
-    });
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null;
+    setImageFile(file);
+    if (file) {
+      setImagePreviewUrl(URL.createObjectURL(file));
+    } else {
+      setImagePreviewUrl("");
+    }
   };
 
   const handleImageRemove = () => {
-    setImageUrl("");
+    setImageFile(null);
+    setImagePreviewUrl("");
   };
 
-  const onSubmit = async (data: SellItemFormData) => {
-    if (!user) {
-      toast({
-        variant: "destructive",
-        title: "Authentication required",
-        description: "Please sign in to sell items",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-
-    try {
-      // Fetch Supabase user UUID by Clerk user ID
-      const { data: supabaseUser, error: userFetchError } = await supabase
-        .from('users')
-        .select('id')
-        .eq('clerk_id', user.id)
-        .maybeSingle();
-
-      if (userFetchError || !supabaseUser?.id) {
-        toast({
-          variant: "destructive",
-          title: "User mapping error",
-          description: "Could not find your Supabase user. Please try logging out and back in.",
-        });
-        setIsSubmitting(false);
-        return;
-      }
-
-      const postData = {
-        content: `${data.title}\n\n${data.description}`,
-        user_id: supabaseUser.id,
-        title: data.title,
-        description: data.description,
-        image: imageUrl,
-        price: data.price,
-        brand: data.brand || null,
-        condition: data.condition,
-        material: data.material || null,
-        filling: data.filling || null,
-        species: data.species || null,
-        delivery_method: data.deliveryMethod,
-        delivery_cost: data.deliveryCost || null,
-        size: data.size || null,
-        color: data.color || null,
-        for_sale: true,
-        tags: [],
-        created_at: new Date().toISOString(),
-      };
-
-      const { data: result, error } = await supabase
-        .from('posts')
-        .insert([postData])
-        .select();
-
-      if (error) {
-        console.error("Supabase error:", error);
-        toast({
-          variant: "destructive",
-          title: "Failed to list item",
-          description: error.message || "Please try again",
-        });
-        return;
-      }
-
-      toast({
-        title: "Item listed successfully!",
-        description: "Your plushie has been added to the marketplace.",
-      });
-      
-      form.reset();
-      setImageUrl("");
-      
-      if (onSuccess) {
-        onSuccess();
-      } else {
-        navigate('/marketplace');
-      }
-      
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "An unexpected error occurred",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+  const handleSubmit = (data: SellItemFormData) => {
+    onSubmit(data, imageFile || undefined);
+    form.reset();
+    handleImageRemove();
+    if (onSuccess) onSuccess();
   };
 
   return (
@@ -174,18 +91,19 @@ export const ImprovedSellItemForm = ({ onSuccess }: ImprovedSellItemFormProps) =
       </CardHeader>
       
       <CardContent className="pt-6">
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Image Upload */}
-          <div className="space-y-2">
-            <Label>Plushie Image</Label>
-            <FileUploader
-              onSuccess={handleImageUpload}
-              accept="image/*"
-              maxSize={5}
-              currentImageUrl={imageUrl}
-              onRemove={handleImageRemove}
-              className="w-full"
-            />
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {/* Image upload section */}
+          <div className="mb-4">
+            {imagePreviewUrl ? (
+              <div className="relative w-40 h-40 mb-2">
+                <img src={imagePreviewUrl} alt="Preview" className="object-cover w-full h-full rounded" />
+                <button type="button" onClick={handleImageRemove} className="absolute top-0 right-0 bg-white rounded-full p-1 shadow">
+                  &times;
+                </button>
+              </div>
+            ) : (
+              <Input type="file" accept="image/*" onChange={handleImageChange} />
+            )}
           </div>
 
           {/* Basic Info */}
