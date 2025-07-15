@@ -1,5 +1,6 @@
 
 import { Package, Shirt, Box, PawPrint, Ruler, TruckIcon, GlobeIcon } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { MarketplacePlushie } from "@/types/marketplace";
 import { DialogHeader, DialogTitle } from "@/components/ui/dialog";

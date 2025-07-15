@@ -22,11 +22,15 @@ export const PlushieHeader = ({ plushie, formattedDate }: PlushieHeaderProps) =>
     <>
       <div className="flex items-center mb-2">
         {plushie.brand && (
-          <div className="flex items-center">
-            <BrandLogo brandName={plushie.brand} className="w-5 h-5 mr-2" />
-            <span className="text-sm text-gray-600">{plushie.brand}</span>
-          </div>
-        )}
+  <Link
+    to={`/marketplace?brand=${encodeURIComponent(plushie.brand)}`}
+    onClick={e => e.stopPropagation()}
+    className="flex items-center group"
+  >
+    <BrandLogo brandName={plushie.brand} className="w-5 h-5 mr-2" />
+    <span className="text-sm text-blue-600 group-hover:underline">{plushie.brand}</span>
+  </Link>
+)}
       </div>
       
       <DialogTitle className="text-xl font-bold mb-2">{plushie.title}</DialogTitle>
@@ -46,7 +50,17 @@ export const PlushieHeader = ({ plushie, formattedDate }: PlushieHeaderProps) =>
           <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${plushie.username || 'U'}`} />
           <AvatarFallback>{plushie.username?.charAt(0) || 'U'}</AvatarFallback>
         </Avatar>
-        <span className="text-sm text-gray-600">{plushie.username || 'Anonymous'}</span>
+        {plushie.username ? (
+  <Link
+    to={`/profile/${plushie.username}`}
+    onClick={e => e.stopPropagation()}
+    className="text-sm text-blue-600 hover:underline"
+  >
+    {plushie.username}
+  </Link>
+) : (
+  <span className="text-sm text-gray-600">Anonymous</span>
+)}
         <span className="text-xs text-gray-500">• {formattedDate}</span>
       </div>
     </>

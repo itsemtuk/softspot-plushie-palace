@@ -22,9 +22,16 @@ export const useUserButtonState = () => {
     const updateUserInfo = () => {
       const currentUser = getCurrentUser();
       setUsername(currentUser?.username || "Anonymous");
-      setAvatarUrl(localStorage.getItem('userAvatarUrl') || "");
+      // Prefer Clerk's user.imageUrl if available
+      const clerkUser = (window as any).Clerk?.user || (window as any).window?.__clerk?.user;
+      if (clerkUser && clerkUser.imageUrl) {
+        setAvatarUrl(clerkUser.imageUrl);
+      } else {
+        setAvatarUrl(localStorage.getItem('userAvatarUrl') || "");
+      }
       setUserStatusState(getUserStatus());
     };
+
     
     updateUserInfo();
     

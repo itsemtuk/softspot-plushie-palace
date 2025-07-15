@@ -16,6 +16,7 @@ import UserProfileHeader from "@/components/UserProfileHeader";
 import MarketplaceReviews from "@/components/profile/MarketplaceReviews";
 import { ProfileBadges } from "@/components/profile/ProfileBadges";
 import { Star, User, Heart, MessageSquare } from "lucide-react";
+import { EditMarketplaceItem } from "@/components/marketplace/EditMarketplaceItem";
 
 const Profile = () => {
   console.log("Profile page: Rendering");
@@ -28,6 +29,10 @@ const Profile = () => {
   const [userData, setUserData] = useState<any>(null);
   const [profileData, setProfileData] = useState<any>(null);
   const { openPostDialog } = usePostDialog();
+
+  // State for editing marketplace item
+  const [editingMarketplaceItem, setEditingMarketplaceItem] = useState<ExtendedPost | null>(null);
+  const [isEditMarketplaceModalOpen, setIsEditMarketplaceModalOpen] = useState(false);
 
   // Mock badges data
   const userBadges = [
@@ -152,8 +157,22 @@ const Profile = () => {
     fetchUserData();
   }, [user?.id, getToken]);
 
+  // Handler for regular post click
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);
+  };
+
+  // Handler for marketplace item click (edit if owner)
+  const handleMarketplaceItemClick = (item: ExtendedPost) => {
+    if (user && (item.user_id === user.id || item.userId === user.id)) {
+      setEditingMarketplaceItem(item);
+      setIsEditMarketplaceModalOpen(true);
+    }
+  };
+
+  // Handler for updating item in state after edit
+  const handleMarketplaceItemUpdate = (updatedItem: ExtendedPost) => {
+    setMarketplacePosts((prev) => prev.map((item) => item.id === updatedItem.id ? updatedItem : item));
   };
 
   const handleRegularPostCreated = async (postData: PostCreationData) => {
@@ -268,11 +287,24 @@ const Profile = () => {
           <TabsContent value="marketplace" className="mt-6">
             <ProfilePostsGrid
               posts={marketplacePosts}
-              onPostClick={handlePostClick}
+              // Use custom handler for marketplace items
+              onPostClick={handleMarketplaceItemClick}
               isOwnProfile={true}
               showCreateButton={false}
               onPostCreated={handleMarketplacePostCreated}
             />
+            {/* Edit Marketplace Item Modal */}
+            {editingMarketplaceItem && (
+              <EditMarketplaceItem
+                post={editingMarketplaceItem}
+                isOpen={isEditMarketplaceModalOpen}
+                onClose={() => {
+                  setIsEditMarketplaceModalOpen(false);
+                  setEditingMarketplaceItem(null);
+                }}
+                onUpdate={handleMarketplaceItemUpdate}
+              />
+            )}
           </TabsContent>
           
           <TabsContent value="about" className="mt-6">

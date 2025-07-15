@@ -1,5 +1,6 @@
 
 import React from "react";
+import { Link } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -87,14 +88,30 @@ export const ProductCard: React.FC<ProductCardProps> = ({
                   </Badge>
                 )}
                 {plushie.brand && (
-                  <Badge variant="outline" className="text-xs">
-                    {plushie.brand}
-                  </Badge>
-                )}
+  <Link
+    to={`/marketplace?brand=${encodeURIComponent(plushie.brand)}`}
+    onClick={e => e.stopPropagation()}
+    className="text-xs text-blue-600 hover:underline"
+  >
+    <Badge variant="outline" className="text-xs cursor-pointer">
+      {plushie.brand}
+    </Badge>
+  </Link>
+)}
               </div>
               
               <div className="flex items-center justify-between text-sm text-gray-500">
-                <span>@{plushie.username || 'Unknown'}</span>
+                {plushie.username ? (
+  <Link
+    to={`/profile/${plushie.username}`}
+    onClick={e => e.stopPropagation()}
+    className="text-sm text-blue-600 hover:underline"
+  >
+    @{plushie.username}
+  </Link>
+) : (
+  <span>@Unknown</span>
+)}
                 <div className="flex items-center gap-4">
                   <span className="flex items-center gap-1">
                     <Heart className="h-3 w-3" />
@@ -176,7 +193,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         </div>
         
         <div className="flex items-center justify-between text-sm text-gray-500">
-          <span>@{plushie.username || 'Unknown'}</span>
+          {plushie.username ? (
+  <Link
+    to={`/profile/${plushie.username}`}
+    onClick={e => e.stopPropagation()}
+    className="text-sm text-blue-600 hover:underline"
+  >
+    @{plushie.username}
+  </Link>
+) : (
+  <span>@Unknown</span>
+)}
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
               <Heart className="h-3 w-3" />
