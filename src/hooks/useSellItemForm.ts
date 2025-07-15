@@ -3,7 +3,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { useClerkSupabaseUser } from "@/hooks/useClerkSupabaseUser";
-import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
+import { createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 
 interface FormData {
@@ -87,8 +87,6 @@ export const useSellItemForm = () => {
     console.log('Current user:', user);
     console.log('Supabase user ID:', supabaseUserId);
     console.log('Clerk user ID:', user.id);
-    
-    }
 
     if (!data.title || !data.price || !data.condition || !data.brand) {
       toast({
@@ -121,7 +119,14 @@ export const useSellItemForm = () => {
 
       console.log('Inserting listing data:', listingData);
 
-      const { data: result, error } = await supabase
+      // Get Clerk token and create authenticated client
+      const clerkToken = await getToken({ template: "supabase" });
+      if (!clerkToken) {
+        throw new Error("Failed to get authentication token");
+      }
+      
+      const authenticatedSupabase = createAuthenticatedSupabaseClient(clerkToken);
+      const { data: result, error } = await authenticatedSupabase
         .from('marketplace_listings')
         .insert([listingData])
         .select()

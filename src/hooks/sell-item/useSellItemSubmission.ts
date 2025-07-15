@@ -4,6 +4,7 @@ import { useUser } from "@clerk/clerk-react";
 import { toast } from "@/components/ui/use-toast";
 import { ExtendedPost } from "@/types/core";
 import { SellItemFormData } from "@/types/sellItemForm";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useSellItemSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);

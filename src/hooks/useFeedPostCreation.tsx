@@ -5,6 +5,7 @@ import { toast } from "@/components/ui/use-toast";
 import { addPost } from "@/utils/posts/postManagement";
 import { useOfflinePostOperations } from "@/hooks/useOfflinePostOperations";
 import { useUser, useAuth } from "@clerk/clerk-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useFeedPostCreation = (setPosts: React.Dispatch<React.SetStateAction<ExtendedPost[]>>) => {
   const { addOfflinePost } = useOfflinePostOperations();
