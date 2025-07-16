@@ -14,69 +14,18 @@ import { PostDialog } from "@/components/PostDialog";
 import { usePostDialog } from "@/hooks/use-post-dialog";
 import { validateAndSanitizeFormData, ValidationSchemas, postCreationLimiter } from "@/utils/security/inputValidation";
 import { useCSRFProtection } from "@/utils/security/csrfProtection";
+import { useFeedData } from "@/hooks/useFeedData";
 import { z } from "zod";
 
 export default function Feed() {
-  const [posts, setPosts] = useState<ExtendedPost[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const { isPostCreationOpen, setIsPostCreationOpen } = useCreatePost();
   const { user } = useUser();
   const { getToken } = useAuth();
   const { supabaseUserId } = useClerkSupabaseUser(user);
   const { dialogState, openPostDialog, closePostDialog } = usePostDialog();
-
-  const fetchAndSetPosts = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      // Fetch only from feed_posts table for the main feed
-      const { data: feedPosts, error } = await supabase
-        .from('feed_posts')
-        .select(`
-          *,
-          users!feed_posts_user_id_fkey(username, avatar_url)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (error) {
-        console.error("Error fetching feed posts:", error);
-        setPosts([]);
-        return;
-      }
-
-      const formattedPosts: ExtendedPost[] = (feedPosts || []).map(post => ({
-        id: post.id as string,
-        userId: post.user_id as string,
-        user_id: post.user_id as string,
-        username: (post.users as any)?.username || 'User',
-        image: (post.image as string) || '',
-        title: (post.title as string) || '',
-        description: (post.description as string) || '',
-        content: (post.content as string) || '',
-        tags: [],
-        likes: 0,
-        comments: 0,
-        timestamp: (post.created_at as string) || '',
-        createdAt: (post.created_at as string) || '',
-        created_at: (post.created_at as string) || '',
-        updatedAt: (post.updated_at as string) || (post.created_at as string) || '',
-        location: '',
-        forSale: false
-      }));
-
-      console.log("Feed posts loaded:", formattedPosts.length);
-      setPosts(formattedPosts);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchAndSetPosts();
-  }, [fetchAndSetPosts]);
+  const { posts, isLoading, error, refreshPosts, addPost } = useFeedData();
 
   // Memoize filtered posts to prevent unnecessary re-renders
   const filteredPosts = useMemo(() => {
@@ -220,7 +169,7 @@ export default function Feed() {
         forSale: false
       };
 
-      setPosts(prevPosts => [newPost, ...prevPosts]);
+      addPost(newPost);
       setIsPostCreationOpen(false);
       toast({
         title: "Post created!",
@@ -244,11 +193,11 @@ export default function Feed() {
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     try {
-      await fetchAndSetPosts();
+      await refreshPosts();
     } finally {
       setIsRefreshing(false);
     }
-  }, [fetchAndSetPosts]);
+  }, [refreshPosts]);
 
   return (
     <MainLayout>

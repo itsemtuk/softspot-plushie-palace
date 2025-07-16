@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useParams, useNavigate, Navigate } from "react-router-dom";
 import { useUser } from "@clerk/clerk-react";
 import { ArrowLeft, UserPlus, MessageSquare, MoreHorizontal } from "lucide-react";
@@ -12,152 +12,28 @@ import MainLayout from "@/components/layout/MainLayout";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { usePostDialog } from "@/hooks/use-post-dialog";
-import { getPosts } from "@/utils/postStorage";
 import { toast } from "@/components/ui/use-toast";
-import { UserProfile } from "@/types/user";
 import { Spinner } from "@/components/ui/spinner";
-import { supabase } from "@/utils/supabase/client";
 import { PostCreationData } from "@/types/core";
 import { addPost } from "@/utils/posts/postManagement";
+import { useUserData } from "@/hooks/useUserData";
+import { useUserPosts } from "@/hooks/useUserPosts";
 
 const UserProfilePage = () => {
   const { user } = useUser();
   const { username } = useParams<{ username: string }>();
+  
   // Redirect to /profile if this is the current logged-in user
   if (user && (user.username === username || user.id === username)) {
     return <Navigate to="/profile" replace />;
   }
-
-  const { username } = useParams<{ username: string }>();
+  
   const navigate = useNavigate();
-  const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
-  const [marketplacePosts, setMarketplacePosts] = useState<ExtendedPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState<any>(null);
-  const [profileData, setProfileData] = useState<any>(null);
+  const { userData, profileData, isLoading, error } = useUserData(username);
+  const { posts: userPosts, marketplacePosts } = useUserPosts(userData?.id);
   const { openPostDialog } = usePostDialog();
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!username) return;
-      
-      setIsLoading(true);
-      try {
-        // Fetch user data from Supabase
-        const { data: user } = await supabase
-          .from('users')
-          .select('*')
-          .eq('username', username)
-          .maybeSingle();
-
-        if (user) {
-          setUserData(user);
-
-          // Fetch profile data
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('user_uuid', user.id)
-            .maybeSingle();
-
-          if (profile) {
-            setProfileData({
-              bio: profile.bio || '',
-              interests: profile.favorite_brands || [],
-              isPrivate: profile.is_private || false
-            });
-          }
-
-          // Fetch user posts from both posts and feed_posts tables
-          const [postsResponse, feedPostsResponse] = await Promise.all([
-            supabase
-              .from('posts')
-              .select('*')
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: false }),
-            supabase
-              .from('feed_posts')
-              .select('*')
-              .eq('user_id', user.id)
-              .order('created_at', { ascending: false })
-          ]);
-
-          const allPosts: ExtendedPost[] = [];
-
-          // Add posts from posts table
-          if (postsResponse.data) {
-            const formattedPosts: ExtendedPost[] = postsResponse.data.map(post => ({
-              id: post.id as string,
-              image: (post.image as string) || '',
-              title: (post.title as string) || '',
-              description: (post.description as string) || '',
-              content: (post.content as string) || '',
-              userId: post.user_id as string,
-              user_id: post.user_id as string,
-              username: (user.username as string) || (user.first_name as string) || 'User',
-              likes: 0,
-              comments: 0,
-              timestamp: post.created_at as string,
-              createdAt: post.created_at as string,
-              created_at: post.created_at as string,
-              updatedAt: (post.created_at as string) || '',
-              location: '',
-              forSale: Boolean(post.for_sale) || false,
-              tags: [],
-              sold: false
-            }));
-            allPosts.push(...formattedPosts);
-          }
-
-          // Add posts from feed_posts table
-          if (feedPostsResponse.data) {
-            const formattedFeedPosts: ExtendedPost[] = feedPostsResponse.data.map(post => ({
-              id: post.id as string,
-              image: (post.image as string) || '',
-              title: (post.title as string) || '',
-              description: (post.description as string) || '',
-              content: (post.content as string) || '',
-              userId: post.user_id as string,
-              user_id: post.user_id as string,
-              username: (user.username as string) || (user.first_name as string) || 'User',
-              likes: 0,
-              comments: 0,
-              timestamp: post.created_at as string,
-              createdAt: post.created_at as string,
-              created_at: post.created_at as string,
-              updatedAt: (post.updated_at as string) || (post.created_at as string),
-              location: '',
-              forSale: false, // feed posts are never for sale
-              tags: [],
-              sold: false
-            }));
-            allPosts.push(...formattedFeedPosts);
-          }
-
-          // Sort all posts by creation date
-          allPosts.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-          
-          // Separate regular posts from marketplace items
-          const regularPosts = allPosts.filter(post => !post.forSale);
-          const marketplaceItems = allPosts.filter(post => post.forSale);
-          
-          setUserPosts(regularPosts);
-          setMarketplacePosts(marketplaceItems);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to load user profile. Please try again.",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [username]);
+  // Data fetching is now handled by the custom hooks
 
   const handlePostClick = (post: ExtendedPost) => {
     openPostDialog(post);
@@ -187,10 +63,10 @@ const UserProfilePage = () => {
 
       const result = await addPost(newPost);
       if (result.success) {
-        setUserPosts(prevPosts => [newPost, ...prevPosts]);
+        // Since this is not the user's own profile, we don't modify posts
         toast({
           title: "Post created!",
-          description: "Your post has been added successfully.",
+          description: "Your post has been added successfully."
         });
       }
     } catch (error) {

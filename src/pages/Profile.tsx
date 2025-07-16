@@ -3,11 +3,10 @@ import MainLayout from "@/components/layout/MainLayout";
 import { ProfileLayout } from "@/components/profile/ProfileLayout";
 import { TabsContent } from "@/components/ui/tabs";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ExtendedPost, PostCreationData } from "@/types/core";
 import { usePostDialog } from "@/hooks/use-post-dialog";
-import { useUser, useAuth } from "@clerk/clerk-react";
-import { supabase, createAuthenticatedSupabaseClient } from "@/utils/supabase/client";
+import { useUser } from "@clerk/clerk-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { addPost } from "@/utils/posts/postManagement";
@@ -17,17 +16,14 @@ import MarketplaceReviews from "@/components/profile/MarketplaceReviews";
 import { ProfileBadges } from "@/components/profile/ProfileBadges";
 import { Star, User, Heart, MessageSquare } from "lucide-react";
 import { EditMarketplaceItem } from "@/components/marketplace/EditMarketplaceItem";
+import { useUserData } from "@/hooks/useUserData";
+import { useUserPosts } from "@/hooks/useUserPosts";
 
 const Profile = () => {
   console.log("Profile page: Rendering");
   const { user } = useUser();
-  const { getToken } = useAuth();
-  const [userPosts, setUserPosts] = useState<ExtendedPost[]>([]);
-  const [marketplacePosts, setMarketplacePosts] = useState<ExtendedPost[]>([]);
-  const [archivedPosts, setArchivedPosts] = useState<ExtendedPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [userData, setUserData] = useState<any>(null);
-  const [profileData, setProfileData] = useState<any>(null);
+  const { userData, profileData, isLoading } = useUserData();
+  const { posts: userPosts, marketplacePosts, archivedPosts, setPosts, setMarketplacePosts } = useUserPosts(userData?.id);
   const { openPostDialog } = usePostDialog();
 
   // State for editing marketplace item
@@ -76,86 +72,7 @@ const Profile = () => {
     }
   ];
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      if (!user?.id) return;
-      
-      setIsLoading(true);
-      try {
-        // Get authenticated Clerk token for Supabase
-        const token = await getToken({ template: "supabase" });
-        const authenticatedSupabase = token ? createAuthenticatedSupabaseClient(token) : supabase;
-
-        // Fetch user data from Supabase
-        const { data: supabaseUser } = await authenticatedSupabase
-          .from('users')
-          .select('*')
-          .eq('clerk_id', user.id)
-          .maybeSingle();
-
-        if (supabaseUser) {
-          setUserData(supabaseUser);
-
-          // Fetch profile data
-          const { data: profile } = await authenticatedSupabase
-            .from('profiles')
-            .select('*')
-            .eq('user_uuid', supabaseUser.id)
-            .maybeSingle();
-
-          if (profile) {
-            setProfileData({
-              bio: profile.bio || '',
-              interests: profile.favorite_brands || [],
-              isPrivate: profile.is_private || false
-            });
-          }
-
-          // Fetch user posts
-          const { data: posts } = await authenticatedSupabase
-            .from('posts')
-            .select('*')
-            .eq('user_id', supabaseUser.id)
-            .order('created_at', { ascending: false });
-
-          if (posts) {
-            const formattedPosts: ExtendedPost[] = posts.map(post => ({
-              ...post,
-              userId: post.user_id,
-              user_id: post.user_id,
-              username: supabaseUser.username || supabaseUser.first_name || 'User',
-              likes: 0,
-              comments: 0,
-              timestamp: post.created_at,
-              createdAt: post.created_at,
-              created_at: post.created_at,
-              updatedAt: post.created_at,
-              location: '',
-              forSale: post.for_sale || false,
-              tags: [],
-              sold: false,
-              archived: post.archived || false
-            }));
-            
-            // Separate regular posts, marketplace items, and archived posts
-            const regularPosts = formattedPosts.filter(post => !post.forSale && !post.archived);
-            const marketplaceItems = formattedPosts.filter(post => post.forSale && !post.archived);
-            const archived = formattedPosts.filter(post => post.archived);
-            
-            setUserPosts(regularPosts);
-            setMarketplacePosts(marketplaceItems);
-            setArchivedPosts(archived);
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchUserData();
-  }, [user?.id, getToken]);
+  // Remove the useEffect - data fetching is now handled by hooks
 
   // Handler for regular post click
   const handlePostClick = (post: ExtendedPost) => {
@@ -199,7 +116,7 @@ const Profile = () => {
 
       const result = await addPost(newPost);
       if (result.success) {
-        setUserPosts(prevPosts => [newPost, ...prevPosts]);
+        setPosts(prevPosts => [newPost, ...prevPosts]);
         toast({
           title: "Post created!",
           description: "Your post has been added successfully.",
@@ -277,22 +194,21 @@ const Profile = () => {
           <TabsContent value="posts" className="mt-6">
             <ProfilePostsGrid
               posts={userPosts}
-              onPostClick={handlePostClick}
-              isOwnProfile={true}
-              showCreateButton={true}
-              onPostCreated={handleRegularPostCreated}
-            />
-          </TabsContent>
-          
-          <TabsContent value="marketplace" className="mt-6">
-            <ProfilePostsGrid
-              posts={marketplacePosts}
-              // Use custom handler for marketplace items
-              onPostClick={handleMarketplaceItemClick}
-              isOwnProfile={true}
-              showCreateButton={false}
-              onPostCreated={handleMarketplacePostCreated}
-            />
+                onPostClick={handlePostClick}
+                isOwnProfile={true}
+                showCreateButton={true}
+                onPostCreated={handleRegularPostCreated}
+              />
+            </TabsContent>
+            
+            <TabsContent value="marketplace" className="mt-6">
+              <ProfilePostsGrid
+                posts={marketplacePosts}
+                onPostClick={handleMarketplaceItemClick}
+                isOwnProfile={true}
+                showCreateButton={false}
+                onPostCreated={handleMarketplacePostCreated}
+              />
             {/* Edit Marketplace Item Modal */}
             {editingMarketplaceItem && (
               <EditMarketplaceItem

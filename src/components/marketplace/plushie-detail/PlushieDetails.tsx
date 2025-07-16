@@ -21,7 +21,7 @@ export function PlushieDetails({ plushie }: PlushieDetailsProps) {
         <div className="text-sm text-gray-500 flex items-center justify-between mt-2">
           {(() => {
   const { user } = useUser();
-  const isCurrentUser = user && (user.username === plushie.username || user.id === plushie.user_id || user.id === plushie.userId);
+  const isCurrentUser = user && (user.username === plushie.username || user.id === plushie.userId);
   if (plushie.username) {
     return (
       <Link
