@@ -15,6 +15,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import FileUploader from "@/components/common/FileUploader";
+import { SellItemFormData } from "@/types/sellItemForm";
 
 const sellItemSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
@@ -29,9 +30,11 @@ const sellItemSchema = z.object({
   deliveryCost: z.number().min(0).optional(),
   size: z.string().optional(),
   color: z.string().optional(),
+  image: z.string().optional(),
+  imageUrl: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  location: z.string().optional(),
 });
-
-type SellItemFormData = z.infer<typeof sellItemSchema>;
 
 interface ImprovedSellItemFormProps {
   onSuccess?: () => void;
@@ -41,6 +44,7 @@ export const ImprovedSellItemForm = ({ onSuccess }: ImprovedSellItemFormProps) =
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreviewUrl, setImagePreviewUrl] = useState<string>("");
   const { isSubmitting, onSubmit } = useSellItemSubmission();
+  const navigate = useNavigate();
 
   const form = useForm<SellItemFormData>({
     resolver: zodResolver(sellItemSchema),
@@ -57,6 +61,10 @@ export const ImprovedSellItemForm = ({ onSuccess }: ImprovedSellItemFormProps) =
       deliveryCost: 0,
       size: "",
       color: "",
+      image: "",
+      imageUrl: "",
+      tags: [],
+      location: "",
     },
   });
 
