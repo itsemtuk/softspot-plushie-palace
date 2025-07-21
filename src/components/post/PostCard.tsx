@@ -6,19 +6,20 @@ import { ExtendedPost } from "@/types/core";
 import { Card, CardContent } from "@/components/ui/card";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
-import { PostMenu } from "@/components/post-dialog/PostMenu";
+import { PostActionsMenu } from "./PostActionsMenu";
 import { useUser } from "@clerk/clerk-react";
-import { usePostActions } from "@/hooks/usePostActions";
 
 interface PostCardProps {
   post: ExtendedPost;
   onPostClick?: (post: ExtendedPost) => void;
+  onPostUpdated?: (updatedPost: ExtendedPost) => void;
+  onPostDeleted?: (postId: string) => void;
 }
 
-export const PostCard = ({ post, onPostClick }: PostCardProps) => {
-  const [isLiked, setIsLiked] = useState(false);
+export const PostCard = ({ post, onPostClick, onPostUpdated, onPostDeleted }: PostCardProps) => {
   const { user } = useUser();
-  const { handleEditPost, handleDeletePost, handleArchivePost } = usePostActions();
+  const isOwnPost = user && (post.user_id === user.id || post.userId === user.id);
+  const [isLiked, setIsLiked] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
     // Don't trigger if clicking on interactive elements
@@ -52,20 +53,6 @@ export const PostCard = ({ post, onPostClick }: PostCardProps) => {
     // Add share functionality here
   };
 
-  const handleEdit = () => {
-    handleEditPost(post);
-  };
-
-  const handleDelete = async () => {
-    await handleDeletePost(post.id);
-  };
-
-  // Archive handler
-  const handleArchive = async () => {
-    if (handleArchivePost) {
-      await handleArchivePost(post.id);
-    }
-  };
 
 
   // Only show the PostMenu if the logged-in user is the post owner
@@ -87,9 +74,12 @@ export const PostCard = ({ post, onPostClick }: PostCardProps) => {
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-medium">{post.username}</span>
-          {user?.id === post.userId && (
-            <PostMenu onEdit={handleEdit} onDelete={handleDelete} onArchive={handleArchive} />
-          )}
+          <PostActionsMenu 
+            post={post} 
+            isOwnPost={isOwnPost}
+            onPostUpdated={onPostUpdated}
+            onPostDeleted={onPostDeleted}
+          />
         </div>
         
         {post.title && <h3 className="font-semibold mb-2 line-clamp-2">{post.title}</h3>}

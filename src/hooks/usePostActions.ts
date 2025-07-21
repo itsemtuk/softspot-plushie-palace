@@ -1,6 +1,7 @@
 
 import { useState, useCallback } from "react";
 import { toast } from "@/components/ui/use-toast";
+import { getSupabaseUserId } from "@/utils/userSync";
 import { useUser } from "@clerk/clerk-react";
 import { useNavigate } from "react-router-dom";
 import { ExtendedPost } from "@/types/core";
@@ -55,7 +56,13 @@ export const usePostActions = () => {
 
       try {
         const token = await getToken({ template: "supabase" });
-        const result = await deletePost(postId, user.id, token || undefined);
+        const supabaseUserId = await getSupabaseUserId(user.id);
+        
+        if (!supabaseUserId) {
+          throw new Error("Could not find your user profile");
+        }
+        
+        const result = await deletePost(postId, supabaseUserId, token || undefined);
 
         if (result.success) {
           toast({
@@ -103,6 +110,12 @@ export const usePostActions = () => {
 
       try {
         const token = await getToken({ template: "supabase" });
+        const supabaseUserId = await getSupabaseUserId(user.id);
+        
+        if (!supabaseUserId) {
+          throw new Error("Could not find your user profile");
+        }
+        
         const result = await updatePost(postId, updatedPostData, token || undefined);
 
         if (result.success) {
@@ -148,7 +161,13 @@ export const usePostActions = () => {
       setIsLoading(true);
       try {
         const token = await getToken({ template: "supabase" });
-        const result = await archivePost(postId, user.id, token || undefined);
+        const supabaseUserId = await getSupabaseUserId(user.id);
+        
+        if (!supabaseUserId) {
+          throw new Error("Could not find your user profile");
+        }
+        
+        const result = await archivePost(postId, supabaseUserId, token || undefined);
         if (result.success) {
           toast({
             title: "Post archived",

@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ExtendedPost } from "@/types/core";
 import { supabase, createAuthenticatedSupabaseClient } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { useAuth } from "@clerk/clerk-react";
 
 interface EditMarketplaceItemProps {

@@ -55,6 +55,14 @@ export const ProfilePostsGrid: React.FC<ProfilePostsGridProps> = ({
             key={post.id}
             post={post}
             onPostClick={onPostClick}
+            onPostUpdated={(updatedPost) => {
+              // Handle post updates if needed
+              console.log('Post updated:', updatedPost);
+            }}
+            onPostDeleted={(postId) => {
+              // Handle post deletion if needed  
+              console.log('Post deleted:', postId);
+            }}
           />
         ))}
       </div>

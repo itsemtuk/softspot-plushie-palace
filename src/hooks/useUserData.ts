@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useUser, useAuth } from '@clerk/clerk-react';
-import { supabase, createAuthenticatedSupabaseClient } from '@/utils/supabase/client';
+import { supabase, createAuthenticatedSupabaseClient } from '@/integrations/supabase/client';
 
 export interface UserData {
   id: string;

@@ -43,7 +43,19 @@ export const FeedGrid = ({ posts, onPostClick, onCreatePostClick, layout = "grid
     <>
       <div className={gridClass}>
         {visiblePosts.map((post) => (
-          <PostCard key={post.id} post={post} onPostClick={onPostClick} />
+          <PostCard 
+            key={post.id} 
+            post={post} 
+            onPostClick={onPostClick}
+            onPostUpdated={(updatedPost) => {
+              // Handle post updates
+              console.log('Post updated in feed:', updatedPost);
+            }}
+            onPostDeleted={(postId) => {
+              // Handle post deletion
+              console.log('Post deleted from feed:', postId);
+            }}
+          />
         ))}
       </div>
       {hasMorePosts && (

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ExtendedPost } from '@/types/core';
-import { supabase, createAuthenticatedSupabaseClient } from '@/utils/supabase/client';
+import { supabase, createAuthenticatedSupabaseClient } from '@/integrations/supabase/client';
 import { formatPost } from '@/utils/posts/formatters';
 import { useAuth } from '@clerk/clerk-react';
 

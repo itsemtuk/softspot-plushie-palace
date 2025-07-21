@@ -10,7 +10,7 @@ import { useUser } from "@clerk/clerk-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { addPost } from "@/utils/posts/postManagement";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import MarketplaceReviews from "@/components/profile/MarketplaceReviews";
 import { ProfileBadges } from "@/components/profile/ProfileBadges";

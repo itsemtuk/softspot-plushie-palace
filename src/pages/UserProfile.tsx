@@ -12,7 +12,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import UserProfileHeader from "@/components/UserProfileHeader";
 import { ProfilePostsGrid } from "@/components/profile/ProfilePostsGrid";
 import { usePostDialog } from "@/hooks/use-post-dialog";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Spinner } from "@/components/ui/spinner";
 import { PostCreationData } from "@/types/core";
 import { addPost } from "@/utils/posts/postManagement";

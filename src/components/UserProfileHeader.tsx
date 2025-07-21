@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Calendar, Users, Edit } from 'lucide-react';
 import { ProfileActionButton } from '@/components/profile/ProfileActionButton';
 import { ProfileHeaderCustomizer } from '@/components/profile/ProfileHeaderCustomizer';
-import { supabase } from '@/utils/supabase/client';
+import { supabase } from '@/integrations/supabase/client';
 import { useFollowUser } from '@/hooks/useFollowUser';
 import { useUser } from '@clerk/clerk-react';
 import { createSafeElement, safeReplaceElement, sanitizeDisplayName } from '@/utils/security/domSanitizer';
