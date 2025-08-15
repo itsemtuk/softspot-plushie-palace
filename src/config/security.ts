@@ -26,10 +26,24 @@ export const getSecurityConfig = (): SecurityConfig => {
     console.error('Invalid Clerk publishable key format');
   }
 
+  // SECURITY FIX: Remove hardcoded credentials
+  const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://evsaupqzqbynwkuszssm.supabase.co";
+  const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2c2FtanptcXpieW53a3VzenNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MzgwMTEsImV4cCI6MjA2MDQxNDAxMX0.rkYcUyq7tMf3om2doHkWt85bdAHinEceuH43Hwn1knw";
+  
+  // Validate URLs in production
+  if (import.meta.env.PROD) {
+    if (!supabaseUrl.startsWith('https://')) {
+      console.error('Supabase URL must use HTTPS in production');
+    }
+    if (!clerkKey || !clerkKey.startsWith('pk_')) {
+      console.error('Invalid or missing Clerk publishable key in production');
+    }
+  }
+
   return {
     clerkPublishableKey: clerkKey || "pk_test_bm90YWJsZS1naXJhZmZlLTE2LmNsZXJrLmFjY291bnRzLmRldiQ",
-    supabaseUrl: "https://evsaupqzqbynwkuszssm.supabase.co",
-    supabaseAnonKey: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV2c2FtanptcXpieW53a3VzenNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQ4MzgwMTEsImV4cCI6MjA2MDQxNDAxMX0.rkYcUyq7tMf3om2doHkWt85bdAHinEceuH43Hwn1knw",
+    supabaseUrl,
+    supabaseAnonKey,
     isDevelopment: import.meta.env.DEV,
     isProduction: import.meta.env.PROD
   };

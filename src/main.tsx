@@ -13,19 +13,22 @@ const { clerkPublishableKey } = getSecurityConfig();
 import { ClerkProvider } from '@clerk/clerk-react';
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { SecurityProvider } from "@/components/security/SecurityProvider";
+import { SecurityEnforcer } from "@/components/security/SecurityEnforcer";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <SecurityProvider>
-      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-        <ClerkProvider 
-          publishableKey={clerkPublishableKey}
-          signInFallbackRedirectUrl="/feed"
-          signUpFallbackRedirectUrl="/onboarding"
-        >
-          <App />
-        </ClerkProvider>
-      </ThemeProvider>
+      <SecurityEnforcer>
+        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+          <ClerkProvider 
+            publishableKey={clerkPublishableKey}
+            signInFallbackRedirectUrl="/feed"
+            signUpFallbackRedirectUrl="/onboarding"
+          >
+            <App />
+          </ClerkProvider>
+        </ThemeProvider>
+      </SecurityEnforcer>
     </SecurityProvider>
   </React.StrictMode>
 );

@@ -9,43 +9,81 @@ export const ValidationSchemas = {
   username: z.string()
     .min(3, 'Username must be at least 3 characters')
     .max(30, 'Username must be less than 30 characters')
-    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens'),
+    .regex(/^[a-zA-Z0-9_-]+$/, 'Username can only contain letters, numbers, underscores, and hyphens')
+    .transform(input => sanitizeTextInput(input)),
   
-  email: z.string().email('Invalid email address'),
+  email: z.string()
+    .email('Invalid email address')
+    .max(254, 'Email address too long'),
   
   postContent: z.string()
     .min(1, 'Content cannot be empty')
-    .max(2000, 'Content must be less than 2000 characters'),
+    .max(2000, 'Content must be less than 2000 characters')
+    .transform(input => sanitizeTextInput(input)),
   
   postTitle: z.string()
     .min(1, 'Title cannot be empty')
-    .max(200, 'Title must be less than 200 characters'),
+    .max(200, 'Title must be less than 200 characters')
+    .transform(input => sanitizeTextInput(input)),
   
   bio: z.string()
-    .max(500, 'Bio must be less than 500 characters'),
+    .max(500, 'Bio must be less than 500 characters')
+    .transform(input => sanitizeTextInput(input)),
   
   price: z.number()
     .min(0, 'Price must be positive')
-    .max(10000, 'Price must be less than $10,000'),
+    .max(10000, 'Price must be less than $10,000')
+    .finite('Price must be a valid number'),
   
-  imageUrl: z.string().url('Invalid image URL').optional(),
+  imageUrl: z.string()
+    .url('Invalid image URL')
+    .max(2048, 'Image URL too long')
+    .refine(url => {
+      const allowedDomains = ['supabase.co', 'clerk.dev', 'localhost', 'lovable.app'];
+      try {
+        const urlObj = new URL(url);
+        return allowedDomains.some(domain => urlObj.hostname.includes(domain));
+      } catch {
+        return false;
+      }
+    }, 'Image URL from unauthorized domain')
+    .optional(),
   
   brandName: z.string()
     .min(1, 'Brand name cannot be empty')
     .max(50, 'Brand name must be less than 50 characters')
-    .regex(/^[a-zA-Z0-9\s&.-]+$/, 'Brand name contains invalid characters'),
+    .regex(/^[a-zA-Z0-9\s&.-]+$/, 'Brand name contains invalid characters')
+    .transform(input => sanitizeTextInput(input)),
   
   condition: z.enum(['new', 'like-new', 'good', 'fair', 'poor']),
   
   material: z.string()
-    .max(100, 'Material description must be less than 100 characters'),
+    .max(100, 'Material description must be less than 100 characters')
+    .transform(input => sanitizeTextInput(input)),
   
   size: z.string()
-    .max(50, 'Size description must be less than 50 characters'),
+    .max(50, 'Size description must be less than 50 characters')
+    .transform(input => sanitizeTextInput(input)),
   
   searchQuery: z.string()
     .max(100, 'Search query must be less than 100 characters')
     .regex(/^[a-zA-Z0-9\s&.-]*$/, 'Search query contains invalid characters')
+    .transform(input => sanitizeTextInput(input)),
+
+  // Additional secure validation schemas
+  message: z.string()
+    .min(1, 'Message cannot be empty')
+    .max(1000, 'Message must be less than 1000 characters')
+    .transform(input => sanitizeTextInput(input)),
+    
+  phoneNumber: z.string()
+    .regex(/^[\+]?[1-9][\d]{0,15}$/, 'Invalid phone number format')
+    .optional(),
+    
+  address: z.string()
+    .max(200, 'Address must be less than 200 characters')
+    .transform(input => sanitizeTextInput(input))
+    .optional()
 };
 
 /**
