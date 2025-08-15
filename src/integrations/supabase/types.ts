@@ -101,6 +101,13 @@ export type Database = {
             foreignKeyName: "feed_posts_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "feed_posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -130,7 +137,21 @@ export type Database = {
             foreignKeyName: "followers_follower_id_fkey"
             columns: ["follower_id"]
             isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followers_follower_id_fkey"
+            columns: ["follower_id"]
+            isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "followers_following_id_fkey"
+            columns: ["following_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -180,6 +201,13 @@ export type Database = {
           listing_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "listing_bids_bidder_id_fkey"
+            columns: ["bidder_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "listing_bids_bidder_id_fkey"
             columns: ["bidder_id"]
@@ -241,6 +269,13 @@ export type Database = {
             foreignKeyName: "listing_offers_buyer_id_fkey"
             columns: ["buyer_id"]
             isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_offers_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -249,6 +284,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "marketplace_listings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "listing_offers_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -283,6 +325,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "marketplace_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "marketplace_user_id_fkey"
             columns: ["user_id"]
@@ -364,6 +413,13 @@ export type Database = {
             foreignKeyName: "marketplace_listings_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "marketplace_listings_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -425,7 +481,21 @@ export type Database = {
             foreignKeyName: "messages_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -487,6 +557,13 @@ export type Database = {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -534,6 +611,13 @@ export type Database = {
             foreignKeyName: "offers_buyer_id_fkey"
             columns: ["buyer_id"]
             isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_buyer_id_fkey"
+            columns: ["buyer_id"]
+            isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -542,6 +626,13 @@ export type Database = {
             columns: ["listing_id"]
             isOneToOne: false
             referencedRelation: "posts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_seller_id_fkey"
+            columns: ["seller_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -605,6 +696,13 @@ export type Database = {
             columns: ["parent_comment_id"]
             isOneToOne: false
             referencedRelation: "post_comments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "post_comments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -690,6 +788,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "posts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "posts_user_id_fkey"
             columns: ["user_id"]
@@ -816,6 +921,13 @@ export type Database = {
             foreignKeyName: "profiles_user_uuid_fkey"
             columns: ["user_uuid"]
             isOneToOne: true
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_user_uuid_fkey"
+            columns: ["user_uuid"]
+            isOneToOne: true
             referencedRelation: "users"
             referencedColumns: ["id"]
           },
@@ -901,7 +1013,21 @@ export type Database = {
             foreignKeyName: "trade_requests_requester_id_fkey"
             columns: ["requester_id"]
             isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_requests_requester_id_fkey"
+            columns: ["requester_id"]
+            isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trade_requests_target_user_id_fkey"
+            columns: ["target_user_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -939,6 +1065,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "user_badges_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "user_badges_user_id_fkey"
             columns: ["user_id"]
@@ -981,7 +1114,21 @@ export type Database = {
             foreignKeyName: "user_reviews_reviewed_user_id_fkey"
             columns: ["reviewed_user_id"]
             isOneToOne: false
+            referencedRelation: "user_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_reviews_reviewed_user_id_fkey"
+            columns: ["reviewed_user_id"]
+            isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_reviews_reviewer_id_fkey"
+            columns: ["reviewer_id"]
+            isOneToOne: false
+            referencedRelation: "user_public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -1031,7 +1178,27 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      user_public_profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string | null
+          id: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string | null
+          id?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       create_offer_with_notification: {
@@ -1063,6 +1230,18 @@ export type Database = {
       set_current_user_id: {
         Args: { user_id_param: string }
         Returns: undefined
+      }
+      user_owns_listing: {
+        Args: { listing_id_param: string }
+        Returns: boolean
+      }
+      user_owns_post: {
+        Args: { post_id_param: string }
+        Returns: boolean
+      }
+      validate_and_sanitize_input: {
+        Args: { allow_html?: boolean; input_text: string; max_length?: number }
+        Returns: string
       }
     }
     Enums: {
