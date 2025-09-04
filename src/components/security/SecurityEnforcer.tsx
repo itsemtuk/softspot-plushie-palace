@@ -8,7 +8,7 @@ import { logSecurityEvent } from '@/utils/security/securityHeaders';
  * Security enforcement component that provides global security utilities
  */
 export const SecurityEnforcer = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useUser();
+  const { user, isLoaded } = useUser();
 
   useEffect(() => {
     // Initialize security monitoring
@@ -44,13 +44,13 @@ export const SecurityEnforcer = ({ children }: { children: React.ReactNode }) =>
 
   useEffect(() => {
     // Monitor authentication state changes for security
-    if (user) {
+    if (isLoaded && user) {
       logSecurityEvent('USER_AUTHENTICATED', {
         userId: user.id,
         timestamp: new Date().toISOString()
       });
     }
-  }, [user]);
+  }, [user, isLoaded]);
 
   // Make security utilities available globally
   useEffect(() => {

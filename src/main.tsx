@@ -18,17 +18,17 @@ import { SecurityEnforcer } from "@/components/security/SecurityEnforcer";
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
     <SecurityProvider>
-      <SecurityEnforcer>
-        <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
-          <ClerkProvider 
-            publishableKey={clerkPublishableKey}
-            signInFallbackRedirectUrl="/feed"
-            signUpFallbackRedirectUrl="/onboarding"
-          >
+      <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+        <ClerkProvider 
+          publishableKey={clerkPublishableKey}
+          signInFallbackRedirectUrl="/feed"
+          signUpFallbackRedirectUrl="/onboarding"
+        >
+          <SecurityEnforcer>
             <App />
-          </ClerkProvider>
-        </ThemeProvider>
-      </SecurityEnforcer>
+          </SecurityEnforcer>
+        </ClerkProvider>
+      </ThemeProvider>
     </SecurityProvider>
   </React.StrictMode>
 );
