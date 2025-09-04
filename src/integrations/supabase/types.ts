@@ -1329,6 +1329,10 @@ export type Database = {
         Args: { details?: Json; event_type: string; user_id: string }
         Returns: undefined
       }
+      log_security_event_safe: {
+        Args: { details?: Json; event_type: string; user_id_param?: string }
+        Returns: undefined
+      }
       set_current_user_id: {
         Args: { user_id_param: string }
         Returns: undefined
