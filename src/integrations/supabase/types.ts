@@ -1325,8 +1325,12 @@ export type Database = {
           username: string
         }[]
       }
+      get_security_status: {
+        Args: Record<PropertyKey, never>
+        Returns: Json
+      }
       log_security_event: {
-        Args: { details?: Json; event_type: string; user_id: string }
+        Args: { details?: Json; event_type: string; user_id_param?: string }
         Returns: undefined
       }
       log_security_event_safe: {

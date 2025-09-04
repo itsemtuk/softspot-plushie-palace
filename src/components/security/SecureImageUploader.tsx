@@ -22,7 +22,7 @@ export const SecureImageUploader = ({
   const [isUploading, setIsUploading] = useState(false);
   const { user } = useUser();
 
-  const validateFile = useCallback((file: File): string | null => {
+  const validateFile = useCallback(async (file: File): Promise<string | null> => {
     // Size validation
     if (file.size > maxSizeBytes) {
       return `File size exceeds ${maxSizeBytes / (1024 * 1024)}MB limit`;
@@ -38,6 +38,58 @@ export const SecureImageUploader = ({
       return 'Invalid file name';
     }
 
+    // Enhanced security: Check for suspicious file patterns
+    const suspiciousPatterns = [/\.php$/, /\.exe$/, /\.bat$/, /\.cmd$/, /\.scr$/, /\.js$/, /\.vbs$/, /\.asp$/, /\.jsp$/];
+    if (suspiciousPatterns.some(pattern => pattern.test(file.name.toLowerCase()))) {
+      return 'File name contains suspicious patterns';
+    }
+
+    // Magic number validation for image files
+    try {
+      const buffer = await file.arrayBuffer();
+      const uint8Array = new Uint8Array(buffer);
+      
+      // Check magic numbers for common image types
+      const magicNumbers = {
+        'image/jpeg': [0xFF, 0xD8, 0xFF],
+        'image/png': [0x89, 0x50, 0x4E, 0x47],
+        'image/gif': [0x47, 0x49, 0x46],
+        'image/webp': [0x52, 0x49, 0x46, 0x46] // RIFF header for WebP
+      };
+
+      const declaredType = file.type as keyof typeof magicNumbers;
+      const expectedSignature = magicNumbers[declaredType];
+      
+      if (expectedSignature) {
+        const actualSignature = Array.from(uint8Array.slice(0, expectedSignature.length));
+        const isValidSignature = expectedSignature.every((byte, index) => byte === actualSignature[index]);
+        
+        if (!isValidSignature) {
+          return 'File content does not match declared file type (potential security threat)';
+        }
+      }
+
+      // Check for embedded scripts or suspicious content in first 1KB
+      const firstKB = new TextDecoder().decode(uint8Array.slice(0, 1024));
+      const scriptPatterns = [
+        /<script/i,
+        /javascript:/i,
+        /vbscript:/i,
+        /on\w+\s*=/i,
+        /<iframe/i,
+        /<object/i,
+        /<embed/i
+      ];
+
+      if (scriptPatterns.some(pattern => pattern.test(firstKB))) {
+        return 'File contains potentially malicious content';
+      }
+
+    } catch (error) {
+      console.error('File validation error:', error);
+      return 'Failed to validate file content';
+    }
+
     return null;
   }, [maxSizeBytes, allowedTypes]);
 
@@ -49,7 +101,7 @@ export const SecureImageUploader = ({
 
     try {
       // Validate file
-      const validationError = validateFile(file);
+      const validationError = await validateFile(file);
       if (validationError) {
         onError?.(validationError);
         logSecurityEvent('FILE_VALIDATION_FAILED', {
