@@ -1280,6 +1280,72 @@ export type Database = {
           },
         ]
       }
+      profiles_safe: {
+        Row: {
+          bio: string | null
+          created_at: string | null
+          favorite_brands: string[] | null
+          favorite_types: string[] | null
+          header_background_color: string | null
+          header_background_image: string | null
+          header_gradient_end: string | null
+          header_gradient_start: string | null
+          header_text_color: string | null
+          hide_from_search: boolean | null
+          id: string | null
+          is_private: boolean | null
+          location: string | null
+          website: string | null
+        }
+        Insert: {
+          bio?: string | null
+          created_at?: string | null
+          favorite_brands?: string[] | null
+          favorite_types?: string[] | null
+          header_background_color?: string | null
+          header_background_image?: string | null
+          header_gradient_end?: string | null
+          header_gradient_start?: string | null
+          header_text_color?: string | null
+          hide_from_search?: boolean | null
+          id?: string | null
+          is_private?: boolean | null
+          location?: string | null
+          website?: string | null
+        }
+        Update: {
+          bio?: string | null
+          created_at?: string | null
+          favorite_brands?: string[] | null
+          favorite_types?: string[] | null
+          header_background_color?: string | null
+          header_background_image?: string | null
+          header_gradient_end?: string | null
+          header_gradient_start?: string | null
+          header_text_color?: string | null
+          hide_from_search?: boolean | null
+          id?: string | null
+          is_private?: boolean | null
+          location?: string | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_user_uuid_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "profiles_user_uuid_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "users_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users_public: {
         Row: {
           avatar_url: string | null
@@ -1303,6 +1369,10 @@ export type Database = {
       }
     }
     Functions: {
+      can_access_user_data: {
+        Args: { target_user_id: string }
+        Returns: boolean
+      }
       create_offer_with_notification: {
         Args: {
           p_buyer_id: string
